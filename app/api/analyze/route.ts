@@ -45,7 +45,7 @@ ${question}
 RESPONDE DE FORMA CONVERSACIONAL:`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -59,6 +59,7 @@ RESPONDE DE FORMA CONVERSACIONAL:`;
       const data = await response.json();
 
       if (!data.candidates || !data.candidates[0]) {
+        console.error('Gemini error:', JSON.stringify(data).substring(0, 300));
         throw new Error('No response from Gemini');
       }
 
@@ -102,7 +103,7 @@ IMPORTANTE:
 
     // Llamar a Gemini
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
