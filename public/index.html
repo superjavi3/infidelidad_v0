@@ -2112,345 +2112,299 @@ async function generatePDF() {
 
   const btn = event.target;
   const origText = btn.textContent;
-  btn.textContent = '⏳ Generando PDF...';
+  btn.textContent = 'Generando PDF...';
   btn.disabled = true;
 
   try {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
-    const pA = lastStats.personA || 'Persona A';
-    const pB = lastStats.personB || 'Persona B';
+    const pA = (lastStats.personA || 'Persona A').replace(/[^\x20-\x7E]/g, '');
+    const pB = (lastStats.personB || 'Persona B').replace(/[^\x20-\x7E]/g, '');
     const pctA = Math.round(lastStats.msgsA / lastStats.total * 100);
     const pctB = 100 - pctA;
-    const BG = [26, 26, 46]; // #1a1a2e
-    const PINK = [255, 45, 120];
-    const PURPLE = [139, 92, 246];
-    const CARD = [22, 27, 62];
-    const GRAY = [156, 163, 175];
-    const WHITE = [255, 255, 255];
-    const today = new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
+    const today = new Date().toLocaleDateString('es-MX');
 
-    // Helper: dark page background
-    const darkBg = () => { doc.setFillColor(...BG); doc.rect(0, 0, 210, 297, 'F'); };
-    // Helper: card with border
-    const card = (x, y, w, h) => {
-      doc.setFillColor(...CARD); doc.roundedRect(x, y, w, h, 3, 3, 'F');
-      doc.setDrawColor(59, 130, 246); doc.setLineWidth(0.3); doc.roundedRect(x, y, w, h, 3, 3, 'S');
-    };
-    // Helper: section title
-    const title = (emoji, text, yPos) => {
-      doc.setTextColor(...WHITE); doc.setFontSize(22); doc.setFont(undefined, 'bold');
-      doc.text(emoji + ' ' + text, 105, yPos, { align: 'center' });
-      doc.setDrawColor(...PINK); doc.setLineWidth(0.5); doc.line(30, yPos + 4, 180, yPos + 4);
-    };
-    // Helper: footer
-    const footer = () => {
-      doc.setFontSize(8); doc.setTextColor(...GRAY);
-      doc.text('LoSabia.mx — Analisis de relaciones con IA', 105, 290, { align: 'center' });
-    };
+    // Helper: strip non-ASCII for clean PDF text
+    const clean = (s) => String(s || '').replace(/[^\x20-\x7E\n]/g, '').replace(/\*\*/g, '').replace(/\*/g, '');
 
-    // ════════════════════════════════════════════
-    // PAGE 1: COVER
-    // ════════════════════════════════════════════
-    doc.setFillColor(...PINK); doc.rect(0, 0, 210, 160, 'F');
-    doc.setFillColor(...[108, 92, 231]); doc.rect(0, 160, 210, 137, 'F');
+    // ============ PAGE 1: COVER + KEY STATS ============
+    doc.setFillColor(255, 45, 120);
+    doc.rect(0, 0, 210, 100, 'F');
+    doc.setFillColor(108, 92, 231);
+    doc.rect(0, 100, 210, 197, 'F');
 
-    doc.setTextColor(...WHITE);
-    doc.setFontSize(14); doc.setFont(undefined, 'normal');
-    doc.text('REPORTE DETECTIVE', 105, 40, { align: 'center' });
-    doc.setFontSize(32); doc.setFont(undefined, 'bold');
-    doc.text('LoSabia.mx', 105, 60, { align: 'center' });
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24); doc.setFont('helvetica', 'bold');
+    doc.text('LoSabia.mx', 105, 30, { align: 'center' });
+    doc.setFontSize(14); doc.setFont('helvetica', 'normal');
+    doc.text('Reporte Detective', 105, 42, { align: 'center' });
 
-    // Score circle
-    doc.setFillColor(255, 255, 255, 0.15); doc.circle(105, 120, 35, 'F');
-    doc.setFontSize(56); doc.setFont(undefined, 'bold');
-    doc.text(String(lastStats.score), 105, 128, { align: 'center' });
-    doc.setFontSize(18); doc.setFont(undefined, 'normal');
-    doc.text('/100', 130, 128);
+    // Score
+    doc.setFontSize(64); doc.setFont('helvetica', 'bold');
+    doc.text(String(lastStats.score), 105, 82, { align: 'center' });
+    doc.setFontSize(18); doc.setFont('helvetica', 'normal');
+    doc.text('/100', 132, 82);
 
-    doc.setFontSize(22); doc.setFont(undefined, 'bold');
-    doc.text(pA + '  &  ' + pB, 105, 185, { align: 'center' });
+    // Names
+    doc.setFontSize(20); doc.setFont('helvetica', 'bold');
+    doc.text(clean(pA + ' & ' + pB), 105, 118, { align: 'center' });
 
-    doc.setFontSize(13); doc.setFont(undefined, 'normal');
-    const verdict = lastStats.verdict || (lastStats.score >= 70 ? 'Relacion estable con buena comunicacion' : lastStats.score >= 40 ? 'Relacion con areas de mejora' : 'Relacion que necesita atencion');
-    doc.text(verdict, 105, 200, { align: 'center' });
+    // Verdict
+    doc.setFontSize(12); doc.setFont('helvetica', 'italic');
+    const verdict = lastStats.score >= 80 ? 'Relacion intensa y equilibrada' :
+                    lastStats.score >= 60 ? 'Relacion con altibajos' :
+                    lastStats.score >= 40 ? 'Relacion con areas de mejora' :
+                    'Relacion con desafios';
+    doc.text(verdict, 105, 132, { align: 'center' });
 
-    doc.setFontSize(11);
-    doc.text(lastStats.total.toLocaleString() + ' mensajes analizados  |  ' + lastStats.uniqueDays + ' dias', 105, 220, { align: 'center' });
-
-    doc.setFontSize(10);
-    doc.text(today, 105, 275, { align: 'center' });
-
-    // ════════════════════════════════════════════
-    // PAGE 2: STATS GRID
-    // ════════════════════════════════════════════
-    doc.addPage(); darkBg();
-    title('', 'Estadisticas del Chat', 25);
-
-    const stats6 = [
-      { icon: 'Msgs', val: lastStats.msgsA.toLocaleString(), label: 'Mensajes de ' + pA },
-      { icon: 'Msgs', val: lastStats.msgsB.toLocaleString(), label: 'Mensajes de ' + pB },
-      { icon: 'Resp', val: (lastStats.avgReply || '?') + ' min', label: 'Tiempo promedio respuesta' },
-      { icon: 'Luna', val: (lastStats.nightPct || 0) + '%', label: 'Mensajes nocturnos' },
-      { icon: 'Amor', val: String(lastStats.loveCount || 0), label: 'Emojis de amor' },
-      { icon: 'Dias', val: String(lastStats.uniqueDays), label: 'Dias de conversacion' },
+    // Stats grid 2x2
+    const coverStats = [
+      { label: 'Mensajes totales', value: lastStats.total.toLocaleString() },
+      { label: 'Dias de conversacion', value: String(lastStats.uniqueDays) },
+      { label: 'Quien lidera', value: clean(lastStats.leader || pA) },
+      { label: 'Participacion', value: pctA + '% - ' + pctB + '%' }
     ];
 
-    let cx = 15, cy = 45;
-    stats6.forEach((s, i) => {
-      card(cx, cy, 56, 52);
-      doc.setTextColor(...PINK); doc.setFontSize(10); doc.setFont(undefined, 'bold');
-      doc.text(s.icon, cx + 8, cy + 12);
-      doc.setTextColor(...WHITE); doc.setFontSize(20); doc.setFont(undefined, 'bold');
-      doc.text(s.val, cx + 8, cy + 28);
-      doc.setTextColor(...GRAY); doc.setFontSize(8); doc.setFont(undefined, 'normal');
-      const sl = doc.splitTextToSize(s.label, 45);
-      doc.text(sl, cx + 8, cy + 36);
-      cx += 62;
-      if ((i + 1) % 3 === 0) { cx = 15; cy += 60; }
+    let sx = 30, sy = 155;
+    coverStats.forEach((stat, i) => {
+      doc.setFillColor(255, 255, 255); doc.setGState(new doc.GState({ opacity: 0.12 }));
+      doc.roundedRect(sx, sy, 70, 32, 3, 3, 'F');
+      doc.setGState(new doc.GState({ opacity: 1 }));
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(16); doc.setFont('helvetica', 'bold');
+      doc.text(stat.value, sx + 6, sy + 14);
+      doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+      doc.setTextColor(210, 210, 220);
+      doc.text(stat.label, sx + 6, sy + 24);
+      sx += 77;
+      if ((i + 1) % 2 === 0) { sx = 30; sy += 38; }
     });
 
     // Participation bars
-    cy += 15;
-    doc.setTextColor(...WHITE); doc.setFontSize(14); doc.setFont(undefined, 'bold');
-    doc.text('Participacion', 105, cy, { align: 'center' });
-    cy += 12;
-    doc.setFillColor(...PINK); doc.roundedRect(20, cy, pctA * 1.6, 10, 2, 2, 'F');
-    doc.setTextColor(...WHITE); doc.setFontSize(9);
-    doc.text(pA + '  ' + pctA + '%', 24, cy + 7);
-    cy += 14;
-    doc.setFillColor(...PURPLE); doc.roundedRect(20, cy, pctB * 1.6, 10, 2, 2, 'F');
-    doc.text(pB + '  ' + pctB + '%', 24, cy + 7);
+    sy += 10;
+    doc.setFillColor(255, 45, 120);
+    doc.roundedRect(30, sy, Math.max(10, pctA * 1.4), 8, 2, 2, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+    doc.text(clean(pA) + ' ' + pctA + '%', 33, sy + 6);
+    sy += 11;
+    doc.setFillColor(139, 92, 246);
+    doc.roundedRect(30, sy, Math.max(10, pctB * 1.4), 8, 2, 2, 'F');
+    doc.text(clean(pB) + ' ' + pctB + '%', 33, sy + 6);
 
-    footer();
+    // Date footer
+    doc.setFontSize(9); doc.setTextColor(200, 200, 210);
+    doc.text(today, 105, 285, { align: 'center' });
 
-    // ════════════════════════════════════════════
-    // PAGE 3: QUIEN LLEVA LA RELACION
-    // ════════════════════════════════════════════
-    doc.addPage(); darkBg();
-    title('', 'Quien Lleva la Relacion', 25);
+    // ============ PAGE 2: DETECTIVE ANALYSIS (condensed) ============
+    doc.addPage();
+    doc.setFillColor(26, 26, 46); doc.rect(0, 0, 210, 297, 'F');
 
-    doc.setTextColor(...GRAY); doc.setFontSize(12); doc.setFont(undefined, 'normal');
-    doc.text('Dinamica de la conversacion', 105, 38, { align: 'center' });
+    doc.setTextColor(255, 45, 120); doc.setFontSize(20); doc.setFont('helvetica', 'bold');
+    doc.text('Analisis Detective', 105, 20, { align: 'center' });
+    doc.setDrawColor(255, 45, 120); doc.setLineWidth(0.5); doc.line(30, 24, 180, 24);
 
-    // Big stat
-    card(30, 50, 150, 50);
-    doc.setTextColor(...PINK); doc.setFontSize(40); doc.setFont(undefined, 'bold');
-    doc.text(lastStats.leader || pA, 105, 75, { align: 'center' });
-    doc.setTextColor(...GRAY); doc.setFontSize(12); doc.setFont(undefined, 'normal');
-    doc.text('lidera con ' + (lastStats.leaderPct || pctA) + '% de los mensajes', 105, 90, { align: 'center' });
+    let y = 35;
 
-    // Ratio
-    const ratio = (lastStats.msgsA / lastStats.msgsB).toFixed(1);
-    card(30, 115, 70, 35);
-    doc.setTextColor(...WHITE); doc.setFontSize(22); doc.setFont(undefined, 'bold');
-    doc.text(ratio + 'x', 65, 133, { align: 'center' });
-    doc.setTextColor(...GRAY); doc.setFontSize(9); doc.setFont(undefined, 'normal');
-    doc.text('Ratio de mensajes', 65, 142, { align: 'center' });
+    // -- Section 1: Timeline --
+    doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text('Linea de Vida', 20, y);
+    y += 3;
 
-    card(110, 115, 70, 35);
-    doc.setTextColor(...WHITE); doc.setFontSize(22); doc.setFont(undefined, 'bold');
-    doc.text(String(lastStats.loveCount || 0), 145, 133, { align: 'center' });
-    doc.setTextColor(...GRAY); doc.setFontSize(9); doc.setFont(undefined, 'normal');
-    doc.text('Emojis de amor', 145, 142, { align: 'center' });
-
-    footer();
-
-    // ════════════════════════════════════════════
-    // PAGE 4: LINEA DE VIDA (TIMELINE)
-    // ════════════════════════════════════════════
-    doc.addPage(); darkBg();
-    title('', 'Linea de Vida de la Relacion', 25);
-
-    // Capture timeline chart
     const timelineCanvas = document.getElementById('timelineChart');
     if (timelineCanvas) {
       try {
-        const chartImg = await html2canvas(timelineCanvas.parentElement, { backgroundColor: '#1a1a2e', scale: 2 });
-        doc.addImage(chartImg.toDataURL('image/png'), 'PNG', 10, 40, 190, 95);
-      } catch(e) { console.error('Timeline capture error:', e); }
+        const chartImg = await html2canvas(timelineCanvas.parentElement, { backgroundColor: '#1a1a2e', scale: 1.5, logging: false });
+        doc.addImage(chartImg.toDataURL('image/png'), 'PNG', 20, y, 170, 55);
+        y += 58;
+      } catch (e) { y += 5; }
     }
 
-    // Timeline insight
     const insightEl = document.getElementById('timelineInsight');
     if (insightEl && insightEl.textContent) {
-      doc.setTextColor(...GRAY); doc.setFontSize(10); doc.setFont(undefined, 'normal');
-      const insightLines = doc.splitTextToSize(insightEl.textContent, 170);
-      doc.text(insightLines, 20, 145);
+      doc.setFontSize(9); doc.setTextColor(180, 180, 190); doc.setFont('helvetica', 'normal');
+      const insightLines = doc.splitTextToSize(clean(insightEl.textContent), 170);
+      doc.text(insightLines, 20, y);
+      y += insightLines.length * 4 + 4;
     }
 
-    footer();
-
-    // ════════════════════════════════════════════
-    // PAGE 5: MAPA DE SILENCIOS
-    // ════════════════════════════════════════════
-    doc.addPage(); darkBg();
-    title('', 'Mapa de Silencios', 25);
+    // -- Section 2: Silences --
+    y += 5;
+    doc.setDrawColor(60, 60, 80); doc.setLineWidth(0.3); doc.line(20, y, 190, y);
+    y += 8;
+    doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text('Silencios', 20, y);
+    y += 8;
 
     const silenceData = analyzeSilences(lastMessages);
     const brokeKeys = Object.keys(silenceData.brokeCount);
+    const longestDays = silenceData.longest ? Math.round(silenceData.longest.hours / 24) : 0;
 
-    const silCards = [
-      { val: String(silenceData.total), label: 'Total silencios (>48h)' },
-      { val: silenceData.longest ? silenceData.longest.hours + 'h' : '0h', label: 'Silencio mas largo' },
-    ];
+    doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(210, 210, 220);
+    doc.text('Total silencios (48h+): ' + silenceData.total, 20, y); y += 7;
+    doc.text('Silencio mas largo: ' + longestDays + ' dias (' + (silenceData.longest ? silenceData.longest.hours : 0) + ' horas)', 20, y); y += 7;
     brokeKeys.forEach(k => {
-      silCards.push({ val: String(silenceData.brokeCount[k]), label: k + ' rompe el silencio' });
+      doc.text(clean(k) + ' rompe el silencio: ' + silenceData.brokeCount[k] + ' veces', 20, y); y += 7;
     });
 
-    let sx = 15, sy = 45;
-    silCards.forEach((s, i) => {
-      const cw = silCards.length <= 4 ? 85 : 56;
-      const step = silCards.length <= 4 ? 92 : 62;
-      const cols = silCards.length <= 4 ? 2 : 3;
-      const xp = 15 + (i % cols) * step;
-      const yp = 45 + Math.floor(i / cols) * 55;
-      card(xp, yp, cw, 45);
-      doc.setTextColor(...PINK); doc.setFontSize(26); doc.setFont(undefined, 'bold');
-      doc.text(s.val, xp + cw / 2, yp + 22, { align: 'center' });
-      doc.setTextColor(...GRAY); doc.setFontSize(9); doc.setFont(undefined, 'normal');
-      doc.text(s.label, xp + cw / 2, yp + 34, { align: 'center' });
-    });
-
-    // Longest silence detail
-    if (silenceData.longest) {
-      const days = Math.round(silenceData.longest.hours / 24);
-      doc.setTextColor(...WHITE); doc.setFontSize(11); doc.setFont(undefined, 'normal');
-      const silText = 'El silencio mas largo duro ' + days + ' dias (' + silenceData.longest.hours + ' horas). Fue roto por ' + silenceData.longest.brokeBy + '.';
-      doc.text(doc.splitTextToSize(silText, 170), 20, 170);
-    }
-
-    footer();
-
-    // ════════════════════════════════════════════
-    // PAGE 6: DOUBLE TEXTING
-    // ════════════════════════════════════════════
-    doc.addPage(); darkBg();
-    title('', 'Double Texting', 25);
-
-    doc.setTextColor(...GRAY); doc.setFontSize(10); doc.setFont(undefined, 'normal');
-    doc.text('Episodios de 5+ mensajes seguidos sin respuesta', 105, 38, { align: 'center' });
+    // -- Section 3: Double Texting --
+    y += 5;
+    doc.setDrawColor(60, 60, 80); doc.line(20, y, 190, y);
+    y += 8;
+    doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text('Double Texting (5+ msgs sin respuesta)', 20, y);
+    y += 10;
 
     const dtData = analyzeDoubleTexting(lastMessages);
     const dtKeys = Object.keys(dtData);
-    let dy = 55;
+    const maxDT = Math.max(1, ...dtKeys.map(k => dtData[k].length));
 
     dtKeys.forEach(person => {
-      const episodes = dtData[person];
-      const totalEp = episodes.length;
-      const maxBar = 160;
-
-      card(20, dy, 170, 40);
-      doc.setTextColor(...WHITE); doc.setFontSize(14); doc.setFont(undefined, 'bold');
-      doc.text(person, 30, dy + 14);
-      doc.setTextColor(...PINK); doc.setFontSize(20); doc.setFont(undefined, 'bold');
-      doc.text(String(totalEp) + ' veces', 150, dy + 14, { align: 'right' });
-
-      // Bar
-      const barW = Math.min(maxBar, Math.max(20, totalEp / 5));
-      doc.setFillColor(...(person === pA ? PINK : PURPLE));
-      doc.roundedRect(30, dy + 22, barW, 8, 2, 2, 'F');
-
-      dy += 50;
+      const total = dtData[person].length;
+      const barW = Math.max(10, (total / maxDT) * 130);
+      doc.setFillColor(person === pA ? 236 : 139, person === pA ? 72 : 92, person === pA ? 153 : 246);
+      doc.roundedRect(20, y, barW, 8, 2, 2, 'F');
+      doc.setTextColor(255, 255, 255); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+      doc.text(clean(person) + ': ' + total + ' episodios', 22, y + 6);
+      y += 12;
     });
 
-    if (dtKeys.length > 0) {
-      const topDT = dtKeys.reduce((a, b) => (dtData[a].length > dtData[b].length ? a : b));
-      doc.setTextColor(...WHITE); doc.setFontSize(11); doc.setFont(undefined, 'normal');
-      doc.text(topDT + ' es quien mas persiste enviando mensajes sin respuesta.', 20, dy + 10);
-    }
-
-    footer();
-
-    // ════════════════════════════════════════════
-    // PAGE 7: MENSAJES ELIMINADOS
-    // ════════════════════════════════════════════
-    doc.addPage(); darkBg();
-    title('', 'Mensajes Eliminados', 25);
+    // -- Section 4: Deleted Messages --
+    y += 5;
+    doc.setDrawColor(60, 60, 80); doc.line(20, y, 190, y);
+    y += 8;
+    doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text('Mensajes Eliminados', 20, y);
+    y += 8;
 
     const delData = analyzeDeletedMessages(lastMessages);
     const delKeys = Object.keys(delData.deleted);
 
-    card(60, 45, 90, 50);
-    doc.setTextColor(...PINK); doc.setFontSize(36); doc.setFont(undefined, 'bold');
-    doc.text(String(delData.total), 105, 72, { align: 'center' });
-    doc.setTextColor(...GRAY); doc.setFontSize(10); doc.setFont(undefined, 'normal');
-    doc.text('Total mensajes eliminados', 105, 85, { align: 'center' });
-
-    let delY = 110;
-    delKeys.forEach((person, i) => {
-      const cw = 80;
-      const xp = i === 0 ? 25 : 110;
-      card(xp, delY, cw, 45);
-      doc.setTextColor(...WHITE); doc.setFontSize(24); doc.setFont(undefined, 'bold');
-      doc.text(String(delData.deleted[person]), xp + cw / 2, delY + 20, { align: 'center' });
-      doc.setTextColor(...GRAY); doc.setFontSize(9); doc.setFont(undefined, 'normal');
-      doc.text(person + ' elimino', xp + cw / 2, delY + 34, { align: 'center' });
+    doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(210, 210, 220);
+    doc.text('Total eliminados: ' + delData.total, 20, y); y += 7;
+    delKeys.forEach(person => {
+      doc.text(clean(person) + ': ' + delData.deleted[person] + ' mensajes', 20, y); y += 7;
     });
 
-    if (delData.total > 20) {
-      doc.setTextColor(...WHITE); doc.setFontSize(11); doc.setFont(undefined, 'normal');
-      doc.text(delData.total + ' mensajes eliminados es un numero significativo.', 20, 175);
-      doc.text('Puede indicar arrepentimiento, secretos o autocensura.', 20, 183);
+    // Footer
+    doc.setFontSize(8); doc.setTextColor(120, 120, 140);
+    doc.text('LoSabia.mx - Analisis de relaciones con IA', 105, 290, { align: 'center' });
+
+    // ============ PAGE 3: BEFORE VS NOW ============
+    doc.addPage();
+    doc.setFillColor(26, 26, 46); doc.rect(0, 0, 210, 297, 'F');
+
+    doc.setTextColor(255, 45, 120); doc.setFontSize(20); doc.setFont('helvetica', 'bold');
+    doc.text('Antes vs Ahora', 105, 20, { align: 'center' });
+    doc.setDrawColor(255, 45, 120); doc.setLineWidth(0.5); doc.line(30, 24, 180, 24);
+
+    // Prepare sorted messages for analyzeBeforeVsNow
+    const sortedForBN = [];
+    lastMessages.forEach(m => {
+      try {
+        const ts = parseMessageDate(m.date, m.time);
+        if (!isNaN(ts.getTime())) sortedForBN.push({ ...m, timestamp: ts });
+      } catch(e) {}
+    });
+    sortedForBN.sort((a, b) => a.timestamp - b.timestamp);
+
+    const bnData = analyzeBeforeVsNow(sortedForBN, lastStats);
+
+    if (bnData && bnData.metrics) {
+      // Header row
+      let ty = 38;
+      doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+      doc.text('Metrica', 20, ty);
+      doc.text(clean(bnData.beforeLabel), 90, ty);
+      doc.text(clean(bnData.afterLabel), 150, ty);
+      ty += 4;
+      doc.setDrawColor(80, 80, 100); doc.setLineWidth(0.3); doc.line(20, ty, 190, ty);
+      ty += 8;
+
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+      bnData.metrics.forEach(m => {
+        doc.setTextColor(200, 200, 210);
+        doc.text(clean(m.label), 20, ty);
+        doc.setTextColor(100, 255, 130);
+        doc.text(String(m.before) + (m.suffix || ''), 90, ty);
+        const isDecline = m.changePct < -20;
+        doc.setTextColor(isDecline ? 255 : 200, isDecline ? 100 : 255, isDecline ? 100 : 200);
+        doc.text(String(m.after) + (m.suffix || ''), 150, ty);
+
+        // Change indicator
+        if (m.changePct !== 0) {
+          const arrow = m.changePct > 0 ? '+' : '';
+          doc.setFontSize(8);
+          doc.setTextColor(m.changePct < 0 ? 255 : 100, m.changePct < 0 ? 100 : 200, m.changePct < 0 ? 100 : 100);
+          doc.text(arrow + m.changePct + '%', 180, ty);
+          doc.setFontSize(10);
+        }
+        ty += 10;
+      });
+
+      // Key changes summary
+      ty += 10;
+      doc.setTextColor(255, 45, 120); doc.setFontSize(13); doc.setFont('helvetica', 'bold');
+      doc.text('Cambios principales', 20, ty);
+      ty += 8;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(210, 210, 220);
+      const bigChanges = bnData.metrics.filter(m => Math.abs(m.changePct) > 30).sort((a, b) => Math.abs(b.changePct) - Math.abs(a.changePct));
+      bigChanges.slice(0, 4).forEach(m => {
+        const arrow = m.changePct > 0 ? '+' : '';
+        const dir = m.changePct > 0 ? 'Aumento' : 'Disminucion';
+        doc.text('- ' + clean(m.label) + ': ' + dir + ' de ' + arrow + m.changePct + '%', 22, ty);
+        ty += 7;
+      });
+      if (bigChanges.length === 0) {
+        doc.text('No se detectaron cambios significativos (>30%).', 22, ty);
+      }
+    } else {
+      doc.setTextColor(180, 180, 190); doc.setFontSize(11); doc.setFont('helvetica', 'normal');
+      doc.text('No hay suficientes datos para la comparacion Antes vs Ahora.', 105, 60, { align: 'center' });
+      doc.text('Se necesitan al menos 2 meses de conversacion.', 105, 72, { align: 'center' });
     }
 
-    footer();
+    doc.setFontSize(8); doc.setTextColor(120, 120, 140);
+    doc.text('LoSabia.mx - Analisis de relaciones con IA', 105, 290, { align: 'center' });
 
-    // ════════════════════════════════════════════
-    // PAGE 8: RESUMEN IA
-    // ════════════════════════════════════════════
-    doc.addPage(); darkBg();
-    title('', 'Analisis de IA', 25);
+    // ============ PAGE 4: AI SUMMARY + FOOTER ============
+    doc.addPage();
+    doc.setFillColor(26, 26, 46); doc.rect(0, 0, 210, 297, 'F');
 
-    doc.setTextColor(...GRAY); doc.setFontSize(10);
-    doc.text('Resumen generado por inteligencia artificial', 105, 38, { align: 'center' });
+    doc.setTextColor(255, 45, 120); doc.setFontSize(20); doc.setFont('helvetica', 'bold');
+    doc.text('Resumen de IA', 105, 20, { align: 'center' });
+    doc.setDrawColor(255, 45, 120); doc.setLineWidth(0.5); doc.line(30, 24, 180, 24);
+
+    doc.setTextColor(180, 180, 190); doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text('Resumen generado por inteligencia artificial', 105, 32, { align: 'center' });
 
     let summaryText = '';
     try {
       const summaryRes = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'summary', stats: lastStats, messages: lastMessages.slice(-50) })
+        body: JSON.stringify({ mode: 'summary', stats: lastStats, messages: lastMessages.slice(-100) })
       });
       const summaryData = await summaryRes.json();
       summaryText = summaryData.summary || 'Resumen no disponible.';
     } catch (e) {
-      summaryText = 'No se pudo generar el resumen.\n\n' + pA + ': ' + pctA + '% | ' + pB + ': ' + pctB + '%\nScore: ' + lastStats.score + '/100';
+      summaryText = 'No se pudo generar el resumen de IA.\n\n' + clean(pA) + ': ' + pctA + '% | ' + clean(pB) + ': ' + pctB + '%\nScore: ' + lastStats.score + '/100';
     }
 
-    // Clean markdown bold markers for PDF
-    summaryText = summaryText.replace(/\*\*/g, '').replace(/\*/g, '');
+    doc.setFontSize(10); doc.setTextColor(220, 220, 230); doc.setFont('helvetica', 'normal');
+    const sumLines = doc.splitTextToSize(clean(summaryText), 170);
+    doc.text(sumLines, 20, 42);
 
-    doc.setTextColor(...WHITE); doc.setFontSize(11); doc.setFont(undefined, 'normal');
-    const sumLines = doc.splitTextToSize(summaryText, 170);
-    doc.text(sumLines, 20, 52);
-
-    footer();
-
-    // ════════════════════════════════════════════
-    // PAGE 9: CLOSING
-    // ════════════════════════════════════════════
-    doc.addPage();
-    doc.setFillColor(...PINK); doc.rect(0, 0, 210, 148, 'F');
-    doc.setFillColor(...[108, 92, 231]); doc.rect(0, 148, 210, 149, 'F');
-
-    doc.setTextColor(...WHITE);
-    doc.setFontSize(32); doc.setFont(undefined, 'bold');
-    doc.text('LoSabia.mx', 105, 100, { align: 'center' });
-    doc.setFontSize(14); doc.setFont(undefined, 'normal');
-    doc.text('Analisis de relaciones con IA', 105, 115, { align: 'center' });
-
-    doc.setFontSize(16); doc.setFont(undefined, 'bold');
-    doc.text(pA + '  &  ' + pB, 105, 170, { align: 'center' });
-    doc.setFontSize(40);
-    doc.text(String(lastStats.score) + '/100', 105, 200, { align: 'center' });
-
-    doc.setFontSize(11); doc.setFont(undefined, 'normal');
-    doc.text('Generado el ' + today, 105, 240, { align: 'center' });
-    doc.text('losabia.mx', 105, 255, { align: 'center' });
+    // Closing footer bar
+    doc.setFillColor(255, 45, 120); doc.rect(0, 265, 210, 32, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18); doc.setFont('helvetica', 'bold');
+    doc.text('LoSabia.mx', 105, 278, { align: 'center' });
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text('Analisis de relaciones con IA | ' + today, 105, 286, { align: 'center' });
 
     // Download
-    doc.save('LoSabia-Detective-' + pA + '-' + pB + '.pdf');
+    const safeName = (clean(pA) + '-' + clean(pB)).replace(/[^a-zA-Z0-9\-]/g, '');
+    doc.save('LoSabia-Detective-' + safeName + '.pdf');
   } catch (err) {
     console.error('PDF error:', err);
     alert('Error generando PDF: ' + err.message);
