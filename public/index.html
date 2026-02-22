@@ -915,6 +915,206 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   font-size: 0.82rem;
 }
 
+/* ── OBSESSIVE FEATURES ── */
+.obsessive-section {
+  margin: 48px 0;
+}
+.obsessive-section-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #FF2D78, #FF6B35);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 6px 18px;
+  border-radius: 50px;
+  margin-bottom: 16px;
+}
+
+/* Forensic: inflection points */
+.forensic-point {
+  background: rgba(255,45,120,0.06);
+  border-left: 3px solid var(--pink);
+  border-radius: 0 12px 12px 0;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+}
+.forensic-date {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--pink);
+  margin-bottom: 6px;
+}
+.forensic-detail {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+.forensic-detail strong {
+  color: var(--text);
+}
+
+/* Before vs Now comparison table */
+.bvn-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.bvn-table th {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 12px 16px;
+  border-bottom: 2px solid rgba(255,255,255,0.08);
+}
+.bvn-table th:first-child {
+  text-align: left;
+  color: var(--text-muted);
+}
+.bvn-table th:nth-child(2) {
+  text-align: center;
+  color: var(--green);
+}
+.bvn-table th:nth-child(3) {
+  text-align: center;
+  color: var(--pink);
+}
+.bvn-table th:nth-child(4) {
+  text-align: center;
+  color: var(--text-muted);
+}
+.bvn-table td {
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.bvn-table td:first-child {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.bvn-table td:nth-child(2),
+.bvn-table td:nth-child(3) {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+}
+.bvn-table td:nth-child(4) {
+  text-align: center;
+  font-weight: 700;
+}
+.bvn-change-negative {
+  color: #FF4757;
+}
+.bvn-change-positive {
+  color: var(--green);
+}
+.bvn-change-neutral {
+  color: var(--text-muted);
+}
+
+/* Ghosting pattern display */
+.ghosting-pattern {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+}
+.ghosting-pattern.fast {
+  background: rgba(59,206,172,0.08);
+  border-left: 3px solid var(--green);
+}
+.ghosting-pattern.slow {
+  background: rgba(255,71,87,0.08);
+  border-left: 3px solid #FF4757;
+}
+.ghosting-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.ghosting-text {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+.ghosting-text strong {
+  color: var(--text);
+}
+.ghosting-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.ghosting-word {
+  font-size: 0.78rem;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-weight: 600;
+}
+.ghosting-word.trigger {
+  background: rgba(255,71,87,0.15);
+  color: #FF4757;
+}
+.ghosting-word.safe {
+  background: rgba(59,206,172,0.15);
+  color: var(--green);
+}
+
+/* Language change detector */
+.lang-change-card {
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 10px;
+}
+.lang-change-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.lang-change-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.lang-change-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 50px;
+}
+.lang-change-badge.alert {
+  background: rgba(255,71,87,0.15);
+  color: #FF4757;
+}
+.lang-change-badge.ok {
+  background: rgba(59,206,172,0.15);
+  color: var(--green);
+}
+.lang-change-bars {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  height: 32px;
+}
+.lang-bar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  min-height: 3px;
+  transition: height 0.5s ease;
+}
+.lang-change-legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
   .nav-links a:not(.nav-cta) { display: none; }
@@ -929,6 +1129,9 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   .deleted-stats { grid-template-columns: 1fr; }
   .pf-header { padding: 20px 20px 0; }
   .pf-body { padding: 16px 20px 24px; }
+  .bvn-table { font-size: 0.8rem; }
+  .bvn-table th, .bvn-table td { padding: 8px 6px; }
+  .bvn-table td:nth-child(2), .bvn-table td:nth-child(3) { font-size: 0.9rem; }
 }
 
 @media (max-width: 480px) {
@@ -1135,6 +1338,92 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   </div>
   <!-- ══════ END PREMIUM FEATURES ══════ -->
 
+  <!-- ══════ OBSESSIVE FEATURES SECTION ══════ -->
+  <div class="obsessive-section" id="obsessiveSection" style="display:none;">
+    <div class="premium-section-header">
+      <div class="obsessive-section-badge">🔥 PLAN OBSESIVO</div>
+      <h3 style="font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 8px;">Análisis Obsesivo</h3>
+      <p style="color: var(--text-muted);">4 análisis devastadores para quien necesita saber TODO</p>
+    </div>
+
+    <!-- Obsessive 1: Reconstrucción Forense -->
+    <div class="premium-feature-card" id="featureForensic">
+      <div class="pf-header">
+        <span class="pf-icon">🕵️</span>
+        <div>
+          <h4 class="pf-title">Reconstrucción Forense</h4>
+          <p class="pf-subtitle">Puntos de inflexión: el día exacto donde algo cambió</p>
+        </div>
+      </div>
+      <div class="pf-body" id="forensicBody"></div>
+      <div class="pf-lock" id="forensicLock">
+        <div class="pf-lock-content">
+          <span class="pf-lock-icon">🔒</span>
+          <p class="pf-lock-teaser" id="forensicTeaser">Encontramos puntos de inflexión en tu relación...</p>
+          <button class="btn-primary btn-sm" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear por $199 MXN/mes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Obsessive 2: Antes vs Ahora -->
+    <div class="premium-feature-card" id="featureBeforeNow">
+      <div class="pf-header">
+        <span class="pf-icon">💔</span>
+        <div>
+          <h4 class="pf-title">Devastador: Antes vs Ahora</h4>
+          <p class="pf-subtitle">Comparación brutal de los primeros meses vs los últimos</p>
+        </div>
+      </div>
+      <div class="pf-body" id="beforeNowBody"></div>
+      <div class="pf-lock" id="beforeNowLock">
+        <div class="pf-lock-content">
+          <span class="pf-lock-icon">🔒</span>
+          <p class="pf-lock-teaser" id="beforeNowTeaser">La comparación Antes/Ahora revela cambios importantes...</p>
+          <button class="btn-primary btn-sm" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear por $199 MXN/mes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Obsessive 3: Ghosting Selectivo -->
+    <div class="premium-feature-card" id="featureGhosting">
+      <div class="pf-header">
+        <span class="pf-icon">📱</span>
+        <div>
+          <h4 class="pf-title">Ghosting Selectivo</h4>
+          <p class="pf-subtitle">Cuándo responde rápido vs cuándo te deja en visto</p>
+        </div>
+      </div>
+      <div class="pf-body" id="ghostingBody"></div>
+      <div class="pf-lock" id="ghostingLock">
+        <div class="pf-lock-content">
+          <span class="pf-lock-icon">🔒</span>
+          <p class="pf-lock-teaser" id="ghostingTeaser">Detectamos ghosting selectivo en esta conversación...</p>
+          <button class="btn-primary btn-sm" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear por $199 MXN/mes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Obsessive 4: Detector de Cambios de Lenguaje -->
+    <div class="premium-feature-card" id="featureLanguage">
+      <div class="pf-header">
+        <span class="pf-icon">🎯</span>
+        <div>
+          <h4 class="pf-title">Detector de Cambios de Lenguaje</h4>
+          <p class="pf-subtitle">Cómo cambió su forma de escribirte</p>
+        </div>
+      </div>
+      <div class="pf-body" id="languageBody"></div>
+      <div class="pf-lock" id="languageLock">
+        <div class="pf-lock-content">
+          <span class="pf-lock-icon">🔒</span>
+          <p class="pf-lock-teaser" id="languageTeaser">Su lenguaje cambió drásticamente...</p>
+          <button class="btn-primary btn-sm" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear por $199 MXN/mes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ══════ END OBSESSIVE FEATURES ══════ -->
+
   <!-- Locked Premium Examples -->
   <div class="examples-row">
     <div class="example-card">
@@ -1330,12 +1619,13 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
         <div class="price-amount">$199<small> MXN/mes</small></div>
         <div class="price-desc">Para quien necesita saber TODO</div>
         <ul class="price-features">
-          <li>Análisis ilimitados</li>
-          <li>Re-análisis comparativo</li>
-          <li>Chatbot: pregúntale a la IA</li>
-          <li>Soporte prioritario</li>
+          <li>Todo lo del plan Detective</li>
+          <li>Reconstrucción forense: puntos de inflexión</li>
+          <li>Devastador: Antes vs Ahora</li>
+          <li>Ghosting selectivo: patrones de evasión</li>
+          <li>Detector de cambios de lenguaje</li>
         </ul>
-        <button class="price-btn price-btn-secondary">Próximamente</button>
+        <button class="price-btn price-btn-secondary" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear $199/mes →</button>
       </div>
     </div>
   </div>
@@ -1394,6 +1684,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 <script>
 // ══════ PREMIUM CONFIG ══════
 const DEV_MODE = true; // true = show all unlocked for testing, false = production (locked)
+const OBSESSIVE_MODE = true; // true = show obsessive features unlocked for testing
 
 // ── FILE UPLOAD ──
 const uploadZone = document.getElementById('uploadZone');
@@ -1890,6 +2181,9 @@ function renderPremiumFeatures(messages, stats) {
   renderSilences(silenceData, stats);
   renderDoubleTexting(doubleTextData, stats);
   renderDeletedMessages(deletedData, stats);
+
+  // ══════ OBSESSIVE FEATURES ══════
+  renderObsessiveFeatures(messages, stats);
 }
 
 function renderTimeline(data, stats) {
@@ -2120,6 +2414,761 @@ function renderDeletedMessages(data, stats) {
     html += `<div class="pf-insight" style="margin-top: 16px;"><strong>🗑️ Análisis:</strong> <strong>${topDeleter.split(' ')[0]}</strong> eliminó más mensajes (<strong>${Math.max(deletedA, deletedB)}</strong>). ${data.total > 10 ? 'Eso es un número significativo de mensajes borrados... ¿Qué habrá dicho?' : 'Es un número bajo — probablemente correcciones de typos.'}</div>`;
   } else {
     html += '<div class="pf-insight" style="margin-top: 16px;"><strong>✨ Transparencia total:</strong> No se detectaron mensajes eliminados en esta conversación.</div>';
+  }
+
+  body.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════
+// ── OBSESSIVE FEATURES: ANALYSIS & RENDERING ──
+// ══════════════════════════════════════════════════
+
+function renderObsessiveFeatures(messages, stats) {
+  const sorted = [];
+  messages.forEach(m => {
+    try {
+      const ts = parseMessageDate(m.date, m.time);
+      if (!isNaN(ts.getTime())) sorted.push({ ...m, timestamp: ts });
+    } catch(e) {}
+  });
+  sorted.sort((a, b) => a.timestamp - b.timestamp);
+
+  const forensicData = analyzeForensicReconstruction(sorted, stats);
+  const beforeNowData = analyzeBeforeVsNow(sorted, stats);
+  const ghostingData = analyzeSelectiveGhosting(sorted, stats);
+  const languageData = analyzeLanguageChanges(sorted, stats);
+
+  document.getElementById('obsessiveSection').style.display = 'block';
+
+  renderForensicReconstruction(forensicData, stats);
+  renderBeforeVsNow(beforeNowData, stats);
+  renderSelectiveGhosting(ghostingData, stats);
+  renderLanguageChanges(languageData, stats);
+}
+
+// ── OBSESSIVE 1: RECONSTRUCCIÓN FORENSE ──
+function analyzeForensicReconstruction(sorted, stats) {
+  if (sorted.length < 20) return { inflectionPoints: [], milestones: [] };
+
+  // Group by month
+  const monthlyData = {};
+  sorted.forEach(m => {
+    const key = `${m.timestamp.getFullYear()}-${String(m.timestamp.getMonth() + 1).padStart(2, '0')}`;
+    if (!monthlyData[key]) monthlyData[key] = { count: 0, msgs: [] };
+    monthlyData[key].count++;
+    monthlyData[key].msgs.push(m);
+  });
+
+  const months = Object.keys(monthlyData).sort();
+  const inflectionPoints = [];
+
+  // Detect >50% variation month-over-month
+  for (let i = 1; i < months.length; i++) {
+    const prev = monthlyData[months[i-1]].count;
+    const curr = monthlyData[months[i]].count;
+    const changePct = ((curr - prev) / prev) * 100;
+
+    if (Math.abs(changePct) > 50) {
+      const monthMsgs = monthlyData[months[i]].msgs;
+      const date = new Date(parseInt(months[i].split('-')[0]), parseInt(months[i].split('-')[1]) - 1, 1);
+      inflectionPoints.push({
+        month: months[i],
+        date: date,
+        prevCount: prev,
+        currCount: curr,
+        changePct: Math.round(changePct),
+        direction: changePct > 0 ? 'up' : 'down',
+        context: getContextAroundDate(sorted, date)
+      });
+    }
+  }
+
+  // Find milestones
+  const milestones = [];
+  const lovePatterns = /te amo|te quiero|i love you/i;
+  const personB = stats.personB;
+
+  // Last "te amo" from personB
+  let lastLove = null;
+  for (let i = sorted.length - 1; i >= 0; i--) {
+    if (sorted[i].sender === personB && lovePatterns.test(sorted[i].text)) {
+      lastLove = sorted[i];
+      break;
+    }
+  }
+  if (lastLove) {
+    milestones.push({
+      type: 'last_love',
+      date: lastLove.timestamp,
+      label: `Última vez que ${personB.split(' ')[0]} dijo "te amo/te quiero"`,
+      detail: `"${lastLove.text.substring(0, 80)}${lastLove.text.length > 80 ? '...' : ''}"`
+    });
+  }
+
+  // First "te amo" from personB
+  let firstLove = null;
+  for (let i = 0; i < sorted.length; i++) {
+    if (sorted[i].sender === personB && lovePatterns.test(sorted[i].text)) {
+      firstLove = sorted[i];
+      break;
+    }
+  }
+  if (firstLove) {
+    milestones.push({
+      type: 'first_love',
+      date: firstLove.timestamp,
+      label: `Primera vez que ${personB.split(' ')[0]} dijo "te amo/te quiero"`,
+      detail: `"${firstLove.text.substring(0, 80)}${firstLove.text.length > 80 ? '...' : ''}"`
+    });
+  }
+
+  // Find first long silence (>24h)
+  for (let i = 1; i < sorted.length; i++) {
+    const gap = sorted[i].timestamp - sorted[i-1].timestamp;
+    if (gap > 24 * 60 * 60 * 1000) {
+      milestones.push({
+        type: 'first_silence',
+        date: sorted[i-1].timestamp,
+        label: 'Primer silencio largo (24h+)',
+        detail: `${Math.round(gap / (60*60*1000))} horas sin mensajes`
+      });
+      break;
+    }
+  }
+
+  // Find day with most messages
+  const dailyCounts = {};
+  sorted.forEach(m => {
+    const dayKey = m.timestamp.toISOString().split('T')[0];
+    dailyCounts[dayKey] = (dailyCounts[dayKey] || 0) + 1;
+  });
+  const peakDay = Object.entries(dailyCounts).sort((a,b) => b[1] - a[1])[0];
+  if (peakDay) {
+    milestones.push({
+      type: 'peak_day',
+      date: new Date(peakDay[0]),
+      label: 'Día con más mensajes de toda la relación',
+      detail: `${peakDay[1]} mensajes en un solo día`
+    });
+  }
+
+  return { inflectionPoints: inflectionPoints.slice(0, 4), milestones };
+}
+
+function getContextAroundDate(sorted, date) {
+  const weekBefore = new Date(date.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const weekAfter = new Date(date.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const before = sorted.filter(m => m.timestamp >= weekBefore && m.timestamp < date).length;
+  const after = sorted.filter(m => m.timestamp >= date && m.timestamp <= weekAfter).length;
+  return { msgsBefore: before, msgsAfter: after };
+}
+
+// ── OBSESSIVE 2: ANTES VS AHORA ──
+function analyzeBeforeVsNow(sorted, stats) {
+  if (sorted.length < 50) return null;
+
+  // Determine first 3 months and last 3 months
+  const firstDate = sorted[0].timestamp;
+  const lastDate = sorted[sorted.length - 1].timestamp;
+  const totalDaysSpan = (lastDate - firstDate) / (24 * 60 * 60 * 1000);
+  if (totalDaysSpan < 60) return null; // Need at least 2 months
+
+  const cutoffMonths = Math.min(3, Math.floor(totalDaysSpan / 60)); // Adaptive
+  const beforeEnd = new Date(firstDate.getTime() + cutoffMonths * 30 * 24 * 60 * 60 * 1000);
+  const afterStart = new Date(lastDate.getTime() - cutoffMonths * 30 * 24 * 60 * 60 * 1000);
+
+  const beforeMsgs = sorted.filter(m => m.timestamp <= beforeEnd);
+  const afterMsgs = sorted.filter(m => m.timestamp >= afterStart);
+
+  const personB = stats.personB;
+  const personA = stats.personA;
+
+  function countPattern(msgs, pattern) {
+    return msgs.filter(m => pattern.test(m.text)).length;
+  }
+
+  function avgLength(msgs) {
+    if (msgs.length === 0) return 0;
+    return Math.round(msgs.reduce((sum, m) => sum + m.text.length, 0) / msgs.length);
+  }
+
+  function countInitiator(msgs, person) {
+    let initiations = 0;
+    let lastSender = null;
+    let lastTime = null;
+    msgs.forEach(m => {
+      const gap = lastTime ? (m.timestamp - lastTime) : Infinity;
+      if (gap > 4 * 60 * 60 * 1000 && m.sender === person) { // 4h+ gap = new conversation
+        initiations++;
+      }
+      lastSender = m.sender;
+      lastTime = m.timestamp;
+    });
+    return initiations;
+  }
+
+  const loveEmojis = /[❤️💕💖💗💘💝💓💞😍🥰😘💋💑🫶🫂💌]/g;
+
+  function countLoveEmojis(msgs) {
+    let count = 0;
+    msgs.forEach(m => {
+      const found = m.text.match(loveEmojis);
+      if (found) count += found.length;
+    });
+    return count;
+  }
+
+  const goodMorningPattern = /\bbuen(?:os|as)\s+(?:días?|d[ií]a|noches?|tardes?)\b/i;
+  const nicknamePattern = /\b(?:amor|mi amor|bebe|bb|bebé|cariño|corazón|vida|mi vida|cielo|hermosa|hermoso|princesa|príncipe|gordo|gorda|flaco|flaca|nena|nene|papi|mami|tesoro|bonita|bonito|chiquita|chiquito|muñeca|reina|rey)\b/i;
+
+  const metrics = [
+    {
+      label: '"Buenos días/noches"',
+      before: countPattern(beforeMsgs, goodMorningPattern),
+      after: countPattern(afterMsgs, goodMorningPattern)
+    },
+    {
+      label: 'Emojis de amor ❤️',
+      before: countLoveEmojis(beforeMsgs),
+      after: countLoveEmojis(afterMsgs)
+    },
+    {
+      label: 'Apodos cariñosos',
+      before: countPattern(beforeMsgs, nicknamePattern),
+      after: countPattern(afterMsgs, nicknamePattern)
+    },
+    {
+      label: 'Largo promedio de mensaje',
+      before: avgLength(beforeMsgs),
+      after: avgLength(afterMsgs),
+      suffix: ' chars'
+    },
+    {
+      label: `${personB.split(' ')[0]} inicia conversación`,
+      before: countInitiator(beforeMsgs, personB),
+      after: countInitiator(afterMsgs, personB),
+      suffix: ' veces'
+    },
+    {
+      label: 'Mensajes totales',
+      before: beforeMsgs.length,
+      after: afterMsgs.length
+    }
+  ];
+
+  // Calculate changes
+  metrics.forEach(m => {
+    if (m.before === 0 && m.after === 0) {
+      m.changePct = 0;
+    } else if (m.before === 0) {
+      m.changePct = 100;
+    } else {
+      m.changePct = Math.round(((m.after - m.before) / m.before) * 100);
+    }
+  });
+
+  const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return {
+    metrics,
+    beforeLabel: `${monthNames[firstDate.getMonth()]} ${firstDate.getFullYear()} — ${monthNames[beforeEnd.getMonth()]} ${beforeEnd.getFullYear()}`,
+    afterLabel: `${monthNames[afterStart.getMonth()]} ${afterStart.getFullYear()} — ${monthNames[lastDate.getMonth()]} ${lastDate.getFullYear()}`,
+    cutoffMonths
+  };
+}
+
+// ── OBSESSIVE 3: GHOSTING SELECTIVO ──
+function analyzeSelectiveGhosting(sorted, stats) {
+  if (sorted.length < 30) return null;
+
+  const personB = stats.personB;
+  const personA = stats.personA;
+
+  // Build conversation pairs: message from A -> response from B
+  const responseTimes = { emotional: [], casual: [], question_relation: [] };
+  const emotionalWords = /\b(?:extra[ñn]o|extra[ñn]ar|siento|sentir|amo|amor|quiero|necesito|triste|llorar|dolor|sufr|falta|miedo|solo|sola|celoso|celosa|preocup|perdón|perd[oó]n|disculpa|feliz|felicidad)\b/i;
+  const relationQuestions = /\b(?:qu[eé]\s+(?:somos|sientes|pasa|piensas)|a\s+d[oó]nde\s+vamos|est[aá]s?\s+(?:bien|molest|enoj)|me\s+(?:quieres|amas|extra[ñn]as)|te\s+(?:importo|importa)|necesito\s+hablar|hablemos|podemos\s+hablar)\b/i;
+
+  let ghostingEpisodes = 0;
+  const triggerWords = {};
+  const safeWords = {};
+
+  for (let i = 0; i < sorted.length - 1; i++) {
+    // A sends message, next message is from B (response)
+    if (sorted[i].sender !== personB) {
+      // Find next message from personB
+      for (let j = i + 1; j < sorted.length; j++) {
+        if (sorted[j].sender === personB) {
+          const responseTime = (sorted[j].timestamp - sorted[i].timestamp) / (60 * 1000); // minutes
+          if (responseTime > 0 && responseTime < 24 * 60) { // Cap at 24h
+            const msgText = sorted[i].text.toLowerCase();
+            const isEmotional = emotionalWords.test(msgText);
+            const isRelationQ = relationQuestions.test(msgText);
+
+            if (isRelationQ) {
+              responseTimes.question_relation.push(responseTime);
+            } else if (isEmotional) {
+              responseTimes.emotional.push(responseTime);
+            } else {
+              responseTimes.casual.push(responseTime);
+            }
+
+            // Track which words before long responses
+            if (responseTime > 180) { // >3h
+              ghostingEpisodes++;
+              const words = msgText.match(/\b[a-záéíóúñü]{4,}\b/g) || [];
+              words.forEach(w => { triggerWords[w] = (triggerWords[w] || 0) + 1; });
+            } else if (responseTime < 30) { // <30min
+              const words = msgText.match(/\b[a-záéíóúñü]{4,}\b/g) || [];
+              words.forEach(w => { safeWords[w] = (safeWords[w] || 0) + 1; });
+            }
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  function median(arr) {
+    if (arr.length === 0) return 0;
+    const s = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(s.length / 2);
+    return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+  }
+
+  // Find top trigger words (frequent in slow, rare in fast)
+  const topTriggers = Object.entries(triggerWords)
+    .filter(([w, c]) => c >= 3 && (!safeWords[w] || c > safeWords[w]))
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([w]) => w);
+
+  const topSafe = Object.entries(safeWords)
+    .filter(([w, c]) => c >= 3 && (!triggerWords[w] || c > triggerWords[w]))
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([w]) => w);
+
+  return {
+    casual: { avg: Math.round(median(responseTimes.casual)), count: responseTimes.casual.length },
+    emotional: { avg: Math.round(median(responseTimes.emotional)), count: responseTimes.emotional.length },
+    relationQ: { avg: Math.round(median(responseTimes.question_relation)), count: responseTimes.question_relation.length },
+    ghostingEpisodes,
+    triggerWords: topTriggers,
+    safeWords: topSafe,
+    personB
+  };
+}
+
+// ── OBSESSIVE 4: DETECTOR DE CAMBIOS DE LENGUAJE ──
+function analyzeLanguageChanges(sorted, stats) {
+  if (sorted.length < 50) return null;
+
+  const personB = stats.personB;
+  const personBMsgs = sorted.filter(m => m.sender === personB);
+  if (personBMsgs.length < 20) return null;
+
+  // Group personB messages by month
+  const monthlyMetrics = {};
+  personBMsgs.forEach(m => {
+    const key = `${m.timestamp.getFullYear()}-${String(m.timestamp.getMonth() + 1).padStart(2, '0')}`;
+    if (!monthlyMetrics[key]) monthlyMetrics[key] = {
+      msgs: [], nosotros: 0, yo: 0, avgLen: 0,
+      jaja: 0, nicknames: 0, exclamations: 0, totalLen: 0, count: 0
+    };
+    const metrics = monthlyMetrics[key];
+    const text = m.text.toLowerCase();
+    metrics.msgs.push(m);
+    metrics.count++;
+    metrics.totalLen += m.text.length;
+
+    if (/\b(?:nosotros|nos|nuestro|nuestra|juntos|juntas)\b/i.test(text)) metrics.nosotros++;
+    if (/\b(?:yo|mi |me |mío|mía)\b/i.test(text)) metrics.yo++;
+    if (/\b(?:jaja|jajaj|jeje|jejej|jiji|haha)\b/i.test(text)) metrics.jaja++;
+    if (/\b(?:amor|mi amor|bebe|bb|bebé|cariño|corazón|vida|mi vida|cielo|hermosa|hermoso|princesa|gordo|gorda|nena|nene|papi|tesoro|bonita|chiquita|muñeca|reina)\b/i.test(text)) metrics.nicknames++;
+    metrics.exclamations += (text.match(/!/g) || []).length;
+  });
+
+  const months = Object.keys(monthlyMetrics).sort();
+  if (months.length < 2) return null;
+
+  // Calculate per-month averages
+  months.forEach(key => {
+    const m = monthlyMetrics[key];
+    m.avgLen = Math.round(m.totalLen / m.count);
+    m.nicknamesPerMsg = m.count > 0 ? (m.nicknames / m.count) : 0;
+    m.jajaPerMsg = m.count > 0 ? (m.jaja / m.count) : 0;
+    m.exclamPerMsg = m.count > 0 ? (m.exclamations / m.count) : 0;
+    m.nosotrosRatio = (m.nosotros + m.yo) > 0 ? m.nosotros / (m.nosotros + m.yo) : 0.5;
+  });
+
+  // Build change indicators
+  const indicators = [];
+  const first = monthlyMetrics[months[0]];
+  const last = monthlyMetrics[months[months.length - 1]];
+
+  // Nicknames change
+  const nicknameFirst = first.nicknames;
+  const nicknameLast = last.nicknames;
+  const nicknameChange = nicknameFirst > 0 ? Math.round(((nicknameLast - nicknameFirst) / nicknameFirst) * 100) : (nicknameLast > 0 ? 100 : 0);
+  indicators.push({
+    label: 'Apodos cariñosos',
+    emoji: '💕',
+    firstVal: nicknameFirst,
+    lastVal: nicknameLast,
+    changePct: nicknameChange,
+    monthlyData: months.map(k => monthlyMetrics[k].nicknames),
+    alert: nicknameChange < -30
+  });
+
+  // Message length change
+  const lenChange = first.avgLen > 0 ? Math.round(((last.avgLen - first.avgLen) / first.avgLen) * 100) : 0;
+  indicators.push({
+    label: 'Largo de mensajes',
+    emoji: '📝',
+    firstVal: first.avgLen + ' chars',
+    lastVal: last.avgLen + ' chars',
+    changePct: lenChange,
+    monthlyData: months.map(k => monthlyMetrics[k].avgLen),
+    alert: lenChange < -30
+  });
+
+  // "Jaja" frequency change
+  const jajaFirst = first.jaja;
+  const jajaLast = last.jaja;
+  const jajaChange = jajaFirst > 0 ? Math.round(((jajaLast - jajaFirst) / jajaFirst) * 100) : (jajaLast > 0 ? 100 : 0);
+  indicators.push({
+    label: '"Jaja/Jeje" (risa)',
+    emoji: '😂',
+    firstVal: jajaFirst,
+    lastVal: jajaLast,
+    changePct: jajaChange,
+    monthlyData: months.map(k => monthlyMetrics[k].jaja),
+    alert: jajaChange > 200 // Excess laughter = nervous/evasive
+  });
+
+  // Exclamation marks
+  const excFirst = first.exclamations;
+  const excLast = last.exclamations;
+  const excChange = excFirst > 0 ? Math.round(((excLast - excFirst) / excFirst) * 100) : (excLast > 0 ? 100 : 0);
+  indicators.push({
+    label: 'Signos de exclamación (!)',
+    emoji: '❗',
+    firstVal: excFirst,
+    lastVal: excLast,
+    changePct: excChange,
+    monthlyData: months.map(k => monthlyMetrics[k].exclamations),
+    alert: excChange < -50
+  });
+
+  // "Nosotros" vs "Yo" ratio
+  const nosRatioFirst = first.nosotrosRatio;
+  const nosRatioLast = last.nosotrosRatio;
+  const nosChange = nosRatioFirst > 0 ? Math.round(((nosRatioLast - nosRatioFirst) / nosRatioFirst) * 100) : 0;
+  indicators.push({
+    label: '"Nosotros" vs "Yo"',
+    emoji: '👫',
+    firstVal: Math.round(nosRatioFirst * 100) + '% nos',
+    lastVal: Math.round(nosRatioLast * 100) + '% nos',
+    changePct: nosChange,
+    monthlyData: months.map(k => Math.round(monthlyMetrics[k].nosotrosRatio * 100)),
+    alert: nosChange < -30
+  });
+
+  // Detect the biggest change month
+  let biggestChangeMonth = null;
+  let biggestChangeScore = 0;
+  for (let i = 1; i < months.length; i++) {
+    const prev = monthlyMetrics[months[i-1]];
+    const curr = monthlyMetrics[months[i]];
+    let changeScore = 0;
+    if (prev.nicknames > 0) changeScore += Math.abs((curr.nicknames - prev.nicknames) / prev.nicknames);
+    if (prev.avgLen > 0) changeScore += Math.abs((curr.avgLen - prev.avgLen) / prev.avgLen);
+    if (changeScore > biggestChangeScore) {
+      biggestChangeScore = changeScore;
+      biggestChangeMonth = months[i];
+    }
+  }
+
+  const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return {
+    indicators,
+    months: months.map(k => {
+      const [y, m] = k.split('-');
+      return monthNames[parseInt(m)-1] + " '" + y.slice(2);
+    }),
+    biggestChangeMonth: biggestChangeMonth ? (() => {
+      const [y, m] = biggestChangeMonth.split('-');
+      return monthNames[parseInt(m)-1] + ' ' + y;
+    })() : null,
+    personB,
+    alertCount: indicators.filter(i => i.alert).length
+  };
+}
+
+// ── OBSESSIVE RENDER: FORENSIC RECONSTRUCTION ──
+function renderForensicReconstruction(data, stats) {
+  const card = document.getElementById('featureForensic');
+  const body = document.getElementById('forensicBody');
+  const teaser = document.getElementById('forensicTeaser');
+
+  if (!OBSESSIVE_MODE) {
+    card.classList.add('locked');
+    const pointCount = data.inflectionPoints.length;
+    const criticalDate = data.inflectionPoints.length > 0
+      ? data.inflectionPoints[0].date.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
+      : null;
+    teaser.textContent = criticalDate
+      ? `🕵️ Encontramos ${pointCount} punto${pointCount > 1 ? 's' : ''} de inflexión en tu relación. El más crítico: ${criticalDate}. Desbloquear →`
+      : '🕵️ Analizamos los momentos críticos de tu relación. Desbloquear →';
+  } else {
+    card.classList.remove('locked');
+  }
+
+  let html = '';
+
+  // Milestones
+  if (data.milestones.length > 0) {
+    html += '<div style="margin-bottom: 20px;">';
+    html += '<div style="font-family: var(--font-display); font-size: 0.9rem; margin-bottom: 12px; color: var(--yellow);">📌 Momentos Clave</div>';
+    data.milestones.forEach(m => {
+      const dateStr = m.date.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
+      html += `<div class="forensic-point">
+        <div class="forensic-date">📅 ${dateStr}</div>
+        <div class="forensic-detail"><strong>${m.label}</strong></div>
+        <div class="forensic-detail">${m.detail}</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  // Inflection points
+  if (data.inflectionPoints.length > 0) {
+    html += '<div style="font-family: var(--font-display); font-size: 0.9rem; margin-bottom: 12px; color: var(--pink);">⚡ Puntos de Inflexión</div>';
+    data.inflectionPoints.forEach(p => {
+      const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      const [y, m] = p.month.split('-');
+      const monthLabel = monthNames[parseInt(m)-1] + ' ' + y;
+      const arrow = p.direction === 'down' ? '↓' : '↑';
+      const color = p.direction === 'down' ? '#FF4757' : 'var(--green)';
+
+      html += `<div class="forensic-point">
+        <div class="forensic-date" style="color: ${color};">${arrow} ${monthLabel} — Punto de Inflexión</div>
+        <div class="forensic-detail">Mensajes/mes ${p.direction === 'down' ? 'cayeron' : 'subieron'} de <strong>${p.prevCount.toLocaleString()}</strong> a <strong>${p.currCount.toLocaleString()}</strong> (<span style="color:${color};font-weight:700;">${p.changePct > 0 ? '+' : ''}${p.changePct}%</span>)</div>
+        <div class="forensic-detail">Semana anterior: ${p.context.msgsBefore} msgs — Semana siguiente: ${p.context.msgsAfter} msgs</div>
+      </div>`;
+    });
+
+    html += `<div class="pf-insight"><strong>🕵️ Reconstrucción:</strong> Se detectaron <strong>${data.inflectionPoints.length} puntos de inflexión</strong> donde la dinámica cambió drásticamente. ${data.inflectionPoints.filter(p => p.direction === 'down').length > 0 ? 'Las caídas abruptas pueden indicar conflictos, distanciamiento o pérdida de interés.' : 'Los picos indican momentos de alta conexión emocional.'}</div>`;
+  } else {
+    html += '<div class="pf-insight"><strong>📊 Análisis:</strong> No se detectaron cambios bruscos (>50%) mes a mes. La comunicación ha sido relativamente estable.</div>';
+  }
+
+  body.innerHTML = html;
+}
+
+// ── OBSESSIVE RENDER: ANTES VS AHORA ──
+function renderBeforeVsNow(data, stats) {
+  const card = document.getElementById('featureBeforeNow');
+  const body = document.getElementById('beforeNowBody');
+  const teaser = document.getElementById('beforeNowTeaser');
+
+  if (!data) {
+    body.innerHTML = '<div class="pf-insight"><strong>📊 Nota:</strong> Se necesitan al menos 2 meses de conversación para este análisis.</div>';
+    return;
+  }
+
+  // Calculate max negative change for teaser
+  const worstChange = data.metrics.reduce((worst, m) => m.changePct < worst ? m.changePct : worst, 0);
+
+  if (!OBSESSIVE_MODE) {
+    card.classList.add('locked');
+    teaser.textContent = `💔 La comparación Antes/Ahora muestra cambios del ${worstChange}% en afectividad. Ver completo →`;
+  } else {
+    card.classList.remove('locked');
+  }
+
+  let html = `<div style="font-size: 0.82rem; color: var(--text-muted); text-align: center; margin-bottom: 16px;">
+    Comparando primeros ~${data.cutoffMonths} meses vs últimos ~${data.cutoffMonths} meses
+  </div>`;
+
+  html += '<table class="bvn-table"><thead><tr>';
+  html += '<th>Métrica</th>';
+  html += `<th style="color: var(--green);">✨ Antes</th>`;
+  html += `<th style="color: var(--pink);">💔 Ahora</th>`;
+  html += '<th>Cambio</th>';
+  html += '</tr></thead><tbody>';
+
+  data.metrics.forEach(m => {
+    const suffix = m.suffix || '';
+    const changeClass = m.changePct < -30 ? 'bvn-change-negative' : (m.changePct > 30 ? 'bvn-change-positive' : 'bvn-change-neutral');
+    const arrow = m.changePct > 0 ? '↑' : (m.changePct < 0 ? '↓' : '→');
+    html += `<tr>
+      <td>${m.label}</td>
+      <td>${m.before.toLocaleString()}${suffix}</td>
+      <td>${m.after.toLocaleString()}${suffix}</td>
+      <td class="${changeClass}">${arrow} ${m.changePct > 0 ? '+' : ''}${m.changePct}%</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+
+  // Devastating insight
+  const negativeChanges = data.metrics.filter(m => m.changePct < -30);
+  if (negativeChanges.length > 0) {
+    const worstMetric = data.metrics.reduce((worst, m) => m.changePct < worst.changePct ? m : worst, data.metrics[0]);
+    html += `<div class="pf-insight" style="margin-top: 16px;"><strong>💔 Conclusión devastadora:</strong> ${negativeChanges.length} de ${data.metrics.length} métricas muestran deterioro significativo (>30%). Lo más impactante: <strong>${worstMetric.label}</strong> cayó un <strong style="color:#FF4757;">${Math.abs(worstMetric.changePct)}%</strong>. La relación no es lo que era al principio.</div>`;
+  } else {
+    html += '<div class="pf-insight" style="margin-top: 16px;"><strong>✨ Buena señal:</strong> No se detectan caídas dramáticas entre el inicio y el estado actual de la comunicación.</div>';
+  }
+
+  body.innerHTML = html;
+}
+
+// ── OBSESSIVE RENDER: GHOSTING SELECTIVO ──
+function renderSelectiveGhosting(data, stats) {
+  const card = document.getElementById('featureGhosting');
+  const body = document.getElementById('ghostingBody');
+  const teaser = document.getElementById('ghostingTeaser');
+
+  if (!data) {
+    body.innerHTML = '<div class="pf-insight"><strong>📊 Nota:</strong> No hay suficientes mensajes para analizar patrones de ghosting.</div>';
+    return;
+  }
+
+  if (!OBSESSIVE_MODE) {
+    card.classList.add('locked');
+    teaser.textContent = `📱 Detectamos ghosting selectivo en ${data.ghostingEpisodes} ocasiones. Patrón identificado. Ver análisis →`;
+  } else {
+    card.classList.remove('locked');
+  }
+
+  const personName = data.personB.split(' ')[0];
+
+  function formatTime(mins) {
+    if (mins < 60) return mins + ' min';
+    if (mins < 1440) return Math.round(mins / 60 * 10) / 10 + 'h';
+    return Math.round(mins / 1440) + ' días';
+  }
+
+  let html = `<div style="font-family: var(--font-display); font-size: 0.85rem; margin-bottom: 16px; color: var(--text-muted);">Tiempo de respuesta de ${personName} según el tipo de mensaje</div>`;
+
+  // Casual response time
+  if (data.casual.count > 0) {
+    html += `<div class="ghosting-pattern fast">
+      <span class="ghosting-icon">✅</span>
+      <div class="ghosting-text"><strong>Mensajes casuales:</strong> responde en ~<strong>${formatTime(data.casual.avg)}</strong> (${data.casual.count} mensajes analizados)</div>
+    </div>`;
+  }
+
+  // Emotional response time
+  if (data.emotional.count > 0) {
+    const isSlower = data.emotional.avg > data.casual.avg * 1.5;
+    html += `<div class="ghosting-pattern ${isSlower ? 'slow' : 'fast'}">
+      <span class="ghosting-icon">${isSlower ? '⚠️' : '✅'}</span>
+      <div class="ghosting-text"><strong>Mensajes emocionales</strong> ("te extraño", "te amo"): responde en ~<strong>${formatTime(data.emotional.avg)}</strong> (${data.emotional.count} mensajes)${isSlower ? ' — <strong style="color:#FF4757;">más lento que lo casual</strong>' : ''}</div>
+    </div>`;
+  }
+
+  // Relationship questions
+  if (data.relationQ.count > 0) {
+    const isSlower = data.relationQ.avg > data.casual.avg * 2;
+    html += `<div class="ghosting-pattern ${isSlower ? 'slow' : 'fast'}">
+      <span class="ghosting-icon">${isSlower ? '❌' : '✅'}</span>
+      <div class="ghosting-text"><strong>Preguntas sobre la relación</strong> ("¿qué somos?", "¿qué sientes?"): responde en ~<strong>${formatTime(data.relationQ.avg)}</strong> (${data.relationQ.count} mensajes)${isSlower ? ' — <strong style="color:#FF4757;">evade lo importante</strong>' : ''}</div>
+    </div>`;
+  }
+
+  // Trigger words
+  if (data.triggerWords.length > 0 || data.safeWords.length > 0) {
+    html += '<div class="ghosting-words">';
+    data.safeWords.forEach(w => {
+      html += `<span class="ghosting-word safe">${w}</span>`;
+    });
+    data.triggerWords.forEach(w => {
+      html += `<span class="ghosting-word trigger">${w}</span>`;
+    });
+    html += '</div>';
+    html += '<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">🟢 = Respuesta rápida &nbsp; 🔴 = Respuesta lenta/ghosting</div>';
+  }
+
+  // Conclusion
+  const hasPattern = data.emotional.count > 0 && data.casual.count > 0 && data.emotional.avg > data.casual.avg * 1.5;
+  if (hasPattern) {
+    html += `<div class="pf-insight" style="margin-top: 16px;"><strong>📱 Patrón detectado:</strong> ${personName} responde lo superficial rápido pero <strong style="color:#FF4757;">evade lo emocional</strong>. Tiempo casual: ~${formatTime(data.casual.avg)} vs emocional: ~${formatTime(data.emotional.avg)}. ${data.ghostingEpisodes > 10 ? `Se detectaron <strong>${data.ghostingEpisodes} episodios</strong> de respuesta tardía (3h+).` : ''}</div>`;
+  } else if (data.ghostingEpisodes > 5) {
+    html += `<div class="pf-insight" style="margin-top: 16px;"><strong>📱 Análisis:</strong> Se detectaron <strong>${data.ghostingEpisodes} episodios</strong> de respuesta tardía (3h+), pero no hay un patrón claro de evasión emocional.</div>`;
+  } else {
+    html += `<div class="pf-insight" style="margin-top: 16px;"><strong>✨ Buena señal:</strong> ${personName} responde de manera consistente sin importar el tipo de mensaje.</div>`;
+  }
+
+  body.innerHTML = html;
+}
+
+// ── OBSESSIVE RENDER: CAMBIOS DE LENGUAJE ──
+function renderLanguageChanges(data, stats) {
+  const card = document.getElementById('featureLanguage');
+  const body = document.getElementById('languageBody');
+  const teaser = document.getElementById('languageTeaser');
+
+  if (!data) {
+    body.innerHTML = '<div class="pf-insight"><strong>📊 Nota:</strong> No hay suficientes mensajes para detectar cambios de lenguaje.</div>';
+    return;
+  }
+
+  if (!OBSESSIVE_MODE) {
+    card.classList.add('locked');
+    const alertIndicators = data.indicators.filter(i => i.alert);
+    teaser.textContent = data.biggestChangeMonth
+      ? `🎯 Su lenguaje cambió drásticamente en ${data.biggestChangeMonth}. ${alertIndicators.length} señal${alertIndicators.length !== 1 ? 'es' : ''} de distanciamiento. Desbloquear →`
+      : '🎯 Analizamos los cambios en su forma de escribirte. Desbloquear →';
+  } else {
+    card.classList.remove('locked');
+  }
+
+  const personName = data.personB.split(' ')[0];
+  let html = `<div style="font-family: var(--font-display); font-size: 0.85rem; margin-bottom: 16px; color: var(--text-muted);">Evolución del lenguaje de ${personName} a lo largo del tiempo</div>`;
+
+  data.indicators.forEach(ind => {
+    const maxVal = Math.max(...ind.monthlyData, 1);
+    const changeClass = ind.alert ? 'alert' : 'ok';
+    const changeLabel = ind.alert ? '⚠️ Cambio' : '✓ Estable';
+    const arrow = ind.changePct > 0 ? '↑' : (ind.changePct < 0 ? '↓' : '→');
+    const changeColor = ind.changePct < -30 ? '#FF4757' : (ind.changePct > 100 ? '#FF4757' : 'var(--green)');
+
+    html += `<div class="lang-change-card">
+      <div class="lang-change-header">
+        <span class="lang-change-label">${ind.emoji} ${ind.label}</span>
+        <span class="lang-change-badge ${changeClass}">${changeLabel}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px;">
+        <span>Antes: <strong style="color: var(--text);">${ind.firstVal}</strong></span>
+        <span style="color: ${changeColor}; font-weight: 700;">${arrow} ${ind.changePct > 0 ? '+' : ''}${ind.changePct}%</span>
+        <span>Ahora: <strong style="color: var(--text);">${ind.lastVal}</strong></span>
+      </div>
+      <div class="lang-change-bars">`;
+
+    ind.monthlyData.forEach((val, i) => {
+      const height = Math.max(3, (val / maxVal) * 32);
+      const barColor = i < ind.monthlyData.length / 3 ? 'var(--green)' : (i > ind.monthlyData.length * 2/3 ? 'var(--pink)' : 'var(--purple)');
+      html += `<div class="lang-bar" style="height:${height}px; background:${barColor};"></div>`;
+    });
+
+    html += `</div>
+      <div class="lang-change-legend">
+        <span>${data.months[0]}</span>
+        <span>${data.months[data.months.length - 1]}</span>
+      </div>
+    </div>`;
+  });
+
+  // Summary insight
+  const alerts = data.indicators.filter(i => i.alert);
+  if (alerts.length >= 2) {
+    html += `<div class="pf-insight" style="margin-top: 12px;"><strong>🚩 Alerta de distanciamiento:</strong> ${alerts.length} indicadores muestran cambios significativos en el lenguaje de ${personName}. ${alerts.map(a => a.emoji + ' ' + a.label + ' (' + (a.changePct > 0 ? '+' : '') + a.changePct + '%)').join(', ')}. ${data.biggestChangeMonth ? `El cambio más drástico fue en <strong>${data.biggestChangeMonth}</strong>.` : ''}</div>`;
+  } else if (alerts.length === 1) {
+    html += `<div class="pf-insight" style="margin-top: 12px;"><strong>⚠️ Señal aislada:</strong> Solo 1 indicador muestra cambio notable: <strong>${alerts[0].emoji} ${alerts[0].label}</strong> (${alerts[0].changePct > 0 ? '+' : ''}${alerts[0].changePct}%). No necesariamente preocupante, pero vale la pena observar.</div>`;
+  } else {
+    html += `<div class="pf-insight" style="margin-top: 12px;"><strong>✨ Estabilidad:</strong> El lenguaje de ${personName} se ha mantenido consistente. No se detectan señales claras de distanciamiento emocional en su forma de escribir.</div>`;
   }
 
   body.innerHTML = html;
