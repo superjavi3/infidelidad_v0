@@ -349,42 +349,6 @@ nav a:hover { color: var(--text); }
 }
 .fun-fact strong { color: var(--yellow); }
 
-/* Premium CTA in results */
-.premium-cta-card {
-  background: var(--bg-card);
-  border: 1px solid rgba(108,92,231,0.3);
-  border-radius: var(--radius);
-  padding: 40px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-.premium-cta-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--pink), var(--purple), var(--blue));
-}
-.premium-cta-card h3 {
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-  margin-bottom: 12px;
-}
-.premium-features {
-  display: flex; flex-wrap: wrap; gap: 12px;
-  justify-content: center;
-  margin: 20px 0 28px;
-}
-.premium-feature {
-  display: flex; align-items: center; gap: 6px;
-  background: rgba(255,255,255,0.04);
-  padding: 8px 16px;
-  border-radius: 50px;
-  font-size: 0.88rem;
-  color: var(--text-muted);
-}
-.premium-feature span { font-size: 1rem; }
-
 /* ── BUTTONS ── */
 .btn-primary {
   display: inline-flex; align-items: center; gap: 8px;
@@ -475,34 +439,11 @@ nav a:hover { color: var(--text); }
 }
 
 /* ── EXAMPLES PREVIEW ── */
-.examples-row {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  margin-top: 40px;
-}
 .example-card {
   background: var(--bg-card);
   border-radius: var(--radius);
   padding: 32px;
   border: 1px solid rgba(255,255,255,0.06);
-}
-.example-card.locked {
-  position: relative;
-  overflow: hidden;
-}
-.example-card.locked::after {
-  content: '🔒 Premium';
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(13,13,13,0.85);
-  backdrop-filter: blur(6px);
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  color: var(--purple);
 }
 .example-label {
   font-size: 0.78rem;
@@ -695,25 +636,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   transform: translateY(0);
 }
 
-/* ── PREMIUM FEATURES ── */
-.premium-section {
-  margin: 48px 0;
-}
-.premium-section-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-.premium-section-badge {
-  display: inline-block;
-  background: linear-gradient(135deg, var(--purple), var(--pink));
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  padding: 6px 18px;
-  border-radius: 50px;
-  margin-bottom: 16px;
-}
+/* ── FEATURE CARDS ── */
 .premium-feature-card {
   background: var(--bg-card);
   border: 1px solid rgba(255,255,255,0.06);
@@ -759,45 +682,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   color: var(--purple);
 }
 
-/* Lock overlay */
-.pf-lock {
-  display: none;
-  position: absolute;
-  inset: 0;
-  background: rgba(13,13,13,0.75);
-  backdrop-filter: blur(8px);
-  z-index: 10;
-  align-items: center;
-  justify-content: center;
-}
-.premium-feature-card.locked .pf-lock {
-  display: flex;
-}
-.premium-feature-card.locked .pf-body {
-  filter: blur(5px);
-  user-select: none;
-  pointer-events: none;
-}
-.pf-lock-content {
-  text-align: center;
-  padding: 32px;
-}
-.pf-lock-icon {
-  font-size: 2.5rem;
-  display: block;
-  margin-bottom: 12px;
-}
-.pf-lock-teaser {
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  margin-bottom: 20px;
-  max-width: 340px;
-  line-height: 1.5;
-}
-.btn-sm {
-  padding: 12px 28px;
-  font-size: 0.9rem;
-}
+/* (lock overlay removed — all features visible) */
 
 /* Silence timeline visuals */
 .silence-stats {
@@ -916,20 +801,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 }
 
 /* ── OBSESSIVE FEATURES ── */
-.obsessive-section {
-  margin: 48px 0;
-}
-.obsessive-section-badge {
-  display: inline-block;
-  background: linear-gradient(135deg, #FF2D78, #FF6B35);
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  padding: 6px 18px;
-  border-radius: 50px;
-  margin-bottom: 16px;
-}
 
 /* Forensic: inflection points */
 .forensic-point {
@@ -1119,7 +990,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 @media (max-width: 768px) {
   .nav-links a:not(.nav-cta) { display: none; }
   .steps { grid-template-columns: 1fr; }
-  .examples-row { grid-template-columns: 1fr; }
   .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .hero { padding: 100px 20px 60px; }
@@ -1202,12 +1072,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     <div class="score-verdict" id="scoreVerdict">Conexión fuerte con áreas de mejora</div>
   </div>
 
-  <!-- Share Stories CTA -->
-  <div style="text-align: center; margin-top: 20px;">
-    <button class="btn-secondary" onclick="shareToStories()" style="width: 100%; max-width: 480px; padding: 16px 32px; font-size: 1.1rem;">📸 Comparte tu score en Stories</button>
-    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px;">Descarga tu resultado y compártelo</p>
-  </div>
-
   <!-- Stats Grid -->
   <div class="stats-grid" id="statsGrid">
     <div class="stat-card">
@@ -1247,12 +1111,18 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     📊 <strong>Dato curioso:</strong> Tu pareja tarda en promedio <strong>47 minutos</strong> en responder entre semana, pero los viernes solo <strong>3 minutos</strong>. 🤔
   </div>
 
-  <!-- ══════ PREMIUM FEATURES SECTION ══════ -->
-  <div class="premium-section" id="premiumSection" style="display:none;">
-    <div class="premium-section-header">
-      <div class="premium-section-badge">🔍 PLAN DETECTIVE</div>
-      <h3 style="font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 8px;">Análisis Premium</h3>
-      <p style="color: var(--text-muted);">4 análisis profundos que revelan lo que no se ve a simple vista</p>
+  <!-- Quién lleva la relación -->
+  <div class="example-card" style="margin-bottom: 48px;">
+    <div class="example-label">⚡ Dinámica</div>
+    <h4>Quién lleva la relación</h4>
+    <p id="whoLeads">Persona 1 inicia el 68% de las conversaciones y envía mensajes 2.3x más largos en promedio.</p>
+  </div>
+
+  <!-- ══════ SECCIÓN 2: ANÁLISIS PROFUNDO ══════ -->
+  <div id="premiumSection" style="display:none;">
+    <div style="text-align: center; margin-bottom: 32px;">
+      <h3 style="font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 8px;">🔍 Análisis Profundo</h3>
+      <p style="color: var(--text-muted);">Patrones ocultos en tu conversación</p>
     </div>
 
     <!-- Feature 1: Línea de Vida -->
@@ -1270,13 +1140,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
         </div>
         <div class="pf-insight" id="timelineInsight"></div>
       </div>
-      <div class="pf-lock" id="timelineLock">
-        <div class="pf-lock-content">
-          <span class="pf-lock-icon">🔒</span>
-          <p class="pf-lock-teaser" id="timelineTeaser">Tu relación tuvo un momento de máxima conexión...</p>
-          <button class="btn-primary btn-sm" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear por $69 MXN</button>
-        </div>
-      </div>
     </div>
 
     <!-- Feature 2: Mapa de Silencios -->
@@ -1289,13 +1152,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
         </div>
       </div>
       <div class="pf-body" id="silencesBody"></div>
-      <div class="pf-lock" id="silencesLock">
-        <div class="pf-lock-content">
-          <span class="pf-lock-icon">🔒</span>
-          <p class="pf-lock-teaser" id="silencesTeaser">Detectamos varios silencios de más de 48 horas...</p>
-          <button class="btn-primary btn-sm" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear por $69 MXN</button>
-        </div>
-      </div>
     </div>
 
     <!-- Feature 3: Double Texting -->
@@ -1308,13 +1164,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
         </div>
       </div>
       <div class="pf-body" id="doubleTextBody"></div>
-      <div class="pf-lock" id="doubleTextLock">
-        <div class="pf-lock-content">
-          <span class="pf-lock-icon">🔒</span>
-          <p class="pf-lock-teaser" id="doubleTextTeaser">Una persona persigue mucho más que la otra...</p>
-          <button class="btn-primary btn-sm" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear por $69 MXN</button>
-        </div>
-      </div>
     </div>
 
     <!-- Feature 4: Mensajes Eliminados -->
@@ -1327,22 +1176,13 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
         </div>
       </div>
       <div class="pf-body" id="deletedBody"></div>
-      <div class="pf-lock" id="deletedLock">
-        <div class="pf-lock-content">
-          <span class="pf-lock-icon">🔒</span>
-          <p class="pf-lock-teaser" id="deletedTeaser">Se eliminaron mensajes en esta conversación...</p>
-          <button class="btn-primary btn-sm" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear por $69 MXN</button>
-        </div>
-      </div>
     </div>
   </div>
-  <!-- ══════ END PREMIUM FEATURES ══════ -->
 
-  <!-- ══════ OBSESSIVE FEATURES SECTION ══════ -->
-  <div class="obsessive-section" id="obsessiveSection" style="display:none;">
-    <div class="premium-section-header">
-      <div class="obsessive-section-badge">🔥 PLAN OBSESIVO</div>
-      <h3 style="font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 8px;">Análisis Obsesivo</h3>
+  <!-- ══════ SECCIÓN 3: ANÁLISIS OBSESIVO ══════ -->
+  <div id="obsessiveSection" style="display:none;">
+    <div style="text-align: center; margin: 48px 0 32px;">
+      <h3 style="font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 8px;">🔥 Análisis Obsesivo</h3>
       <p style="color: var(--text-muted);">4 análisis devastadores para quien necesita saber TODO</p>
     </div>
 
@@ -1356,13 +1196,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
         </div>
       </div>
       <div class="pf-body" id="forensicBody"></div>
-      <div class="pf-lock" id="forensicLock">
-        <div class="pf-lock-content">
-          <span class="pf-lock-icon">🔒</span>
-          <p class="pf-lock-teaser" id="forensicTeaser">Encontramos puntos de inflexión en tu relación...</p>
-          <button class="btn-primary btn-sm" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear por $199 MXN/mes</button>
-        </div>
-      </div>
     </div>
 
     <!-- Obsessive 2: Antes vs Ahora -->
@@ -1375,13 +1208,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
         </div>
       </div>
       <div class="pf-body" id="beforeNowBody"></div>
-      <div class="pf-lock" id="beforeNowLock">
-        <div class="pf-lock-content">
-          <span class="pf-lock-icon">🔒</span>
-          <p class="pf-lock-teaser" id="beforeNowTeaser">La comparación Antes/Ahora revela cambios importantes...</p>
-          <button class="btn-primary btn-sm" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear por $199 MXN/mes</button>
-        </div>
-      </div>
     </div>
 
     <!-- Obsessive 3: Ghosting Selectivo -->
@@ -1394,13 +1220,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
         </div>
       </div>
       <div class="pf-body" id="ghostingBody"></div>
-      <div class="pf-lock" id="ghostingLock">
-        <div class="pf-lock-content">
-          <span class="pf-lock-icon">🔒</span>
-          <p class="pf-lock-teaser" id="ghostingTeaser">Detectamos ghosting selectivo en esta conversación...</p>
-          <button class="btn-primary btn-sm" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear por $199 MXN/mes</button>
-        </div>
-      </div>
     </div>
 
     <!-- Obsessive 4: Detector de Cambios de Lenguaje -->
@@ -1413,53 +1232,13 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
         </div>
       </div>
       <div class="pf-body" id="languageBody"></div>
-      <div class="pf-lock" id="languageLock">
-        <div class="pf-lock-content">
-          <span class="pf-lock-icon">🔒</span>
-          <p class="pf-lock-teaser" id="languageTeaser">Su lenguaje cambió drásticamente...</p>
-          <button class="btn-primary btn-sm" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear por $199 MXN/mes</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- ══════ END OBSESSIVE FEATURES ══════ -->
-
-  <!-- Locked Premium Examples -->
-  <div class="examples-row">
-    <div class="example-card">
-      <div class="example-label">🟢 Gratis</div>
-      <h4>Quién lleva la relación</h4>
-      <p id="whoLeads">Persona 1 inicia el 68% de las conversaciones y envía mensajes 2.3x más largos en promedio.</p>
-    </div>
-    <div class="example-card locked">
-      <div class="example-label">Análisis de Red Flags</div>
-      <h4>Patrones detectados</h4>
-      <p>Se encontraron 3 posibles señales de alerta en los patrones de comunicación...</p>
-    </div>
-    <div class="example-card locked">
-      <div class="example-label">Estilos de Apego</div>
-      <h4>Tu perfil emocional</h4>
-      <p>Basado en tus patrones de respuesta, tu estilo de apego predominante es...</p>
-    </div>
-    <div class="example-card locked">
-      <div class="example-label">Evolución Emocional</div>
-      <h4>Timeline de sentimiento</h4>
-      <p>La relación comenzó con alta intensidad emocional, pero a partir de marzo...</p>
     </div>
   </div>
 
-  <!-- Premium CTA -->
-  <div class="premium-cta-card" style="margin-top: 32px;">
-    <h3>Desbloquea el análisis completo</h3>
-    <p style="color: var(--text-muted); margin-bottom: 8px;">Red flags, estilos de apego, evolución emocional y más</p>
-    <div class="premium-features">
-      <span class="premium-feature"><span>🚩</span> Red Flags</span>
-      <span class="premium-feature"><span>🧠</span> Estilos de apego</span>
-      <span class="premium-feature"><span>📈</span> Evolución emocional</span>
-      <span class="premium-feature"><span>💬</span> Interpretación de mensajes</span>
-      <span class="premium-feature"><span>📄</span> Reporte PDF</span>
-    </div>
-    <button class="btn-primary" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear por $69 MXN →</button>
+  <!-- ══════ SECCIÓN 4: COMPARTIR ══════ -->
+  <div style="text-align: center; margin-top: 48px;">
+    <button class="btn-secondary" onclick="shareToStories()" style="width: 100%; max-width: 480px; padding: 16px 32px; font-size: 1.1rem;">📸 Comparte tu score en Stories</button>
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px;">Descarga tu resultado y compártelo</p>
   </div>
 
 
@@ -1682,10 +1461,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 </footer>
 
 <script>
-// ══════ PREMIUM CONFIG ══════
-const DEV_MODE = true; // true = show all unlocked for testing, false = production (locked)
-const OBSESSIVE_MODE = true; // true = show obsessive features unlocked for testing
-
 // ── FILE UPLOAD ──
 const uploadZone = document.getElementById('uploadZone');
 const fileInput = document.getElementById('fileInput');
@@ -2187,18 +1962,6 @@ function renderPremiumFeatures(messages, stats) {
 }
 
 function renderTimeline(data, stats) {
-  const card = document.getElementById('featureTimeline');
-  const teaser = document.getElementById('timelineTeaser');
-
-  if (!DEV_MODE) {
-    card.classList.add('locked');
-    if (data.peakMonth) {
-      teaser.textContent = `Tu relación tuvo su pico máximo en ${data.peakMonth} con ${data.maxVal.toLocaleString()} mensajes. ¿Quieres saber qué pasó después?`;
-    }
-  } else {
-    card.classList.remove('locked');
-  }
-
   if (data.labels.length > 1) {
     const canvas = document.getElementById('timelineChart');
     const peakIndex = data.data.indexOf(Math.max(...data.data));
@@ -2269,18 +2032,7 @@ function renderTimeline(data, stats) {
 }
 
 function renderSilences(data, stats) {
-  const card = document.getElementById('featureSilences');
   const body = document.getElementById('silencesBody');
-  const teaser = document.getElementById('silencesTeaser');
-
-  if (!DEV_MODE) {
-    card.classList.add('locked');
-    if (data.total > 0) {
-      teaser.textContent = `Detectamos ${data.total} silencio${data.total > 1 ? 's' : ''} de más de 48 horas. El más largo duró ${data.longest ? data.longest.hours + 'h' : '...'}. ¿Quién rompió el silencio?`;
-    }
-  } else {
-    card.classList.remove('locked');
-  }
 
   const brokeEntries = Object.entries(data.brokeCount);
   const silenceBreaker = brokeEntries.length > 0
@@ -2327,9 +2079,7 @@ function renderSilences(data, stats) {
 }
 
 function renderDoubleTexting(data, stats) {
-  const card = document.getElementById('featureDoubleText');
   const body = document.getElementById('doubleTextBody');
-  const teaser = document.getElementById('doubleTextTeaser');
 
   const personA = stats.personA;
   const personB = stats.personB;
@@ -2341,15 +2091,6 @@ function renderDoubleTexting(data, stats) {
     ...(data[personA] || [0]),
     ...(data[personB] || [0])
   );
-
-  if (!DEV_MODE) {
-    card.classList.add('locked');
-    if (countA + countB > 0) {
-      teaser.textContent = `${persister.split(' ')[0]} envió ${maxConsecutive} mensajes seguidos sin respuesta. ¿Quién persigue más en esta relación?`;
-    }
-  } else {
-    card.classList.remove('locked');
-  }
 
   let html = `<div class="dt-comparison">
     <div class="dt-person">
@@ -2376,24 +2117,13 @@ function renderDoubleTexting(data, stats) {
 }
 
 function renderDeletedMessages(data, stats) {
-  const card = document.getElementById('featureDeleted');
   const body = document.getElementById('deletedBody');
-  const teaser = document.getElementById('deletedTeaser');
 
   const personA = stats.personA;
   const personB = stats.personB;
   const deletedA = data.deleted[personA] || 0;
   const deletedB = data.deleted[personB] || 0;
   const topDeleter = deletedA > deletedB ? personA : personB;
-
-  if (!DEV_MODE) {
-    card.classList.add('locked');
-    if (data.total > 0) {
-      teaser.textContent = `Se eliminaron ${data.total} mensajes. ${topDeleter.split(' ')[0]} eliminó más. ¿Qué no quisieron que vieras?`;
-    }
-  } else {
-    card.classList.remove('locked');
-  }
 
   let html = `<div class="deleted-stats">
     <div class="deleted-stat-card">
@@ -2907,22 +2637,7 @@ function analyzeLanguageChanges(sorted, stats) {
 
 // ── OBSESSIVE RENDER: FORENSIC RECONSTRUCTION ──
 function renderForensicReconstruction(data, stats) {
-  const card = document.getElementById('featureForensic');
   const body = document.getElementById('forensicBody');
-  const teaser = document.getElementById('forensicTeaser');
-
-  if (!OBSESSIVE_MODE) {
-    card.classList.add('locked');
-    const pointCount = data.inflectionPoints.length;
-    const criticalDate = data.inflectionPoints.length > 0
-      ? data.inflectionPoints[0].date.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
-      : null;
-    teaser.textContent = criticalDate
-      ? `🕵️ Encontramos ${pointCount} punto${pointCount > 1 ? 's' : ''} de inflexión en tu relación. El más crítico: ${criticalDate}. Desbloquear →`
-      : '🕵️ Analizamos los momentos críticos de tu relación. Desbloquear →';
-  } else {
-    card.classList.remove('locked');
-  }
 
   let html = '';
 
@@ -2968,23 +2683,11 @@ function renderForensicReconstruction(data, stats) {
 
 // ── OBSESSIVE RENDER: ANTES VS AHORA ──
 function renderBeforeVsNow(data, stats) {
-  const card = document.getElementById('featureBeforeNow');
   const body = document.getElementById('beforeNowBody');
-  const teaser = document.getElementById('beforeNowTeaser');
 
   if (!data) {
     body.innerHTML = '<div class="pf-insight"><strong>📊 Nota:</strong> Se necesitan al menos 2 meses de conversación para este análisis.</div>';
     return;
-  }
-
-  // Calculate max negative change for teaser
-  const worstChange = data.metrics.reduce((worst, m) => m.changePct < worst ? m.changePct : worst, 0);
-
-  if (!OBSESSIVE_MODE) {
-    card.classList.add('locked');
-    teaser.textContent = `💔 La comparación Antes/Ahora muestra cambios del ${worstChange}% en afectividad. Ver completo →`;
-  } else {
-    card.classList.remove('locked');
   }
 
   let html = `<div style="font-size: 0.82rem; color: var(--text-muted); text-align: center; margin-bottom: 16px;">
@@ -3026,20 +2729,11 @@ function renderBeforeVsNow(data, stats) {
 
 // ── OBSESSIVE RENDER: GHOSTING SELECTIVO ──
 function renderSelectiveGhosting(data, stats) {
-  const card = document.getElementById('featureGhosting');
   const body = document.getElementById('ghostingBody');
-  const teaser = document.getElementById('ghostingTeaser');
 
   if (!data) {
     body.innerHTML = '<div class="pf-insight"><strong>📊 Nota:</strong> No hay suficientes mensajes para analizar patrones de ghosting.</div>';
     return;
-  }
-
-  if (!OBSESSIVE_MODE) {
-    card.classList.add('locked');
-    teaser.textContent = `📱 Detectamos ghosting selectivo en ${data.ghostingEpisodes} ocasiones. Patrón identificado. Ver análisis →`;
-  } else {
-    card.classList.remove('locked');
   }
 
   const personName = data.personB.split(' ')[0];
@@ -3106,23 +2800,11 @@ function renderSelectiveGhosting(data, stats) {
 
 // ── OBSESSIVE RENDER: CAMBIOS DE LENGUAJE ──
 function renderLanguageChanges(data, stats) {
-  const card = document.getElementById('featureLanguage');
   const body = document.getElementById('languageBody');
-  const teaser = document.getElementById('languageTeaser');
 
   if (!data) {
     body.innerHTML = '<div class="pf-insight"><strong>📊 Nota:</strong> No hay suficientes mensajes para detectar cambios de lenguaje.</div>';
     return;
-  }
-
-  if (!OBSESSIVE_MODE) {
-    card.classList.add('locked');
-    const alertIndicators = data.indicators.filter(i => i.alert);
-    teaser.textContent = data.biggestChangeMonth
-      ? `🎯 Su lenguaje cambió drásticamente en ${data.biggestChangeMonth}. ${alertIndicators.length} señal${alertIndicators.length !== 1 ? 'es' : ''} de distanciamiento. Desbloquear →`
-      : '🎯 Analizamos los cambios en su forma de escribirte. Desbloquear →';
-  } else {
-    card.classList.remove('locked');
   }
 
   const personName = data.personB.split(' ')[0];
@@ -3203,19 +2885,10 @@ function updateWithAIInsights(analysis, stats) {
       `🤖 <strong>Insight con IA:</strong> ${analysis.funInsight}`;
   }
   
-  // Si hay red flags, desbloquear y mostrar
+  // Log flags for debugging
   if (analysis.redFlags && analysis.redFlags.length > 0) {
-    const redFlagsCards = document.querySelectorAll('.example-card.locked');
-    if (redFlagsCards[0]) {
-      redFlagsCards[0].classList.remove('locked');
-      const title = redFlagsCards[0].querySelector('h4');
-      const content = redFlagsCards[0].querySelector('p');
-      if (title) title.textContent = `${analysis.redFlags.length} señal(es) detectada(s)`;
-      if (content) content.textContent = analysis.redFlags.join('. ');
-    }
+    console.log('Red flags:', analysis.redFlags);
   }
-  
-  // Mostrar green flags si existen
   if (analysis.greenFlags && analysis.greenFlags.length > 0) {
     console.log('Green flags:', analysis.greenFlags);
   }
