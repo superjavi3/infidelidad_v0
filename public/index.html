@@ -682,7 +682,119 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   color: var(--purple);
 }
 
-/* (lock overlay removed — all features visible) */
+/* ── PLAN TIER SECTIONS ── */
+.plan-section {
+  position: relative;
+  padding-top: 20px;
+  animation: fadeInUp .6s ease both;
+}
+
+/* Plan divider line */
+.plan-divider {
+  height: 2px;
+  border: none;
+  margin: 0;
+  border-radius: 2px;
+}
+.plan-divider.detective {
+  background: linear-gradient(90deg, transparent, #3B82F6, transparent);
+}
+.plan-divider.obsessive {
+  background: linear-gradient(90deg, transparent, #EC4899, #A855F7, transparent);
+  height: 3px;
+}
+
+/* Plan header */
+.plan-header {
+  text-align: center;
+  padding: 32px 0 28px;
+}
+.plan-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 6px 18px;
+  border-radius: 50px;
+  margin-bottom: 14px;
+}
+.plan-badge.free {
+  background: rgba(16,185,129,0.12);
+  color: #10B981;
+  border: 1px solid rgba(16,185,129,0.25);
+}
+.plan-badge.detective {
+  background: rgba(59,130,246,0.12);
+  color: #3B82F6;
+  border: 1px solid rgba(59,130,246,0.25);
+}
+.plan-badge.obsessive {
+  background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(168,85,247,0.15));
+  color: #EC4899;
+  border: 1px solid rgba(236,72,153,0.3);
+}
+.plan-title {
+  font-family: var(--font-display);
+  margin-bottom: 6px;
+}
+.plan-title.free {
+  font-size: 1.3rem;
+  color: var(--text);
+}
+.plan-title.detective {
+  font-size: 1.5rem;
+  color: #3B82F6;
+}
+.plan-title.obsessive {
+  font-size: 1.7rem;
+  background: linear-gradient(135deg, #EC4899, #A855F7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.plan-subtitle {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+/* Detective section wrapper */
+.plan-detective-wrap {
+  border-top: 4px solid #3B82F6;
+  background: linear-gradient(180deg, rgba(59,130,246,0.04) 0%, transparent 40%);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 0 4px 4px;
+  margin-top: 60px;
+}
+.plan-detective-wrap .premium-feature-card {
+  border-color: rgba(59,130,246,0.12);
+}
+
+/* Obsessive section wrapper */
+.plan-obsessive-wrap {
+  border-top: 6px solid;
+  border-image: linear-gradient(90deg, #EC4899, #A855F7) 1;
+  background: linear-gradient(180deg, rgba(236,72,153,0.06) 0%, rgba(168,85,247,0.03) 20%, transparent 50%);
+  border-radius: 0;
+  padding: 0 4px 4px;
+  margin-top: 80px;
+  position: relative;
+}
+.plan-obsessive-wrap::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 10%;
+  right: 10%;
+  height: 40px;
+  background: radial-gradient(ellipse at center, rgba(236,72,153,0.15), transparent 70%);
+  pointer-events: none;
+}
+.plan-obsessive-wrap .premium-feature-card {
+  border-color: rgba(236,72,153,0.12);
+}
 
 /* Silence timeline visuals */
 .silence-stats {
@@ -1078,6 +1190,13 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px;">Descarga tu resultado y compártelo</p>
   </div>
 
+  <!-- ══════ SECCIÓN 1: PLAN GRATIS ══════ -->
+  <div class="plan-header">
+    <div class="plan-badge free">✨ GRATIS</div>
+    <div class="plan-title free">Análisis Básico</div>
+    <div class="plan-subtitle">Estadísticas generales de tu conversación</div>
+  </div>
+
   <!-- Stats Grid -->
   <div class="stats-grid" id="statsGrid">
     <div class="stat-card">
@@ -1124,11 +1243,12 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     <p id="whoLeads">Persona 1 inicia el 68% de las conversaciones y envía mensajes 2.3x más largos en promedio.</p>
   </div>
 
-  <!-- ══════ SECCIÓN 2: ANÁLISIS PROFUNDO ══════ -->
-  <div id="premiumSection" style="display:none;">
-    <div style="text-align: center; margin-bottom: 32px;">
-      <h3 style="font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 8px;">🔍 Análisis Profundo</h3>
-      <p style="color: var(--text-muted);">Patrones ocultos en tu conversación</p>
+  <!-- ══════ SECCIÓN 2: PLAN DETECTIVE ══════ -->
+  <div id="premiumSection" class="plan-section plan-detective-wrap" style="display:none;">
+    <div class="plan-header">
+      <div class="plan-badge detective">🔍 DETECTIVE — $69 MXN</div>
+      <div class="plan-title detective">Análisis Profundo</div>
+      <div class="plan-subtitle">Patrones ocultos en tu conversación</div>
     </div>
 
     <!-- Feature 1: Línea de Vida -->
@@ -1185,11 +1305,12 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     </div>
   </div>
 
-  <!-- ══════ SECCIÓN 3: ANÁLISIS OBSESIVO ══════ -->
-  <div id="obsessiveSection" style="display:none;">
-    <div style="text-align: center; margin: 48px 0 32px;">
-      <h3 style="font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 8px;">🔥 Análisis Obsesivo</h3>
-      <p style="color: var(--text-muted);">4 análisis devastadores para quien necesita saber TODO</p>
+  <!-- ══════ SECCIÓN 3: PLAN OBSESIVO ══════ -->
+  <div id="obsessiveSection" class="plan-section plan-obsessive-wrap" style="display:none;">
+    <div class="plan-header">
+      <div class="plan-badge obsessive">🔥 OBSESIVO — $199/mes</div>
+      <div class="plan-title obsessive">Análisis Obsesivo Premium</div>
+      <div class="plan-subtitle">4 análisis devastadores para quien necesita saber TODO</div>
     </div>
 
     <!-- Obsessive 1: Reconstrucción Forense -->
