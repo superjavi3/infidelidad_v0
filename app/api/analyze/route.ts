@@ -9,6 +9,48 @@ export async function POST(req: NextRequest) {
 
     console.log('API /analyze called - mode:', mode || 'analysis');
 
+    // ===== MODO SUMMARY - PDF REPORT =====
+    if (mode === 'summary') {
+      const summaryPrompt = `Genera un resumen ejecutivo de esta relación de pareja.
+
+DATOS:
+- ${stats?.total || 0} mensajes analizados en ${stats?.uniqueDays || 0} días
+- ${stats?.personA}: ${stats?.msgsA || 0} (${stats?.total ? Math.round(stats.msgsA / stats.total * 100) : 0}%)
+- ${stats?.personB}: ${stats?.msgsB || 0} (${stats?.total ? Math.round(stats.msgsB / stats.total * 100) : 0}%)
+- Score: ${stats?.score || 'N/A'}/100
+- Emojis de amor: ${stats?.loveCount || 0}
+- Lidera: ${stats?.leader || 'N/A'} (${stats?.leaderPct || 0}%)
+
+MUESTRA MENSAJES:
+${(messages || []).slice(-30).map((m: any) => `[${m.date}] ${m.sender}: ${m.text?.substring(0, 60)}`).join('\n')}
+
+ESCRIBE (máx 200 palabras):
+1. Estado actual de la relación
+2. Fortalezas identificadas
+3. Áreas de atención
+4. Recomendación final
+
+Tono: Profesional, empático, directo.`;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: summaryPrompt }] }],
+            generationConfig: { temperature: 0.7, maxOutputTokens: 800, thinkingConfig: { thinkingBudget: 0 } }
+          })
+        }
+      );
+      const data = await response.json();
+      if (!data.candidates?.[0]) {
+        return NextResponse.json({ success: true, summary: 'Resumen no disponible.' });
+      }
+      const summary = data.candidates[0].content.parts[0].text.replace(/```/g, '').trim();
+      return NextResponse.json({ success: true, summary });
+    }
+
     // ===== MODO CHAT - TERAPEUTA IA =====
     if (mode === 'chat') {
       console.log('=== CHATBOT DEBUG ===');

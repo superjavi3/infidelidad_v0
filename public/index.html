@@ -12,6 +12,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <!-- Chart.js para gráficas premium -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -1426,6 +1427,10 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     <button class="btn-secondary" onclick="shareToStories()" style="width: 100%; max-width: 480px; padding: 16px 32px; font-size: 1.1rem;">📸 Comparte tu score en Stories</button>
     <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px;">Descarga tu resultado y compártelo</p>
   </div>
+  <!-- PDF Report CTA -->
+  <div style="text-align: center; margin-top: 12px;">
+    <button class="btn-secondary" onclick="generatePDF()" style="width: 100%; max-width: 480px; padding: 14px 32px; font-size: 1rem; background: linear-gradient(135deg, #1a1a2e, #16213e); border: 1px solid rgba(255,255,255,0.1);">📄 Descargar Reporte PDF Completo</button>
+  </div>
 
   <!-- ══════ SECCIÓN 1: PLAN GRATIS ══════ -->
   <div class="plan-header">
@@ -1736,6 +1741,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
         <ul class="price-features">
           <li>Estadísticas básicas del chat</li>
           <li>Score de la relación</li>
+          <li>Quién lleva la relación</li>
           <li>Dato curioso personalizado</li>
           <li>Imagen shareable para Stories</li>
         </ul>
@@ -1748,11 +1754,11 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
         <div class="price-desc">Análisis único — la verdad completa</div>
         <ul class="price-features">
           <li>Todo lo del plan Curioso</li>
-          <li>Análisis de red flags 🚩</li>
-          <li>Estilos de apego de ambos</li>
-          <li>Evolución emocional (timeline)</li>
-          <li>Interpretación de mensajes clave</li>
-          <li>Reporte PDF descargable</li>
+          <li>📉 Línea de vida: evolución mes a mes</li>
+          <li>🔇 Mapa de silencios + quién cede primero</li>
+          <li>😤 Análisis de double texting</li>
+          <li>🗑️ Mensajes eliminados</li>
+          <li>📄 Reporte PDF completo descargable</li>
         </ul>
         <button class="price-btn price-btn-primary">Desbloquear análisis →</button>
       </div>
@@ -1763,10 +1769,11 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
         <div class="price-desc">Para quien necesita saber TODO</div>
         <ul class="price-features">
           <li>Todo lo del plan Detective</li>
-          <li>Reconstrucción forense: puntos de inflexión</li>
-          <li>Devastador: Antes vs Ahora</li>
-          <li>Ghosting selectivo: patrones de evasión</li>
-          <li>Detector de cambios de lenguaje</li>
+          <li>🕵️ Reconstrucción forense de momentos clave</li>
+          <li>💔 Comparación devastadora: Antes vs Ahora</li>
+          <li>📱 Análisis de ghosting selectivo</li>
+          <li>🎯 Detector de cambios de lenguaje</li>
+          <li>💬 Chatbot terapeuta IA ilimitado</li>
         </ul>
         <button class="price-btn price-btn-secondary" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear $199/mes →</button>
       </div>
@@ -2098,6 +2105,125 @@ function showResults(s) {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
+}
+
+async function generatePDF() {
+  if (!lastStats) { alert('Primero sube un chat para analizar.'); return; }
+
+  const btn = event.target;
+  const origText = btn.textContent;
+  btn.textContent = '⏳ Generando PDF...';
+  btn.disabled = true;
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const pA = lastStats.personA || 'Persona A';
+    const pB = lastStats.personB || 'Persona B';
+    const pctA = Math.round(lastStats.msgsA / lastStats.total * 100);
+    const pctB = Math.round(lastStats.msgsB / lastStats.total * 100);
+
+    // Page 1: Cover
+    doc.setFillColor(255, 45, 120);
+    doc.rect(0, 0, 210, 297, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(36);
+    doc.text('LoSabia.mx', 105, 80, { align: 'center' });
+    doc.setFontSize(20);
+    doc.text('Reporte Detective', 105, 100, { align: 'center' });
+    doc.setFontSize(60);
+    doc.text(String(lastStats.score) + '/100', 105, 150, { align: 'center' });
+    doc.setFontSize(14);
+    doc.text(pA + ' & ' + pB, 105, 175, { align: 'center' });
+    doc.setFontSize(10);
+    doc.text(lastStats.total.toLocaleString() + ' mensajes analizados', 105, 190, { align: 'center' });
+    doc.text(lastStats.uniqueDays + ' dias de conversacion', 105, 200, { align: 'center' });
+    doc.text(new Date().toLocaleDateString('es-MX'), 105, 280, { align: 'center' });
+
+    // Page 2: Stats
+    doc.addPage();
+    doc.setTextColor(30, 30, 30);
+    doc.setFontSize(22);
+    doc.text('Estadisticas del Chat', 20, 25);
+    doc.setDrawColor(255, 45, 120);
+    doc.setLineWidth(0.5);
+    doc.line(20, 30, 190, 30);
+
+    doc.setFontSize(13);
+    let y = 45;
+    const stat = (label, val) => { doc.text(label + ':', 20, y); doc.text(String(val), 120, y); y += 10; };
+    stat('Score de relacion', lastStats.score + '/100');
+    stat('Total mensajes', lastStats.total.toLocaleString());
+    stat(pA, lastStats.msgsA.toLocaleString() + ' msgs (' + pctA + '%)');
+    stat(pB, lastStats.msgsB.toLocaleString() + ' msgs (' + pctB + '%)');
+    stat('Dias de conversacion', lastStats.uniqueDays);
+    stat('Emojis de amor', lastStats.loveCount);
+    stat('Quien lidera', lastStats.leader + ' (' + lastStats.leaderPct + '%)');
+    stat('Respuesta promedio', (lastStats.avgReply || 'N/A') + ' min');
+    stat('Mensajes nocturnos', (lastStats.nightPct || 0) + '%');
+
+    y += 10;
+    doc.setFontSize(16);
+    doc.text('Participacion', 20, y);
+    y += 10;
+    // Bar chart visual
+    doc.setFillColor(255, 45, 120);
+    doc.rect(20, y, pctA * 1.5, 12, 'F');
+    doc.setFillColor(100, 100, 255);
+    doc.rect(20, y + 16, pctB * 1.5, 12, 'F');
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text(pA + ' ' + pctA + '%', 25 + pctA * 1.5, y + 9);
+    doc.text(pB + ' ' + pctB + '%', 25 + pctB * 1.5, y + 25);
+
+    // Page 3: AI Summary
+    doc.addPage();
+    doc.setTextColor(30, 30, 30);
+    doc.setFontSize(22);
+    doc.text('Resumen de la Relacion', 20, 25);
+    doc.setDrawColor(255, 45, 120);
+    doc.line(20, 30, 190, 30);
+    doc.setFontSize(11);
+
+    // Call Gemini for summary
+    let summaryText = '';
+    try {
+      const summaryRes = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'summary',
+          stats: lastStats,
+          messages: lastMessages.slice(-50)
+        })
+      });
+      const summaryData = await summaryRes.json();
+      summaryText = summaryData.summary || summaryData.answer || 'Resumen no disponible.';
+    } catch (e) {
+      summaryText = 'No se pudo generar el resumen con IA. Datos basicos:\n\n' +
+        pA + ' envia ' + pctA + '% de los mensajes.\n' +
+        pB + ' envia ' + pctB + '% de los mensajes.\n' +
+        'Score: ' + lastStats.score + '/100.\n' +
+        lastStats.leader + ' lidera la conversacion.';
+    }
+
+    const lines = doc.splitTextToSize(summaryText, 170);
+    doc.text(lines, 20, 45);
+
+    // Footer on last page
+    doc.setFontSize(9);
+    doc.setTextColor(150, 150, 150);
+    doc.text('Generado por LoSabia.mx — Analisis de relaciones con IA', 105, 285, { align: 'center' });
+
+    // Download
+    doc.save('losabia-detective-' + pA + '-' + pB + '.pdf');
+  } catch (err) {
+    console.error('PDF error:', err);
+    alert('Error generando PDF: ' + err.message);
+  } finally {
+    btn.textContent = origText;
+    btn.disabled = false;
+  }
 }
 
 async function shareToStories() {
