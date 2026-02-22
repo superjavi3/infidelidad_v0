@@ -759,10 +759,9 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 
 <!-- ── RESULTS (hidden until analysis) ── -->
 <section class="results-section container" id="resultsSection">
-  <div class="results-header" style="position: relative;">
+  <div class="results-header">
     <h2>Tu relación al <span class="gradient-text">descubierto</span></h2>
     <p style="color: var(--text-muted);">Análisis basado en <span id="totalMsgs">0</span> mensajes</p>
-    <button onclick="shareToStories()" style="position: absolute; top: 0; right: 0; background: transparent; border: 1.5px solid var(--text-muted); color: var(--text-muted); padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-family: inherit; transition: all 0.2s ease;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--text-muted)';this.style.color='var(--text-muted)'">📸 Stories</button>
   </div>
 
   <!-- Score Card -->
@@ -771,6 +770,12 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     <div class="score-number" id="scoreNumber">72</div>
     <div class="score-max">de 100</div>
     <div class="score-verdict" id="scoreVerdict">Conexión fuerte con áreas de mejora</div>
+  </div>
+
+  <!-- Share Stories CTA -->
+  <div style="text-align: center; margin-top: 20px;">
+    <button class="btn-secondary" onclick="shareToStories()" style="width: 100%; max-width: 480px; padding: 16px 32px; font-size: 1.1rem;">📸 Comparte tu score en Stories</button>
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px;">Descarga tu resultado y compártelo</p>
   </div>
 
   <!-- Stats Grid -->
