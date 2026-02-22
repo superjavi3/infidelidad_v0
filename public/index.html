@@ -2122,7 +2122,6 @@ async function generatePDF() {
     const doubleTextData = analyzeDoubleTexting(lastMessages);
     const deletedData = analyzeDeletedMessages(lastMessages);
 
-    // Prepare sorted messages for beforeVsNow
     const sortedForBN = [];
     lastMessages.forEach(m => {
       try {
@@ -2131,7 +2130,6 @@ async function generatePDF() {
       } catch(e) {}
     });
     sortedForBN.sort((a, b) => a.timestamp - b.timestamp);
-    // Convert timestamps back to Date-compatible for analyzeBeforeVsNow
     const sortedWithDates = sortedForBN.map(m => ({ ...m, timestamp: new Date(m.timestamp) }));
     const bnData = analyzeBeforeVsNow(sortedWithDates, lastStats);
 
@@ -2149,69 +2147,275 @@ async function generatePDF() {
       console.warn('AI summary failed:', e);
     }
 
-    // Build PDF payload
-    const pdfPayload = {
-      stats: {
-        personA: lastStats.personA,
-        personB: lastStats.personB,
-        total: lastStats.total,
-        msgsA: lastStats.msgsA,
-        msgsB: lastStats.msgsB,
-        uniqueDays: lastStats.uniqueDays,
-        score: lastStats.score,
-        leader: lastStats.leader,
-        leaderPct: lastStats.leaderPct,
-        avgReply: lastStats.avgReply,
-        nightPct: lastStats.nightPct,
-        loveCount: lastStats.loveCount,
-        ratio: lastStats.ratio
-      },
-      timeline: timelineData,
-      silences: {
-        total: silenceData.total,
-        longest: silenceData.longest,
-        brokeCount: silenceData.brokeCount
-      },
-      doubleTexting: doubleTextData,
-      deletedMessages: {
-        deleted: deletedData.deleted,
-        total: deletedData.total
-      },
-      beforeAfter: bnData,
-      aiSummary: aiSummary
-    };
+    // ═══ CLIENT-SIDE PDF: render HTML pages to canvas, then to jsPDF ═══
+    const pA = lastStats.personA || 'Persona A';
+    const pB = lastStats.personB || 'Persona B';
+    const pctA = Math.round(lastStats.msgsA / lastStats.total * 100);
+    const pctB = 100 - pctA;
+    const today = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+    const clean = (s) => String(s || '');
 
-    // Call server-side PDF generator
-    const res = await fetch('/api/generate-pdf', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(pdfPayload)
-    });
+    const verdict = lastStats.score >= 80 ? 'Relacion intensa y equilibrada'
+      : lastStats.score >= 60 ? 'Relacion con altibajos'
+      : lastStats.score >= 40 ? 'Relacion con areas de mejora'
+      : 'Relacion con desafios importantes';
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'Error del servidor: ' + res.status);
+    // Build silence info
+    const longestDays = silenceData.longest ? Math.round(silenceData.longest.hours / 24) : 0;
+    const longestHours = silenceData.longest ? silenceData.longest.hours : 0;
+    const silenceBrokeItems = Object.entries(silenceData.brokeCount || {});
+    const dtItems = Object.entries(doubleTextData || {});
+    const delItems = Object.entries(deletedData.deleted || {});
+
+    // Before/After rows
+    const baMetrics = bnData && bnData.metrics ? bnData.metrics : [];
+    const baRows = baMetrics.map(m => {
+      const arrow = m.changePct > 0 ? '▲' : m.changePct < 0 ? '▼' : '—';
+      const color = m.changePct > 20 ? '#4ADE80' : m.changePct < -20 ? '#FF2D78' : '#9B96B0';
+      return '<tr><td style="color:#EDE9F8;padding:10px 12px;background:#120F1E;border-radius:8px 0 0 8px;">' + clean(m.label) +
+        '</td><td style="color:#FFF;font-weight:600;padding:10px 12px;background:#120F1E;">' + m.before + (m.suffix||'') +
+        '</td><td style="color:#FFF;font-weight:600;padding:10px 12px;background:#120F1E;">' + m.after + (m.suffix||'') +
+        '</td><td style="color:' + color + ';font-weight:700;padding:10px 12px;background:#120F1E;border-radius:0 8px 8px 0;">' + arrow + ' ' + Math.abs(m.changePct) + '%</td></tr>';
+    }).join('');
+
+    // Parse AI summary into sections
+    const aiClean = aiSummary.replace(/\*\*/g, '').replace(/\*/g, '');
+    const aiEstado = (aiClean.match(/(?:Estado[^:]*:)\s*([\s\S]*?)(?=Fortaleza|Area|Recomend|$)/i) || [])[1] || aiSummary.slice(0, 200);
+    const aiFortalezas = (aiClean.match(/(?:Fortaleza[^:]*:)\s*([\s\S]*?)(?=Area|Atencion|Recomend|$)/i) || [])[1] || '';
+    const aiAtencion = (aiClean.match(/(?:Area[^:]*:|Atencion[^:]*:)\s*([\s\S]*?)(?=Recomend|$)/i) || [])[1] || '';
+    const aiRecomendacion = (aiClean.match(/(?:Recomendaci[oó]n[^:]*:)\s*([\s\S]*?)$/i) || [])[1] || '';
+
+    // Timeline SVG (simple bar chart)
+    const tlLabels = timelineData.labels || [];
+    const tlData = timelineData.data || [];
+    const tlMax = Math.max(1, ...tlData);
+    const tlBarW = Math.max(4, Math.floor(580 / Math.max(1, tlLabels.length)) - 2);
+    const tlBars = tlData.map((v, i) => {
+      const h = Math.max(2, (v / tlMax) * 160);
+      const x = 50 + i * (tlBarW + 2);
+      const isPeak = v === tlMax;
+      return '<rect x="' + x + '" y="' + (200 - h) + '" width="' + tlBarW + '" height="' + h + '" rx="2" fill="' + (isPeak ? '#FF2D78' : '#8B5CF6') + '" opacity="0.85"/>';
+    }).join('');
+    const tlLabelStep = Math.max(1, Math.floor(tlLabels.length / 8));
+    const tlLabelsSvg = tlLabels.map((l, i) => {
+      if (i % tlLabelStep !== 0) return '';
+      const x = 50 + i * (tlBarW + 2) + tlBarW / 2;
+      return '<text x="' + x + '" y="218" text-anchor="middle" font-size="9" fill="#6B6780">' + l + '</text>';
+    }).join('');
+    const timelineSVG = '<svg width="660" height="230" xmlns="http://www.w3.org/2000/svg">' + tlBars + tlLabelsSvg + '</svg>';
+
+    // Helper: horizontal bar SVG
+    function hBarSVG(items, maxV) {
+      const max = maxV || Math.max(1, ...items.map(x => x[1]));
+      return items.map((item, i) => {
+        const w = Math.max(30, (item[1] / max) * 400);
+        const y = i * 44 + 8;
+        const color = i === 0 ? '#FF2D78' : '#8B5CF6';
+        return '<rect x="10" y="' + y + '" width="500" height="34" rx="6" fill="#1E1B2E"/>' +
+          '<rect x="10" y="' + y + '" width="' + w + '" height="34" rx="6" fill="' + color + '" opacity="0.85"/>' +
+          '<text x="22" y="' + (y + 22) + '" font-size="13" font-weight="600" fill="#FFF">' + clean(item[0]) + '</text>' +
+          '<text x="' + (w - 2) + '" y="' + (y + 22) + '" text-anchor="end" font-size="13" font-weight="700" fill="#FFF">' + item[1] + '</text>';
+      }).join('');
     }
 
-    // Download the PDF blob
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const safeA = (lastStats.personA || 'A').replace(/[^a-zA-Z0-9]/g, '');
-    const safeB = (lastStats.personB || 'B').replace(/[^a-zA-Z0-9]/g, '');
-    a.download = 'LoSabia-' + safeA + '-' + safeB + '.pdf';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // Score ring SVG
+    const scoreR = 72, scoreCx = 90, scoreCy = 90, scoreCirc = 2 * Math.PI * scoreR;
+    const scoreProg = (lastStats.score / 100) * scoreCirc;
+    const scoreGap = scoreCirc - scoreProg;
+    const scoreColor = lastStats.score >= 80 ? '#4ADE80' : lastStats.score >= 60 ? '#F5C842' : lastStats.score >= 40 ? '#FB923C' : '#FF2D78';
+    const scoreRingSVG = '<svg width="180" height="180" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="' + scoreCx + '" cy="' + scoreCy + '" r="' + scoreR + '" fill="none" stroke="#1E1B2E" stroke-width="10"/>' +
+      '<circle cx="' + scoreCx + '" cy="' + scoreCy + '" r="' + scoreR + '" fill="none" stroke="' + scoreColor + '" stroke-width="10" stroke-dasharray="' + scoreProg + ' ' + scoreGap + '" stroke-linecap="round" transform="rotate(-90 ' + scoreCx + ' ' + scoreCy + ')"/>' +
+      '<text x="' + scoreCx + '" y="' + (scoreCy - 5) + '" text-anchor="middle" font-size="44" font-weight="700" fill="#FFF">' + lastStats.score + '</text>' +
+      '<text x="' + scoreCx + '" y="' + (scoreCy + 20) + '" text-anchor="middle" font-size="16" fill="#9B96B0">/100</text></svg>';
+
+    // Build pages HTML array
+    const pageCSS = 'width:794px;height:1123px;padding:32px 36px;position:relative;overflow:hidden;background:#0A0812;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#EDE9F8;';
+    const cardCSS = 'background:#120F1E;border:1px solid #1E1B2E;border-radius:12px;padding:24px;margin-bottom:18px;';
+    const footerHTML = '<div style="position:absolute;bottom:20px;left:0;right:0;text-align:center;font-size:10px;color:#4A4660;">LoSabia.mx - Analisis de relaciones con IA</div>';
+
+    const pages = [];
+
+    // PAGE 1: COVER
+    pages.push('<div style="' + pageCSS + 'display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(165deg,#0A0812 0%,#1A0F2E 40%,#0A0812 100%);">' +
+      '<div style="font-size:18px;font-weight:600;color:#FF2D78;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">LoSabia.mx</div>' +
+      '<div style="font-size:13px;color:#9B96B0;margin-bottom:28px;">Reporte Detective de Relacion</div>' +
+      '<div style="margin-bottom:20px;">' + scoreRingSVG + '</div>' +
+      '<div style="font-size:28px;font-weight:700;color:#FFF;margin-bottom:6px;">' + clean(pA) + ' & ' + clean(pB) + '</div>' +
+      '<div style="font-size:15px;color:#F5C842;font-weight:500;margin-bottom:32px;">' + verdict + '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:460px;margin-bottom:28px;">' +
+        '<div style="' + cardCSS + 'text-align:left;"><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.total.toLocaleString() + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Mensajes totales</div></div>' +
+        '<div style="' + cardCSS + 'text-align:left;"><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.uniqueDays + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Dias de conversacion</div></div>' +
+        '<div style="' + cardCSS + 'text-align:left;"><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.avgReply + ' min</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Respuesta promedio</div></div>' +
+        '<div style="' + cardCSS + 'text-align:left;"><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.loveCount.toLocaleString() + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Emojis de amor</div></div>' +
+      '</div>' +
+      '<div style="margin-bottom:20px;">' +
+        '<svg width="400" height="60" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect x="10" y="4" width="' + Math.max(20, pctA * 3.8) + '" height="22" rx="4" fill="#FF2D78"/>' +
+          '<text x="18" y="20" font-size="12" font-weight="600" fill="#FFF">' + clean(pA) + ' ' + pctA + '%</text>' +
+          '<rect x="10" y="32" width="' + Math.max(20, pctB * 3.8) + '" height="22" rx="4" fill="#8B5CF6"/>' +
+          '<text x="18" y="48" font-size="12" font-weight="600" fill="#FFF">' + clean(pB) + ' ' + pctB + '%</text>' +
+        '</svg>' +
+      '</div>' +
+      '<div style="font-size:11px;color:#6B6780;position:absolute;bottom:28px;">' + today + '</div>' +
+    '</div>');
+
+    // PAGE 2: TIMELINE
+    pages.push('<div style="' + pageCSS + '">' +
+      '<div style="font-size:26px;font-weight:700;color:#FFF;margin-bottom:4px;">Linea de Vida</div>' +
+      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
+      '<div style="font-size:13px;color:#9B96B0;margin-bottom:28px;">Evolucion mensual de mensajes a lo largo del tiempo</div>' +
+      '<div style="' + cardCSS + '">' +
+        '<div style="display:flex;justify-content:center;margin:16px 0;">' + timelineSVG + '</div>' +
+        '<div style="font-size:12px;color:#9B96B0;line-height:1.5;margin-top:12px;padding:12px 16px;background:#1E1B2E;border-radius:8px;border-left:3px solid #FF2D78;">' +
+          'El punto mas alto fue en <strong>' + clean(timelineData.peakMonth) + '</strong> con <strong>' + (timelineData.maxVal || 0).toLocaleString() + '</strong> mensajes.' +
+          (timelineData.declineMonth ? ' A partir de <strong>' + clean(timelineData.declineMonth) + '</strong> se detecta una caida del <strong>' + timelineData.declinePct + '%</strong>.' : '') +
+        '</div>' +
+      '</div>' +
+      footerHTML + '</div>');
+
+    // PAGE 3: SILENCES
+    const silenceBarsHTML = silenceBrokeItems.length > 0 ?
+      '<svg width="520" height="' + (silenceBrokeItems.length * 44 + 16) + '" xmlns="http://www.w3.org/2000/svg">' +
+        hBarSVG(silenceBrokeItems.map(([name, count]) => [name + ' rompe el silencio', count])) + '</svg>'
+      : '<p style="color:#9B96B0;font-size:13px;">No se detectaron periodos de silencio mayores a 48 horas.</p>';
+
+    pages.push('<div style="' + pageCSS + '">' +
+      '<div style="font-size:26px;font-weight:700;color:#FFF;margin-bottom:4px;">Mapa de Silencios</div>' +
+      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
+      '<div style="font-size:13px;color:#9B96B0;margin-bottom:28px;">Periodos de mas de 48 horas sin mensajes</div>' +
+      '<div style="display:flex;gap:16px;margin-bottom:18px;">' +
+        '<div style="background:#1E1B2E;border-radius:8px;padding:14px 18px;flex:1;text-align:center;"><div style="font-size:26px;font-weight:700;color:#F5C842;">' + silenceData.total + '</div><div style="font-size:11px;color:#9B96B0;margin-top:2px;">Silencios totales</div></div>' +
+        '<div style="background:#1E1B2E;border-radius:8px;padding:14px 18px;flex:1;text-align:center;"><div style="font-size:26px;font-weight:700;color:#F5C842;">' + longestDays + 'd</div><div style="font-size:11px;color:#9B96B0;margin-top:2px;">Silencio mas largo</div></div>' +
+        '<div style="background:#1E1B2E;border-radius:8px;padding:14px 18px;flex:1;text-align:center;"><div style="font-size:26px;font-weight:700;color:#F5C842;">' + longestHours + 'h</div><div style="font-size:11px;color:#9B96B0;margin-top:2px;">En horas</div></div>' +
+      '</div>' +
+      '<div style="' + cardCSS + '"><h3 style="font-size:16px;font-weight:600;color:#FF2D78;margin-bottom:12px;">Quien rompe el silencio?</h3><div style="display:flex;justify-content:center;margin:16px 0;">' + silenceBarsHTML + '</div></div>' +
+      footerHTML + '</div>');
+
+    // PAGE 4: DOUBLE TEXTING + DELETED
+    const dtBarsHTML = dtItems.length > 0 ?
+      '<svg width="520" height="' + (dtItems.length * 44 + 16) + '" xmlns="http://www.w3.org/2000/svg">' +
+        hBarSVG(dtItems.map(([name, eps]) => [name, Array.isArray(eps) ? eps.length : eps])) + '</svg>'
+      : '<p style="color:#9B96B0;font-size:13px;">No se detectaron episodios significativos de double texting.</p>';
+
+    const delBarsHTML = delItems.length > 0 ?
+      '<svg width="520" height="' + (delItems.length * 44 + 16) + '" xmlns="http://www.w3.org/2000/svg">' +
+        hBarSVG(delItems) + '</svg>'
+      : '';
+
+    pages.push('<div style="' + pageCSS + '">' +
+      '<div style="font-size:26px;font-weight:700;color:#FFF;margin-bottom:4px;">Mensajes y Patrones</div>' +
+      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
+      '<div style="margin-bottom:24px;"><h3 style="font-size:16px;font-weight:600;color:#F5C842;margin-bottom:12px;">Double Texting (5+ mensajes sin respuesta)</h3><div style="' + cardCSS + '">' + dtBarsHTML + '</div></div>' +
+      '<div style="margin-bottom:24px;"><h3 style="font-size:16px;font-weight:600;color:#F5C842;margin-bottom:12px;">Mensajes Eliminados</h3><div style="' + cardCSS + '">' +
+        (deletedData.total > 0 ?
+          '<div style="display:flex;gap:16px;margin-bottom:12px;"><div style="background:#1E1B2E;border-radius:8px;padding:14px 18px;flex:1;text-align:center;"><div style="font-size:26px;font-weight:700;color:#F5C842;">' + deletedData.total + '</div><div style="font-size:11px;color:#9B96B0;">Total eliminados</div></div></div>' + delBarsHTML
+          : '<p style="color:#9B96B0;font-size:13px;">No se detectaron mensajes eliminados.</p>') +
+      '</div></div>' +
+      footerHTML + '</div>');
+
+    // PAGE 5: BEFORE VS NOW
+    const baContent = baMetrics.length > 0 ?
+      '<div style="font-size:13px;color:#9B96B0;margin-bottom:28px;">Comparacion entre ' + clean(bnData.beforeLabel) + ' y ' + clean(bnData.afterLabel) + '</div>' +
+      '<div style="' + cardCSS + '"><table style="width:100%;border-collapse:separate;border-spacing:0 6px;">' +
+        '<thead><tr><th style="font-size:11px;color:#9B96B0;text-transform:uppercase;padding:8px 12px;text-align:left;">Metrica</th><th style="font-size:11px;color:#9B96B0;text-transform:uppercase;padding:8px 12px;text-align:left;">Antes</th><th style="font-size:11px;color:#9B96B0;text-transform:uppercase;padding:8px 12px;text-align:left;">Ahora</th><th style="font-size:11px;color:#9B96B0;text-transform:uppercase;padding:8px 12px;text-align:left;">Cambio</th></tr></thead>' +
+        '<tbody>' + baRows + '</tbody></table></div>'
+      : '<div style="' + cardCSS + 'text-align:center;padding:40px 0;"><p style="color:#9B96B0;font-size:14px;">No hay suficientes datos para la comparacion Antes vs Ahora.<br/>Se necesitan al menos 2 meses de conversacion.</p></div>';
+
+    pages.push('<div style="' + pageCSS + '">' +
+      '<div style="font-size:26px;font-weight:700;color:#FFF;margin-bottom:4px;">Antes vs Ahora</div>' +
+      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
+      baContent + footerHTML + '</div>');
+
+    // PAGE 6: AI ANALYSIS
+    pages.push('<div style="' + pageCSS + '">' +
+      '<div style="font-size:26px;font-weight:700;color:#FFF;margin-bottom:4px;">Analisis de IA</div>' +
+      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
+      '<div style="font-size:13px;color:#9B96B0;margin-bottom:28px;">Resumen generado por inteligencia artificial</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">' +
+        '<div style="' + cardCSS + '"><h4 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">Estado de la relacion</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiEstado).trim().slice(0,500) + '</p></div>' +
+        '<div style="' + cardCSS + '"><h4 style="font-size:14px;font-weight:600;color:#4ADE80;margin-bottom:8px;">Fortalezas</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiFortalezas).trim().slice(0,500) + '</p></div>' +
+        '<div style="' + cardCSS + '"><h4 style="font-size:14px;font-weight:600;color:#FF2D78;margin-bottom:8px;">Areas de atencion</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiAtencion).trim().slice(0,500) + '</p></div>' +
+        '<div style="' + cardCSS + 'grid-column:1/-1;"><h4 style="font-size:14px;font-weight:600;color:#8B5CF6;margin-bottom:8px;">Recomendacion</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiRecomendacion).trim().slice(0,500) + '</p></div>' +
+      '</div>' +
+      footerHTML + '</div>');
+
+    // PAGE 7: CLOSING
+    pages.push('<div style="' + pageCSS + 'display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(165deg,#0A0812 0%,#1A0F2E 50%,#0A0812 100%);">' +
+      '<div style="font-size:42px;font-weight:800;background:linear-gradient(135deg,#FF2D78,#F5C842);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;">LoSabia.mx</div>' +
+      '<div style="font-size:16px;color:#9B96B0;margin-bottom:36px;">Analisis de relaciones con inteligencia artificial</div>' +
+      '<div style="width:120px;height:3px;background:linear-gradient(90deg,#FF2D78,#F5C842);border-radius:2px;margin-bottom:36px;"></div>' +
+      '<div style="color:#C8C3D8;font-size:14px;max-width:400px;text-align:center;line-height:1.7;">Este reporte fue generado analizando <strong>' + lastStats.total.toLocaleString() + '</strong> mensajes entre <strong>' + clean(pA) + '</strong> y <strong>' + clean(pB) + '</strong> a lo largo de <strong>' + lastStats.uniqueDays + '</strong> dias de conversacion.</div>' +
+      '<div style="font-size:12px;color:#6B6780;margin-top:40px;">' + today + '</div>' +
+      '<div style="font-size:14px;color:#FF2D78;font-weight:600;margin-top:8px;">losabia.mx</div>' +
+    '</div>');
+
+    // Render each page with html2canvas and add to jsPDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+
+    for (let i = 0; i < pages.length; i++) {
+      const container = document.createElement('div');
+      container.innerHTML = pages[i];
+      container.style.position = 'fixed';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif';
+      document.body.appendChild(container);
+
+      const pageEl = container.firstElementChild;
+      const canvas = await htmlToCanvasWithTimeout(pageEl, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        foreignObjectRendering: false,
+        logging: false,
+        imageTimeout: 0,
+        removeContainer: true,
+        backgroundColor: '#0A0812',
+        width: 794,
+        height: 1123
+      });
+
+      document.body.removeChild(container);
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      if (i > 0) doc.addPage();
+      doc.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+    }
+
+    const safeA = (pA).replace(/[^a-zA-Z0-9]/g, '');
+    const safeB = (pB).replace(/[^a-zA-Z0-9]/g, '');
+    doc.save('LoSabia-' + safeA + '-' + safeB + '.pdf');
+
   } catch (err) {
-    console.error('PDF error:', err);
-    alert('Error generando PDF: ' + err.message);
+    console.error('PDF Error completo:', err);
+    alert('Error generando PDF: ' + err.message + '\n\nStack: ' + err.stack);
   } finally {
     btn.textContent = origText;
     btn.disabled = false;
   }
+}
+
+// Wrapper con timeout para html2canvas
+async function htmlToCanvasWithTimeout(element, options, timeoutMs = 15000) {
+  return Promise.race([
+    html2canvas(element, options),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('html2canvas timeout después de ' + timeoutMs + 'ms')), timeoutMs)
+    )
+  ]);
+}
+
+// Convierte imagen a base64 antes de usarla en el DOM del PDF
+async function toBase64(url) {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
 }
 
 async function shareToStories() {
@@ -2236,12 +2440,21 @@ async function shareToStories() {
 
   const card = document.getElementById('storiesCard');
 
+  // Forzar fuente del sistema para evitar bloqueos de Google Fonts en producción
+  const origFont = card.style.fontFamily;
+  card.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif';
+
   try {
-    const canvas = await html2canvas(card, {
+    const canvas = await htmlToCanvasWithTimeout(card, {
       width: 1080,
       height: 1920,
-      scale: 1,
+      scale: 2,
       useCORS: true,
+      allowTaint: false,
+      foreignObjectRendering: false,
+      logging: false,
+      imageTimeout: 0,
+      removeContainer: true,
       backgroundColor: null
     });
 
@@ -2249,7 +2462,7 @@ async function shareToStories() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'losabía-score.jpg';
+      a.download = 'losabia-score.jpg';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -2257,7 +2470,9 @@ async function shareToStories() {
     }, 'image/jpeg', 0.95);
   } catch (err) {
     console.error('Error generando imagen:', err);
-    alert('Error al generar la imagen. Intenta de nuevo.');
+    alert('Error al generar la imagen: ' + err.message);
+  } finally {
+    card.style.fontFamily = origFont;
   }
 }
 
