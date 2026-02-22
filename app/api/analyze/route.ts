@@ -12,72 +12,81 @@ export async function POST(req: NextRequest) {
     // ===== MODO CHAT - TERAPEUTA IA =====
     if (mode === 'chat') {
       console.log('=== CHATBOT DEBUG ===');
-      console.log('API Key exists:', !!GEMINI_API_KEY);
       console.log('Question:', question);
-      console.log('Messages received:', messages?.length || 0);
+      console.log('Total messages available:', messages?.length || 0);
 
-      const sampleMsgs = messages ? sampleMessages(messages, 30) : [];
-
-      const recentHistory = chatHistory && chatHistory.length > 0
-        ? chatHistory.slice(-2).map((m: any) => `${m.role === 'user' ? 'Usuario' : 'Terapeuta'}: ${m.text}`).join('\n')
-        : '';
-
-      // Detectar si pregunta por fecha específica
-      const monthMap: Record<string, string> = {
-        'enero': '1', 'febrero': '2', 'marzo': '3', 'abril': '4',
-        'mayo': '5', 'junio': '6', 'julio': '7', 'agosto': '8',
-        'septiembre': '9', 'octubre': '10', 'noviembre': '11', 'diciembre': '12'
+      // Step 1: Detect date-specific question
+      const monthMap: Record<string, number> = {
+        'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4,
+        'mayo': 5, 'junio': 6, 'julio': 7, 'agosto': 8,
+        'septiembre': 9, 'octubre': 10, 'noviembre': 11, 'diciembre': 12
       };
       const dateRegex = /(\d{1,2})\s+de\s+(\w+)(?:\s+(?:de|del)\s+(\d{2,4}))?/i;
       const dateMatch = question.match(dateRegex);
-      let dateMessages: any[] = [];
+
+      let isDateQuery = false;
+      let dateFoundMessages: any[] = [];
 
       if (dateMatch && messages && messages.length > 0) {
         const qDay = parseInt(dateMatch[1]);
         const qMonthName = dateMatch[2].toLowerCase();
-        const qYear = dateMatch[3];
-        const qMonth = parseInt(monthMap[qMonthName] || '0');
-        const qYearShort = qYear ? parseInt(qYear.slice(-2)) : null;
+        const qMonth = monthMap[qMonthName] || 0;
+        const qYearShort = dateMatch[3] ? parseInt(dateMatch[3].slice(-2)) : null;
 
         if (qMonth) {
-          dateMessages = messages.filter((m: any) => {
-            // Extract date from formats like "[21/2/26, 19:35:23]" or "21/2/26"
+          isDateQuery = true;
+          dateFoundMessages = messages.filter((m: any) => {
             const dateStr = (m.date || '').replace(/[\[\]]/g, '').split(',')[0].trim();
             const parts = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
             if (!parts) return false;
             const mDay = parseInt(parts[1]);
             const mMonth = parseInt(parts[2]);
             const mYear = parseInt(parts[3]);
-            const dayOk = mDay === qDay;
-            const monthOk = mMonth === qMonth;
-            const yearOk = !qYearShort || mYear === qYearShort || mYear === qYearShort + 2000;
-            return dayOk && monthOk && yearOk;
+            return mDay === qDay && mMonth === qMonth && (!qYearShort || mYear === qYearShort || mYear === qYearShort + 2000);
           });
-          console.log(`Date search: ${qDay}/${qMonth}${qYearShort ? '/' + qYearShort : ''} → ${dateMessages.length} messages found`);
+          console.log(`Date search: ${qDay}/${qMonth}${qYearShort ? '/' + qYearShort : ''} → ${dateFoundMessages.length} messages found`);
         }
       }
 
+      // Step 2: Build prompt based on query type
       let therapistPrompt: string;
 
-      if (dateMessages.length > 0) {
-        // Prompt específico para fecha
-        therapistPrompt = `Eres un terapeuta de parejas. El usuario pregunta por el ${dateMatch![1]} de ${dateMatch![2]}${dateMatch![3] ? ' de ' + dateMatch![3] : ''}.
+      if (isDateQuery && dateFoundMessages.length > 0) {
+        // CASE 1: Date query WITH messages found
+        therapistPrompt = `El usuario pregunta por el ${dateMatch![1]} de ${dateMatch![2]}${dateMatch![3] ? ' de ' + dateMatch![3] : ''}.
 
-MENSAJES DE ESA FECHA (${dateMessages.length}):
-${dateMessages.slice(0, 50).map((m: any) => `${m.sender}: ${m.text}`).join('\n')}
+MENSAJES DE ESA FECHA (${dateFoundMessages.length}):
+${dateFoundMessages.slice(0, 100).map((m: any) => `${m.time || ''} ${m.sender}: ${m.text}`).join('\n')}
 
 Resume:
-1. De qué hablaron (2-3 temas)
-2. Tono de la conversación
-3. Algo destacable
+- De qué hablaron (2-3 temas principales)
+- Tono de la conversación
+- Algo destacable
 
-Máximo 100 palabras.
+Máximo 120 palabras. Sé específico.
 
-PREGUNTA: ${question}
-RESPONDE:`;
+PREGUNTA: ${question}`;
+
+      } else if (isDateQuery && dateFoundMessages.length === 0) {
+        // CASE 2: Date query but NO messages found
+        const firstDate = messages?.[0]?.date || 'desconocida';
+        const lastDate = messages?.[messages.length - 1]?.date || 'desconocida';
+        therapistPrompt = `El usuario pregunta por el ${dateMatch![1]} de ${dateMatch![2]}${dateMatch![3] ? ' de ' + dateMatch![3] : ''}, pero NO hay mensajes de esa fecha.
+
+El chat tiene mensajes desde ${firstDate} hasta ${lastDate}.
+
+Dile que no encontraste mensajes de esa fecha y sugiere que pregunte por otra fecha dentro del rango del chat.
+
+PREGUNTA: ${question}`;
+
       } else {
-        // Prompt general
-        therapistPrompt = `Eres un terapeuta de parejas. Responde CONCISO y DIRECTO.
+        // CASE 3: General question
+        const recentMsgs = messages ? sampleMessages(messages, 30) : [];
+        const recentHistory = chatHistory && chatHistory.length > 0
+          ? chatHistory.slice(-2).map((m: any) => `${m.role === 'user' ? 'Usuario' : 'Terapeuta'}: ${m.text}`).join('\n')
+          : '';
+
+        therapistPrompt = `Eres terapeuta de parejas. Responde CONCISO.
 
 DATOS:
 - Total: ${stats?.total || 0} msgs en ${stats?.uniqueDays || 0} días
@@ -86,13 +95,9 @@ DATOS:
 - Score: ${stats?.score || 'N/A'}/100 | Emojis amor: ${stats?.loveCount || 0} | Lidera: ${stats?.leader || 'N/A'} (${stats?.leaderPct || 0}%)
 
 MENSAJES:
-${sampleMsgs.map((m: any) => `[${m.date}] ${m.sender}: ${m.text.substring(0, 80)}`).join('\n')}
+${recentMsgs.map((m: any) => `[${m.date}] ${m.sender}: ${m.text.substring(0, 80)}`).join('\n')}
 
-REGLAS:
-- Máximo 150 palabras, 2-3 párrafos
-- Cita datos concretos
-- Si no sabes, dilo
-- Máx 2 emojis
+REGLAS: Máximo 150 palabras. Datos concretos. Si no sabes, dilo.
 
 ${recentHistory ? `CONTEXTO:\n${recentHistory}\n` : ''}PREGUNTA: ${question}
 RESPONDE:`;
