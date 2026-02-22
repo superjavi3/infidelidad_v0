@@ -4,8 +4,66 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, stats } = await req.json();
+    const body = await req.json();
+    const { mode, question, chatHistory, stats, messages } = body;
 
+    // ===== MODO CHAT - TERAPEUTA IA =====
+    if (mode === 'chat') {
+      const sampleMsgs = messages ? sampleMessages(messages, 100) : [];
+
+      const therapistPrompt = `Eres un terapeuta de parejas especializado en análisis de comunicación digital.
+
+ANÁLISIS COMPLETO DEL CHAT:
+- Total mensajes: ${stats?.total || 0}
+- ${stats?.personA || 'Persona A'}: ${stats?.msgsA || 0} mensajes (${stats?.total ? Math.round(stats.msgsA / stats.total * 100) : 0}%)
+- ${stats?.personB || 'Persona B'}: ${stats?.msgsB || 0} mensajes (${stats?.total ? Math.round(stats.msgsB / stats.total * 100) : 0}%)
+- Días de conversación: ${stats?.uniqueDays || 0}
+- Score de relación: ${stats?.score || 'N/A'}/100
+- Emojis de amor: ${stats?.loveCount || 0}
+- Quién lidera: ${stats?.leader || 'N/A'} (${stats?.leaderPct || 0}%)
+
+MUESTRA DE MENSAJES RECIENTES:
+${sampleMsgs.map((m: any) => `[${m.date}] ${m.sender}: ${m.text.substring(0, 100)}`).join('\n')}
+
+INSTRUCCIONES:
+- Responde de forma empática pero honesta
+- Usa DATOS REALES del análisis, nunca inventes
+- Cita fechas específicas cuando sea relevante
+- Máximo 3-4 párrafos
+- Tono: Amigable y profesional, como una amiga psicóloga
+- Usa emojis sutiles pero con moderación
+- Si no tienes datos suficientes para responder algo específico, dilo honestamente
+
+${chatHistory && chatHistory.length > 0 ? `CONVERSACIÓN PREVIA:\n${chatHistory.map((m: any) => `${m.role === 'user' ? 'Usuario' : 'Terapeuta'}: ${m.text}`).join('\n')}\n` : ''}
+
+PREGUNTA DEL USUARIO:
+${question}
+
+RESPONDE DE FORMA CONVERSACIONAL:`;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: therapistPrompt }] }],
+            generationConfig: { temperature: 0.8, maxOutputTokens: 800 }
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      if (!data.candidates || !data.candidates[0]) {
+        throw new Error('No response from Gemini');
+      }
+
+      const answer = data.candidates[0].content.parts[0].text;
+      return NextResponse.json({ success: true, answer: answer.trim() });
+    }
+
+    // ===== MODO ANALYSIS - ORIGINAL =====
     // Samplear mensajes (no enviar todos)
     const sample = sampleMessages(messages, 300);
 
