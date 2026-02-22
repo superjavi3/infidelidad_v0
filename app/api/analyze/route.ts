@@ -13,42 +13,32 @@ export async function POST(req: NextRequest) {
     if (mode === 'chat') {
       console.log('=== CHATBOT DEBUG ===');
       console.log('API Key exists:', !!GEMINI_API_KEY);
-      console.log('API Key starts with AIza:', GEMINI_API_KEY?.startsWith('AIza'));
       console.log('Question:', question);
-      console.log('Stats exist:', !!stats);
-      console.log('Messages count:', messages?.length || 0);
+      console.log('Messages received:', messages?.length || 0);
 
-      const sampleMsgs = messages ? sampleMessages(messages, 100) : [];
+      const sampleMsgs = messages ? sampleMessages(messages, 30) : [];
 
-      const therapistPrompt = `Eres un terapeuta de parejas especializado en análisis de comunicación digital.
+      const recentHistory = chatHistory && chatHistory.length > 0
+        ? chatHistory.slice(-2).map((m: any) => `${m.role === 'user' ? 'Usuario' : 'Terapeuta'}: ${m.text}`).join('\n')
+        : '';
 
-ANÁLISIS COMPLETO DEL CHAT:
-- Total mensajes: ${stats?.total || 0}
-- ${stats?.personA || 'Persona A'}: ${stats?.msgsA || 0} mensajes (${stats?.total ? Math.round(stats.msgsA / stats.total * 100) : 0}%)
-- ${stats?.personB || 'Persona B'}: ${stats?.msgsB || 0} mensajes (${stats?.total ? Math.round(stats.msgsB / stats.total * 100) : 0}%)
-- Días de conversación: ${stats?.uniqueDays || 0}
-- Score de relación: ${stats?.score || 'N/A'}/100
-- Emojis de amor: ${stats?.loveCount || 0}
-- Quién lidera: ${stats?.leader || 'N/A'} (${stats?.leaderPct || 0}%)
+      const therapistPrompt = `Eres una terapeuta de parejas analizando un chat de WhatsApp.
 
-MUESTRA DE MENSAJES RECIENTES:
-${sampleMsgs.map((m: any) => `[${m.date}] ${m.sender}: ${m.text.substring(0, 100)}`).join('\n')}
+DATOS:
+- ${stats?.total || 0} mensajes en ${stats?.uniqueDays || 0} días
+- ${stats?.personA || 'A'}: ${stats?.msgsA || 0} msgs (${stats?.total ? Math.round(stats.msgsA / stats.total * 100) : 0}%)
+- ${stats?.personB || 'B'}: ${stats?.msgsB || 0} msgs (${stats?.total ? Math.round(stats.msgsB / stats.total * 100) : 0}%)
+- Score: ${stats?.score || 'N/A'}/100 | Emojis amor: ${stats?.loveCount || 0} | Lidera: ${stats?.leader || 'N/A'} (${stats?.leaderPct || 0}%)
 
-INSTRUCCIONES:
-- Responde de forma empática pero honesta
-- Usa DATOS REALES del análisis, nunca inventes
-- Cita fechas específicas cuando sea relevante
-- Máximo 3-4 párrafos
-- Tono: Amigable y profesional, como una amiga psicóloga
-- Usa emojis sutiles pero con moderación
-- Si no tienes datos suficientes para responder algo específico, dilo honestamente
+MENSAJES:
+${sampleMsgs.map((m: any) => `[${m.date}] ${m.sender}: ${m.text.substring(0, 80)}`).join('\n')}
 
-${chatHistory && chatHistory.length > 0 ? `CONVERSACIÓN PREVIA:\n${chatHistory.map((m: any) => `${m.role === 'user' ? 'Usuario' : 'Terapeuta'}: ${m.text}`).join('\n')}\n` : ''}
+${recentHistory ? `CONTEXTO PREVIO:\n${recentHistory}\n` : ''}PREGUNTA: ${question}
 
-PREGUNTA DEL USUARIO:
-${question}
+Responde en 2-3 párrafos, empática, con datos reales. Tono: amiga psicóloga.`;
 
-RESPONDE DE FORMA CONVERSACIONAL:`;
+      console.log('Calling Gemini... prompt length:', therapistPrompt.length);
+      const startTime = Date.now();
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
@@ -57,15 +47,13 @@ RESPONDE DE FORMA CONVERSACIONAL:`;
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: therapistPrompt }] }],
-            generationConfig: { temperature: 0.8, maxOutputTokens: 800 }
+            generationConfig: { temperature: 0.7, maxOutputTokens: 500 }
           })
         }
       );
 
       const data = await response.json();
-      console.log('Gemini response status:', response.status);
-      console.log('Gemini raw response:', JSON.stringify(data).substring(0, 500));
-      console.log('Has candidates:', !!data.candidates);
+      console.log(`Gemini responded in ${Date.now() - startTime}ms - status: ${response.status}`);
 
       if (!data.candidates || !data.candidates[0]) {
         console.error('Gemini blocked or no response:', JSON.stringify(data).substring(0, 500));

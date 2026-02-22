@@ -3309,17 +3309,29 @@ async function sendChatMessage() {
 
     console.log('Chatbot request:', { question, statsOk: !!lastStats, msgCount: sampled.length });
 
+    // Timeout de 60 segundos
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+    // Feedback visual con conteo
+    const typingEl = document.getElementById('typingIndicator');
+    const totalMsgs = lastStats?.total || 0;
+    typingEl.innerHTML = `<div class="msg-avatar">💭</div><div class="typing-dots"><span></span><span></span><span></span></div><span style="margin-left:8px;font-size:12px;color:#999;">Analizando ${totalMsgs.toLocaleString()} mensajes...</span>`;
+
     const res = await fetch('/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         mode: 'chat',
         question,
-        chatHistory: chatbotHistory.slice(-10),
+        chatHistory: chatbotHistory.slice(-4),
         stats: lastStats,
         messages: sampled
-      })
+      }),
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
+
     const data = await res.json();
     document.getElementById('typingIndicator').style.display = 'none';
     console.log('Chatbot response:', data);
@@ -3333,7 +3345,11 @@ async function sendChatMessage() {
   } catch (err) {
     console.error('Chatbot error:', err);
     document.getElementById('typingIndicator').style.display = 'none';
-    addChatMsg('assistant', 'Error de conexión: ' + err.message + '. Verifica tu conexión e intenta de nuevo.');
+    if (err.name === 'AbortError') {
+      addChatMsg('assistant', 'La respuesta tardó demasiado. Intenta con una pregunta más corta o específica.');
+    } else {
+      addChatMsg('assistant', 'Error de conexión: ' + err.message + '. Verifica tu conexión e intenta de nuevo.');
+    }
   }
   scrollChat();
 }
