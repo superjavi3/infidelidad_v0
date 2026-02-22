@@ -22,20 +22,43 @@ export async function POST(req: NextRequest) {
         ? chatHistory.slice(-2).map((m: any) => `${m.role === 'user' ? 'Usuario' : 'Terapeuta'}: ${m.text}`).join('\n')
         : '';
 
-      const therapistPrompt = `Eres una terapeuta de parejas analizando un chat de WhatsApp.
+      // Detectar si pregunta por fecha específica
+      const dateMatch = question.match(/(\d{1,2})\s+de\s+(\w+)/i);
+      let dateContext = '';
+      if (dateMatch && messages) {
+        const day = dateMatch[1];
+        const month = dateMatch[2].toLowerCase();
+        const relevant = messages.filter((m: any) => {
+          const d = (m.date || '').toLowerCase();
+          return d.includes(day) && d.includes(month);
+        });
+        if (relevant.length > 0) {
+          dateContext = `\nMENSAJES DE ESA FECHA (${relevant.length}):\n${relevant.slice(0, 20).map((m: any) => `${m.sender}: ${m.text}`).join('\n')}\n`;
+        }
+      }
 
-DATOS:
-- ${stats?.total || 0} mensajes en ${stats?.uniqueDays || 0} días
+      const therapistPrompt = `Eres un terapeuta de parejas. Responde de forma CONCISA y DIRECTA.
+
+DATOS DEL CHAT:
+- Total: ${stats?.total || 0} mensajes en ${stats?.uniqueDays || 0} días
 - ${stats?.personA || 'A'}: ${stats?.msgsA || 0} msgs (${stats?.total ? Math.round(stats.msgsA / stats.total * 100) : 0}%)
 - ${stats?.personB || 'B'}: ${stats?.msgsB || 0} msgs (${stats?.total ? Math.round(stats.msgsB / stats.total * 100) : 0}%)
 - Score: ${stats?.score || 'N/A'}/100 | Emojis amor: ${stats?.loveCount || 0} | Lidera: ${stats?.leader || 'N/A'} (${stats?.leaderPct || 0}%)
 
-MENSAJES:
+MUESTRA MENSAJES RECIENTES:
 ${sampleMsgs.map((m: any) => `[${m.date}] ${m.sender}: ${m.text.substring(0, 80)}`).join('\n')}
+${dateContext}
+REGLAS ESTRICTAS:
+1. Máximo 2-3 párrafos cortos (no más de 150 palabras TOTAL)
+2. Si preguntan por fecha: cita mensajes textuales
+3. Si preguntan "por qué": da UNA razón clara basada en datos
+4. Usa bullets cuando sea útil
+5. NO especules - si no tienes datos, dilo
+6. Máximo 2 emojis por respuesta
 
-${recentHistory ? `CONTEXTO PREVIO:\n${recentHistory}\n` : ''}PREGUNTA: ${question}
+${recentHistory ? `CONTEXTO:\n${recentHistory}\n` : ''}PREGUNTA: ${question}
 
-Responde en 2-3 párrafos, empática, con datos reales. Tono: amiga psicóloga.`;
+RESPONDE (máx 150 palabras):`;
 
       console.log('Calling Gemini... prompt length:', therapistPrompt.length);
       const startTime = Date.now();

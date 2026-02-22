@@ -3337,7 +3337,7 @@ async function sendChatMessage() {
     console.log('Chatbot response:', data);
 
     if (data.success && data.answer) {
-      addChatMsg('assistant', data.answer);
+      addChatMsg('assistant', data.answer, true);
       chatbotHistory.push({ role: 'user', text: question }, { role: 'assistant', text: data.answer });
     } else {
       addChatMsg('assistant', 'Error: ' + (data.error || 'Respuesta inesperada del servidor. Intenta reformular tu pregunta.'));
@@ -3354,18 +3354,40 @@ async function sendChatMessage() {
   scrollChat();
 }
 
-function addChatMsg(role, text) {
+function addChatMsg(role, text, streaming = false) {
   const container = document.getElementById('chatMessages');
   const div = document.createElement('div');
   div.className = `chat-message ${role}`;
   const time = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-  // Format: convert markdown bold, newlines to HTML
-  const formatted = text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br>');
-  div.innerHTML = `<div class="msg-avatar">${role === 'user' ? '👤' : '💭'}</div><div class="msg-bubble"><p>${formatted}</p><span class="msg-time">${time}</span></div>`;
+
+  function formatText(t) {
+    return t
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/•/g, '<br>•')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>');
+  }
+
+  div.innerHTML = `<div class="msg-avatar">${role === 'user' ? '👤' : '💭'}</div><div class="msg-bubble"><p class="msg-text"></p><span class="msg-time">${time}</span></div>`;
   container.appendChild(div);
+  const textEl = div.querySelector('.msg-text');
+
+  if (streaming && role === 'assistant') {
+    const words = text.split(' ');
+    let current = 0;
+    const interval = setInterval(() => {
+      if (current < words.length) {
+        const partial = words.slice(0, current + 1).join(' ');
+        textEl.innerHTML = formatText(partial);
+        current++;
+        scrollChat();
+      } else {
+        clearInterval(interval);
+      }
+    }, 40);
+  } else {
+    textEl.innerHTML = formatText(text);
+  }
 }
 
 function scrollChat() {
@@ -3388,11 +3410,10 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot
     </div>
     <div id="chatSuggestions" class="chat-suggestions">
       <p>Preguntas sugeridas:</p>
-      <button onclick="askSuggestion(this)">¿Cuándo fue la última vez que me dijo "te amo"?</button>
-      <button onclick="askSuggestion(this)">¿Por qué dejó de responder rápido?</button>
-      <button onclick="askSuggestion(this)">¿Qué patrón ves en nuestras discusiones?</button>
-      <button onclick="askSuggestion(this)">¿Ha cambiado más él/ella o yo?</button>
-      <button onclick="askSuggestion(this)">¿Qué debería hacer para mejorar la comunicación?</button>
+      <button onclick="askSuggestion(this)">¿Quién inicia más las conversaciones?</button>
+      <button onclick="askSuggestion(this)">¿Cuándo empezó a cambiar la relación?</button>
+      <button onclick="askSuggestion(this)">¿Por qué tarda tanto en responder?</button>
+      <button onclick="askSuggestion(this)">¿Qué dice más: él o yo?</button>
     </div>
     <div id="chatMessages" class="chat-messages">
       <div class="chat-message assistant">
