@@ -759,9 +759,10 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 
 <!-- ── RESULTS (hidden until analysis) ── -->
 <section class="results-section container" id="resultsSection">
-  <div class="results-header">
+  <div class="results-header" style="position: relative;">
     <h2>Tu relación al <span class="gradient-text">descubierto</span></h2>
     <p style="color: var(--text-muted);">Análisis basado en <span id="totalMsgs">0</span> mensajes</p>
+    <button onclick="shareToStories()" style="position: absolute; top: 0; right: 0; background: transparent; border: 1.5px solid var(--text-muted); color: var(--text-muted); padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-family: inherit; transition: all 0.2s ease;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--text-muted)';this.style.color='var(--text-muted)'">📸 Stories</button>
   </div>
 
   <!-- Score Card -->
@@ -849,10 +850,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     <button class="btn-primary" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear por $69 MXN →</button>
   </div>
 
-  <!-- Share CTA -->
-  <div style="text-align: center; margin-top: 40px;">
-    <button class="btn-secondary" onclick="shareToStories()">📸 Compartir en Stories</button>
-  </div>
 
   <!-- Hidden container for Stories image (1080x1920) -->
   <div id="storiesContainer" style="position: absolute; left: -9999px; top: 0;">
