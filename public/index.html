@@ -3274,10 +3274,37 @@ function openChatbot() {
     alert('Primero sube un chat para analizar.');
     return;
   }
-  document.getElementById('chatbotModal').style.display = 'flex';
-  if (chatbotHistory.length > 0) {
-    document.getElementById('chatSuggestions').style.display = 'none';
+
+  // Calcular día con más mensajes para sugerencia dinámica
+  const dayCount = {};
+  lastMessages.forEach(m => {
+    if (!dayCount[m.date]) dayCount[m.date] = 0;
+    dayCount[m.date]++;
+  });
+  let topDay = null, topCount = 0;
+  for (const [day, count] of Object.entries(dayCount)) {
+    if (count > topCount) { topCount = count; topDay = day; }
   }
+  let topDayText = '';
+  if (topDay) {
+    const p = topDay.split('/');
+    const mNames = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const d = parseInt(p[0]), mo = parseInt(p[1]) - 1, yr = p[2]?.length === 2 ? '20' + p[2] : p[2];
+    topDayText = `${d} de ${mNames[mo]}${yr ? ' de ' + yr : ''}`;
+  }
+
+  // Actualizar sugerencias dinámicas
+  const sug = document.getElementById('chatSuggestions');
+  const pA = lastStats.personA || 'Persona A';
+  const pB = lastStats.personB || 'Persona B';
+  sug.innerHTML = `<p>Preguntas sugeridas:</p>
+    ${topDayText ? `<button onclick="askSuggestion(this)">¿De qué hablamos el ${topDayText}?</button>` : ''}
+    <button onclick="askSuggestion(this)">¿Cuándo empezó a cambiar todo?</button>
+    <button onclick="askSuggestion(this)">¿Por qué ${pB} tarda en responder?</button>
+    <button onclick="askSuggestion(this)">¿Quién habla más: ${pA} o ${pB}?</button>`;
+  sug.style.display = chatbotHistory.length > 0 ? 'none' : 'block';
+
+  document.getElementById('chatbotModal').style.display = 'flex';
   document.getElementById('chatInput').focus();
 }
 

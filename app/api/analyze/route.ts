@@ -23,42 +23,80 @@ export async function POST(req: NextRequest) {
         : '';
 
       // Detectar si pregunta por fecha específica
-      const dateMatch = question.match(/(\d{1,2})\s+de\s+(\w+)/i);
-      let dateContext = '';
-      if (dateMatch && messages) {
-        const day = dateMatch[1];
-        const month = dateMatch[2].toLowerCase();
-        const relevant = messages.filter((m: any) => {
-          const d = (m.date || '').toLowerCase();
-          return d.includes(day) && d.includes(month);
-        });
-        if (relevant.length > 0) {
-          dateContext = `\nMENSAJES DE ESA FECHA (${relevant.length}):\n${relevant.slice(0, 20).map((m: any) => `${m.sender}: ${m.text}`).join('\n')}\n`;
+      const monthMap: Record<string, string> = {
+        'enero': '1', 'febrero': '2', 'marzo': '3', 'abril': '4',
+        'mayo': '5', 'junio': '6', 'julio': '7', 'agosto': '8',
+        'septiembre': '9', 'octubre': '10', 'noviembre': '11', 'diciembre': '12'
+      };
+      const dateRegex = /(\d{1,2})\s+de\s+(\w+)(?:\s+(?:de|del)\s+(\d{2,4}))?/i;
+      const dateMatch = question.match(dateRegex);
+      let dateMessages: any[] = [];
+
+      if (dateMatch && messages && messages.length > 0) {
+        const qDay = dateMatch[1];
+        const qMonthName = dateMatch[2].toLowerCase();
+        const qYear = dateMatch[3];
+        const qMonth = monthMap[qMonthName];
+
+        if (qMonth) {
+          dateMessages = messages.filter((m: any) => {
+            const d = (m.date || '').split('/');
+            if (d.length < 2) return false;
+            const mDay = d[0], mMonth = d[1];
+            const mYear = d[2];
+            const dayOk = parseInt(mDay) === parseInt(qDay);
+            const monthOk = parseInt(mMonth) === parseInt(qMonth);
+            let yearOk = true;
+            if (qYear && mYear) {
+              const fullYear = mYear.length === 2 ? '20' + mYear : mYear;
+              yearOk = fullYear === qYear || mYear === qYear;
+            }
+            return dayOk && monthOk && yearOk;
+          });
+          console.log(`Date search: ${qDay}/${qMonth}${qYear ? '/' + qYear : ''} → ${dateMessages.length} messages found`);
         }
       }
 
-      const therapistPrompt = `Eres un terapeuta de parejas. Responde de forma CONCISA y DIRECTA.
+      let therapistPrompt: string;
 
-DATOS DEL CHAT:
-- Total: ${stats?.total || 0} mensajes en ${stats?.uniqueDays || 0} días
-- ${stats?.personA || 'A'}: ${stats?.msgsA || 0} msgs (${stats?.total ? Math.round(stats.msgsA / stats.total * 100) : 0}%)
-- ${stats?.personB || 'B'}: ${stats?.msgsB || 0} msgs (${stats?.total ? Math.round(stats.msgsB / stats.total * 100) : 0}%)
+      if (dateMessages.length > 0) {
+        // Prompt específico para fecha
+        therapistPrompt = `Eres un terapeuta de parejas. El usuario pregunta por el ${dateMatch![1]} de ${dateMatch![2]}${dateMatch![3] ? ' de ' + dateMatch![3] : ''}.
+
+MENSAJES DE ESA FECHA (${dateMessages.length}):
+${dateMessages.slice(0, 50).map((m: any) => `${m.sender}: ${m.text}`).join('\n')}
+
+Resume:
+1. De qué hablaron (2-3 temas)
+2. Tono de la conversación
+3. Algo destacable
+
+Máximo 100 palabras.
+
+PREGUNTA: ${question}
+RESPONDE:`;
+      } else {
+        // Prompt general
+        therapistPrompt = `Eres un terapeuta de parejas. Responde CONCISO y DIRECTO.
+
+DATOS:
+- Total: ${stats?.total || 0} msgs en ${stats?.uniqueDays || 0} días
+- ${stats?.personA || 'A'}: ${stats?.msgsA || 0} (${stats?.total ? Math.round(stats.msgsA / stats.total * 100) : 0}%)
+- ${stats?.personB || 'B'}: ${stats?.msgsB || 0} (${stats?.total ? Math.round(stats.msgsB / stats.total * 100) : 0}%)
 - Score: ${stats?.score || 'N/A'}/100 | Emojis amor: ${stats?.loveCount || 0} | Lidera: ${stats?.leader || 'N/A'} (${stats?.leaderPct || 0}%)
 
-MUESTRA MENSAJES RECIENTES:
+MENSAJES:
 ${sampleMsgs.map((m: any) => `[${m.date}] ${m.sender}: ${m.text.substring(0, 80)}`).join('\n')}
-${dateContext}
-REGLAS ESTRICTAS:
-1. Máximo 2-3 párrafos cortos (no más de 150 palabras TOTAL)
-2. Si preguntan por fecha: cita mensajes textuales
-3. Si preguntan "por qué": da UNA razón clara basada en datos
-4. Usa bullets cuando sea útil
-5. NO especules - si no tienes datos, dilo
-6. Máximo 2 emojis por respuesta
+
+REGLAS:
+- Máximo 150 palabras, 2-3 párrafos
+- Cita datos concretos
+- Si no sabes, dilo
+- Máx 2 emojis
 
 ${recentHistory ? `CONTEXTO:\n${recentHistory}\n` : ''}PREGUNTA: ${question}
-
-RESPONDE (máx 150 palabras):`;
+RESPONDE:`;
+      }
 
       console.log('Calling Gemini... prompt length:', therapistPrompt.length);
       const startTime = Date.now();
