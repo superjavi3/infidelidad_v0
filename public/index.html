@@ -3359,7 +3359,12 @@ function addChatMsg(role, text) {
   const div = document.createElement('div');
   div.className = `chat-message ${role}`;
   const time = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-  div.innerHTML = `<div class="msg-avatar">${role === 'user' ? '👤' : '💭'}</div><div class="msg-bubble">${text}<span class="msg-time">${time}</span></div>`;
+  // Format: convert markdown bold, newlines to HTML
+  const formatted = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>');
+  div.innerHTML = `<div class="msg-avatar">${role === 'user' ? '👤' : '💭'}</div><div class="msg-bubble"><p>${formatted}</p><span class="msg-time">${time}</span></div>`;
   container.appendChild(div);
 }
 

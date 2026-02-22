@@ -47,7 +47,7 @@ Responde en 2-3 párrafos, empática, con datos reales. Tono: amiga psicóloga.`
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: therapistPrompt }] }],
-            generationConfig: { temperature: 0.7, maxOutputTokens: 500 }
+            generationConfig: { temperature: 0.7, maxOutputTokens: 1500, thinkingConfig: { thinkingBudget: 0 } }
           })
         }
       );
@@ -88,8 +88,10 @@ Basándome en el análisis de ${stats?.total || 0} mensajes entre ${stats?.perso
         return NextResponse.json({ success: true, answer: fallbackAnswer });
       }
 
-      const answer = data.candidates[0].content.parts[0].text;
-      return NextResponse.json({ success: true, answer: answer.trim() });
+      let answer = data.candidates[0].content.parts[0].text;
+      answer = answer.replace(/```json/g, '').replace(/```/g, '').trim();
+      console.log('Answer length:', answer.length);
+      return NextResponse.json({ success: true, answer });
     }
 
     // ===== MODO ANALYSIS - ORIGINAL =====
@@ -138,7 +140,8 @@ IMPORTANTE:
           }],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 1000,
+            maxOutputTokens: 1500,
+            thinkingConfig: { thinkingBudget: 0 }
           }
         })
       }
