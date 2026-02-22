@@ -3329,10 +3329,32 @@ async function sendChatMessage() {
   scrollChat();
 
   try {
-    // Sample messages client-side to avoid huge request body
-    const sampled = lastMessages.length > 150
-      ? [...lastMessages.slice(0, 50), ...lastMessages.slice(-100)]
-      : lastMessages;
+    // Detect date query client-side to send relevant messages
+    const dateQ = question.match(/(\d{1,2})\s+de\s+(\w+)(?:\s+(?:de|del)\s+(\d{2,4}))?/i);
+    let sampled;
+
+    if (dateQ) {
+      const mMap = {enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,octubre:10,noviembre:11,diciembre:12};
+      const qD = parseInt(dateQ[1]), qM = mMap[dateQ[2].toLowerCase()] || 0, qY = dateQ[3] ? parseInt(dateQ[3].toString().slice(-2)) : null;
+      if (qM) {
+        const dateMatched = lastMessages.filter(m => {
+          const p = (m.date || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+          if (!p) return false;
+          return parseInt(p[1]) === qD && parseInt(p[2]) === qM && (!qY || parseInt(p[3]) === qY || parseInt(p[3]) === qY + 2000);
+        });
+        // Send date-matched messages + small general sample for context
+        const generalSample = lastMessages.length > 30 ? [...lastMessages.slice(0, 10), ...lastMessages.slice(-10)] : lastMessages;
+        sampled = [...dateMatched, ...generalSample];
+        console.log(`Date query: found ${dateMatched.length} messages for ${qD}/${qM}/${qY || 'XX'}`);
+      } else {
+        sampled = lastMessages.length > 150 ? [...lastMessages.slice(0, 50), ...lastMessages.slice(-100)] : lastMessages;
+      }
+    } else {
+      // General query: sample messages to avoid huge request body
+      sampled = lastMessages.length > 150
+        ? [...lastMessages.slice(0, 50), ...lastMessages.slice(-100)]
+        : lastMessages;
+    }
 
     console.log('Chatbot request:', { question, statsOk: !!lastStats, msgCount: sampled.length });
 

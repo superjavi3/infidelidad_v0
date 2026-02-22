@@ -35,6 +35,11 @@ export async function POST(req: NextRequest) {
 
         if (qMonth) {
           isDateQuery = true;
+          console.log(`=== DEBUG DATE SEARCH ===`);
+          console.log(`Looking for: day=${qDay} month=${qMonth} year=${qYearShort || 'any'}`);
+          console.log(`First 3 msg dates:`, messages.slice(0, 3).map((m: any) => m.date));
+          console.log(`Last 3 msg dates:`, messages.slice(-3).map((m: any) => m.date));
+
           dateFoundMessages = messages.filter((m: any) => {
             const dateStr = (m.date || '').replace(/[\[\]]/g, '').split(',')[0].trim();
             const parts = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
@@ -45,6 +50,26 @@ export async function POST(req: NextRequest) {
             return mDay === qDay && mMonth === qMonth && (!qYearShort || mYear === qYearShort || mYear === qYearShort + 2000);
           });
           console.log(`Date search: ${qDay}/${qMonth}${qYearShort ? '/' + qYearShort : ''} → ${dateFoundMessages.length} messages found`);
+
+          // Debug: if not found, try manual string search
+          if (dateFoundMessages.length === 0) {
+            const monthStr = String(qMonth);
+            const dayStr = String(qDay);
+            const manual = messages.filter((m: any) => {
+              const d = String(m.date || '');
+              return d.includes(dayStr + '/' + monthStr) || d.includes(dayStr + '/' + monthStr.padStart(2, '0'));
+            });
+            console.log(`Manual string search for "${dayStr}/${monthStr}" → ${manual.length} found`);
+            if (manual.length > 0) {
+              console.log(`Sample manual match date:`, manual[0].date);
+              dateFoundMessages = manual.filter((m: any) => {
+                if (!qYearShort) return true;
+                const d = String(m.date || '');
+                return d.includes(String(qYearShort)) || d.includes(String(qYearShort + 2000));
+              });
+              console.log(`After year filter: ${dateFoundMessages.length} found`);
+            }
+          }
         }
       }
 
