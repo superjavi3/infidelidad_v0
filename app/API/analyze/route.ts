@@ -7,8 +7,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { mode, question, chatHistory, stats, messages } = body;
 
+    console.log('API /analyze called - mode:', mode || 'analysis');
+
     // ===== MODO CHAT - TERAPEUTA IA =====
     if (mode === 'chat') {
+      console.log('Chat mode - question:', question, '- msgs:', messages?.length, '- stats:', !!stats);
       const sampleMsgs = messages ? sampleMessages(messages, 100) : [];
 
       const therapistPrompt = `Eres un terapeuta de parejas especializado en análisis de comunicación digital.

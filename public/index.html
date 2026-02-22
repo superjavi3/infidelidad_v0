@@ -3302,6 +3302,13 @@ async function sendChatMessage() {
   scrollChat();
 
   try {
+    // Sample messages client-side to avoid huge request body
+    const sampled = lastMessages.length > 150
+      ? [...lastMessages.slice(0, 50), ...lastMessages.slice(-100)]
+      : lastMessages;
+
+    console.log('Chatbot request:', { question, statsOk: !!lastStats, msgCount: sampled.length });
+
     const res = await fetch('/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -3310,22 +3317,23 @@ async function sendChatMessage() {
         question,
         chatHistory: chatbotHistory.slice(-10),
         stats: lastStats,
-        messages: lastMessages
+        messages: sampled
       })
     });
     const data = await res.json();
     document.getElementById('typingIndicator').style.display = 'none';
+    console.log('Chatbot response:', data);
 
     if (data.success && data.answer) {
       addChatMsg('assistant', data.answer);
       chatbotHistory.push({ role: 'user', text: question }, { role: 'assistant', text: data.answer });
     } else {
-      addChatMsg('assistant', 'Lo siento, hubo un error. ¿Podrías reformular tu pregunta?');
+      addChatMsg('assistant', 'Error: ' + (data.error || 'Respuesta inesperada del servidor. Intenta reformular tu pregunta.'));
     }
   } catch (err) {
     console.error('Chatbot error:', err);
     document.getElementById('typingIndicator').style.display = 'none';
-    addChatMsg('assistant', 'Ocurrió un error al procesar tu pregunta. Intenta de nuevo.');
+    addChatMsg('assistant', 'Error de conexión: ' + err.message + '. Verifica tu conexión e intenta de nuevo.');
   }
   scrollChat();
 }
@@ -3335,7 +3343,7 @@ function addChatMsg(role, text) {
   const div = document.createElement('div');
   div.className = `chat-message ${role}`;
   const time = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-  div.innerHTML = `<div class="msg-avatar">${role === 'user' ? '👤' : '🤖'}</div><div class="msg-bubble">${text}<span class="msg-time">${time}</span></div>`;
+  div.innerHTML = `<div class="msg-avatar">${role === 'user' ? '👤' : '💭'}</div><div class="msg-bubble">${text}<span class="msg-time">${time}</span></div>`;
   container.appendChild(div);
 }
 
@@ -3367,12 +3375,12 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot
     </div>
     <div id="chatMessages" class="chat-messages">
       <div class="chat-message assistant">
-        <div class="msg-avatar">🤖</div>
+        <div class="msg-avatar">💭</div>
         <div class="msg-bubble">Hola, soy tu terapeuta IA. He analizado toda tu conversación y puedo responder cualquier pregunta sobre tu relación. ¿Qué te gustaría saber?</div>
       </div>
     </div>
     <div id="typingIndicator" class="typing-indicator" style="display:none;">
-      <div class="msg-avatar">🤖</div>
+      <div class="msg-avatar">💭</div>
       <div class="typing-dots"><span></span><span></span><span></span></div>
     </div>
     <div class="chat-input-wrap">
