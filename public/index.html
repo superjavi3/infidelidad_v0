@@ -1172,6 +1172,26 @@ async function processChat(text) {
 
   // Populate results
   showResults(stats);
+  // ========== NUEVO: Llamar a Gemini para análisis IA ==========
+  try {
+    console.log('Llamando a Gemini API...');
+    const aiResponse = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages, stats })
+    });
+    
+    const aiData = await aiResponse.json();
+    
+    if (aiData.success && aiData.analysis) {
+      console.log('Análisis IA recibido:', aiData.analysis);
+      updateWithAIInsights(aiData.analysis, stats);
+    } else {
+      console.warn('No se pudo obtener análisis IA');
+    }
+  } catch (error) {
+    console.error('Error al llamar Gemini:', error);
+  }
 }
 
 function showResults(s) {
@@ -1226,6 +1246,37 @@ const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.15 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+function updateWithAIInsights(analysis, stats) {
+  console.log('Actualizando UI con insights de IA');
+  
+  // Actualizar "Quién lleva la relación" con análisis IA
+  if (analysis.whoLeads) {
+    document.getElementById('whoLeads').textContent = analysis.whoLeads;
+  }
+  
+  // Actualizar fun fact con insight de IA
+  if (analysis.funInsight) {
+    document.getElementById('funFact').innerHTML = 
+      `🤖 <strong>Insight con IA:</strong> ${analysis.funInsight}`;
+  }
+  
+  // Si hay red flags, desbloquear y mostrar
+  if (analysis.redFlags && analysis.redFlags.length > 0) {
+    const redFlagsCards = document.querySelectorAll('.example-card.locked');
+    if (redFlagsCards[0]) {
+      redFlagsCards[0].classList.remove('locked');
+      const title = redFlagsCards[0].querySelector('h4');
+      const content = redFlagsCards[0].querySelector('p');
+      if (title) title.textContent = `${analysis.redFlags.length} señal(es) detectada(s)`;
+      if (content) content.textContent = analysis.redFlags.join('. ');
+    }
+  }
+  
+  // Mostrar green flags si existen
+  if (analysis.greenFlags && analysis.greenFlags.length > 0) {
+    console.log('Green flags:', analysis.greenFlags);
+  }
+}
 </script>
 
 </body>
