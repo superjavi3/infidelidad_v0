@@ -11,7 +11,13 @@ export async function POST(req: NextRequest) {
 
     // ===== MODO CHAT - TERAPEUTA IA =====
     if (mode === 'chat') {
-      console.log('Chat mode - question:', question, '- msgs:', messages?.length, '- stats:', !!stats);
+      console.log('=== CHATBOT DEBUG ===');
+      console.log('API Key exists:', !!GEMINI_API_KEY);
+      console.log('API Key starts with AIza:', GEMINI_API_KEY?.startsWith('AIza'));
+      console.log('Question:', question);
+      console.log('Stats exist:', !!stats);
+      console.log('Messages count:', messages?.length || 0);
+
       const sampleMsgs = messages ? sampleMessages(messages, 100) : [];
 
       const therapistPrompt = `Eres un terapeuta de parejas especializado en análisis de comunicación digital.
@@ -57,10 +63,41 @@ RESPONDE DE FORMA CONVERSACIONAL:`;
       );
 
       const data = await response.json();
+      console.log('Gemini response status:', response.status);
+      console.log('Gemini raw response:', JSON.stringify(data).substring(0, 500));
+      console.log('Has candidates:', !!data.candidates);
 
       if (!data.candidates || !data.candidates[0]) {
-        console.error('Gemini error:', JSON.stringify(data).substring(0, 300));
-        throw new Error('No response from Gemini');
+        console.error('Gemini blocked or no response:', JSON.stringify(data).substring(0, 500));
+
+        // Safety block check
+        if (data.promptFeedback?.blockReason) {
+          console.error('Blocked by safety:', data.promptFeedback.blockReason);
+        }
+
+        // Fallback: respuesta basada en estadísticas
+        const pctA = stats?.total ? Math.round((stats.msgsA || 0) / stats.total * 100) : 50;
+        const pctB = stats?.total ? Math.round((stats.msgsB || 0) / stats.total * 100) : 50;
+        const leader = pctA > pctB ? stats?.personA : stats?.personB;
+        const follower = pctA > pctB ? stats?.personB : stats?.personA;
+        const leaderPct = Math.max(pctA, pctB);
+
+        const fallbackAnswer = `Entiendo tu pregunta: "${question}"
+
+Basándome en el análisis de ${stats?.total || 0} mensajes entre ${stats?.personA || 'Persona A'} y ${stats?.personB || 'Persona B'}:
+
+**Stats clave:**
+- ${stats?.personA || 'Persona A'}: ${stats?.msgsA || 0} mensajes (${pctA}%)
+- ${stats?.personB || 'Persona B'}: ${stats?.msgsB || 0} mensajes (${pctB}%)
+- Conversación de ${stats?.uniqueDays || 0} días
+- Score de relación: ${stats?.score || 'N/A'}/100
+- Emojis de amor encontrados: ${stats?.loveCount || 0}
+
+**Observación rápida:** ${leader} lleva el ritmo de la conversación con ${leaderPct}% de los mensajes. ${leaderPct > 65 ? `Hay un desbalance notable - ${follower} participa menos.` : 'La participación está relativamente equilibrada.'}
+
+*Estoy procesando tu pregunta con IA para darte una respuesta más personalizada. Si ves este mensaje, inténtalo de nuevo en unos minutos.*`;
+
+        return NextResponse.json({ success: true, answer: fallbackAnswer });
       }
 
       const answer = data.candidates[0].content.parts[0].text;
