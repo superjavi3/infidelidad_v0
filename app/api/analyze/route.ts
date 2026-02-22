@@ -33,27 +33,27 @@ export async function POST(req: NextRequest) {
       let dateMessages: any[] = [];
 
       if (dateMatch && messages && messages.length > 0) {
-        const qDay = dateMatch[1];
+        const qDay = parseInt(dateMatch[1]);
         const qMonthName = dateMatch[2].toLowerCase();
         const qYear = dateMatch[3];
-        const qMonth = monthMap[qMonthName];
+        const qMonth = parseInt(monthMap[qMonthName] || '0');
+        const qYearShort = qYear ? parseInt(qYear.slice(-2)) : null;
 
         if (qMonth) {
           dateMessages = messages.filter((m: any) => {
-            const d = (m.date || '').split('/');
-            if (d.length < 2) return false;
-            const mDay = d[0], mMonth = d[1];
-            const mYear = d[2];
-            const dayOk = parseInt(mDay) === parseInt(qDay);
-            const monthOk = parseInt(mMonth) === parseInt(qMonth);
-            let yearOk = true;
-            if (qYear && mYear) {
-              const fullYear = mYear.length === 2 ? '20' + mYear : mYear;
-              yearOk = fullYear === qYear || mYear === qYear;
-            }
+            // Extract date from formats like "[21/2/26, 19:35:23]" or "21/2/26"
+            const dateStr = (m.date || '').replace(/[\[\]]/g, '').split(',')[0].trim();
+            const parts = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+            if (!parts) return false;
+            const mDay = parseInt(parts[1]);
+            const mMonth = parseInt(parts[2]);
+            const mYear = parseInt(parts[3]);
+            const dayOk = mDay === qDay;
+            const monthOk = mMonth === qMonth;
+            const yearOk = !qYearShort || mYear === qYearShort || mYear === qYearShort + 2000;
             return dayOk && monthOk && yearOk;
           });
-          console.log(`Date search: ${qDay}/${qMonth}${qYear ? '/' + qYear : ''} → ${dateMessages.length} messages found`);
+          console.log(`Date search: ${qDay}/${qMonth}${qYearShort ? '/' + qYearShort : ''} → ${dateMessages.length} messages found`);
         }
       }
 
