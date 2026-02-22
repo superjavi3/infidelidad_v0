@@ -1057,17 +1057,38 @@ async function handleFile(file) {
 
 // ── WHATSAPP PARSER ──
 function parseWhatsApp(text) {
-  // Common WhatsApp export patterns (handles multiple locales)
-  const regex = /^(\d{1,2}\/\d{1,2}\/\d{2,4}),?\s+\d{1,2}:\d{2}(?::\d{2})?\s*(?:[ap]\.?\s*[m]\.?)?(?:\s*-\s*|\s+)([^:]+):\s(.+)$/gmi;
   const messages = [];
-  let match;
-  while ((match = regex.exec(text)) !== null) {
-    messages.push({
-      date: match[1].trim(),
-      sender: match[2].trim(),
-      text: match[3].trim()
-    });
+  
+  // Regex que soporta múltiples formatos:
+  // [21/2/26, 19:35:23] Nombre: mensaje
+  // 12/01/2024, 10:32 - Nombre: mensaje
+  // 1/12/24, 10:32 a. m. - Nombre: mensaje
+  const patterns = [
+    // Formato con corchetes: [21/2/26, 19:35:23] Nombre: mensaje
+    /^\[(\d{1,2}\/\d{1,2}\/\d{2,4}),\s*(\d{1,2}:\d{2}:\d{2})\]\s*([^:]+):\s*(.+)$/gm,
+    
+    // Formato con guión: 12/01/2024, 10:32 - Nombre: mensaje
+    /^(\d{1,2}\/\d{1,2}\/\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?)\s*(?:[ap]\.?\s*[m]\.?)?\s*-\s*([^:]+):\s*(.+)$/gm,
+  ];
+  
+  for (const regex of patterns) {
+    let match;
+    regex.lastIndex = 0; // Reset regex
+    
+    while ((match = regex.exec(text)) !== null) {
+      const [, date, time, sender, messageText] = match;
+      
+      messages.push({
+        date: date.trim(),
+        time: time.trim(),
+        sender: sender.trim(),
+        text: messageText.trim()
+      });
+    }
+    
+    if (messages.length > 0) break; // Si encontró mensajes, no probar otros patrones
   }
+  
   return messages;
 }
 
