@@ -798,49 +798,37 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 }
 
 /* ── Blur overlay / paywall system ── */
-.feature-blur-wrapper {
-  position: relative;
+/* Header always visible; only .pf-body gets blurred */
+.premium-feature-card.plan-locked .pf-body {
+  filter: blur(8px);
+  pointer-events: none;
+  opacity: 0.3;
+  user-select: none;
+  min-height: 80px;
   transition: filter 0.4s ease, opacity 0.4s ease;
 }
-.feature-blur-wrapper.locked .blurred-content {
-  filter: blur(6px);
-  pointer-events: none;
-  opacity: 0.5;
-  user-select: none;
+.premium-feature-card.plan-locked {
+  position: relative;
 }
-.feature-blur-wrapper.unlocked .blurred-content {
+.premium-feature-card.plan-unlocked .pf-body {
   filter: none;
   pointer-events: auto;
   opacity: 1;
+  transition: filter 0.4s ease, opacity 0.4s ease;
 }
-.unlock-overlay {
-  position: absolute;
-  inset: 0;
+/* Overlay sits over the body area only */
+.body-unlock-overlay {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 10;
-  background: rgba(10,10,20,0.55);
-  backdrop-filter: blur(2px);
-  border-radius: 16px;
-  padding: 24px;
+  padding: 18px 16px;
   text-align: center;
+  margin-top: -8px;
 }
-.unlock-overlay-icon {
-  font-size: 2rem;
-  margin-bottom: 8px;
-}
-.unlock-overlay-title {
-  color: #fff;
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  margin-bottom: 4px;
-}
-.unlock-overlay-desc {
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  margin-bottom: 16px;
+.body-unlock-overlay .unlock-overlay-btn {
+  margin-top: 4px;
 }
 .unlock-overlay-btn {
   padding: 12px 28px;
@@ -858,6 +846,42 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 }
 .unlock-overlay-btn.obsesivo-btn {
   background: linear-gradient(135deg, #EC4899, #6C5CE7);
+}
+/* Section-level CTA button */
+.section-cta-btn {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  margin: 32px auto 0;
+  padding: 18px 32px;
+  border: none;
+  border-radius: 14px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.section-cta-btn:hover { transform: scale(1.03); }
+.section-cta-btn.detective-cta {
+  background: linear-gradient(135deg, #3B82F6, #6C5CE7);
+}
+.section-cta-btn.obsesivo-cta {
+  background: linear-gradient(135deg, #EC4899, #6C5CE7);
+}
+/* Chatbot trigger locked state */
+.chatbot-trigger.plan-locked {
+  position: relative;
+}
+.chatbot-trigger.plan-locked > *:not(.body-unlock-overlay) {
+  filter: blur(6px);
+  pointer-events: none;
+  opacity: 0.3;
+}
+.chatbot-trigger.plan-locked .body-unlock-overlay {
+  filter: none;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* Plan badge shown in results */
@@ -3955,43 +3979,62 @@ function getStoredPlan() {
 }
 
 // ── Blur overlay system ──
+// Headers (.pf-header) always visible; only .pf-body gets blurred
 function applyBlurOverlays() {
   document.querySelectorAll('[data-plan-required]').forEach(card => {
-    // Skip if already wrapped
-    if (card.parentElement && card.parentElement.classList.contains('feature-blur-wrapper')) return;
-
     const requiredPlan = card.getAttribute('data-plan-required');
     const hasAccess = hasPlanAccess(requiredPlan);
 
-    // Create wrapper
-    const wrapper = document.createElement('div');
-    wrapper.className = 'feature-blur-wrapper ' + (hasAccess ? 'unlocked' : 'locked');
+    // Skip if already processed
+    if (card.classList.contains('plan-locked') || card.classList.contains('plan-unlocked')) return;
 
-    // Move card content into blurred-content div
-    card.parentNode.insertBefore(wrapper, card);
-    const blurDiv = document.createElement('div');
-    blurDiv.className = 'blurred-content';
-    blurDiv.appendChild(card);
-    wrapper.appendChild(blurDiv);
-
-    // Add overlay if locked
-    if (!hasAccess) {
-      const planNames = { detective: 'Detective', obsesivo: 'Obsesivo' };
-      const planPrices = { detective: '$69 MXN — pago único', obsesivo: '$199 MXN/mes' };
-      const planIcons = { detective: '🔍', obsesivo: '🔥' };
-      const btnClass = requiredPlan === 'obsesivo' ? 'obsesivo-btn' : 'detective-btn';
-
-      const overlay = document.createElement('div');
-      overlay.className = 'unlock-overlay';
-      overlay.innerHTML = `
-        <div class="unlock-overlay-icon">${planIcons[requiredPlan] || '🔒'}</div>
-        <div class="unlock-overlay-title">Plan ${planNames[requiredPlan] || requiredPlan}</div>
-        <div class="unlock-overlay-desc">${planPrices[requiredPlan] || ''}</div>
-        <button class="unlock-overlay-btn ${btnClass}" onclick="openPayModal('${requiredPlan}')">Desbloquear →</button>
-      `;
-      wrapper.appendChild(overlay);
+    if (hasAccess) {
+      card.classList.add('plan-unlocked');
+      return;
     }
+
+    // Mark as locked
+    card.classList.add('plan-locked');
+
+    const btnClass = requiredPlan === 'obsesivo' ? 'obsesivo-btn' : 'detective-btn';
+    const planNames = { detective: 'Detective', obsesivo: 'Obsesivo' };
+
+    // For chatbot-trigger (no .pf-body structure)
+    if (card.classList.contains('chatbot-trigger')) {
+      const overlay = document.createElement('div');
+      overlay.className = 'body-unlock-overlay';
+      overlay.innerHTML = `<button class="unlock-overlay-btn ${btnClass}" onclick="openPayModal('${requiredPlan}')">Desbloquear Plan ${planNames[requiredPlan]} →</button>`;
+      card.appendChild(overlay);
+      return;
+    }
+
+    // For premium-feature-card: add small CTA below the blurred body
+    const overlay = document.createElement('div');
+    overlay.className = 'body-unlock-overlay';
+    overlay.innerHTML = `<button class="unlock-overlay-btn ${btnClass}" onclick="openPayModal('${requiredPlan}')">Desbloquear →</button>`;
+    card.appendChild(overlay);
   });
+
+  // Add section-level CTA buttons
+  addSectionCTA('premiumSection', 'detective');
+  addSectionCTA('obsessiveSection', 'obsesivo');
+}
+
+function addSectionCTA(sectionId, plan) {
+  const section = document.getElementById(sectionId);
+  if (!section || section.querySelector('.section-cta-btn') || hasPlanAccess(plan)) return;
+
+  const planLabels = {
+    detective: '🔍 Desbloquear Plan Detective — $69 MXN →',
+    obsesivo: '🔥 Suscribirme al Plan Obsesivo — $199 MXN/mes →'
+  };
+  const btnClass = plan === 'obsesivo' ? 'obsesivo-cta' : 'detective-cta';
+
+  const btn = document.createElement('button');
+  btn.className = 'section-cta-btn ' + btnClass;
+  btn.textContent = planLabels[plan];
+  btn.onclick = function() { openPayModal(plan); };
+  section.appendChild(btn);
 }
 
 function removeBlurOverlays(plan) {
@@ -3999,15 +4042,20 @@ function removeBlurOverlays(plan) {
     const requiredPlan = card.getAttribute('data-plan-required');
     if (!hasPlanAccess(requiredPlan)) return;
 
-    const wrapper = card.closest('.feature-blur-wrapper');
-    if (!wrapper) return;
+    card.classList.remove('plan-locked');
+    card.classList.add('plan-unlocked');
 
-    wrapper.classList.remove('locked');
-    wrapper.classList.add('unlocked');
-
-    // Remove overlay
-    const overlay = wrapper.querySelector('.unlock-overlay');
+    // Remove per-card overlay
+    const overlay = card.querySelector('.body-unlock-overlay');
     if (overlay) overlay.remove();
+  });
+
+  // Remove section-level CTA buttons
+  document.querySelectorAll('.section-cta-btn').forEach(btn => {
+    const section = btn.closest('.plan-section');
+    if (!section) { btn.remove(); return; }
+    const sectionPlan = section.id === 'obsessiveSection' ? 'obsesivo' : 'detective';
+    if (hasPlanAccess(sectionPlan)) btn.remove();
   });
 }
 
