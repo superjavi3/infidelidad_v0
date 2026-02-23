@@ -2211,11 +2211,17 @@ function showResults(s) {
   // Step 2: Render ALL feature content (data fills into .pf-body elements)
   if (lastMessages) {
     featuresRendered = true;
-    renderPremiumFeatures(lastMessages, s);
+    try {
+      renderPremiumFeatures(lastMessages, s);
+      console.log('[showResults] renderPremiumFeatures completed OK');
+    } catch(err) {
+      console.error('[showResults] ERROR in renderPremiumFeatures:', err);
+    }
+  } else {
+    console.warn('[showResults] lastMessages is null — features skipped');
   }
 
   // Step 3: Apply blur overlays AFTER all content is rendered
-  // This is the critical step — must run after renderPremiumFeatures
   applyBlurOverlays();
 
   resultsSection.classList.add('active');
