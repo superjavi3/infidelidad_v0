@@ -4135,11 +4135,40 @@ function switchExportTab(platform) {
 // ═══ 3-TIER PLAN SYSTEM ═══
 
 // Plan state
-window.userPlan = 'obsesivo'; // TEMP: paywall disabled for testing
-console.log('>>> PAYWALL DISABLED — userPlan forced to obsesivo <<<');
+window.userPlan = 'curioso'; // Default: free tier
 const PLAN_HIERARCHY = { curioso: 0, detective: 1, obsesivo: 2 };
 let selectedPlan = 'detective';
 let featuresRendered = false;
+
+// ── Secret admin bypass ──
+// URL: add ?admin=losabia2026 to unlock everything
+// Console: type adminUnlock() to unlock
+(function checkAdminBypass() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('admin') === 'losabia2026') {
+    window.userPlan = 'obsesivo';
+    localStorage.setItem('losabia_plan', JSON.stringify({
+      plan: 'obsesivo',
+      sessionId: 'admin-bypass',
+      email: 'admin@losabia.mx',
+      paidAt: new Date().toISOString()
+    }));
+    // Clean the URL so the key isn't visible
+    const clean = window.location.origin + window.location.pathname + window.location.hash;
+    window.history.replaceState(null, '', clean);
+    console.log('[Admin] Full access granted via URL bypass');
+  }
+})();
+// Console shortcut
+window.adminUnlock = function() {
+  window.userPlan = 'obsesivo';
+  localStorage.setItem('losabia_plan', JSON.stringify({
+    plan: 'obsesivo', sessionId: 'admin-bypass',
+    email: 'admin@losabia.mx', paidAt: new Date().toISOString()
+  }));
+  if (typeof updatePlanUI === 'function') updatePlanUI();
+  console.log('[Admin] Full access granted. Reload if needed.');
+};
 
 function hasPlanAccess(requiredPlan) {
   return (PLAN_HIERARCHY[window.userPlan] || 0) >= (PLAN_HIERARCHY[requiredPlan] || 0);
@@ -4410,10 +4439,9 @@ async function checkPaymentSuccess() {
   }
 
   // 2. Fall back to stored plan
-  // TEMP: skip localStorage override while paywall is disabled
-  // const storedPlan = getStoredPlan();
-  // window.userPlan = storedPlan;
-  console.log('[Paywall] TEMP: paywall disabled, keeping userPlan:', window.userPlan);
+  const storedPlan = getStoredPlan();
+  window.userPlan = storedPlan;
+  console.log('[Paywall] Loaded stored plan:', window.userPlan);
 
   updatePlanBadge();
   applyBlurOverlays();
