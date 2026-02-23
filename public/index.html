@@ -2185,16 +2185,20 @@ async function generatePDF() {
     const aiAtencion = (aiClean.match(/(?:Area[^:]*:|Atencion[^:]*:)\s*([\s\S]*?)(?=Recomend|$)/i) || [])[1] || '';
     const aiRecomendacion = (aiClean.match(/(?:Recomendaci[oó]n[^:]*:)\s*([\s\S]*?)$/i) || [])[1] || '';
 
-    // Timeline SVG (simple bar chart)
+    // Timeline SVG (bar chart with value labels on top)
     const tlLabels = timelineData.labels || [];
     const tlData = timelineData.data || [];
     const tlMax = Math.max(1, ...tlData);
     const tlBarW = Math.max(4, Math.floor(580 / Math.max(1, tlLabels.length)) - 2);
+    const tlValueStep = Math.max(1, Math.floor(tlLabels.length / 12));
     const tlBars = tlData.map((v, i) => {
       const h = Math.max(2, (v / tlMax) * 160);
       const x = 50 + i * (tlBarW + 2);
       const isPeak = v === tlMax;
-      return '<rect x="' + x + '" y="' + (200 - h) + '" width="' + tlBarW + '" height="' + h + '" rx="2" fill="' + (isPeak ? '#FF2D78' : '#8B5CF6') + '" opacity="0.85"/>';
+      const bar = '<rect x="' + x + '" y="' + (200 - h) + '" width="' + tlBarW + '" height="' + h + '" rx="2" fill="' + (isPeak ? '#FF2D78' : '#8B5CF6') + '" opacity="0.85"/>';
+      const showLabel = v > 0 && (isPeak || i % tlValueStep === 0);
+      const label = showLabel ? '<text x="' + (x + tlBarW / 2) + '" y="' + (200 - h - 4) + '" text-anchor="middle" font-size="9" font-weight="700" fill="#FFF">' + v + '</text>' : '';
+      return bar + label;
     }).join('');
     const tlLabelStep = Math.max(1, Math.floor(tlLabels.length / 8));
     const tlLabelsSvg = tlLabels.map((l, i) => {
@@ -2236,25 +2240,27 @@ async function generatePDF() {
 
     const pages = [];
 
-    // PAGE 1: COVER
+    // PAGE 1: COVER (centered, with emojis)
+    const crownA = pctA >= pctB ? '\u{1F451} ' : '';
+    const crownB = pctB > pctA ? '\u{1F451} ' : '';
     pages.push('<div style="' + pageCSS + 'display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(165deg,#0A0812 0%,#1A0F2E 40%,#0A0812 100%);">' +
       '<div style="font-size:18px;font-weight:600;color:#FF2D78;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">LoSabia.mx</div>' +
       '<div style="font-size:13px;color:#9B96B0;margin-bottom:28px;">Reporte Detective de Relacion</div>' +
-      '<div style="margin-bottom:20px;">' + scoreRingSVG + '</div>' +
-      '<div style="font-size:28px;font-weight:700;color:#FFF;margin-bottom:6px;">' + clean(pA) + ' & ' + clean(pB) + '</div>' +
-      '<div style="font-size:15px;color:#F5C842;font-weight:500;margin-bottom:32px;">' + verdict + '</div>' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:460px;margin-bottom:28px;">' +
-        '<div style="' + cardCSS + 'text-align:left;"><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.total.toLocaleString() + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Mensajes totales</div></div>' +
-        '<div style="' + cardCSS + 'text-align:left;"><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.uniqueDays + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Dias de conversacion</div></div>' +
-        '<div style="' + cardCSS + 'text-align:left;"><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.avgReply + ' min</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Respuesta promedio</div></div>' +
-        '<div style="' + cardCSS + 'text-align:left;"><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.loveCount.toLocaleString() + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Emojis de amor</div></div>' +
+      '<div style="margin-bottom:20px;display:flex;justify-content:center;">' + scoreRingSVG + '</div>' +
+      '<div style="font-size:28px;font-weight:700;color:#FFF;margin-bottom:6px;text-align:center;">' + clean(pA) + ' & ' + clean(pB) + '</div>' +
+      '<div style="font-size:15px;color:#F5C842;font-weight:500;margin-bottom:32px;text-align:center;">' + verdict + '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:500px;margin:0 auto 28px auto;">' +
+        '<div style="' + cardCSS + 'text-align:center;"><span style="font-size:1.6rem;display:block;margin-bottom:4px;">\u{1F4AC}</span><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.total.toLocaleString() + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Mensajes totales</div></div>' +
+        '<div style="' + cardCSS + 'text-align:center;"><span style="font-size:1.6rem;display:block;margin-bottom:4px;">\u{1F4C5}</span><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.uniqueDays + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Dias de conversacion</div></div>' +
+        '<div style="' + cardCSS + 'text-align:center;"><span style="font-size:1.6rem;display:block;margin-bottom:4px;">\u{26A1}</span><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.avgReply + ' min</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Respuesta promedio</div></div>' +
+        '<div style="' + cardCSS + 'text-align:center;"><span style="font-size:1.6rem;display:block;margin-bottom:4px;">\u{2764}\u{FE0F}</span><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.loveCount.toLocaleString() + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Emojis de amor</div></div>' +
       '</div>' +
-      '<div style="margin-bottom:20px;">' +
+      '<div style="margin:0 auto 20px auto;max-width:400px;display:flex;justify-content:center;">' +
         '<svg width="400" height="60" xmlns="http://www.w3.org/2000/svg">' +
           '<rect x="10" y="4" width="' + Math.max(20, pctA * 3.8) + '" height="22" rx="4" fill="#FF2D78"/>' +
-          '<text x="18" y="20" font-size="12" font-weight="600" fill="#FFF">' + clean(pA) + ' ' + pctA + '%</text>' +
+          '<text x="18" y="20" font-size="12" font-weight="600" fill="#FFF">' + crownA + clean(pA) + ' ' + pctA + '%</text>' +
           '<rect x="10" y="32" width="' + Math.max(20, pctB * 3.8) + '" height="22" rx="4" fill="#8B5CF6"/>' +
-          '<text x="18" y="48" font-size="12" font-weight="600" fill="#FFF">' + clean(pB) + ' ' + pctB + '%</text>' +
+          '<text x="18" y="48" font-size="12" font-weight="600" fill="#FFF">' + crownB + clean(pB) + ' ' + pctB + '%</text>' +
         '</svg>' +
       '</div>' +
       '<div style="font-size:11px;color:#6B6780;position:absolute;bottom:28px;">' + today + '</div>' +
@@ -2262,7 +2268,7 @@ async function generatePDF() {
 
     // PAGE 2: TIMELINE
     pages.push('<div style="' + pageCSS + '">' +
-      '<div style="font-size:26px;font-weight:700;color:#FFF;margin-bottom:4px;">Linea de Vida</div>' +
+      '<div style="font-size:26px;font-weight:700;color:#FFF;margin-bottom:4px;">\u{1F4C8} Linea de Vida</div>' +
       '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
       '<div style="font-size:13px;color:#9B96B0;margin-bottom:28px;">Evolucion mensual de mensajes a lo largo del tiempo</div>' +
       '<div style="' + cardCSS + '">' +
@@ -2274,25 +2280,12 @@ async function generatePDF() {
       '</div>' +
       footerHTML + '</div>');
 
-    // PAGE 3: SILENCES
+    // PAGE 3: SILENCES + PATTERNS (combined)
     const silenceBarsHTML = silenceBrokeItems.length > 0 ?
       '<svg width="520" height="' + (silenceBrokeItems.length * 44 + 16) + '" xmlns="http://www.w3.org/2000/svg">' +
         hBarSVG(silenceBrokeItems.map(([name, count]) => [name + ' rompe el silencio', count])) + '</svg>'
       : '<p style="color:#9B96B0;font-size:13px;">No se detectaron periodos de silencio mayores a 48 horas.</p>';
 
-    pages.push('<div style="' + pageCSS + '">' +
-      '<div style="font-size:26px;font-weight:700;color:#FFF;margin-bottom:4px;">Mapa de Silencios</div>' +
-      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
-      '<div style="font-size:13px;color:#9B96B0;margin-bottom:28px;">Periodos de mas de 48 horas sin mensajes</div>' +
-      '<div style="display:flex;gap:16px;margin-bottom:18px;">' +
-        '<div style="background:#1E1B2E;border-radius:8px;padding:14px 18px;flex:1;text-align:center;"><div style="font-size:26px;font-weight:700;color:#F5C842;">' + silenceData.total + '</div><div style="font-size:11px;color:#9B96B0;margin-top:2px;">Silencios totales</div></div>' +
-        '<div style="background:#1E1B2E;border-radius:8px;padding:14px 18px;flex:1;text-align:center;"><div style="font-size:26px;font-weight:700;color:#F5C842;">' + longestDays + 'd</div><div style="font-size:11px;color:#9B96B0;margin-top:2px;">Silencio mas largo</div></div>' +
-        '<div style="background:#1E1B2E;border-radius:8px;padding:14px 18px;flex:1;text-align:center;"><div style="font-size:26px;font-weight:700;color:#F5C842;">' + longestHours + 'h</div><div style="font-size:11px;color:#9B96B0;margin-top:2px;">En horas</div></div>' +
-      '</div>' +
-      '<div style="' + cardCSS + '"><h3 style="font-size:16px;font-weight:600;color:#FF2D78;margin-bottom:12px;">Quien rompe el silencio?</h3><div style="display:flex;justify-content:center;margin:16px 0;">' + silenceBarsHTML + '</div></div>' +
-      footerHTML + '</div>');
-
-    // PAGE 4: DOUBLE TEXTING + DELETED
     const dtBarsHTML = dtItems.length > 0 ?
       '<svg width="520" height="' + (dtItems.length * 44 + 16) + '" xmlns="http://www.w3.org/2000/svg">' +
         hBarSVG(dtItems.map(([name, eps]) => [name, Array.isArray(eps) ? eps.length : eps])) + '</svg>'
@@ -2304,17 +2297,27 @@ async function generatePDF() {
       : '';
 
     pages.push('<div style="' + pageCSS + '">' +
-      '<div style="font-size:26px;font-weight:700;color:#FFF;margin-bottom:4px;">Mensajes y Patrones</div>' +
-      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
-      '<div style="margin-bottom:24px;"><h3 style="font-size:16px;font-weight:600;color:#F5C842;margin-bottom:12px;">Double Texting (5+ mensajes sin respuesta)</h3><div style="' + cardCSS + '">' + dtBarsHTML + '</div></div>' +
-      '<div style="margin-bottom:24px;"><h3 style="font-size:16px;font-weight:600;color:#F5C842;margin-bottom:12px;">Mensajes Eliminados</h3><div style="' + cardCSS + '">' +
-        (deletedData.total > 0 ?
-          '<div style="display:flex;gap:16px;margin-bottom:12px;"><div style="background:#1E1B2E;border-radius:8px;padding:14px 18px;flex:1;text-align:center;"><div style="font-size:26px;font-weight:700;color:#F5C842;">' + deletedData.total + '</div><div style="font-size:11px;color:#9B96B0;">Total eliminados</div></div></div>' + delBarsHTML
-          : '<p style="color:#9B96B0;font-size:13px;">No se detectaron mensajes eliminados.</p>') +
-      '</div></div>' +
+      '<div style="font-size:24px;font-weight:700;color:#FFF;margin-bottom:4px;">\u{1F507} Mapa de Silencios</div>' +
+      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:8px 0 16px;"></div>' +
+      '<div style="display:flex;gap:12px;margin-bottom:14px;">' +
+        '<div style="background:#1E1B2E;border-radius:8px;padding:12px 14px;flex:1;text-align:center;"><span style="font-size:1.4rem;display:block;margin-bottom:2px;">\u{1F515}</span><div style="font-size:22px;font-weight:700;color:#F5C842;">' + silenceData.total + '</div><div style="font-size:10px;color:#9B96B0;margin-top:2px;">Silencios totales</div></div>' +
+        '<div style="background:#1E1B2E;border-radius:8px;padding:12px 14px;flex:1;text-align:center;"><span style="font-size:1.4rem;display:block;margin-bottom:2px;">\u{23F3}</span><div style="font-size:22px;font-weight:700;color:#F5C842;">' + longestDays + 'd</div><div style="font-size:10px;color:#9B96B0;margin-top:2px;">Silencio mas largo</div></div>' +
+        '<div style="background:#1E1B2E;border-radius:8px;padding:12px 14px;flex:1;text-align:center;"><span style="font-size:1.4rem;display:block;margin-bottom:2px;">\u{1F550}</span><div style="font-size:22px;font-weight:700;color:#F5C842;">' + longestHours + 'h</div><div style="font-size:10px;color:#9B96B0;margin-top:2px;">En horas</div></div>' +
+      '</div>' +
+      '<div style="' + cardCSS + 'padding:16px;margin-bottom:10px;"><h3 style="font-size:14px;font-weight:600;color:#FF2D78;margin-bottom:8px;">Quien rompe el silencio?</h3><div style="display:flex;justify-content:center;">' + silenceBarsHTML + '</div></div>' +
+      '<div style="margin-top:40px;">' +
+        '<div style="font-size:22px;font-weight:700;color:#FFF;margin-bottom:4px;">Mensajes y Patrones</div>' +
+        '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:8px 0 16px;"></div>' +
+        '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F624} Double Texting (5+ sin respuesta)</h3><div style="' + cardCSS + 'padding:16px;">' + dtBarsHTML + '</div></div>' +
+        '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F5D1}\u{FE0F} Mensajes Eliminados</h3><div style="' + cardCSS + 'padding:16px;">' +
+          (deletedData.total > 0 ?
+            '<div style="display:flex;gap:12px;margin-bottom:8px;"><div style="background:#1E1B2E;border-radius:8px;padding:10px 14px;flex:1;text-align:center;"><div style="font-size:22px;font-weight:700;color:#F5C842;">' + deletedData.total + '</div><div style="font-size:10px;color:#9B96B0;">Total eliminados</div></div></div>' + delBarsHTML
+            : '<p style="color:#9B96B0;font-size:13px;">No se detectaron mensajes eliminados.</p>') +
+        '</div></div>' +
+      '</div>' +
       footerHTML + '</div>');
 
-    // PAGE 5: BEFORE VS NOW
+    // PAGE 4: BEFORE VS NOW
     const baContent = baMetrics.length > 0 ?
       '<div style="font-size:13px;color:#9B96B0;margin-bottom:28px;">Comparacion entre ' + clean(bnData.beforeLabel) + ' y ' + clean(bnData.afterLabel) + '</div>' +
       '<div style="' + cardCSS + '"><table style="width:100%;border-collapse:separate;border-spacing:0 6px;">' +
@@ -2323,32 +2326,22 @@ async function generatePDF() {
       : '<div style="' + cardCSS + 'text-align:center;padding:40px 0;"><p style="color:#9B96B0;font-size:14px;">No hay suficientes datos para la comparacion Antes vs Ahora.<br/>Se necesitan al menos 2 meses de conversacion.</p></div>';
 
     pages.push('<div style="' + pageCSS + '">' +
-      '<div style="font-size:26px;font-weight:700;color:#FFF;margin-bottom:4px;">Antes vs Ahora</div>' +
+      '<div style="font-size:26px;font-weight:700;color:#FFF;margin-bottom:4px;">\u{1F494} Antes vs Ahora</div>' +
       '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
       baContent + footerHTML + '</div>');
 
-    // PAGE 6: AI ANALYSIS
+    // PAGE 5: AI ANALYSIS
     pages.push('<div style="' + pageCSS + '">' +
       '<div style="font-size:26px;font-weight:700;color:#FFF;margin-bottom:4px;">Analisis de IA</div>' +
       '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
       '<div style="font-size:13px;color:#9B96B0;margin-bottom:28px;">Resumen generado por inteligencia artificial</div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">' +
-        '<div style="' + cardCSS + '"><h4 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">Estado de la relacion</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiEstado).trim().slice(0,500) + '</p></div>' +
-        '<div style="' + cardCSS + '"><h4 style="font-size:14px;font-weight:600;color:#4ADE80;margin-bottom:8px;">Fortalezas</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiFortalezas).trim().slice(0,500) + '</p></div>' +
-        '<div style="' + cardCSS + '"><h4 style="font-size:14px;font-weight:600;color:#FF2D78;margin-bottom:8px;">Areas de atencion</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiAtencion).trim().slice(0,500) + '</p></div>' +
-        '<div style="' + cardCSS + 'grid-column:1/-1;"><h4 style="font-size:14px;font-weight:600;color:#8B5CF6;margin-bottom:8px;">Recomendacion</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiRecomendacion).trim().slice(0,500) + '</p></div>' +
+        '<div style="' + cardCSS + '"><h4 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F48A} Estado de la relacion</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiEstado).trim().slice(0,500) + '</p></div>' +
+        '<div style="' + cardCSS + '"><h4 style="font-size:14px;font-weight:600;color:#4ADE80;margin-bottom:8px;">\u{1F4AA} Fortalezas</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiFortalezas).trim().slice(0,500) + '</p></div>' +
+        '<div style="' + cardCSS + '"><h4 style="font-size:14px;font-weight:600;color:#FF2D78;margin-bottom:8px;">\u{26A0}\u{FE0F} Areas de atencion</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiAtencion).trim().slice(0,500) + '</p></div>' +
+        '<div style="' + cardCSS + 'grid-column:1/-1;"><h4 style="font-size:14px;font-weight:600;color:#8B5CF6;margin-bottom:8px;">\u{1F3AF} Recomendacion</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiRecomendacion).trim().slice(0,500) + '</p></div>' +
       '</div>' +
       footerHTML + '</div>');
-
-    // PAGE 7: CLOSING
-    pages.push('<div style="' + pageCSS + 'display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(165deg,#0A0812 0%,#1A0F2E 50%,#0A0812 100%);">' +
-      '<div style="font-size:42px;font-weight:800;background:linear-gradient(135deg,#FF2D78,#F5C842);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;">LoSabia.mx</div>' +
-      '<div style="font-size:16px;color:#9B96B0;margin-bottom:36px;">Analisis de relaciones con inteligencia artificial</div>' +
-      '<div style="width:120px;height:3px;background:linear-gradient(90deg,#FF2D78,#F5C842);border-radius:2px;margin-bottom:36px;"></div>' +
-      '<div style="color:#C8C3D8;font-size:14px;max-width:400px;text-align:center;line-height:1.7;">Este reporte fue generado analizando <strong>' + lastStats.total.toLocaleString() + '</strong> mensajes entre <strong>' + clean(pA) + '</strong> y <strong>' + clean(pB) + '</strong> a lo largo de <strong>' + lastStats.uniqueDays + '</strong> dias de conversacion.</div>' +
-      '<div style="font-size:12px;color:#6B6780;margin-top:40px;">' + today + '</div>' +
-      '<div style="font-size:14px;color:#FF2D78;font-weight:600;margin-top:8px;">losabia.mx</div>' +
-    '</div>');
 
     // Render each page with html2canvas and add to jsPDF
     const { jsPDF } = window.jspdf;
