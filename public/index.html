@@ -869,20 +869,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 .section-cta-btn.obsesivo-cta {
   background: linear-gradient(135deg, #EC4899, #6C5CE7);
 }
-/* Chatbot trigger locked state */
-.chatbot-trigger.plan-locked {
-  position: relative;
-}
-.chatbot-trigger.plan-locked > *:not(.body-unlock-overlay) {
-  filter: blur(6px);
-  pointer-events: none;
-  opacity: 0.3;
-}
-.chatbot-trigger.plan-locked .body-unlock-overlay {
-  filter: none;
-  opacity: 1;
-  pointer-events: auto;
-}
 
 /* Plan badge shown in results */
 .user-plan-badge {
@@ -1666,6 +1652,25 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
       <div class="plan-subtitle">4 análisis devastadores para quien necesita saber TODO</div>
     </div>
 
+    <!-- Chatbot Terapeuta IA (first item, high FOMO) -->
+    <div class="premium-feature-card" id="featureChatbot" data-plan-required="obsesivo">
+      <div class="pf-header">
+        <span class="pf-icon">💬</span>
+        <div>
+          <h4 class="pf-title">Chatbot Terapeuta IA</h4>
+          <p class="pf-subtitle">Pregúntale todo sobre tu relación, 24/7. Analiza fechas, patrones y red flags basándose en tus datos reales.</p>
+        </div>
+      </div>
+      <div class="pf-body" id="chatbotPreviewBody">
+        <div style="display:flex;flex-direction:column;gap:12px;padding:8px 0;">
+          <div style="align-self:flex-end;background:rgba(108,92,231,0.2);border-radius:14px 14px 4px 14px;padding:10px 14px;max-width:80%;font-size:0.9rem;color:#c4b5fd;">¿Por qué dejó de responder rápido en octubre?</div>
+          <div style="align-self:flex-start;background:rgba(255,255,255,0.06);border-radius:14px 14px 14px 4px;padding:10px 14px;max-width:80%;font-size:0.9rem;color:var(--text-muted);">Según los datos, en octubre se detecta una caída del 43% en velocidad de respuesta. El tiempo promedio pasó de 8 min a 47 min, especialmente los fines de semana...</div>
+          <div style="align-self:flex-end;background:rgba(108,92,231,0.2);border-radius:14px 14px 4px 14px;padding:10px 14px;max-width:80%;font-size:0.9rem;color:#c4b5fd;">¿Hay red flags en los últimos meses?</div>
+          <div style="align-self:flex-start;background:rgba(255,255,255,0.06);border-radius:14px 14px 14px 4px;padding:10px 14px;max-width:80%;font-size:0.9rem;color:var(--text-muted);">He detectado 3 patrones preocupantes: silencios prolongados después de las 11pm, reducción de emojis de amor en un 67% y...</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Obsessive 1: Reconstrucción Forense -->
     <div class="premium-feature-card" id="featureForensic" data-plan-required="obsesivo">
       <div class="pf-header">
@@ -1714,12 +1719,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
       <div class="pf-body" id="languageBody"></div>
     </div>
 
-    <!-- Chatbot Trigger -->
-    <div class="chatbot-trigger" data-plan-required="obsesivo">
-      <h3>💬 Terapeuta IA Personal</h3>
-      <p>Pregunta lo que quieras sobre tu relación. La IA conoce cada mensaje, cada silencio, cada cambio. Sin filtros.</p>
-      <button onclick="openChatbot()" class="btn-primary">💬 Hablar con el Terapeuta</button>
-    </div>
   </div>
 
   <!-- Hidden container for Stories image (1080x1920) -->
@@ -4026,24 +4025,13 @@ function applyBlurOverlays() {
     const btnClass = requiredPlan === 'obsesivo' ? 'obsesivo-btn' : 'detective-btn';
     const planNames = { detective: 'Detective', obsesivo: 'Obsesivo' };
 
-    // For chatbot-trigger (no .pf-body structure)
-    if (card.classList.contains('chatbot-trigger')) {
-      card.querySelectorAll(':scope > *:not(.body-unlock-overlay)').forEach(el => {
-        el.style.filter = 'blur(6px)';
-        el.style.pointerEvents = 'none';
-        el.style.opacity = '0.3';
-      });
-      const overlay = document.createElement('div');
-      overlay.className = 'body-unlock-overlay';
-      overlay.innerHTML = `<button class="unlock-overlay-btn ${btnClass}" onclick="openPayModal('${requiredPlan}')">Desbloquear Plan ${planNames[requiredPlan]} →</button>`;
-      card.appendChild(overlay);
-      return;
-    }
-
-    // For premium-feature-card: add small CTA below the blurred body
+    // For premium-feature-card: add CTA below the blurred body
     const overlay = document.createElement('div');
     overlay.className = 'body-unlock-overlay';
-    overlay.innerHTML = `<button class="unlock-overlay-btn ${btnClass}" onclick="openPayModal('${requiredPlan}')">Desbloquear →</button>`;
+    const btnLabel = card.id === 'featureChatbot'
+      ? '🔥 Desbloquear Chatbot — $199 MXN/mes →'
+      : 'Desbloquear →';
+    overlay.innerHTML = `<button class="unlock-overlay-btn ${btnClass}" onclick="openPayModal('${requiredPlan}')">${btnLabel}</button>`;
     card.appendChild(overlay);
   });
 
