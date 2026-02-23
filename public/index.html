@@ -4227,12 +4227,12 @@ async function checkPaymentSuccess() {
   }
 
   // 2. Fall back to stored plan
-  const storedPlan = getStoredPlan();
-  window.userPlan = storedPlan;
-  console.log('[Paywall] Stored plan:', storedPlan, '| localStorage losabia_plan:', localStorage.getItem('losabia_plan'), '| losabia_premium:', localStorage.getItem('losabia_premium'));
+  // TEMP: skip localStorage override while paywall is disabled
+  // const storedPlan = getStoredPlan();
+  // window.userPlan = storedPlan;
+  console.log('[Paywall] TEMP: paywall disabled, keeping userPlan:', window.userPlan);
 
   updatePlanBadge();
-  // Apply blur overlays now (they'll be re-applied after showResults too)
   applyBlurOverlays();
 }
 
