@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 function getStripe() {
-  return new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2026-01-28.clover',
-  });
+  const key = process.env.STRIPE_SECRET_KEY || '';
+  console.log('[Stripe] Key prefix:', key.substring(0, 8) + '..., length:', key.length);
+  return new Stripe(key);
 }
 
 export async function POST(req: NextRequest) {

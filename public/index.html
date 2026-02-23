@@ -3884,7 +3884,7 @@ async function goToStripeCheckout() {
     const data = await res.json();
 
     if (!res.ok) {
-      throw new Error(data.error || 'Error del servidor');
+      throw new Error((data.details || data.error || 'Error del servidor'));
     }
 
     // Redirect to Stripe Checkout

@@ -4,9 +4,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 function getStripe() {
-  return new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2026-01-28.clover',
-  });
+  return new Stripe(process.env.STRIPE_SECRET_KEY || '');
 }
 
 const PAID_SESSIONS_PATH = path.join('/tmp', 'paid-sessions.json');
