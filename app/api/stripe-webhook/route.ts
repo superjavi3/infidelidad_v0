@@ -3,9 +3,11 @@ import Stripe from 'stripe';
 import { promises as fs } from 'fs';
 import path from 'path';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-01-28.clover',
-});
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+    apiVersion: '2026-01-28.clover',
+  });
+}
 
 const PAID_SESSIONS_PATH = path.join('/tmp', 'paid-sessions.json');
 
@@ -27,7 +29,6 @@ async function loadPaidSessions(): Promise<PaidSession[]> {
 
 async function savePaidSession(session: PaidSession): Promise<void> {
   const sessions = await loadPaidSessions();
-  // Use Set-like behavior: don't duplicate by sessionId
   const existingIds = new Set(sessions.map(s => s.sessionId));
   if (!existingIds.has(session.sessionId)) {
     sessions.push(session);
@@ -43,13 +44,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
   }
 
+  const stripe = getStripe();
   let event: Stripe.Event;
 
   try {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      process.env.STRIPE_WEBHOOK_SECRET || ''
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';

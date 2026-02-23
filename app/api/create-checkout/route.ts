@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-01-28.clover',
-});
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+    apiVersion: '2026-01-28.clover',
+  });
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,8 +19,9 @@ export async function POST(req: NextRequest) {
     }
 
     const origin = req.headers.get('origin') || 'https://losabia.mx';
+    const stripe = getStripe();
 
-    const sessionParams: Stripe.Checkout.SessionCreateParams = {
+    const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       customer_email: email,
       line_items: [
@@ -29,7 +32,7 @@ export async function POST(req: NextRequest) {
               name: 'Plan Detective — LoSabía.mx',
               description: 'Análisis profundo de tu conversación de WhatsApp',
             },
-            unit_amount: 6900, // $69 MXN en centavos
+            unit_amount: 6900,
           },
           quantity: 1,
         },
@@ -37,20 +40,8 @@ export async function POST(req: NextRequest) {
       mode: 'payment',
       success_url: `${origin}/#results?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/#pricing`,
-      metadata: {
-        email,
-        analysisId,
-      },
-    };
-
-    // Add OXXO if available (Stripe supports it for MXN)
-    try {
-      sessionParams.payment_method_types!.push('oxxo');
-    } catch {
-      // OXXO not available, continue with card only
-    }
-
-    const session = await stripe.checkout.sessions.create(sessionParams);
+      metadata: { email, analysisId },
+    });
 
     return NextResponse.json({ url: session.url });
   } catch (error: unknown) {
