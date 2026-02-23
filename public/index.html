@@ -2202,18 +2202,21 @@ function showResults(s) {
   document.getElementById('funFact').innerHTML =
     `📊 <strong>Dato curioso:</strong> ${s.personA} envió <strong>${s.msgsA.toLocaleString()}</strong> mensajes y ${s.personB} envió <strong>${s.msgsB.toLocaleString()}</strong>. ${s.loveCount > 20 ? 'Hay mucho amor en este chat ❤️' : 'Podrían usar más emojis de amor... 😬'}`;
 
-  // Always render ALL features (blur overlays handle gating)
+  console.log('[showResults] window.userPlan:', window.userPlan);
+
+  // Step 1: Show sections so DOM is available
+  document.getElementById('premiumSection').style.display = 'block';
+  document.getElementById('obsessiveSection').style.display = 'block';
+
+  // Step 2: Render ALL feature content (data fills into .pf-body elements)
   if (lastMessages) {
     featuresRendered = true;
-    document.getElementById('premiumSection').style.display = 'block';
-    document.getElementById('obsessiveSection').style.display = 'block';
     renderPremiumFeatures(lastMessages, s);
-    applyBlurOverlays();
-    // If user has a plan, remove overlays for accessible features
-    if (hasPlanAccess('detective')) {
-      removeBlurOverlays(window.userPlan);
-    }
   }
+
+  // Step 3: Apply blur overlays AFTER all content is rendered
+  // This is the critical step — must run after renderPremiumFeatures
+  applyBlurOverlays();
 
   resultsSection.classList.add('active');
   resultsSection.scrollIntoView({ behavior: 'smooth' });
@@ -3979,28 +3982,57 @@ function getStoredPlan() {
 }
 
 // ── Blur overlay system ──
-// Headers (.pf-header) always visible; only .pf-body gets blurred
+// Idempotent: always recomputes lock state from current window.userPlan
+// Headers (.pf-header) ALWAYS visible; only .pf-body gets blurred via inline styles
 function applyBlurOverlays() {
+  console.log('[Paywall] applyBlurOverlays() called — window.userPlan:', window.userPlan);
+
   document.querySelectorAll('[data-plan-required]').forEach(card => {
     const requiredPlan = card.getAttribute('data-plan-required');
     const hasAccess = hasPlanAccess(requiredPlan);
 
-    // Skip if already processed
-    if (card.classList.contains('plan-locked') || card.classList.contains('plan-unlocked')) return;
+    console.log('[Paywall]', card.id || card.className, '→ requires:', requiredPlan, '| hasAccess:', hasAccess);
+
+    // Clean previous state
+    card.classList.remove('plan-locked', 'plan-unlocked');
+    const oldOverlay = card.querySelector('.body-unlock-overlay');
+    if (oldOverlay) oldOverlay.remove();
 
     if (hasAccess) {
       card.classList.add('plan-unlocked');
+      // Clear any inline blur styles
+      const body = card.querySelector('.pf-body');
+      if (body) {
+        body.style.filter = '';
+        body.style.pointerEvents = '';
+        body.style.opacity = '';
+        body.style.userSelect = '';
+      }
       return;
     }
 
-    // Mark as locked
+    // ── LOCK the card ──
     card.classList.add('plan-locked');
+
+    // Apply inline blur styles directly to .pf-body (bulletproof, no CSS dep)
+    const body = card.querySelector('.pf-body');
+    if (body) {
+      body.style.filter = 'blur(8px)';
+      body.style.pointerEvents = 'none';
+      body.style.opacity = '0.3';
+      body.style.userSelect = 'none';
+    }
 
     const btnClass = requiredPlan === 'obsesivo' ? 'obsesivo-btn' : 'detective-btn';
     const planNames = { detective: 'Detective', obsesivo: 'Obsesivo' };
 
     // For chatbot-trigger (no .pf-body structure)
     if (card.classList.contains('chatbot-trigger')) {
+      card.querySelectorAll(':scope > *:not(.body-unlock-overlay)').forEach(el => {
+        el.style.filter = 'blur(6px)';
+        el.style.pointerEvents = 'none';
+        el.style.opacity = '0.3';
+      });
       const overlay = document.createElement('div');
       overlay.className = 'body-unlock-overlay';
       overlay.innerHTML = `<button class="unlock-overlay-btn ${btnClass}" onclick="openPayModal('${requiredPlan}')">Desbloquear Plan ${planNames[requiredPlan]} →</button>`;
@@ -4022,7 +4054,10 @@ function applyBlurOverlays() {
 
 function addSectionCTA(sectionId, plan) {
   const section = document.getElementById(sectionId);
-  if (!section || section.querySelector('.section-cta-btn') || hasPlanAccess(plan)) return;
+  if (!section || hasPlanAccess(plan)) return;
+  // Remove existing CTA to avoid dupes
+  const existing = section.querySelector('.section-cta-btn');
+  if (existing) existing.remove();
 
   const planLabels = {
     detective: '🔍 Desbloquear Plan Detective — $69 MXN →',
@@ -4037,26 +4072,10 @@ function addSectionCTA(sectionId, plan) {
   section.appendChild(btn);
 }
 
-function removeBlurOverlays(plan) {
-  document.querySelectorAll('[data-plan-required]').forEach(card => {
-    const requiredPlan = card.getAttribute('data-plan-required');
-    if (!hasPlanAccess(requiredPlan)) return;
-
-    card.classList.remove('plan-locked');
-    card.classList.add('plan-unlocked');
-
-    // Remove per-card overlay
-    const overlay = card.querySelector('.body-unlock-overlay');
-    if (overlay) overlay.remove();
-  });
-
-  // Remove section-level CTA buttons
-  document.querySelectorAll('.section-cta-btn').forEach(btn => {
-    const section = btn.closest('.plan-section');
-    if (!section) { btn.remove(); return; }
-    const sectionPlan = section.id === 'obsessiveSection' ? 'obsesivo' : 'detective';
-    if (hasPlanAccess(sectionPlan)) btn.remove();
-  });
+function removeBlurOverlays() {
+  console.log('[Paywall] removeBlurOverlays() called — window.userPlan:', window.userPlan);
+  // Just re-run applyBlurOverlays — it's idempotent and recomputes everything
+  applyBlurOverlays();
 }
 
 // ── Payment modal ──
@@ -4145,6 +4164,8 @@ function updatePlanBadge() {
 }
 
 function unlockPlan(plan) {
+  console.log('[Paywall] unlockPlan() called — plan:', plan, '| window.userPlan:', window.userPlan);
+
   // Show both sections so features can render
   const premiumEl = document.getElementById('premiumSection');
   const obsessiveEl = document.getElementById('obsessiveSection');
@@ -4157,10 +4178,8 @@ function unlockPlan(plan) {
     renderPremiumFeatures(lastMessages, lastStats);
   }
 
-  // Apply then remove appropriate blur overlays
+  // Recompute all blur states (idempotent)
   applyBlurOverlays();
-  removeBlurOverlays(plan);
-
   closePayModal();
 }
 
@@ -4170,13 +4189,14 @@ function unlockPremium() {
 
 function updatePlanUI() {
   updatePlanBadge();
-  if (hasPlanAccess('detective')) {
-    unlockPlan(window.userPlan);
-  }
+  // Always recompute overlays regardless of plan
+  applyBlurOverlays();
 }
 
 // ── Payment verification on page load ──
 async function checkPaymentSuccess() {
+  console.log('[Paywall] checkPaymentSuccess() called');
+
   // 1. Check URL for fresh payment return
   const fullUrl = window.location.href;
   let sessionId = null;
@@ -4197,6 +4217,7 @@ async function checkPaymentSuccess() {
       if (data.paid) {
         const plan = data.plan || urlPlan || 'detective';
         window.userPlan = plan;
+        console.log('[Paywall] Payment verified! Plan set to:', plan);
 
         localStorage.setItem('losabia_plan', JSON.stringify({
           plan: plan,
@@ -4220,11 +4241,11 @@ async function checkPaymentSuccess() {
   // 2. Fall back to stored plan
   const storedPlan = getStoredPlan();
   window.userPlan = storedPlan;
-  if (storedPlan !== 'curioso') {
-    updatePlanUI();
-  } else {
-    updatePlanBadge();
-  }
+  console.log('[Paywall] Stored plan:', storedPlan, '| localStorage losabia_plan:', localStorage.getItem('losabia_plan'), '| losabia_premium:', localStorage.getItem('losabia_premium'));
+
+  updatePlanBadge();
+  // Apply blur overlays now (they'll be re-applied after showResults too)
+  applyBlurOverlays();
 }
 
 // Run on page load
