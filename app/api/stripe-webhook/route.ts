@@ -12,7 +12,7 @@ const PAID_SESSIONS_PATH = path.join('/tmp', 'paid-sessions.json');
 interface PaidSession {
   sessionId: string;
   email: string;
-  analysisId: string;
+  plan: string;
   paidAt: string;
 }
 
@@ -66,11 +66,11 @@ export async function POST(req: NextRequest) {
     await savePaidSession({
       sessionId: session.id,
       email: session.metadata?.email || session.customer_email || '',
-      analysisId: session.metadata?.analysisId || '',
+      plan: session.metadata?.plan || 'detective',
       paidAt: new Date().toISOString(),
     });
 
-    console.log('Payment recorded:', session.id);
+    console.log('Payment recorded:', session.id, 'plan:', session.metadata?.plan);
   }
 
   return NextResponse.json({ received: true });

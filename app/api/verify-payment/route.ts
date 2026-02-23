@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({
         paid: true,
         email: session.metadata?.email || session.customer_email || '',
-        analysisId: session.metadata?.analysisId || '',
+        plan: session.metadata?.plan || 'detective',
       });
     }
 

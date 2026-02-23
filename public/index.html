@@ -797,6 +797,92 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   border-color: rgba(236,72,153,0.12);
 }
 
+/* ── Blur overlay / paywall system ── */
+.feature-blur-wrapper {
+  position: relative;
+  transition: filter 0.4s ease, opacity 0.4s ease;
+}
+.feature-blur-wrapper.locked .blurred-content {
+  filter: blur(6px);
+  pointer-events: none;
+  opacity: 0.5;
+  user-select: none;
+}
+.feature-blur-wrapper.unlocked .blurred-content {
+  filter: none;
+  pointer-events: auto;
+  opacity: 1;
+}
+.unlock-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  background: rgba(10,10,20,0.55);
+  backdrop-filter: blur(2px);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+}
+.unlock-overlay-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+.unlock-overlay-title {
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+.unlock-overlay-desc {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+.unlock-overlay-btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.unlock-overlay-btn:hover { transform: scale(1.04); }
+.unlock-overlay-btn.detective-btn {
+  background: linear-gradient(135deg, #3B82F6, #6C5CE7);
+}
+.unlock-overlay-btn.obsesivo-btn {
+  background: linear-gradient(135deg, #EC4899, #6C5CE7);
+}
+
+/* Plan badge shown in results */
+.user-plan-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-top: 12px;
+}
+.user-plan-badge.curioso {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-muted);
+}
+.user-plan-badge.detective {
+  background: rgba(59,130,246,0.15);
+  color: #60A5FA;
+}
+.user-plan-badge.obsesivo {
+  background: rgba(236,72,153,0.15);
+  color: #F472B6;
+}
+
 /* Silence timeline visuals */
 .silence-stats {
   display: grid;
@@ -1420,6 +1506,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     <div class="score-number" id="scoreNumber">72</div>
     <div class="score-max">de 100</div>
     <div class="score-verdict" id="scoreVerdict">Conexión fuerte con áreas de mejora</div>
+    <div class="user-plan-badge curioso" id="userPlanBadge">Plan Curioso</div>
   </div>
 
   <!-- Share Stories CTA -->
@@ -1429,7 +1516,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   </div>
   <!-- PDF Report CTA -->
   <div style="text-align: center; margin-top: 12px;">
-    <button class="btn-secondary" onclick="isPremiumUnlocked() ? generatePDF() : showPayModal()" style="width: 100%; max-width: 480px; padding: 14px 32px; font-size: 1rem; background: linear-gradient(135deg, #1a1a2e, #16213e); border: 1px solid rgba(255,255,255,0.1);">📄 Descargar Reporte PDF Completo</button>
+    <button class="btn-secondary" onclick="hasPlanAccess('detective') ? generatePDF() : openPayModal('detective')" style="width: 100%; max-width: 480px; padding: 14px 32px; font-size: 1rem; background: linear-gradient(135deg, #1a1a2e, #16213e); border: 1px solid rgba(255,255,255,0.1);">📄 Descargar Reporte PDF Completo</button>
   </div>
 
   <!-- ══════ SECCIÓN 1: PLAN GRATIS ══════ -->
@@ -1494,7 +1581,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     </div>
 
     <!-- Feature 1: Línea de Vida -->
-    <div class="premium-feature-card" id="featureTimeline">
+    <div class="premium-feature-card" id="featureTimeline" data-plan-required="detective">
       <div class="pf-header">
         <span class="pf-icon">📉</span>
         <div>
@@ -1511,7 +1598,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     </div>
 
     <!-- Feature 2: Mapa de Silencios -->
-    <div class="premium-feature-card" id="featureSilences">
+    <div class="premium-feature-card" id="featureSilences" data-plan-required="detective">
       <div class="pf-header">
         <span class="pf-icon">🔇</span>
         <div>
@@ -1523,7 +1610,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     </div>
 
     <!-- Feature 3: Double Texting -->
-    <div class="premium-feature-card" id="featureDoubleText">
+    <div class="premium-feature-card" id="featureDoubleText" data-plan-required="detective">
       <div class="pf-header">
         <span class="pf-icon">😤</span>
         <div>
@@ -1535,7 +1622,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     </div>
 
     <!-- Feature 4: Mensajes Eliminados -->
-    <div class="premium-feature-card" id="featureDeleted">
+    <div class="premium-feature-card" id="featureDeleted" data-plan-required="detective">
       <div class="pf-header">
         <span class="pf-icon">🗑️</span>
         <div>
@@ -1556,7 +1643,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     </div>
 
     <!-- Obsessive 1: Reconstrucción Forense -->
-    <div class="premium-feature-card" id="featureForensic">
+    <div class="premium-feature-card" id="featureForensic" data-plan-required="obsesivo">
       <div class="pf-header">
         <span class="pf-icon">🕵️</span>
         <div>
@@ -1568,7 +1655,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     </div>
 
     <!-- Obsessive 2: Antes vs Ahora -->
-    <div class="premium-feature-card" id="featureBeforeNow">
+    <div class="premium-feature-card" id="featureBeforeNow" data-plan-required="obsesivo">
       <div class="pf-header">
         <span class="pf-icon">💔</span>
         <div>
@@ -1580,7 +1667,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     </div>
 
     <!-- Obsessive 3: Ghosting Selectivo -->
-    <div class="premium-feature-card" id="featureGhosting">
+    <div class="premium-feature-card" id="featureGhosting" data-plan-required="obsesivo">
       <div class="pf-header">
         <span class="pf-icon">📱</span>
         <div>
@@ -1592,7 +1679,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     </div>
 
     <!-- Obsessive 4: Detector de Cambios de Lenguaje -->
-    <div class="premium-feature-card" id="featureLanguage">
+    <div class="premium-feature-card" id="featureLanguage" data-plan-required="obsesivo">
       <div class="pf-header">
         <span class="pf-icon">🎯</span>
         <div>
@@ -1604,7 +1691,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     </div>
 
     <!-- Chatbot Trigger -->
-    <div class="chatbot-trigger">
+    <div class="chatbot-trigger" data-plan-required="obsesivo">
       <h3>💬 Terapeuta IA Personal</h3>
       <p>Pregunta lo que quieras sobre tu relación. La IA conoce cada mensaje, cada silencio, cada cambio. Sin filtros.</p>
       <button onclick="openChatbot()" class="btn-primary">💬 Hablar con el Terapeuta</button>
@@ -1760,7 +1847,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
           <li>🗑️ Mensajes eliminados</li>
           <li>📄 Reporte PDF completo descargable</li>
         </ul>
-        <button class="price-btn price-btn-primary" onclick="showPayModal()">Desbloquear análisis →</button>
+        <button class="price-btn price-btn-primary" onclick="openPayModal('detective')">Desbloquear análisis →</button>
       </div>
       <!-- Unlimited -->
       <div class="price-card">
@@ -1775,7 +1862,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
           <li>🎯 Detector de cambios de lenguaje</li>
           <li>💬 Chatbot terapeuta IA ilimitado</li>
         </ul>
-        <button class="price-btn price-btn-secondary" onclick="alert('Integración con Stripe/Mercado Pago pendiente')">Desbloquear $199/mes →</button>
+        <button class="price-btn price-btn-secondary" onclick="openPayModal('obsesivo')">Desbloquear $199/mes →</button>
       </div>
     </div>
   </div>
@@ -2091,20 +2178,33 @@ function showResults(s) {
   document.getElementById('funFact').innerHTML =
     `📊 <strong>Dato curioso:</strong> ${s.personA} envió <strong>${s.msgsA.toLocaleString()}</strong> mensajes y ${s.personB} envió <strong>${s.msgsB.toLocaleString()}</strong>. ${s.loveCount > 20 ? 'Hay mucho amor en este chat ❤️' : 'Podrían usar más emojis de amor... 😬'}`;
 
-  // Render premium features only if paid
-  if (lastMessages && isPremiumUnlocked()) {
+  // Always render ALL features (blur overlays handle gating)
+  if (lastMessages) {
+    featuresRendered = true;
+    document.getElementById('premiumSection').style.display = 'block';
+    document.getElementById('obsessiveSection').style.display = 'block';
     renderPremiumFeatures(lastMessages, s);
+    applyBlurOverlays();
+    // If user has a plan, remove overlays for accessible features
+    if (hasPlanAccess('detective')) {
+      removeBlurOverlays(window.userPlan);
+    }
   }
 
   resultsSection.classList.add('active');
   resultsSection.scrollIntoView({ behavior: 'smooth' });
 
-  // Hide landing page sections once results are shown
-  const landingSections = ['como-funciona', 'precios', 'faq'];
+  // Hide landing sections but keep pricing visible for curioso
+  const landingSections = ['como-funciona', 'faq'];
   landingSections.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
+  // Show/hide pricing based on plan
+  const pricingEl = document.getElementById('precios');
+  if (pricingEl) {
+    pricingEl.style.display = hasPlanAccess('obsesivo') ? 'none' : 'block';
+  }
 }
 
 async function generatePDF() {
@@ -3596,6 +3696,10 @@ function openChatbot() {
     alert('Primero sube un chat para analizar.');
     return;
   }
+  if (!hasPlanAccess('obsesivo')) {
+    openPayModal('obsesivo');
+    return;
+  }
 
   // Calcular día con más mensajes para sugerencia dinámica
   const dayCount = {};
@@ -3803,13 +3907,13 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot
   </div>
 </div>
 
-<!-- Payment Modal -->
+<!-- Payment Modal (dynamic — updated by openPayModal) -->
 <div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center;">
   <div style="background:#1A1A2E;border-radius:20px;padding:40px;max-width:400px;width:90%;text-align:center;position:relative;">
     <button onclick="closePayModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#9CA3AF;font-size:1.5rem;cursor:pointer;">&times;</button>
-    <div style="font-size:2rem;margin-bottom:8px;">🔍</div>
-    <h3 style="color:white;margin-bottom:8px;font-size:1.3rem;">Desbloquear Plan Detective</h3>
-    <p style="color:#9CA3AF;margin-bottom:24px;">$69 MXN — pago único</p>
+    <div id="payModalIcon" style="font-size:2rem;margin-bottom:8px;">🔍</div>
+    <h3 id="payModalTitle" style="color:white;margin-bottom:8px;font-size:1.3rem;">Desbloquear Plan Detective</h3>
+    <p id="payModalPrice" style="color:#9CA3AF;margin-bottom:24px;">$69 MXN — pago único</p>
     <input id="payEmail" type="email" placeholder="Tu email para el recibo" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0A0A14;color:white;margin-bottom:16px;box-sizing:border-box;font-size:1rem;">
     <button id="goToCheckout" onclick="goToStripeCheckout()" style="width:100%;padding:14px;background:linear-gradient(135deg,#FF2D78,#6C5CE7);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:1rem;">
       Ir al pago →
@@ -3820,29 +3924,115 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot
 </div>
 
 <script>
-// ═══ STRIPE PAYMENT FLOW ═══
+// ═══ 3-TIER PLAN SYSTEM ═══
 
-function generateAnalysisId() {
-  // Create a hash from the current analysis data
-  if (!lastStats) return 'no-analysis';
-  const raw = lastStats.personA + lastStats.personB + lastStats.total + lastStats.uniqueDays;
-  let hash = 0;
-  for (let i = 0; i < raw.length; i++) {
-    hash = ((hash << 5) - hash) + raw.charCodeAt(i);
-    hash |= 0;
-  }
-  return 'analysis-' + Math.abs(hash).toString(36);
+// Plan state
+window.userPlan = 'curioso';
+const PLAN_HIERARCHY = { curioso: 0, detective: 1, obsesivo: 2 };
+let selectedPlan = 'detective';
+let featuresRendered = false;
+
+function hasPlanAccess(requiredPlan) {
+  return (PLAN_HIERARCHY[window.userPlan] || 0) >= (PLAN_HIERARCHY[requiredPlan] || 0);
 }
 
-function showPayModal() {
-  // Check if already paid
-  if (isPremiumUnlocked()) {
-    unlockPremium();
+function getStoredPlan() {
+  try {
+    // Check new storage format
+    const stored = localStorage.getItem('losabia_plan');
+    if (stored) {
+      const data = JSON.parse(stored);
+      if (data.plan) return data.plan;
+    }
+    // Legacy fallback
+    const legacy = localStorage.getItem('losabia_premium');
+    if (legacy) {
+      const data = JSON.parse(legacy);
+      if (data.paid === true) return 'detective';
+    }
+  } catch(e) {}
+  return 'curioso';
+}
+
+// ── Blur overlay system ──
+function applyBlurOverlays() {
+  document.querySelectorAll('[data-plan-required]').forEach(card => {
+    // Skip if already wrapped
+    if (card.parentElement && card.parentElement.classList.contains('feature-blur-wrapper')) return;
+
+    const requiredPlan = card.getAttribute('data-plan-required');
+    const hasAccess = hasPlanAccess(requiredPlan);
+
+    // Create wrapper
+    const wrapper = document.createElement('div');
+    wrapper.className = 'feature-blur-wrapper ' + (hasAccess ? 'unlocked' : 'locked');
+
+    // Move card content into blurred-content div
+    card.parentNode.insertBefore(wrapper, card);
+    const blurDiv = document.createElement('div');
+    blurDiv.className = 'blurred-content';
+    blurDiv.appendChild(card);
+    wrapper.appendChild(blurDiv);
+
+    // Add overlay if locked
+    if (!hasAccess) {
+      const planNames = { detective: 'Detective', obsesivo: 'Obsesivo' };
+      const planPrices = { detective: '$69 MXN — pago único', obsesivo: '$199 MXN/mes' };
+      const planIcons = { detective: '🔍', obsesivo: '🔥' };
+      const btnClass = requiredPlan === 'obsesivo' ? 'obsesivo-btn' : 'detective-btn';
+
+      const overlay = document.createElement('div');
+      overlay.className = 'unlock-overlay';
+      overlay.innerHTML = `
+        <div class="unlock-overlay-icon">${planIcons[requiredPlan] || '🔒'}</div>
+        <div class="unlock-overlay-title">Plan ${planNames[requiredPlan] || requiredPlan}</div>
+        <div class="unlock-overlay-desc">${planPrices[requiredPlan] || ''}</div>
+        <button class="unlock-overlay-btn ${btnClass}" onclick="openPayModal('${requiredPlan}')">Desbloquear →</button>
+      `;
+      wrapper.appendChild(overlay);
+    }
+  });
+}
+
+function removeBlurOverlays(plan) {
+  document.querySelectorAll('[data-plan-required]').forEach(card => {
+    const requiredPlan = card.getAttribute('data-plan-required');
+    if (!hasPlanAccess(requiredPlan)) return;
+
+    const wrapper = card.closest('.feature-blur-wrapper');
+    if (!wrapper) return;
+
+    wrapper.classList.remove('locked');
+    wrapper.classList.add('unlocked');
+
+    // Remove overlay
+    const overlay = wrapper.querySelector('.unlock-overlay');
+    if (overlay) overlay.remove();
+  });
+}
+
+// ── Payment modal ──
+function openPayModal(plan) {
+  // If already has access, just unlock
+  if (hasPlanAccess(plan)) {
+    unlockPlan(plan);
     return;
   }
-  const modal = document.getElementById('payModal');
-  modal.style.display = 'flex';
+
+  selectedPlan = plan || 'detective';
+  const config = {
+    detective: { icon: '🔍', title: 'Desbloquear Plan Detective', price: '$69 MXN — pago único' },
+    obsesivo: { icon: '🔥', title: 'Desbloquear Plan Obsesivo', price: '$199 MXN/mes — suscripción' },
+  };
+  const c = config[selectedPlan] || config.detective;
+
+  document.getElementById('payModalIcon').textContent = c.icon;
+  document.getElementById('payModalTitle').textContent = c.title;
+  document.getElementById('payModalPrice').textContent = c.price;
+  document.getElementById('payModal').style.display = 'flex';
 }
+
+function showPayModal() { openPayModal('detective'); }
 
 function closePayModal() {
   document.getElementById('payModal').style.display = 'none';
@@ -3865,12 +4055,9 @@ async function goToStripeCheckout() {
   errorEl.style.display = 'none';
 
   try {
-    const analysisId = generateAnalysisId();
-
-    // Save analysis state before redirect so we can restore it
+    // Save analysis state before redirect
     if (lastStats && lastMessages) {
       try {
-        sessionStorage.setItem('losabia_analysisId', analysisId);
         sessionStorage.setItem('losabia_stats', JSON.stringify(lastStats));
       } catch(e) {}
     }
@@ -3878,16 +4065,15 @@ async function goToStripeCheckout() {
     const res = await fetch('/api/create-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, analysisId })
+      body: JSON.stringify({ email, plan: selectedPlan })
     });
 
     const data = await res.json();
 
     if (!res.ok) {
-      throw new Error((data.details || data.error || 'Error del servidor'));
+      throw new Error(data.details || data.error || 'Error del servidor');
     }
 
-    // Redirect to Stripe Checkout
     window.location.href = data.url;
   } catch (err) {
     errorEl.textContent = 'Error: ' + err.message;
@@ -3897,83 +4083,99 @@ async function goToStripeCheckout() {
   }
 }
 
+// ── Plan state helpers ──
 function isPremiumUnlocked() {
-  try {
-    const stored = localStorage.getItem('losabia_premium');
-    if (stored) {
-      const data = JSON.parse(stored);
-      return data.paid === true;
-    }
-  } catch(e) {}
-  return false;
+  return hasPlanAccess('detective');
 }
 
-function unlockPremium() {
-  // Show premium section and remove any paywall blur
+function updatePlanBadge() {
+  const badge = document.getElementById('userPlanBadge');
+  if (!badge) return;
+  const names = { curioso: 'Plan Curioso', detective: 'Plan Detective', obsesivo: 'Plan Obsesivo' };
+  badge.textContent = names[window.userPlan] || 'Plan Curioso';
+  badge.className = 'user-plan-badge ' + (window.userPlan || 'curioso');
+}
+
+function unlockPlan(plan) {
+  // Show both sections so features can render
   const premiumEl = document.getElementById('premiumSection');
-  if (premiumEl) {
-    premiumEl.style.display = 'block';
-    premiumEl.style.filter = 'none';
-    premiumEl.style.pointerEvents = 'auto';
-  }
+  const obsessiveEl = document.getElementById('obsessiveSection');
+  if (premiumEl) premiumEl.style.display = 'block';
+  if (obsessiveEl) obsessiveEl.style.display = 'block';
 
-  // Enable PDF download
-  const pdfBtn = document.querySelector('[onclick="generatePDF()"]');
-  if (pdfBtn) {
-    pdfBtn.style.opacity = '1';
-    pdfBtn.style.pointerEvents = 'auto';
-  }
-
-  // Render features if we have data
-  if (lastStats && lastMessages) {
+  // Render features if we have data and haven't already
+  if (lastStats && lastMessages && !featuresRendered) {
+    featuresRendered = true;
     renderPremiumFeatures(lastMessages, lastStats);
   }
+
+  // Apply then remove appropriate blur overlays
+  applyBlurOverlays();
+  removeBlurOverlays(plan);
 
   closePayModal();
 }
 
-// Check for payment success on page load
-async function checkPaymentSuccess() {
-  // Already unlocked?
-  if (isPremiumUnlocked()) {
-    unlockPremium();
-    return;
-  }
+function unlockPremium() {
+  unlockPlan(window.userPlan);
+}
 
-  // Check URL for payment success
-  const hash = window.location.hash;
+function updatePlanUI() {
+  updatePlanBadge();
+  if (hasPlanAccess('detective')) {
+    unlockPlan(window.userPlan);
+  }
+}
+
+// ── Payment verification on page load ──
+async function checkPaymentSuccess() {
+  // 1. Check URL for fresh payment return
   const fullUrl = window.location.href;
   let sessionId = null;
+  let urlPlan = null;
 
-  // Parse session_id from hash params like #results?payment=success&session_id=xxx
   if (fullUrl.includes('payment=success')) {
-    const match = fullUrl.match(/session_id=([^&\s#]+)/);
-    if (match) sessionId = match[1];
+    const sidMatch = fullUrl.match(/session_id=([^&\s#]+)/);
+    if (sidMatch) sessionId = sidMatch[1];
+    const planMatch = fullUrl.match(/plan=([^&\s#]+)/);
+    if (planMatch) urlPlan = planMatch[1];
   }
 
-  if (!sessionId) return;
+  if (sessionId) {
+    try {
+      const res = await fetch('/api/verify-payment?session_id=' + encodeURIComponent(sessionId));
+      const data = await res.json();
 
-  try {
-    const res = await fetch('/api/verify-payment?session_id=' + encodeURIComponent(sessionId));
-    const data = await res.json();
+      if (data.paid) {
+        const plan = data.plan || urlPlan || 'detective';
+        window.userPlan = plan;
 
-    if (data.paid) {
-      // Save to localStorage
-      localStorage.setItem('losabia_premium', JSON.stringify({
-        paid: true,
-        sessionId: sessionId,
-        email: data.email,
-        paidAt: new Date().toISOString()
-      }));
+        localStorage.setItem('losabia_plan', JSON.stringify({
+          plan: plan,
+          sessionId: sessionId,
+          email: data.email,
+          paidAt: new Date().toISOString()
+        }));
 
-      unlockPremium();
+        updatePlanUI();
 
-      // Clean URL
-      const cleanUrl = window.location.origin + window.location.pathname + '#results';
-      window.history.replaceState(null, '', cleanUrl);
+        // Clean URL
+        const cleanUrl = window.location.origin + window.location.pathname + '#results';
+        window.history.replaceState(null, '', cleanUrl);
+        return;
+      }
+    } catch (err) {
+      console.error('Payment verification error:', err);
     }
-  } catch (err) {
-    console.error('Payment verification error:', err);
+  }
+
+  // 2. Fall back to stored plan
+  const storedPlan = getStoredPlan();
+  window.userPlan = storedPlan;
+  if (storedPlan !== 'curioso') {
+    updatePlanUI();
+  } else {
+    updatePlanBadge();
   }
 }
 
