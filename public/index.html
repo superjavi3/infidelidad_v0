@@ -1890,7 +1890,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     </div>
 
     <!-- Feature 4: Rey de los Stickers -->
-    <div class="premium-feature-card" id="featureStickers" data-plan-required="detective" style="display:none;">
+    <div class="premium-feature-card" id="featureStickers" data-plan-required="detective">
       <div class="pf-header">
         <span class="pf-icon">🏆</span>
         <div>
@@ -2688,9 +2688,23 @@ function showResults(s) {
 
   const follower = s.leader === s.personA ? s.personB : s.personA;
   const followerPct = 100 - s.leaderPct;
-  const balance = s.leaderPct >= 65 ? 'Desequilibrio fuerte.' : s.leaderPct >= 55 ? 'Ligeramente desequilibrado.' : 'Bastante equilibrado.';
-  document.getElementById('whoLeads').innerHTML =
-    `<strong>${s.leader}</strong> lleva la relación — envía el <strong>${s.leaderPct}%</strong> de los mensajes vs <strong>${followerPct}%</strong> de ${follower.split(' ')[0]}. <strong>${balance}</strong>`;
+  const leaderShort = s.leader.split(' ')[0];
+  const followerShort = follower.split(' ')[0];
+  const whoLeadsEl = document.getElementById('whoLeads');
+  if (s.leaderPct >= 55) {
+    const context = s.leaderPct >= 65
+      ? `${leaderShort} inicia más, pregunta más, lleva el peso.`
+      : 'Ligeramente desequilibrado pero dentro de lo normal.';
+    whoLeadsEl.innerHTML =
+      `<strong style="font-size:1.1em;">${leaderShort} lleva la relación</strong><br>` +
+      `${leaderShort}: <strong>${s.leaderPct}%</strong> · ${followerShort}: <strong>${followerPct}%</strong><br>` +
+      `<span style="color:var(--text-muted);font-size:0.9em;">${context}</span>`;
+  } else {
+    whoLeadsEl.innerHTML =
+      `<strong style="font-size:1.1em;">Relación equilibrada</strong><br>` +
+      `${leaderShort}: <strong>${s.leaderPct}%</strong> · ${followerShort}: <strong>${followerPct}%</strong><br>` +
+      `<span style="color:var(--text-muted);font-size:0.9em;">Los dos se implican por igual. Poco común.</span>`;
+  }
 
   document.getElementById('funFact').innerHTML =
     `📊 <strong>Dato curioso:</strong> ${s.personA} envió <strong>${s.msgsA.toLocaleString()}</strong> mensajes y ${s.personB} envió <strong>${s.msgsB.toLocaleString()}</strong>. ${s.loveCount > 20 ? 'Hay mucho amor en este chat ❤️' : 'Podrían usar más emojis de amor... 😬'}`;
@@ -2921,7 +2935,7 @@ async function generatePDF() {
         hBarSVG(dtItems.map(([name, eps]) => [name, Array.isArray(eps) ? eps.length : eps])) + '</svg>'
       : '<p style="color:#9B96B0;font-size:13px;">No se detectaron episodios significativos de double texting.</p>';
 
-    const stickerBarsHTML = stickerData.total >= 10 ?
+    const stickerBarsHTML = stickerItems.length > 0 ?
       '<svg width="520" height="' + (stickerItems.length * 44 + 16) + '" xmlns="http://www.w3.org/2000/svg">' +
         hBarSVG(stickerItems) + '</svg>'
       : '';
@@ -2944,16 +2958,16 @@ async function generatePDF() {
         '<div style="font-size:22px;font-weight:700;color:#FFF;margin-bottom:4px;">Mensajes y Patrones</div>' +
         '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:8px 0 16px;"></div>' +
         '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F624} Double Texting (5+ sin respuesta)</h3><div style="' + cardCSS + 'padding:16px;">' + dtBarsHTML + '</div></div>' +
-        (stickerData.total >= 10 ?
-          '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F3C6} Rey de los Stickers</h3><div style="' + cardCSS + 'padding:16px;">' +
+        '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F3C6} Rey de los Stickers</h3><div style="' + cardCSS + 'padding:16px;">' +
+          (stickerData.total > 0 ?
             '<div style="display:flex;gap:12px;margin-bottom:10px;">' +
               '<div style="background:#1E1B2E;border-radius:8px;padding:10px 14px;flex:1;text-align:center;"><div style="font-size:20px;font-weight:700;color:#F5C842;">' + stickerData.total + '</div><div style="font-size:10px;color:#9B96B0;">Total stickers</div></div>' +
               '<div style="background:#1E1B2E;border-radius:8px;padding:10px 14px;flex:1;text-align:center;"><div style="font-size:20px;font-weight:700;color:#F5C842;">' + stickerData.longestStreak + '</div><div style="font-size:10px;color:#9B96B0;">Racha maxima</div></div>' +
               '<div style="background:#1E1B2E;border-radius:8px;padding:10px 14px;flex:1;text-align:center;"><div style="font-size:16px;font-weight:700;color:#F5C842;">\u{1F451} ' + clean((stickerData.streakOwner || Object.keys(stickerData.perPerson)[0] || '').split(' ')[0]) + '</div><div style="font-size:10px;color:#9B96B0;">Rey de stickers</div></div>' +
             '</div>' +
-            '<div style="display:flex;justify-content:center;">' + stickerBarsHTML + '</div>' +
-          '</div></div>'
-        : '') +
+            '<div style="display:flex;justify-content:center;">' + stickerBarsHTML + '</div>'
+          : '<p style="color:#9B96B0;font-size:13px;">Cero stickers. Esta conversacion es 100% texto puro.</p>') +
+        '</div></div>' +
         '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F5D1}\u{FE0F} Mensajes Eliminados</h3><div style="' + cardCSS + 'padding:16px;">' +
           (deletedData.total > 0 ?
             '<div style="display:flex;gap:12px;margin-bottom:8px;"><div style="background:#1E1B2E;border-radius:8px;padding:10px 14px;flex:1;text-align:center;"><div style="font-size:22px;font-weight:700;color:#F5C842;">' + deletedData.total + '</div><div style="font-size:10px;color:#9B96B0;">Total eliminados</div></div></div>' + delBarsHTML
@@ -3531,11 +3545,13 @@ function renderDoubleTexting(data, stats) {
 let stickerChartInstance = null;
 function renderStickers(data, stats) {
   const container = document.getElementById('featureStickers');
-  if (data.total < 10) {
-    container.style.display = 'none';
+  container.style.display = '';
+
+  if (data.total === 0) {
+    const body = document.getElementById('stickerBody');
+    body.innerHTML = '<div class="pf-insight"><strong>🦗 Cero stickers.</strong> Esta conversación es 100% texto puro. Ni un sticker. Respeto.</div>';
     return;
   }
-  container.style.display = '';
 
   const body = document.getElementById('stickerBody');
   const personA = stats.personA;
@@ -3718,29 +3734,82 @@ function renderObsessiveFeatures(messages, stats) {
 }
 
 // ── KEYWORD EXTRACTION HELPER ──
-function extractKeywords(msgs, topN) {
+// ── GLOBAL STOPWORDS ──
+const STOPWORDS = new Set([
+  // Artículos y determinantes
+  "el","la","los","las","un","una","unos","unas","lo","al","del",
+  // Pronombres
+  "yo","tu","el","ella","nosotros","vosotros","ellos","ellas",
+  "me","te","se","nos","os","le","les","mi","mis","tus",
+  "su","sus","mio","mia","tuyo","tuya","este","esta","estos",
+  "estas","ese","esa","esos","esas","aquel","aquella","ello",
+  // Preposiciones
+  "a","ante","bajo","con","contra","de","desde","en","entre",
+  "hacia","hasta","para","por","segun","sin","sobre","tras",
+  // Conjunciones
+  "y","e","o","u","pero","sino","aunque","porque","que","si",
+  "ni","como","cuando","donde","mientras","pues","ya","tanto",
+  // Verbos auxiliares y comunes
+  "es","son","fue","ser","estar","estoy","estas","esta",
+  "estamos","estais","estan","era","eras","eramos","eran",
+  "hay","haber","tiene","tienen","tengo","tienes","tenia",
+  "hacer","hago","haces","hace","hacemos","hacen","hizo",
+  "ir","voy","vas","va","vamos","van","iba","dijo","dice",
+  "se","saber","poder","puedo","puede","pueden","podria","querer",
+  "quiero","quieres","quiere","ver","veo","ves","ve",
+  // Adverbios vacíos
+  "no","si","tambien","tampoco","muy","mas","menos","bien",
+  "mal","aqui","ahi","alli","ahora","antes","despues","luego",
+  "ya","aun","todavia","siempre","nunca","jamas","solo","tan",
+  "asi","todo","nada","algo","alguien","nadie","cada","otro",
+  "otra","otros","otras","mismo","misma","cual","que","quien",
+  // Relleno de chat
+  "ok","okay","jaja","jajaja","jajajaja","jeje","jejeje","xd","xdd",
+  "mm","mmm","hmm","ah","oh","ay","eh","uh","bueno","pues",
+  "claro","vale","venga","dale","anda","oye","oiga","mira",
+  "eso","esto","aca","alla","hola","buena","buenas",
+  // Verbos/palabras genéricas que no aportan tema
+  "creo","puede","sea","era","solo","cada","vez","dos","tres",
+  "dia","dias","han","van","son","ver","les","ella","ellos",
+  "tiene","medio","tipo","cosa","cosas","verdad","manera",
+  "parte","lado","punto","forma","caso","gente","persona"
+]);
+const TEMPORAL_WORDS = new Set([
+  "manana","hoy","ayer","semana","mes","ano","lunes","martes",
+  "miercoles","jueves","viernes","sabado","domingo","noche",
+  "tarde","hora","minuto","rato","momento","vez",
+  "veces","tiempo","fecha","pronto"
+]);
+const _normKw = w => w.replace(/[áà]/g,'a').replace(/[éè]/g,'e').replace(/[íì]/g,'i').replace(/[óò]/g,'o').replace(/[úùü]/g,'u').replace(/ñ/g,'n');
+function isStopword(word, extraNames) {
+  const n = _normKw(word.toLowerCase());
+  if (n.length < 4) return true;
+  if (STOPWORDS.has(n)) return true;
+  if (TEMPORAL_WORDS.has(n)) return true;
+  if (extraNames) {
+    for (const name of extraNames) { if (n === _normKw(name.toLowerCase())) return true; }
+  }
+  return false;
+}
+
+function extractKeywords(msgs, topN, participantNames) {
   if (msgs.length < 50) return [];
-  const stopwords = new Set([
-    'que','de','en','el','la','los','las','un','una','y','a','es','se','no','lo',
-    'por','con','para','me','te','le','mi','si','ya','pero','como','mas','fue',
-    'hay','del','al','su','pues','bien','ahi','aqui','esto','eso','asi','todo',
-    'nada','ok','okay','jaja','jajaja','jajajaja','jeje','jejeje','xd',
-    'tambien','hola','bueno','buena','son','ser','ver','han','van','voy','muy',
-    'tan','sin','nos','les','ella','ellos','tiene','hacer','creo','puede','donde',
-    'cuando','porque','sea','era','solo','cada','algo','otro','otra','mis','tus',
-    'sus','vez','dos','tres','dia','hoy','ayer','estoy','estas','esta','ese','esa',
-    'estos','estas','esos','esas','quien','cual','medio','tipo','cosa','cosas'
-  ]);
-  const norm = w => w.replace(/[áà]/g,'a').replace(/[éè]/g,'e').replace(/[íì]/g,'i').replace(/[óò]/g,'o').replace(/[úùü]/g,'u');
-  const freq = {};
+  const names = (participantNames || []).flatMap(n => n.toLowerCase().split(/\s+/));
+  // Count words per unique message (not per occurrence within a message)
+  const msgCount = {};
   msgs.forEach(m => {
-    const words = (m.text || '').toLowerCase().match(/[a-záéíóúüñ]{3,}/g) || [];
+    const seen = new Set();
+    const words = (m.text || '').toLowerCase().match(/[a-záéíóúüñ]{4,}/g) || [];
     words.forEach(w => {
-      const n = norm(w);
-      if (!stopwords.has(n)) freq[n] = (freq[n] || 0) + 1;
+      const n = _normKw(w);
+      if (!isStopword(n, names) && !seen.has(n)) {
+        seen.add(n);
+        msgCount[n] = (msgCount[n] || 0) + 1;
+      }
     });
   });
-  return Object.entries(freq)
+  return Object.entries(msgCount)
+    .filter(([, c]) => c >= 3)
     .sort((a, b) => b[1] - a[1])
     .slice(0, topN || 5)
     .map(e => e[0]);
@@ -3779,7 +3848,7 @@ function analyzeForensicReconstruction(sorted, stats) {
         changePct: Math.round(changePct),
         direction: changePct > 0 ? 'up' : 'down',
         context: getContextAroundDate(sorted, date),
-        keywords: extractKeywords(monthMsgs, 5)
+        keywords: extractKeywords(monthMsgs, 5, [stats.personA, stats.personB])
       });
     }
   }
@@ -4036,15 +4105,16 @@ function analyzeSelectiveGhosting(sorted, stats) {
     return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
   }
 
-  // Find top trigger words (frequent in slow, rare in fast)
+  // Find top trigger words (frequent in slow, rare in fast) — filtered through stopwords
+  const ghostNames = [stats.personA, stats.personB].flatMap(n => n.toLowerCase().split(/\s+/));
   const topTriggers = Object.entries(triggerWords)
-    .filter(([w, c]) => c >= 3 && (!safeWords[w] || c > safeWords[w]))
+    .filter(([w, c]) => c >= 3 && !isStopword(w, ghostNames) && (!safeWords[w] || c > safeWords[w]))
     .sort((a, b) => b[1] - a[1])
     .slice(0, 6)
     .map(([w]) => w);
 
   const topSafe = Object.entries(safeWords)
-    .filter(([w, c]) => c >= 3 && (!triggerWords[w] || c > triggerWords[w]))
+    .filter(([w, c]) => c >= 3 && !isStopword(w, ghostNames) && (!triggerWords[w] || c > triggerWords[w]))
     .sort((a, b) => b[1] - a[1])
     .slice(0, 6)
     .map(([w]) => w);
