@@ -482,17 +482,18 @@ nav a:hover { color: var(--text); }
   position: relative;
 }
 .price-card.featured::before {
-  content: '⚡ MÁS POPULAR';
+  content: '⚡ OFERTA LIMITADA';
   position: absolute;
   top: -14px;
   left: 50%; transform: translateX(-50%);
-  background: linear-gradient(135deg, var(--pink), var(--orange));
+  background: linear-gradient(135deg, var(--pink), var(--purple));
   color: white;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 1.5px;
   padding: 5px 18px;
   border-radius: 50px;
+  animation: pulse-badge 2s infinite;
 }
 .price-tier {
   font-family: var(--font-display);
@@ -551,6 +552,119 @@ nav a:hover { color: var(--text); }
   border: 1px solid rgba(255,255,255,0.1);
 }
 .price-btn-secondary:hover { background: rgba(255,255,255,0.1); }
+.fomo-text {
+  text-align: center;
+  font-size: 0.8rem;
+  color: rgba(255,45,120,0.7);
+  margin-top: 12px;
+}
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+  50% { opacity: 0.75; transform: translateX(-50%) scale(1.05); }
+}
+
+/* ── TESTIMONIALS ── */
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+.testimonial-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.testimonial-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.testimonial-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.testimonial-name { font-size: 0.88rem; font-weight: 600; }
+.testimonial-city { font-size: 0.78rem; color: var(--text-muted); }
+.testimonial-stars { color: #F5C842; font-size: 0.85rem; margin-bottom: 8px; }
+.testimonial-text { color: rgba(255,255,255,0.85); font-size: 0.88rem; line-height: 1.6; }
+
+/* ── EXIT INTENT ── */
+.exit-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+}
+.exit-overlay.active { display: flex; }
+.exit-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+  animation: exitSlideUp 0.3s ease-out;
+}
+@keyframes exitSlideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.exit-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: #9CA3AF;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.exit-score {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 16px 0 8px;
+}
+.exit-cta {
+  width: 100%;
+  padding: 14px;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: all .2s;
+}
+.exit-cta:hover { box-shadow: 0 6px 24px rgba(255,45,120,0.3); }
+.exit-dismiss {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  cursor: pointer;
+  margin-top: 12px;
+}
 
 /* ── FAQ ── */
 .faq-list { max-width: 680px; margin: 0 auto; }
@@ -1459,6 +1573,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   .nav-links a:not(.nav-cta) { display: none; }
   .steps { grid-template-columns: 1fr; }
   .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
+  .testimonials-grid { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .hero { padding: 100px 20px 60px; }
   .upload-zone { padding: 36px 24px; }
@@ -1863,6 +1978,62 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   </div>
 </section>
 
+<!-- ── TESTIMONIALS ── -->
+<section class="section">
+  <div class="container">
+    <div class="reveal">
+      <h2 class="section-title">Lo que dicen los que ya lo saben 👀</h2>
+      <p class="section-subtitle">+2,400 relaciones analizadas</p>
+    </div>
+    <div class="testimonials-grid reveal">
+      <div class="testimonial-card">
+        <div class="testimonial-header">
+          <div class="testimonial-avatar">V</div>
+          <div>
+            <div class="testimonial-name">Valentina R., 28 años</div>
+            <div class="testimonial-city">Ciudad de México</div>
+          </div>
+        </div>
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text">Subí el chat con mi ex pensando que iba a ver lo que quería ver... y el análisis me dijo exactamente lo que necesitaba escuchar. El score de 34/100 lo dijo todo.</div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-header">
+          <div class="testimonial-avatar">D</div>
+          <div>
+            <div class="testimonial-name">Diego M., 31 años</div>
+            <div class="testimonial-city">Monterrey</div>
+          </div>
+        </div>
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text">Lo del mapa de silencios me rompió. 47 días sin hablar y siempre era yo quien rompía el silencio. Datos que ya sabía pero necesitaba ver en pantalla.</div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-header">
+          <div class="testimonial-avatar">C</div>
+          <div>
+            <div class="testimonial-name">Camila F., 25 años</div>
+            <div class="testimonial-city">Bogotá</div>
+          </div>
+        </div>
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text">Pensé que era de broma pero el chatbot me hizo preguntas que ni mi terapeuta me había hecho. El plan Obsesivo vale cada peso.</div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-header">
+          <div class="testimonial-avatar">A</div>
+          <div>
+            <div class="testimonial-name">Andrés P., 33 años</div>
+            <div class="testimonial-city">Buenos Aires</div>
+          </div>
+        </div>
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text">Mi novia y yo lo hicimos juntos por curiosidad. Score 91/100 y resulta que yo soy el que nunca inicia conversación 😭 Al menos ahora lo sé.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ── PRICING ── -->
 <section class="section" id="precios">
   <div class="container">
@@ -1899,6 +2070,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
           <li>📄 Reporte PDF completo descargable</li>
         </ul>
         <button class="price-btn price-btn-primary" onclick="openPayModal('detective')">Desbloquear análisis →</button>
+        <p class="fomo-text">🔥 <span class="fomo-count"></span> personas analizaron su chat hoy</p>
       </div>
       <!-- Unlimited -->
       <div class="price-card">
@@ -1914,6 +2086,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
           <li>💬 Chatbot terapeuta IA ilimitado</li>
         </ul>
         <button class="price-btn price-btn-secondary" onclick="openPayModal('obsesivo')">Desbloquear $199/mes →</button>
+        <p class="fomo-text">🔥 <span class="fomo-count"></span> personas analizaron su chat hoy</p>
       </div>
     </div>
   </div>
@@ -4354,6 +4527,49 @@ async function checkPaymentSuccess() {
 
 // Run on page load
 document.addEventListener('DOMContentLoaded', checkPaymentSuccess);
+</script>
+
+<!-- ── EXIT INTENT POPUP ── -->
+<div class="exit-overlay" id="exitOverlay">
+  <div class="exit-card">
+    <button class="exit-close" onclick="closeExitIntent()">&times;</button>
+    <div style="font-size: 2rem; margin-bottom: 8px;">🔍</div>
+    <h3 style="color: white; font-size: 1.4rem; margin-bottom: 4px;">¿Te vas sin saber la verdad?</h3>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Tu análisis está listo. Solo falta el paso que más importa.</p>
+    <div class="exit-score" id="exitScore">72</div>
+    <p style="color: white; font-size: 0.95rem; margin-bottom: 4px;">Tu relación tiene un score de <strong><span id="exitScoreText">72</span>/100</strong></p>
+    <p style="color: var(--text-muted); font-size: 0.85rem;">Hay cosas en tu chat que aún no has visto.</p>
+    <button class="exit-cta" onclick="closeExitIntent(); document.getElementById('precios').scrollIntoView({behavior:'smooth'});">Ver el análisis completo — $69 MXN →</button>
+    <button class="exit-dismiss" onclick="closeExitIntent()">No, prefiero quedarme con dudas</button>
+  </div>
+</div>
+
+<script>
+// ═══ FOMO COUNTER ═══
+(function() {
+  let fomo = Math.floor(Math.random() * 15) + 18;
+  if (fomo % 2 === 0) fomo++;
+  document.querySelectorAll('.fomo-count').forEach(el => el.textContent = fomo);
+})();
+
+// ═══ EXIT INTENT ═══
+function closeExitIntent() {
+  document.getElementById('exitOverlay').classList.remove('active');
+}
+
+function showExitIntent() {
+  if (sessionStorage.getItem('exitShown')) return;
+  if (!lastStats || !lastStats.score) return;
+  if (window.userPlan !== 'curioso') return;
+  document.getElementById('exitScore').textContent = lastStats.score;
+  document.getElementById('exitScoreText').textContent = lastStats.score;
+  document.getElementById('exitOverlay').classList.add('active');
+  sessionStorage.setItem('exitShown', 'true');
+}
+
+document.addEventListener('mouseleave', function(e) {
+  if (e.clientY <= 0) showExitIntent();
+});
 </script>
 
 </body>
