@@ -505,7 +505,7 @@ nav a:hover { color: var(--text); }
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  align-items: start;
+  align-items: stretch;
 }
 .price-card {
   background: var(--bg-card);
@@ -514,7 +514,11 @@ nav a:hover { color: var(--text); }
   border: 1px solid rgba(255,255,255,0.06);
   text-align: center;
   transition: transform .3s;
+  display: flex;
+  flex-direction: column;
 }
+.price-card-body { flex: 1; }
+.price-card-footer { margin-top: auto; }
 .price-card:hover { transform: translateY(-4px); }
 .price-card.featured {
   border-color: var(--pink);
@@ -2441,20 +2445,25 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     <div class="pricing-grid reveal">
       <!-- Free -->
       <div class="price-card">
-        <div class="price-tier">CURIOSO</div>
-        <div class="price-amount">$0</div>
-        <div class="price-desc">Para darte una probadita</div>
-        <ul class="price-features">
-          <li>Estadísticas básicas del chat</li>
-          <li>Score de la relación</li>
-          <li>Quién lleva la relación</li>
-          <li>Dato curioso personalizado</li>
-          <li>Imagen shareable para Stories</li>
-        </ul>
-        <button class="price-btn price-btn-secondary" onclick="document.getElementById('top').scrollIntoView({behavior:'smooth'})">Analizar gratis</button>
+        <div class="price-card-body">
+          <div class="price-tier">CURIOSO</div>
+          <div class="price-amount">$0</div>
+          <div class="price-desc">Para darte una probadita</div>
+          <ul class="price-features">
+            <li>Estadísticas básicas del chat</li>
+            <li>Score de la relación</li>
+            <li>Quién lleva la relación</li>
+            <li>Dato curioso personalizado</li>
+            <li>Imagen shareable para Stories</li>
+          </ul>
+        </div>
+        <div class="price-card-footer">
+          <button class="price-btn price-btn-secondary" onclick="document.getElementById('top').scrollIntoView({behavior:'smooth'})">Analizar gratis</button>
+        </div>
       </div>
       <!-- Single -->
       <div class="price-card featured">
+        <div class="price-card-body">
         <div class="price-tier">DETECTIVE</div>
         <div class="price-amount">$69<small> MXN</small></div>
         <div class="price-desc">Análisis único — la verdad completa</div>
@@ -2507,11 +2516,15 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
           </div>
           <div class="preview-fade"></div>
         </div>
-        <button class="price-btn price-btn-primary" onclick="openPayModal('detective')">Desbloquear análisis →</button>
-        <p class="fomo-text">🔥 <span class="fomo-count"></span> personas analizaron su chat hoy</p>
+        </div>
+        <div class="price-card-footer">
+          <button class="price-btn price-btn-primary" onclick="openPayModal('detective')">Desbloquear análisis →</button>
+          <p class="fomo-text">🔥 <span class="fomo-count"></span> personas analizaron su chat hoy</p>
+        </div>
       </div>
       <!-- Unlimited -->
       <div class="price-card">
+        <div class="price-card-body">
         <div class="price-tier">OBSESIVO</div>
         <div class="price-amount">$199<small> MXN/mes</small></div>
         <div class="price-desc">Para quien necesita saber TODO</div>
@@ -2566,8 +2579,11 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
           </div>
           <div class="preview-fade"></div>
         </div>
-        <button class="price-btn price-btn-secondary" onclick="openPayModal('obsesivo')">Desbloquear $199/mes →</button>
-        <p class="fomo-text">🔥 <span class="fomo-count"></span> personas analizaron su chat hoy</p>
+        </div>
+        <div class="price-card-footer">
+          <button class="price-btn price-btn-secondary" onclick="openPayModal('obsesivo')">Desbloquear $199/mes →</button>
+          <p class="fomo-text">🔥 <span class="fomo-count"></span> personas analizaron su chat hoy</p>
+        </div>
       </div>
     </div>
   </div>
