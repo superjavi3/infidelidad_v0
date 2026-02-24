@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LoSabía.mx — Descubre lo que tus chats dicen de tu relación</title>
+<title>YaLoSabía.com — Descubre lo que tus chats dicen de tu relación</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
 <!-- JSZip para procesar archivos ZIP -->
@@ -2023,7 +2023,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 
 <!-- ── NAV ── -->
 <nav>
-  <div class="logo" style="cursor: pointer;" onclick="window.location.href = window.location.origin">LoSabía<span>.mx</span></div>
+  <div class="logo" style="cursor: pointer;" onclick="window.location.href = window.location.origin">YaLoSabía<span>.com</span></div>
   <div class="nav-links">
     <a href="#como-funciona">Cómo funciona</a>
     <a href="#precios">Precios</a>
@@ -2604,7 +2604,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 <!-- ── FOOTER ── -->
 <footer>
   <div class="container">
-    <div class="logo" style="font-size:1.2rem; margin-bottom: 16px; cursor: pointer;" onclick="window.location.href = window.location.origin">LoSabía<span>.mx</span></div>
+    <div class="logo" style="font-size:1.2rem; margin-bottom: 16px; cursor: pointer;" onclick="window.location.href = window.location.origin">YaLoSabía<span>.com</span></div>
     <p>Hecho con 🔍 y un poco de drama en México</p>
     <div class="footer-links">
       <a href="#">Política de privacidad</a>
@@ -3206,7 +3206,7 @@ async function generatePDF() {
     // Build pages HTML array
     const pageCSS = 'width:794px;height:1123px;padding:32px 36px;position:relative;overflow:hidden;background:#0A0812;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#EDE9F8;';
     const cardCSS = 'background:#120F1E;border:1px solid #1E1B2E;border-radius:12px;padding:24px;margin-bottom:18px;';
-    const footerHTML = '<div style="position:absolute;bottom:20px;left:0;right:0;text-align:center;font-size:10px;color:#4A4660;">LoSabia.mx - Analisis de relaciones con IA</div>';
+    const footerHTML = '<div style="position:absolute;bottom:20px;left:0;right:0;text-align:center;font-size:10px;color:#4A4660;">YaLoSabia.com - Analisis de relaciones con IA</div>';
 
     const pages = [];
 
@@ -3214,7 +3214,7 @@ async function generatePDF() {
     const crownA = pctA >= pctB ? '\u{1F451} ' : '';
     const crownB = pctB > pctA ? '\u{1F451} ' : '';
     pages.push('<div style="' + pageCSS + 'display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(165deg,#0A0812 0%,#1A0F2E 40%,#0A0812 100%);">' +
-      '<div style="font-size:18px;font-weight:600;color:#FF2D78;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">LoSabia.mx</div>' +
+      '<div style="font-size:18px;font-weight:600;color:#FF2D78;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">YaLoSabia.com</div>' +
       '<div style="font-size:13px;color:#9B96B0;margin-bottom:28px;">Reporte Detective de Relacion</div>' +
       '<div style="margin-bottom:20px;display:flex;justify-content:center;">' + scoreRingSVG + '</div>' +
       '<div style="font-size:28px;font-weight:700;color:#FFF;margin-bottom:6px;text-align:center;">' + clean(pA) + ' & ' + clean(pB) + '</div>' +
@@ -3364,7 +3364,7 @@ async function generatePDF() {
 
     const safeA = (pA).replace(/[^a-zA-Z0-9]/g, '');
     const safeB = (pB).replace(/[^a-zA-Z0-9]/g, '');
-    doc.save('LoSabia-' + safeA + '-' + safeB + '.pdf');
+    doc.save('YaLoSabia-' + safeA + '-' + safeB + '.pdf');
 
   } catch (err) {
     console.error('PDF Error completo:', err);
@@ -3464,7 +3464,7 @@ async function shareToStories() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'losabia-score.jpg';
+      a.download = 'yalosabia-score.jpg';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -5389,7 +5389,7 @@ let featuresRendered = false;
     localStorage.setItem('losabia_plan', JSON.stringify({
       plan: 'obsesivo',
       sessionId: 'admin-bypass',
-      email: 'admin@losabia.mx',
+      email: 'admin@yalosabia.com',
       paidAt: new Date().toISOString()
     }));
     // Clean the URL so the key isn't visible
@@ -5403,7 +5403,7 @@ window.adminUnlock = function() {
   window.userPlan = 'obsesivo';
   localStorage.setItem('losabia_plan', JSON.stringify({
     plan: 'obsesivo', sessionId: 'admin-bypass',
-    email: 'admin@losabia.mx', paidAt: new Date().toISOString()
+    email: 'admin@yalosabia.com', paidAt: new Date().toISOString()
   }));
   if (typeof updatePlanUI === 'function') updatePlanUI();
   console.log('[Admin] Full access granted. Reload if needed.');

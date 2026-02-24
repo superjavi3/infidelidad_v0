@@ -7,13 +7,13 @@ function getStripe() {
 
 const PLAN_CONFIG = {
   detective: {
-    name: 'Plan Detective — LoSabía.mx',
+    name: 'Plan Detective — YaLoSabía.com',
     description: 'Análisis profundo de tu conversación de WhatsApp',
     amount: 6900,
     mode: 'payment' as const,
   },
   obsesivo: {
-    name: 'Plan Obsesivo — LoSabía.mx',
+    name: 'Plan Obsesivo — YaLoSabía.com',
     description: 'Análisis completo + chatbot IA + monitoreo mensual',
     amount: 19900,
     mode: 'subscription' as const,
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     }
 
     const config = PLAN_CONFIG[plan as keyof typeof PLAN_CONFIG];
-    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://losabia.mx';
+    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://yalosabia.com';
     const stripe = getStripe();
 
     const priceData: Stripe.Checkout.SessionCreateParams.LineItem.PriceData = {
