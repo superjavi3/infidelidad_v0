@@ -55,6 +55,10 @@ export async function POST(req: NextRequest) {
       priceData.recurring = { interval: 'month' };
     }
 
+    // payment_method_types is intentionally omitted so Stripe uses
+    // "dynamic payment methods" — it will show all eligible methods
+    // enabled in the Stripe Dashboard (card, OXXO, PayPal, transfers, etc.)
+    // Note: subscription mode only supports card and some methods (not OXXO).
     const session = await stripe.checkout.sessions.create({
       customer_email: email,
       line_items: [{ price_data: priceData, quantity: 1 }],
