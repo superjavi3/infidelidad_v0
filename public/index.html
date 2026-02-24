@@ -919,18 +919,28 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 260px;
+  max-height: 400px;
   overflow-y: auto;
 }
 .silence-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   padding: 10px 14px;
   background: rgba(255,45,120,0.06);
   border-left: 3px solid var(--pink);
   border-radius: 0 8px 8px 0;
   font-size: 0.85rem;
+}
+.silence-bar-message {
+  width: 100%;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .silence-bar-duration {
   font-weight: 700;
@@ -2470,7 +2480,7 @@ async function generatePDF() {
       : 'Relacion con desafios importantes';
 
     // Build silence info
-    const longestDays = silenceData.longest ? Math.round(silenceData.longest.hours / 24) : 0;
+    const longestFormatted = silenceData.longest ? formatSilenceDuration(silenceData.longest.hours) : '0h';
     const longestHours = silenceData.longest ? silenceData.longest.hours : 0;
     const silenceBrokeItems = Object.entries(silenceData.brokeCount || {});
     const dtItems = Object.entries(doubleTextData || {});
@@ -2610,7 +2620,7 @@ async function generatePDF() {
       '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:8px 0 16px;"></div>' +
       '<div style="display:flex;gap:12px;margin-bottom:14px;">' +
         '<div style="background:#1E1B2E;border-radius:8px;padding:12px 14px;flex:1;text-align:center;"><span style="font-size:1.4rem;display:block;margin-bottom:2px;">\u{1F515}</span><div style="font-size:22px;font-weight:700;color:#F5C842;">' + silenceData.total + '</div><div style="font-size:10px;color:#9B96B0;margin-top:2px;">Silencios totales</div></div>' +
-        '<div style="background:#1E1B2E;border-radius:8px;padding:12px 14px;flex:1;text-align:center;"><span style="font-size:1.4rem;display:block;margin-bottom:2px;">\u{23F3}</span><div style="font-size:22px;font-weight:700;color:#F5C842;">' + longestDays + 'd</div><div style="font-size:10px;color:#9B96B0;margin-top:2px;">Silencio mas largo</div></div>' +
+        '<div style="background:#1E1B2E;border-radius:8px;padding:12px 14px;flex:1;text-align:center;"><span style="font-size:1.4rem;display:block;margin-bottom:2px;">\u{23F3}</span><div style="font-size:22px;font-weight:700;color:#F5C842;">' + longestFormatted + '</div><div style="font-size:10px;color:#9B96B0;margin-top:2px;">Silencio mas largo</div></div>' +
         '<div style="background:#1E1B2E;border-radius:8px;padding:12px 14px;flex:1;text-align:center;"><span style="font-size:1.4rem;display:block;margin-bottom:2px;">\u{1F550}</span><div style="font-size:22px;font-weight:700;color:#F5C842;">' + longestHours + 'h</div><div style="font-size:10px;color:#9B96B0;margin-top:2px;">En horas</div></div>' +
       '</div>' +
       '<div style="' + cardCSS + 'padding:16px;margin-bottom:10px;"><h3 style="font-size:14px;font-weight:600;color:#FF2D78;margin-bottom:8px;">Quien rompe el silencio?</h3><div style="display:flex;justify-content:center;">' + silenceBarsHTML + '</div></div>' +
@@ -2842,6 +2852,19 @@ function analyzeRelationshipTimeline(messages) {
   return { labels, data, peakMonth, maxVal, declineMonth, declinePct };
 }
 
+// ── SILENCE HELPERS ──
+function formatSilenceDuration(hours) {
+  if (hours < 48) return hours + 'h';
+  return (hours / 24).toFixed(1) + ' días';
+}
+
+function formatBrokeMessage(text) {
+  if (!text || text.trim() === '') return '[mensaje vacío]';
+  const trimmed = text.trim();
+  if (/^<[^>]+>$/.test(trimmed)) return '[' + trimmed.replace(/[<>]/g, '').toLowerCase() + ']';
+  return trimmed.length > 80 ? '"' + trimmed.substring(0, 80) + '..."' : '"' + trimmed + '"';
+}
+
 // ── 2. MAPA DE SILENCIOS ──
 function analyzeSilences(messages) {
   const sorted = [];
@@ -2864,6 +2887,7 @@ function analyzeSilences(messages) {
         end: sorted[i].timestamp,
         hours: Math.round(gap / (60 * 60 * 1000)),
         brokeBy: sorted[i].sender,
+        brokeMessage: sorted[i].text,
         lastSender: sorted[i-1].sender
       });
     }
@@ -3047,7 +3071,7 @@ function renderSilences(data, stats) {
       <div class="silence-stat-label">Silencios de 48h+</div>
     </div>
     <div class="silence-stat">
-      <div class="silence-stat-value">${data.longest ? data.longest.hours + 'h' : '0h'}</div>
+      <div class="silence-stat-value">${data.longest ? formatSilenceDuration(data.longest.hours) : '0h'}</div>
       <div class="silence-stat-label">Silencio más largo</div>
     </div>
     <div class="silence-stat">
@@ -3061,10 +3085,13 @@ function renderSilences(data, stats) {
     const displaySilences = data.silences.sort((a, b) => b.hours - a.hours).slice(0, 8);
     displaySilences.forEach(s => {
       const startDate = s.start.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: '2-digit' });
+      const brokeDate = s.end.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+      const brokeTime = s.end.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
       html += `<div class="silence-bar">
-        <span class="silence-bar-duration">${s.hours}h</span>
+        <span class="silence-bar-duration">${formatSilenceDuration(s.hours)}</span>
         <span class="silence-bar-info">${startDate}</span>
         <span class="silence-bar-breaker">${s.brokeBy.split(' ')[0]} rompió el silencio</span>
+        <div class="silence-bar-message">💬 ${s.brokeBy.split(' ')[0]}: ${formatBrokeMessage(s.brokeMessage)} — ${brokeDate}, ${brokeTime}</div>
       </div>`;
     });
     if (data.silences.length > 8) {
@@ -3217,7 +3244,7 @@ function analyzeForensicReconstruction(sorted, stats) {
 
   // Find milestones
   const milestones = [];
-  const lovePatterns = /te amo|te quiero|i love you/i;
+  const lovePatterns = /^\s*(te\s+quiero|te\s+amo|i\s+love\s+you)(\s+(mucho|tanto|muchísimo|muchisimo|un\s+chingo|con\s+todo|más\s+que\s+nada|mas\s+que\s+nada|de\s+verdad|por\s+siempre|para\s+siempre|demasiado|bebé|bebe|mi\s+amor|mi\s+vida|mi\s+cielo))?\s*[^\p{L}]*$/iu;
   const personB = stats.personB;
 
   // Last "te amo" from personB
@@ -3262,7 +3289,7 @@ function analyzeForensicReconstruction(sorted, stats) {
         type: 'first_silence',
         date: sorted[i-1].timestamp,
         label: 'Primer silencio largo (24h+)',
-        detail: `${Math.round(gap / (60*60*1000))} horas sin mensajes`
+        detail: `${formatSilenceDuration(Math.round(gap / (60*60*1000)))} sin mensajes`
       });
       break;
     }
