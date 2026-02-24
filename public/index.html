@@ -2561,6 +2561,7 @@ async function generatePDF() {
     const timelineData = analyzeRelationshipTimeline(lastMessages);
     const silenceData = analyzeSilences(lastMessages);
     const doubleTextData = analyzeDoubleTexting(lastMessages);
+    const stickerData = analyzeStickers(lastMessages);
     const deletedData = analyzeDeletedMessages(lastMessages);
 
     const sortedForBN = [];
@@ -2602,6 +2603,7 @@ async function generatePDF() {
     const longestHours = silenceData.longest ? silenceData.longest.hours : 0;
     const silenceBrokeItems = Object.entries(silenceData.brokeCount || {});
     const dtItems = Object.entries(doubleTextData || {});
+    const stickerItems = Object.entries(stickerData.perPerson || {});
     const delItems = Object.entries(deletedData.deleted || {});
 
     // Before/After rows
@@ -2728,6 +2730,11 @@ async function generatePDF() {
         hBarSVG(dtItems.map(([name, eps]) => [name, Array.isArray(eps) ? eps.length : eps])) + '</svg>'
       : '<p style="color:#9B96B0;font-size:13px;">No se detectaron episodios significativos de double texting.</p>';
 
+    const stickerBarsHTML = stickerData.total >= 10 ?
+      '<svg width="520" height="' + (stickerItems.length * 44 + 16) + '" xmlns="http://www.w3.org/2000/svg">' +
+        hBarSVG(stickerItems) + '</svg>'
+      : '';
+
     const delBarsHTML = delItems.length > 0 ?
       '<svg width="520" height="' + (delItems.length * 44 + 16) + '" xmlns="http://www.w3.org/2000/svg">' +
         hBarSVG(delItems) + '</svg>'
@@ -2746,6 +2753,16 @@ async function generatePDF() {
         '<div style="font-size:22px;font-weight:700;color:#FFF;margin-bottom:4px;">Mensajes y Patrones</div>' +
         '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:8px 0 16px;"></div>' +
         '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F624} Double Texting (5+ sin respuesta)</h3><div style="' + cardCSS + 'padding:16px;">' + dtBarsHTML + '</div></div>' +
+        (stickerData.total >= 10 ?
+          '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F3C6} Rey de los Stickers</h3><div style="' + cardCSS + 'padding:16px;">' +
+            '<div style="display:flex;gap:12px;margin-bottom:10px;">' +
+              '<div style="background:#1E1B2E;border-radius:8px;padding:10px 14px;flex:1;text-align:center;"><div style="font-size:20px;font-weight:700;color:#F5C842;">' + stickerData.total + '</div><div style="font-size:10px;color:#9B96B0;">Total stickers</div></div>' +
+              '<div style="background:#1E1B2E;border-radius:8px;padding:10px 14px;flex:1;text-align:center;"><div style="font-size:20px;font-weight:700;color:#F5C842;">' + stickerData.longestStreak + '</div><div style="font-size:10px;color:#9B96B0;">Racha maxima</div></div>' +
+              '<div style="background:#1E1B2E;border-radius:8px;padding:10px 14px;flex:1;text-align:center;"><div style="font-size:16px;font-weight:700;color:#F5C842;">\u{1F451} ' + clean((stickerData.streakOwner || Object.keys(stickerData.perPerson)[0] || '').split(' ')[0]) + '</div><div style="font-size:10px;color:#9B96B0;">Rey de stickers</div></div>' +
+            '</div>' +
+            '<div style="display:flex;justify-content:center;">' + stickerBarsHTML + '</div>' +
+          '</div></div>'
+        : '') +
         '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F5D1}\u{FE0F} Mensajes Eliminados</h3><div style="' + cardCSS + 'padding:16px;">' +
           (deletedData.total > 0 ?
             '<div style="display:flex;gap:12px;margin-bottom:8px;"><div style="background:#1E1B2E;border-radius:8px;padding:10px 14px;flex:1;text-align:center;"><div style="font-size:22px;font-weight:700;color:#F5C842;">' + deletedData.total + '</div><div style="font-size:10px;color:#9B96B0;">Total eliminados</div></div></div>' + delBarsHTML
