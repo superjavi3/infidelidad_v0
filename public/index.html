@@ -2966,7 +2966,9 @@ async function processChat(text) {
     return;
   }
 
+  console.time('analyzeMessages');
   const stats = analyzeMessages(messages);
+  console.timeEnd('analyzeMessages');
   if (!stats) {
     alert('No se pudieron identificar 2 participantes en la conversación.');
     resetUpload();
@@ -4038,10 +4040,21 @@ function renderObsessiveFeatures(messages, stats) {
   });
   sorted.sort((a, b) => a.timestamp - b.timestamp);
 
+  console.time('analyzeForensicReconstruction');
   const forensicData = analyzeForensicReconstruction(sorted, stats);
+  console.timeEnd('analyzeForensicReconstruction');
+
+  console.time('analyzeBeforeVsNow');
   const beforeNowData = analyzeBeforeVsNow(sorted, stats);
+  console.timeEnd('analyzeBeforeVsNow');
+
+  console.time('analyzeSelectiveGhosting');
   const ghostingData = analyzeSelectiveGhosting(sorted, stats);
+  console.timeEnd('analyzeSelectiveGhosting');
+
+  console.time('analyzeLanguageChanges');
   const languageData = analyzeLanguageChanges(sorted, stats);
+  console.timeEnd('analyzeLanguageChanges');
 
   document.getElementById('obsessiveSection').style.display = 'block';
 
