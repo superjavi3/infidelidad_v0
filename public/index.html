@@ -558,245 +558,129 @@ nav a:hover { color: var(--text); }
 .price-features {
   text-align: left;
   list-style: none;
-  margin-bottom: 0;
+  margin-bottom: 28px;
 }
-/* ── Preview gallery in pricing cards ── */
-.preview-wrap {
-  border-top: 1px solid rgba(255,255,255,0.08);
-  margin-top: 16px;
-  margin-bottom: 16px;
-  position: relative;
+/* ── Preview button in pricing cards ── */
+.preview-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.7);
+  width: 100%;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
-.preview-wrap-label {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-  text-align: left;
-  padding-top: 12px;
-}
-.preview-gallery {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 4px 0 12px;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.preview-gallery::-webkit-scrollbar { display: none; }
-.preview-fade {
-  position: absolute;
-  right: 0;
-  top: 32px;
-  bottom: 0;
-  width: 40px;
-  background: linear-gradient(to right, transparent, var(--bg-card));
-  pointer-events: none;
-  border-radius: 0 12px 12px 0;
-}
-.pv-shot {
-  width: 200px;
-  height: 140px;
-  flex-shrink: 0;
-  background: #0D0D1A;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-  padding: 12px;
-  overflow: hidden;
-  text-align: left;
-}
-.pv-shot-header {
-  font-size: 0.7rem;
+.preview-btn:hover {
+  border-color: rgba(255,45,120,0.6);
   color: #fff;
-  font-weight: 700;
-  margin-bottom: 2px;
 }
-.pv-shot-sub {
-  font-size: 0.6rem;
-  color: var(--text-muted);
-  margin-bottom: 6px;
+/* ── Preview modal ── */
+.preview-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
 }
-/* Línea de Vida bars */
-.pv-bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  height: 55px;
+.preview-modal-overlay.active { display: flex; }
+.preview-modal-container {
+  background: #1A1A2E;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  width: 90%;
+  max-width: 480px;
+  padding: 24px;
+  position: relative;
+  animation: modalIn 0.25s ease;
 }
-.pv-bar {
-  flex: 1;
-  border-radius: 3px 3px 0 0;
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
-.pv-bar-axis {
+.preview-modal-header {
   display: flex;
   justify-content: space-between;
-  font-size: 0.55rem;
-  color: var(--text-muted);
-  margin-top: 3px;
-}
-/* Multimedia rows */
-.pv-mm-row {
-  display: flex;
   align-items: center;
-  gap: 4px;
-  margin-bottom: 3px;
+  margin-bottom: 20px;
+  font-weight: 700;
+  font-size: 1rem;
+  color: white;
 }
-.pv-mm-label {
-  font-size: 0.6rem;
-  color: var(--text-muted);
-  width: 85px;
-  flex-shrink: 0;
-  white-space: nowrap;
-  overflow: hidden;
-}
-.pv-mm-track {
-  flex: 1;
-  height: 4px;
+.preview-modal-close {
   background: rgba(255,255,255,0.1);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.pv-mm-fill {
-  height: 100%;
-  border-radius: 2px;
-  background: var(--pink);
-}
-.pv-mm-king {
-  font-size: 0.55rem;
-  color: var(--purple);
-  font-weight: 700;
-  white-space: nowrap;
-  min-width: 42px;
-  text-align: right;
-}
-/* Double Texting */
-.pv-insight {
-  background: rgba(255,45,120,0.15);
-  border-left: 3px solid var(--pink);
-  border-radius: 6px;
-  padding: 6px 8px;
-  font-size: 0.65rem;
-  color: #fff;
-  margin-bottom: 8px;
-}
-.pv-hbar-row {
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.9rem;
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 4px;
+  justify-content: center;
 }
-.pv-hbar-lbl {
-  font-size: 0.6rem;
-  color: #fff;
-  min-width: 32px;
-}
-.pv-hbar-track {
-  flex: 1;
-  height: 6px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 3px;
+.preview-slides-wrapper {
   overflow: hidden;
+  border-radius: 12px;
 }
-.pv-hbar-fill {
-  height: 100%;
-  border-radius: 3px;
-}
-.pv-hbar-pct {
-  font-size: 0.6rem;
-  color: #fff;
-  min-width: 24px;
-  text-align: right;
-}
-/* Chatbot bubbles */
-.pv-chat-wrap {
-  overflow: hidden;
-}
-.pv-bubble {
-  padding: 5px 8px;
-  border-radius: 10px 10px 10px 2px;
-  max-width: 85%;
-  font-size: 0.6rem;
-  color: #fff;
-  margin-bottom: 4px;
-  clear: both;
-}
-.pv-bubble.user {
-  background: rgba(255,45,120,0.2);
-  border-radius: 10px 10px 2px 10px;
-  float: right;
-  max-width: 80%;
-}
-.pv-bubble.ai {
-  background: rgba(108,92,231,0.2);
-  float: left;
-}
-.pv-chat-input {
-  clear: both;
-  margin-top: 6px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 20px;
-  padding: 4px 10px;
-  font-size: 0.55rem;
-  color: var(--text-muted);
-}
-/* Forense inflexión */
-.pv-inflexion {
-  border-left: 3px solid var(--pink);
-  padding-left: 8px;
-  margin-bottom: 6px;
-}
-.pv-inflexion-l1 {
-  font-size: 0.7rem;
-  color: var(--pink);
-  font-weight: 700;
-}
-.pv-inflexion-l2 {
-  font-size: 0.65rem;
-  color: #fff;
-}
-.pv-inflexion-l3 {
-  font-size: 0.6rem;
-  color: #FF6B6B;
-}
-.pv-tags {
+.preview-slides {
   display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  margin-top: 6px;
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
 }
-.pv-tag {
-  font-size: 0.6rem;
-  background: rgba(108,92,231,0.3);
-  color: #a89ef5;
-  padding: 2px 7px;
-  border-radius: 10px;
-  display: inline-block;
+.preview-slide {
+  min-width: 100%;
+  background: #0D0D1A;
+  border-radius: 12px;
+  padding: 20px;
+  box-sizing: border-box;
+  min-height: 220px;
 }
-/* Antes vs Ahora table */
-.pv-tbl {
-  width: 100%;
-  border-collapse: collapse;
+.preview-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
 }
-.pv-tbl th {
-  font-size: 0.6rem;
-  font-weight: 600;
-  padding: 0 0 4px;
-  text-align: left;
+.preview-nav-btn {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s;
 }
-.pv-tbl th.good { color: #6BCB77; }
-.pv-tbl th.bad  { color: #FF6B6B; }
-.pv-tbl td {
-  font-size: 0.6rem;
-  padding: 3px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+.preview-nav-btn:hover { background: rgba(255,45,120,0.4); }
+.preview-dots {
+  display: flex;
+  gap: 8px;
 }
-.pv-tbl td.lbl { color: var(--text-muted); }
-.pv-tbl td.good { color: #6BCB77; font-weight: 700; font-size: 0.72rem; }
-.pv-tbl td.bad  { color: #FF6B6B; font-weight: 700; font-size: 0.72rem; }
-@media(max-width:480px) {
-  .pv-shot { width: 170px; height: 120px; padding: 10px; }
-  .pv-bars { height: 40px; }
-  .pv-shot-header { font-size: 0.65rem; }
+.preview-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.preview-dot.active {
+  background: #FF2D78;
+  width: 20px;
+  border-radius: 4px;
+}
+.preview-counter {
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.4);
+  margin-top: 8px;
 }
 .price-features li {
   padding: 7px 0;
@@ -2475,49 +2359,9 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
           <li>🗑️ Mensajes eliminados</li>
           <li>📄 Reporte PDF completo descargable</li>
         </ul>
-        <div class="preview-wrap">
-          <div class="preview-wrap-label">👀 Así se ve por dentro</div>
-          <div class="preview-gallery">
-            <!-- Screenshot 1 — Línea de Vida -->
-            <div class="pv-shot">
-              <div class="pv-shot-header">📉 Línea de Vida</div>
-              <div class="pv-shot-sub">Evolución mes a mes</div>
-              <div class="pv-bars">
-                <div class="pv-bar" style="height:30%;background:linear-gradient(to top,var(--purple),var(--purple))"></div>
-                <div class="pv-bar" style="height:45%;background:linear-gradient(to top,var(--purple),#9b6fef)"></div>
-                <div class="pv-bar" style="height:80%;background:linear-gradient(to top,#c74b8a,var(--pink))"></div>
-                <div class="pv-bar" style="height:60%;background:linear-gradient(to top,#a85aa0,var(--pink))"></div>
-                <div class="pv-bar" style="height:90%;background:linear-gradient(to top,var(--pink),var(--pink))"></div>
-                <div class="pv-bar" style="height:40%;background:linear-gradient(to top,var(--purple),#9b6fef)"></div>
-                <div class="pv-bar" style="height:25%;background:linear-gradient(to top,var(--purple),var(--purple))"></div>
-                <div class="pv-bar" style="height:55%;background:linear-gradient(to top,#a85aa0,var(--pink))"></div>
-              </div>
-              <div class="pv-bar-axis"><span>Ene 23</span><span>Jun 23</span><span>Dic 23</span></div>
-            </div>
-            <!-- Screenshot 2 — Reyes del Multimedia -->
-            <div class="pv-shot">
-              <div class="pv-shot-header">📱 Reyes del Multimedia</div>
-              <div style="margin-top:8px">
-                <div class="pv-mm-row"><span class="pv-mm-label">🎙️ Audios</span><div class="pv-mm-track"><div class="pv-mm-fill" style="width:73%"></div></div><span class="pv-mm-king">Ella 73%</span></div>
-                <div class="pv-mm-row"><span class="pv-mm-label">📸 Imágenes</span><div class="pv-mm-track"><div class="pv-mm-fill" style="width:100%"></div></div><span class="pv-mm-king">Tú 100%</span></div>
-                <div class="pv-mm-row"><span class="pv-mm-label">🎬 Videos</span><div class="pv-mm-track"><div class="pv-mm-fill" style="width:60%"></div></div><span class="pv-mm-king">Ella 60%</span></div>
-                <div class="pv-mm-row"><span class="pv-mm-label">📄 Docs</span><div class="pv-mm-track"><div class="pv-mm-fill" style="width:55%"></div></div><span class="pv-mm-king">Tú 55%</span></div>
-                <div class="pv-mm-row"><span class="pv-mm-label">🎭 Stickers</span><div class="pv-mm-track"><div class="pv-mm-fill" style="width:68%"></div></div><span class="pv-mm-king">Ella 68%</span></div>
-              </div>
-            </div>
-            <!-- Screenshot 3 — Double Texting -->
-            <div class="pv-shot">
-              <div class="pv-shot-header">😤 Double Texting</div>
-              <div class="pv-shot-sub">Mensajes sin respuesta</div>
-              <div class="pv-insight">Tú mandas el 78% de los dobles mensajes</div>
-              <div class="pv-hbar-row"><span class="pv-hbar-lbl">Tú</span><div class="pv-hbar-track"><div class="pv-hbar-fill" style="width:78%;background:var(--pink)"></div></div><span class="pv-hbar-pct">78%</span></div>
-              <div class="pv-hbar-row"><span class="pv-hbar-lbl">Él/Ella</span><div class="pv-hbar-track"><div class="pv-hbar-fill" style="width:22%;background:var(--purple)"></div></div><span class="pv-hbar-pct">22%</span></div>
-            </div>
-          </div>
-          <div class="preview-fade"></div>
-        </div>
         </div>
         <div class="price-card-footer">
+          <button class="preview-btn" onclick="openPreview('detective')">👁️ Ver vista previa del análisis</button>
           <button class="price-btn price-btn-primary" onclick="openPayModal('detective')">Desbloquear análisis →</button>
           <p class="fomo-text">🔥 <span class="fomo-count"></span> personas analizaron su chat hoy</p>
         </div>
@@ -2536,51 +2380,9 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
           <li>🎯 Detector de cambios de lenguaje</li>
           <li>💬 Chatbot terapeuta IA ilimitado</li>
         </ul>
-        <div class="preview-wrap">
-          <div class="preview-wrap-label">👀 Así se ve por dentro</div>
-          <div class="preview-gallery">
-            <!-- Screenshot 1 — Chatbot Terapeuta -->
-            <div class="pv-shot">
-              <div class="pv-shot-header">💬 Terapeuta IA</div>
-              <div class="pv-shot-sub">Pregúntale lo que sea</div>
-              <div class="pv-chat-wrap" style="margin-top:4px">
-                <div class="pv-bubble user">¿Por qué dejó de escribirme tanto?</div>
-                <div class="pv-bubble ai">Detecté una caída del 67% en marzo...</div>
-                <div class="pv-bubble user">¿Y qué hago?</div>
-                <div class="pv-chat-input">Escribe tu pregunta...</div>
-              </div>
-            </div>
-            <!-- Screenshot 2 — Reconstrucción Forense -->
-            <div class="pv-shot">
-              <div class="pv-shot-header">🕵️ Reconstrucción Forense</div>
-              <div style="margin-top:8px">
-                <div class="pv-inflexion">
-                  <div class="pv-inflexion-l1">⚡ Mar 2024 — Caída</div>
-                  <div class="pv-inflexion-l2">Mensajes: 1,840 → 423</div>
-                  <div class="pv-inflexion-l3">(-77% en un mes)</div>
-                </div>
-                <div class="pv-tags">
-                  <span class="pv-tag">trabajo</span>
-                  <span class="pv-tag">distancia</span>
-                  <span class="pv-tag">silencio</span>
-                </div>
-              </div>
-            </div>
-            <!-- Screenshot 3 — Antes vs Ahora -->
-            <div class="pv-shot">
-              <div class="pv-shot-header">💔 Antes vs Ahora</div>
-              <table class="pv-tbl" style="margin-top:8px">
-                <tr><th></th><th class="good">Primeros 3 meses</th><th class="bad">Últimos 3 meses</th></tr>
-                <tr><td class="lbl">Msgs/día</td><td class="good">187</td><td class="bad">31</td></tr>
-                <tr><td class="lbl">Respuesta</td><td class="good">4 min</td><td class="bad">3.2h</td></tr>
-                <tr><td class="lbl">Te quiero</td><td class="good">124 veces</td><td class="bad">8 veces</td></tr>
-              </table>
-            </div>
-          </div>
-          <div class="preview-fade"></div>
-        </div>
         </div>
         <div class="price-card-footer">
+          <button class="preview-btn" onclick="openPreview('obsesivo')">👁️ Ver vista previa del análisis</button>
           <button class="price-btn price-btn-secondary" onclick="openPayModal('obsesivo')">Desbloquear $199/mes →</button>
           <p class="fomo-text">🔥 <span class="fomo-count"></span> personas analizaron su chat hoy</p>
         </div>
@@ -5446,6 +5248,189 @@ function showExitIntent() {
 
 document.addEventListener('mouseleave', function(e) {
   if (e.clientY <= 0) showExitIntent();
+});
+</script>
+
+<!-- ── PREVIEW MODAL ── -->
+<div id="preview-modal" class="preview-modal-overlay" onclick="closePreview(event)">
+  <div class="preview-modal-container">
+    <div class="preview-modal-header">
+      <span id="preview-modal-title">Vista previa</span>
+      <button class="preview-modal-close" onclick="closePreview()">✕</button>
+    </div>
+    <div class="preview-slides-wrapper">
+      <div id="preview-slides" class="preview-slides"></div>
+    </div>
+    <div class="preview-nav">
+      <button class="preview-nav-btn" id="prev-slide" onclick="changeSlide(-1)">←</button>
+      <div id="preview-dots" class="preview-dots"></div>
+      <button class="preview-nav-btn" id="next-slide" onclick="changeSlide(1)">→</button>
+    </div>
+    <div class="preview-counter">
+      <span id="slide-current">1</span> / <span id="slide-total">3</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── PREVIEW MODAL LOGIC ──
+let currentSlide = 0;
+let currentPlan = null;
+
+const previewSlides = {
+  detective: [
+    `<div class="preview-slide">
+  <div style="font-size:0.8rem;font-weight:700;color:white;margin-bottom:4px">📉 Línea de Vida</div>
+  <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-bottom:12px">Evolución mes a mes — mensajes enviados</div>
+  <div style="display:flex;align-items:flex-end;gap:5px;height:90px;padding-bottom:4px">
+    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:35%;border-radius:3px 3px 0 0"></div>
+    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:55%;border-radius:3px 3px 0 0"></div>
+    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:85%;border-radius:3px 3px 0 0"></div>
+    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:65%;border-radius:3px 3px 0 0"></div>
+    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:95%;border-radius:3px 3px 0 0"></div>
+    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:45%;border-radius:3px 3px 0 0"></div>
+    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:28%;border-radius:3px 3px 0 0"></div>
+    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:60%;border-radius:3px 3px 0 0"></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:rgba(255,255,255,0.4);margin-top:6px"><span>Ene 23</span><span>Jun 23</span><span>Dic 23</span></div>
+  <div style="margin-top:12px;background:rgba(255,45,120,0.1);border-left:3px solid #FF2D78;border-radius:0 6px 6px 0;padding:8px 10px;font-size:0.7rem;color:rgba(255,255,255,0.8)">📍 Pico máximo en <strong style="color:#FF2D78">Mayo 2023</strong> — 1,840 mensajes ese mes</div>
+</div>`,
+    `<div class="preview-slide">
+  <div style="font-size:0.8rem;font-weight:700;color:white;margin-bottom:4px">📱 Reyes del Multimedia</div>
+  <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-bottom:14px">Quién habla con palabras y quién con archivos</div>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:0.75rem;width:90px;color:rgba(255,255,255,0.7);flex-shrink:0">🎙️ Audios</span><div style="flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden"><div style="width:73%;height:100%;background:#FF2D78;border-radius:3px"></div></div><span style="font-size:0.65rem;color:#6C5CE7;font-weight:700;width:50px;text-align:right">Ella 73%</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:0.75rem;width:90px;color:rgba(255,255,255,0.7);flex-shrink:0">📸 Imágenes</span><div style="flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden"><div style="width:100%;height:100%;background:#FF2D78;border-radius:3px"></div></div><span style="font-size:0.65rem;color:#6C5CE7;font-weight:700;width:50px;text-align:right">Tú 100%</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:0.75rem;width:90px;color:rgba(255,255,255,0.7);flex-shrink:0">🎬 Videos</span><div style="flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden"><div style="width:60%;height:100%;background:#FF2D78;border-radius:3px"></div></div><span style="font-size:0.65rem;color:#6C5CE7;font-weight:700;width:50px;text-align:right">Ella 60%</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:0.75rem;width:90px;color:rgba(255,255,255,0.7);flex-shrink:0">📄 Docs</span><div style="flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden"><div style="width:55%;height:100%;background:#FF2D78;border-radius:3px"></div></div><span style="font-size:0.65rem;color:#6C5CE7;font-weight:700;width:50px;text-align:right">Tú 55%</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:0.75rem;width:90px;color:rgba(255,255,255,0.7);flex-shrink:0">🎭 Stickers</span><div style="flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden"><div style="width:68%;height:100%;background:#FF2D78;border-radius:3px"></div></div><span style="font-size:0.65rem;color:#6C5CE7;font-weight:700;width:50px;text-align:right">Ella 68%</span></div>
+  </div>
+</div>`,
+    `<div class="preview-slide">
+  <div style="font-size:0.8rem;font-weight:700;color:white;margin-bottom:4px">🔇 Mapa de Silencios</div>
+  <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-bottom:14px">Períodos de más de 48h sin mensajes</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+    <div style="background:rgba(255,255,255,0.08);border-radius:20px;padding:6px 12px;font-size:0.75rem">💀 <strong style="color:#FF2D78">22 días</strong> el más largo</div>
+    <div style="background:rgba(255,255,255,0.08);border-radius:20px;padding:6px 12px;font-size:0.75rem"><strong style="color:white">8</strong> silencios totales</div>
+  </div>
+  <div style="font-size:0.7rem;color:rgba(255,255,255,0.5);margin-bottom:8px">¿Quién rompe el silencio?</div>
+  <div style="margin-bottom:8px">
+    <div style="display:flex;justify-content:space-between;font-size:0.7rem;margin-bottom:3px"><span style="color:white">Tú</span><span style="color:#FF2D78">65%</span></div>
+    <div style="height:7px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden"><div style="width:65%;height:100%;background:#FF2D78;border-radius:4px"></div></div>
+  </div>
+  <div>
+    <div style="display:flex;justify-content:space-between;font-size:0.7rem;margin-bottom:3px"><span style="color:white">Él/Ella</span><span style="color:#6C5CE7">35%</span></div>
+    <div style="height:7px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden"><div style="width:35%;height:100%;background:#6C5CE7;border-radius:4px"></div></div>
+  </div>
+  <div style="margin-top:12px;font-size:0.65rem;color:rgba(255,255,255,0.5);font-style:italic">💬 Tú rompiste el silencio: "Oye, ¿todo bien?" — 14 mar 2024</div>
+</div>`
+  ],
+  obsesivo: [
+    `<div class="preview-slide">
+  <div style="font-size:0.8rem;font-weight:700;color:white;margin-bottom:4px">💬 Terapeuta IA</div>
+  <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-bottom:12px">Pregúntale lo que sea sobre tu relación</div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="align-self:flex-end;background:rgba(255,45,120,0.2);border-radius:12px 12px 2px 12px;padding:8px 12px;max-width:80%;font-size:0.72rem;color:white;line-height:1.4">¿Por qué dejó de escribirme tanto?</div>
+    <div style="align-self:flex-start;background:rgba(108,92,231,0.2);border-radius:12px 12px 12px 2px;padding:8px 12px;max-width:85%;font-size:0.72rem;color:white;line-height:1.4">Detecté una caída del <strong style="color:#FF2D78">67%</strong> en marzo. Los mensajes pasaron de 1,840 a 423 ese mes...</div>
+    <div style="align-self:flex-end;background:rgba(255,45,120,0.2);border-radius:12px 12px 2px 12px;padding:8px 12px;max-width:80%;font-size:0.72rem;color:white;line-height:1.4">¿Y qué hago? 😔</div>
+  </div>
+  <div style="margin-top:12px;background:rgba(255,255,255,0.06);border-radius:20px;padding:8px 14px;font-size:0.65rem;color:rgba(255,255,255,0.3)">Escribe tu pregunta...</div>
+</div>`,
+    `<div class="preview-slide">
+  <div style="font-size:0.8rem;font-weight:700;color:white;margin-bottom:4px">🕵️ Reconstrucción Forense</div>
+  <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-bottom:14px">Los momentos exactos donde cambió todo</div>
+  <div style="border-left:3px solid #FF2D78;padding-left:12px;margin-bottom:12px">
+    <div style="font-size:0.8rem;color:#FF2D78;font-weight:700;margin-bottom:3px">⚡ Mar 2024 — Punto de Inflexión</div>
+    <div style="font-size:0.72rem;color:white;margin-bottom:3px">Mensajes: 1,840 → 423</div>
+    <div style="font-size:0.68rem;color:#FF6B6B">-77% en un mes</div>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+    <span style="background:rgba(108,92,231,0.3);color:#a29bfe;border-radius:10px;padding:3px 9px;font-size:0.65rem">trabajo</span>
+    <span style="background:rgba(108,92,231,0.3);color:#a29bfe;border-radius:10px;padding:3px 9px;font-size:0.65rem">distancia</span>
+    <span style="background:rgba(108,92,231,0.3);color:#a29bfe;border-radius:10px;padding:3px 9px;font-size:0.65rem">silencio</span>
+  </div>
+  <div style="border-left:3px solid #6C5CE7;padding-left:12px;opacity:0.7">
+    <div style="font-size:0.75rem;color:#6C5CE7;font-weight:700;margin-bottom:3px">↑ Jun 2022 — Punto de Inflexión</div>
+    <div style="font-size:0.68rem;color:rgba(255,255,255,0.7)">Mensajes subieron +64% ese mes</div>
+  </div>
+</div>`,
+    `<div class="preview-slide">
+  <div style="font-size:0.8rem;font-weight:700;color:white;margin-bottom:4px">💔 Antes vs Ahora</div>
+  <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-bottom:14px">Primeros 3 meses vs últimos 3 meses</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0">
+    <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.08)"></div>
+    <div style="font-size:0.65rem;color:#6BCB77;font-weight:700;padding:6px 4px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:center">Antes</div>
+    <div style="font-size:0.65rem;color:#FF6B6B;font-weight:700;padding:6px 4px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:center">Ahora</div>
+    <div style="font-size:0.68rem;color:rgba(255,255,255,0.5);padding:8px 0">Msgs/día</div>
+    <div style="font-size:0.85rem;color:#6BCB77;font-weight:700;padding:8px 4px;text-align:center">187</div>
+    <div style="font-size:0.85rem;color:#FF6B6B;font-weight:700;padding:8px 4px;text-align:center">31</div>
+    <div style="font-size:0.68rem;color:rgba(255,255,255,0.5);padding:8px 0;border-top:1px solid rgba(255,255,255,0.06)">Respuesta</div>
+    <div style="font-size:0.85rem;color:#6BCB77;font-weight:700;padding:8px 4px;text-align:center;border-top:1px solid rgba(255,255,255,0.06)">4 min</div>
+    <div style="font-size:0.85rem;color:#FF6B6B;font-weight:700;padding:8px 4px;text-align:center;border-top:1px solid rgba(255,255,255,0.06)">3.2h</div>
+    <div style="font-size:0.68rem;color:rgba(255,255,255,0.5);padding:8px 0;border-top:1px solid rgba(255,255,255,0.06)">Te quiero</div>
+    <div style="font-size:0.85rem;color:#6BCB77;font-weight:700;padding:8px 4px;text-align:center;border-top:1px solid rgba(255,255,255,0.06)">124x</div>
+    <div style="font-size:0.85rem;color:#FF6B6B;font-weight:700;padding:8px 4px;text-align:center;border-top:1px solid rgba(255,255,255,0.06)">8x</div>
+  </div>
+</div>`
+  ]
+};
+
+function openPreview(plan) {
+  currentPlan = plan;
+  currentSlide = 0;
+  const modal = document.getElementById('preview-modal');
+  const title = document.getElementById('preview-modal-title');
+  const slidesContainer = document.getElementById('preview-slides');
+  const dotsContainer = document.getElementById('preview-dots');
+  const total = document.getElementById('slide-total');
+  title.textContent = plan === 'detective'
+    ? '\u{1F50D} Plan Detective — Vista previa'
+    : '\u{1F52C} Plan Obsesivo — Vista previa';
+  const slides = previewSlides[plan];
+  total.textContent = slides.length;
+  slidesContainer.innerHTML = slides.join('');
+  dotsContainer.innerHTML = slides.map((_, i) =>
+    '<div class="preview-dot ' + (i === 0 ? 'active' : '') + '" onclick="goToSlide(' + i + ')"></div>'
+  ).join('');
+  updateSlide();
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePreview(event) {
+  if (event && event.target !== document.getElementById('preview-modal')) return;
+  document.getElementById('preview-modal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function changeSlide(dir) {
+  var slides = previewSlides[currentPlan];
+  currentSlide = (currentSlide + dir + slides.length) % slides.length;
+  updateSlide();
+}
+
+function goToSlide(index) {
+  currentSlide = index;
+  updateSlide();
+}
+
+function updateSlide() {
+  var container = document.getElementById('preview-slides');
+  container.style.transform = 'translateX(-' + (currentSlide * 100) + '%)';
+  document.querySelectorAll('.preview-dot').forEach(function(dot, i) {
+    dot.classList.toggle('active', i === currentSlide);
+  });
+  document.getElementById('slide-current').textContent = currentSlide + 1;
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.getElementById('preview-modal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  if (!document.getElementById('preview-modal').classList.contains('active')) return;
+  if (e.key === 'ArrowLeft') changeSlide(-1);
+  if (e.key === 'ArrowRight') changeSlide(1);
 });
 </script>
 
