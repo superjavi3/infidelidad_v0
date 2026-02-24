@@ -2494,18 +2494,114 @@ function analyzeMessages(messages) {
     : avgReply >= 60 ? Math.floor(avgReply / 60) + 'h ' + (avgReply % 60) + 'min'
     : avgReply + ' min';
 
-  // Score (fun algorithm)
-  const balanceScore = Math.max(0, 30 - Math.abs(msgsA - msgsB) / total * 60);
-  const volumeScore = Math.min(30, total / 500 * 30);
-  const emojiScore = Math.min(20, loveCount / 10 * 20);
-  const consistencyScore = Math.min(20, uniqueDays / 30 * 20);
-  const score = Math.floor(balanceScore + volumeScore + emojiScore + consistencyScore);
+  // ── Score v2: 6 components ──
+
+  // Derived data from sortedForReply (already chronological)
+  const firstTs = sortedForReply.length > 0 ? sortedForReply[0].timestamp : new Date();
+  const lastTs = sortedForReply.length > 0 ? sortedForReply[sortedForReply.length - 1].timestamp : new Date();
+  const totalDays = Math.max(1, Math.round((lastTs - firstTs) / 86400000));
+
+  // Active weeks
+  const weekSet = new Set();
+  sortedForReply.forEach(m => {
+    const d = m.timestamp;
+    const jan1 = new Date(d.getFullYear(), 0, 1);
+    const weekNum = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+    weekSet.add(d.getFullYear() + '-W' + weekNum);
+  });
+  const totalWeeks = Math.max(1, Math.ceil(totalDays / 7));
+  const activeWeeks = weekSet.size;
+  const weeklyConsistency = activeWeeks / totalWeeks;
+
+  // Silences (gaps > 48h between consecutive messages)
+  let silencesCount = 0;
+  for (let i = 1; i < sortedForReply.length; i++) {
+    if ((sortedForReply[i].timestamp - sortedForReply[i - 1].timestamp) / 3600000 >= 48) {
+      silencesCount++;
+    }
+  }
+
+  // Double texting (5+ consecutive same sender)
+  let doubleTextA = 0, doubleTextB = 0;
+  let dtSender = null, dtCount = 0;
+  sortedForReply.forEach(m => {
+    if (m.sender === dtSender) {
+      dtCount++;
+    } else {
+      if (dtCount >= 5 && dtSender) {
+        if (dtSender === personA) doubleTextA++;
+        else if (dtSender === personB) doubleTextB++;
+      }
+      dtSender = m.sender;
+      dtCount = 1;
+    }
+  });
+  if (dtCount >= 5 && dtSender) {
+    if (dtSender === personA) doubleTextA++;
+    else if (dtSender === personB) doubleTextB++;
+  }
+
+  // 1. EQUILIBRIO (0-25)
+  const msgRatio = Math.min(msgsA, msgsB) / Math.max(msgsA, msgsB);
+  const balanceScore = msgRatio >= 0.85 ? 25 :
+                       msgRatio >= 0.70 ? 20 :
+                       msgRatio >= 0.55 ? 14 :
+                       msgRatio >= 0.40 ? 8  : 3;
+
+  // 2. CONSISTENCIA TEMPORAL (0-20)
+  const consistencyScore = weeklyConsistency >= 0.90 ? 20 :
+                           weeklyConsistency >= 0.75 ? 16 :
+                           weeklyConsistency >= 0.60 ? 11 :
+                           weeklyConsistency >= 0.40 ? 6  : 2;
+
+  // 3. TIEMPO DE RESPUESTA (0-20)
+  const responseScore = avgReply <= 5   ? 20 :
+                        avgReply <= 15  ? 17 :
+                        avgReply <= 30  ? 14 :
+                        avgReply <= 60  ? 10 :
+                        avgReply <= 180 ? 6  :
+                        avgReply <= 480 ? 3  : 1;
+
+  // 4. AFECTO EXPRESADO (0-15)
+  const loveRate = (loveCount / total) * 1000;
+  const emojiScore = loveRate >= 15 ? 15 :
+                     loveRate >= 8  ? 12 :
+                     loveRate >= 4  ? 8  :
+                     loveRate >= 1  ? 4  : 0;
+
+  // 5. PENALIZACIÓN SILENCIOS (0 a -15)
+  const monthsTotal = Math.max(1, totalDays / 30);
+  const silenceRate = silencesCount / (monthsTotal / 6);
+  const silencePenalty = silenceRate <= 1  ? 0   :
+                         silenceRate <= 3  ? -3  :
+                         silenceRate <= 6  ? -7  :
+                         silenceRate <= 10 ? -11 : -15;
+
+  // 6. PENALIZACIÓN DOUBLE TEXTING (0 a -10)
+  const totalDouble = doubleTextA + doubleTextB;
+  const doubleRate = totalDouble / total;
+  const doubleRatio = totalDouble > 0
+    ? Math.min(doubleTextA, doubleTextB) / Math.max(doubleTextA, doubleTextB)
+    : 1;
+  const doublePenalty = doubleRate < 0.05  ? 0   :
+                        doubleRatio > 0.7  ? -2  :
+                        doubleRatio > 0.4  ? -5  : -10;
+
+  // Raw: max 80, min -25 → normalize to 0-100
+  const rawScore = balanceScore + consistencyScore + responseScore + emojiScore + silencePenalty + doublePenalty;
+  const score = Math.round(Math.min(100, Math.max(0, (rawScore + 25) / 105 * 100)));
 
   let verdict = '';
-  if (score >= 80) verdict = 'Relación intensa y equilibrada 💚';
-  else if (score >= 60) verdict = 'Conexión fuerte con áreas de mejora 💛';
-  else if (score >= 40) verdict = 'Hay cosas que necesitan atención 🟠';
-  else verdict = 'Houston, tenemos un problema 🔴';
+  if      (score >= 95) verdict = 'De otro planeta 🪐';
+  else if (score >= 85) verdict = 'Sólidos de verdad 💚';
+  else if (score >= 75) verdict = 'Va muy bien 💛';
+  else if (score >= 65) verdict = 'Bien, pero ojo 👀';
+  else if (score >= 55) verdict = 'Tibio, cuidado 🟠';
+  else if (score >= 45) verdict = 'Enfriándose ya 🟠';
+  else if (score >= 35) verdict = 'Algo está mal 🔴';
+  else if (score >= 25) verdict = 'Bajo presión seria 🔴';
+  else if (score >= 15) verdict = 'Casi apagado 💔';
+  else                  verdict = 'Houston, hablemos 🚨';
 
   // Who leads
   const leader = msgsA > msgsB ? personA : personB;
@@ -2682,10 +2778,16 @@ async function generatePDF() {
     const today = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
     const clean = (s) => String(s || '');
 
-    const verdict = lastStats.score >= 80 ? 'Relacion intensa y equilibrada'
-      : lastStats.score >= 60 ? 'Relacion con altibajos'
-      : lastStats.score >= 40 ? 'Relacion con areas de mejora'
-      : 'Relacion con desafios importantes';
+    const verdict = lastStats.score >= 95 ? 'De otro planeta'
+      : lastStats.score >= 85 ? 'Solidos de verdad'
+      : lastStats.score >= 75 ? 'Va muy bien'
+      : lastStats.score >= 65 ? 'Bien, pero ojo'
+      : lastStats.score >= 55 ? 'Tibio, cuidado'
+      : lastStats.score >= 45 ? 'Enfriandose ya'
+      : lastStats.score >= 35 ? 'Algo esta mal'
+      : lastStats.score >= 25 ? 'Bajo presion seria'
+      : lastStats.score >= 15 ? 'Casi apagado'
+      : 'Houston, hablemos';
 
     // Build silence info
     const longestFormatted = silenceData.longest ? formatSilenceDuration(silenceData.longest.hours) : '0h';
