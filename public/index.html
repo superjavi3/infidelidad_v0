@@ -2097,10 +2097,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
         <button class="faq-q">¿Puedo analizar chats grupales?</button>
         <div class="faq-a"><p>Por ahora solo analizamos chats individuales (entre 2 personas). El análisis de grupos llegará pronto en una actualización futura.</p></div>
       </div>
-      <div class="faq-item">
-        <button class="faq-q">¿Aceptan OXXO Pay?</button>
-        <div class="faq-a"><p>Sí. Aceptamos tarjetas de crédito/débito, OXXO Pay, SPEI y Mercado Pago. Queremos que sea accesible para todos en México.</p></div>
-      </div>
     </div>
   </div>
 </section>
@@ -2219,11 +2215,13 @@ function parseWhatsApp(text) {
   // 12/01/2024, 10:32 - Nombre: mensaje
   // 1/12/24, 10:32 a. m. - Nombre: mensaje
   const patterns = [
-    // Formato con corchetes: [21/2/26, 19:35:23] Nombre: mensaje
-    /^\[(\d{1,2}\/\d{1,2}\/\d{2,4}),\s*(\d{1,2}:\d{2}:\d{2})\]\s*([^:]+):\s*(.+)$/gm,
-    
-    // Formato con guión: 12/01/2024, 10:32 - Nombre: mensaje
-    /^(\d{1,2}\/\d{1,2}\/\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?)\s*(?:[ap]\.?\s*[m]\.?)?\s*-\s*([^:]+):\s*(.+)$/gm,
+    // Formato con corchetes: [21/2/26, 19:35:23] Nombre: mensaje  (iOS)
+    // Soporta segundos opcionales, AM/PM opcional, nombres con emojis Unicode
+    /^\[(\d{1,2}\/\d{1,2}\/\d{2,4}),\s*(\d{1,2}:\d{2}(?::\d{2})?)\s*(?:[aApP]\.?\s*[mM]\.?)?\]\s*(.+?):\s(.*)$/gmu,
+
+    // Formato con guión: 12/01/2024, 10:32 a. m. - Nombre: mensaje  (Android/LatAm)
+    // Soporta AM/PM con puntos y espacios, nombres con emojis Unicode
+    /^(\d{1,2}\/\d{1,2}\/\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?)\s*(?:[aApP]\.?\s*[mM]\.?)?\s*-\s*(.+?):\s(.*)$/gmu,
   ];
   
   for (const regex of patterns) {
@@ -4150,7 +4148,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot
       Ir al pago →
     </button>
     <p id="payError" style="color:#FF2D78;font-size:0.85rem;margin-top:12px;display:none;"></p>
-    <p style="color:#6B7280;font-size:0.75rem;margin-top:16px;">Pago seguro con Stripe. Aceptamos tarjetas y OXXO.</p>
+    <p style="color:#6B7280;font-size:0.75rem;margin-top:16px;">Pago seguro con Stripe. Aceptamos tarjetas de crédito y débito.</p>
   </div>
 </div>
 
