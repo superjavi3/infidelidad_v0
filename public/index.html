@@ -2815,7 +2815,7 @@ async function generatePDF() {
     const longestHours = silenceData.longest ? silenceData.longest.hours : 0;
     const silenceBrokeItems = Object.entries(silenceData.brokeCount || {});
     const dtItems = Object.entries(doubleTextData || {});
-    const mmTypes = ['audios','imagenes','videos','documentos','ubicaciones'];
+    const mmTypes = ['audios','imagenes','stickers','videos','documentos','ubicaciones'];
     const mmTotalAll = mmTypes.reduce((s, k) => s + multimediaData[k].total, 0);
     const delItems = Object.entries(deletedData.deleted || {});
 
@@ -2943,8 +2943,8 @@ async function generatePDF() {
         hBarSVG(dtItems.map(([name, eps]) => [name, Array.isArray(eps) ? eps.length : eps])) + '</svg>'
       : '<p style="color:#9B96B0;font-size:13px;">No se detectaron episodios significativos de double texting.</p>';
 
-    const mmIcons = { audios: '\u{1F399}', imagenes: '\u{1F4F8}', videos: '\u{1F3AC}', documentos: '\u{1F4C4}', ubicaciones: '\u{1F4CD}' };
-    const mmLabels = { audios: 'Audios', imagenes: 'Imagenes', videos: 'Videos', documentos: 'Documentos', ubicaciones: 'Ubicaciones' };
+    const mmIcons = { audios: '\u{1F399}', imagenes: '\u{1F4F8}', stickers: '\u{1F3AD}', videos: '\u{1F3AC}', documentos: '\u{1F4C4}', ubicaciones: '\u{1F4CD}' };
+    const mmLabels = { audios: 'Audios', imagenes: 'Imagenes', stickers: 'Stickers', videos: 'Videos', documentos: 'Documentos', ubicaciones: 'Ubicaciones' };
     const mmRows = mmTypes.map(k => {
       const t = multimediaData[k];
       return mmIcons[k] + ' ' + mmLabels[k] + ': ' + t.total;
@@ -3293,6 +3293,7 @@ function analyzeMultimedia(messages) {
   const counts = {
     audios:      { perPerson: {}, total: 0, icon: '🎙️', label: 'Audios' },
     imagenes:    { perPerson: {}, total: 0, icon: '📸', label: 'Imágenes' },
+    stickers:    { perPerson: {}, total: 0, icon: '🎭', label: 'Stickers' },
     videos:      { perPerson: {}, total: 0, icon: '🎬', label: 'Videos' },
     documentos:  { perPerson: {}, total: 0, icon: '📄', label: 'Documentos' },
     ubicaciones: { perPerson: {}, total: 0, icon: '📍', label: 'Ubicaciones' }
@@ -3314,6 +3315,8 @@ function analyzeMultimedia(messages) {
       type = 'audios';
     } else if (cl.includes('imagen omitida') || cl.includes('image omitted')) {
       type = 'imagenes';
+    } else if (cl.includes('sticker omitido') || cl.includes('sticker omitted')) {
+      type = 'stickers';
     } else if (cl.includes('video omitido') || cl.includes('video omitted')) {
       type = 'videos';
     } else if (cl.includes('documento omitido') || cl.includes('document omitted')) {
@@ -3547,7 +3550,7 @@ function renderMultimedia(data, stats) {
   const shortA = pA.split(' ')[0];
   const shortB = pB.split(' ')[0];
 
-  const typeKeys = ['audios','imagenes','videos','documentos','ubicaciones'];
+  const typeKeys = ['audios','imagenes','stickers','videos','documentos','ubicaciones'];
   let html = '';
 
   // 5 rows — one per type
