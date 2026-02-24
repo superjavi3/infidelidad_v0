@@ -1540,6 +1540,96 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   background: rgba(59,206,172,0.15);
   color: var(--green);
 }
+.ghosting-hero {
+  text-align: center;
+  padding: 24px 20px;
+  margin-bottom: 20px;
+  background: rgba(255,45,120,0.08);
+  border-radius: 16px;
+  border: 1px solid rgba(255,45,120,0.15);
+}
+.ghosting-hero--ok {
+  background: rgba(59,206,172,0.08);
+  border-color: rgba(59,206,172,0.15);
+}
+.ghosting-ratio {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--pink);
+  line-height: 1.1;
+}
+.ghosting-hero--ok .ghosting-ratio {
+  color: var(--green);
+}
+.ghosting-label {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+  line-height: 1.4;
+}
+.ghosting-category {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border-left: 3px solid var(--green);
+}
+.ghosting-category.warn {
+  border-left-color: #FF6B35;
+}
+.ghosting-category.danger {
+  border-left-color: var(--pink);
+}
+.ghosting-cat-emoji {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.ghosting-cat-info {
+  flex: 1;
+  min-width: 0;
+}
+.ghosting-cat-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.ghosting-cat-time {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.ghosting-cat-status {
+  font-size: 0.78rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.ghosting-worst {
+  background: rgba(255,45,120,0.06);
+  border-left: 3px solid var(--pink);
+  border-radius: 0 12px 12px 0;
+  padding: 16px 20px;
+  margin-top: 16px;
+}
+.ghosting-worst-title {
+  font-size: 0.82rem;
+  color: var(--pink);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.ghosting-worst-msg {
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.ghosting-worst-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
 
 /* Language change detector */
 .lang-change-card {
@@ -1590,6 +1680,80 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   margin-top: 4px;
   font-size: 0.72rem;
   color: var(--text-muted);
+}
+.language-comparison {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+@media (max-width: 600px) {
+  .language-comparison {
+    grid-template-columns: 1fr;
+  }
+}
+.language-period-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.language-message {
+  padding: 12px;
+  font-size: 0.85rem;
+  color: var(--text);
+  font-style: italic;
+  line-height: 1.5;
+}
+.language-message--warm {
+  background: rgba(107,203,119,0.1);
+  border-left: 3px solid #6BCB77;
+  border-radius: 0 8px 8px 0;
+}
+.language-message--cold {
+  background: rgba(255,45,120,0.1);
+  border-left: 3px solid var(--pink);
+  border-radius: 0 8px 8px 0;
+}
+.language-date {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+.language-vs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: var(--pink);
+  font-size: 1.2rem;
+}
+.language-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.language-word {
+  font-size: 0.78rem;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-weight: 600;
+}
+.language-word.affective {
+  background: rgba(255,45,120,0.2);
+  color: var(--pink);
+  border: 1px solid rgba(255,45,120,0.3);
+}
+.language-word.normal {
+  background: rgba(108,92,231,0.15);
+  color: var(--purple);
+}
+.language-word.distancing {
+  background: rgba(255,107,53,0.15);
+  color: #FF6B35;
 }
 
 /* ── CHATBOT TERAPEUTA ── */
@@ -2114,7 +2278,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
         <span class="pf-icon">📱</span>
         <div>
           <h4 class="pf-title">Ghosting Selectivo</h4>
-          <p class="pf-subtitle">Cuándo responde rápido vs cuándo te deja en visto</p>
+          <p class="pf-subtitle">¿Te ignora cuando más lo necesitas?</p>
         </div>
       </div>
       <div class="pf-body" id="ghostingBody"></div>
@@ -2125,8 +2289,8 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
       <div class="pf-header">
         <span class="pf-icon">🎯</span>
         <div>
-          <h4 class="pf-title">Detector de Cambios de Lenguaje</h4>
-          <p class="pf-subtitle">Cómo cambió su forma de escribirte</p>
+          <h4 class="pf-title">Cómo ha cambiado su forma de hablarte</h4>
+          <p class="pf-subtitle">El lenguaje dice lo que las palabras callan</p>
         </div>
       </div>
       <div class="pf-body" id="languageBody"></div>
@@ -3969,7 +4133,7 @@ function extractKeywords(msgs, topN, participantNames) {
 
 // ── OBSESSIVE 1: RECONSTRUCCIÓN FORENSE ──
 function analyzeForensicReconstruction(sorted, stats) {
-  if (sorted.length < 20) return { inflectionPoints: [], milestones: [] };
+  if (sorted.length < 20) return { inflectionPoints: [], milestones: [], rises: 0, falls: 0, firstLove: null, lastLove: null, dayEverythingChanged: null };
 
   // Group by month
   const monthlyData = {};
@@ -3992,55 +4156,98 @@ function analyzeForensicReconstruction(sorted, stats) {
     if (Math.abs(changePct) > 50) {
       const monthMsgs = monthlyData[months[i]].msgs;
       const date = new Date(parseInt(months[i].split('-')[0]), parseInt(months[i].split('-')[1]) - 1, 1);
+      const keywords = extractKeywords(monthMsgs, 5, [stats.personA, stats.personB]);
+      const roundedPct = Math.round(changePct);
       inflectionPoints.push({
         month: months[i],
         date: date,
         prevCount: prev,
         currCount: curr,
-        changePct: Math.round(changePct),
+        changePct: roundedPct,
         direction: changePct > 0 ? 'up' : 'down',
         context: getContextAroundDate(sorted, date),
-        keywords: extractKeywords(monthMsgs, 5, [stats.personA, stats.personB])
+        keywords: keywords,
+        inflectionContext: getInflectionContext(roundedPct, keywords, changePct < 0 ? 'fall' : 'rise')
       });
     }
   }
 
+  const rises = inflectionPoints.filter(p => p.direction === 'up').length;
+  const falls = inflectionPoints.filter(p => p.direction === 'down').length;
+
   // Find milestones
   const milestones = [];
   const lovePatterns = /^\s*(te\s+quiero|te\s+amo|i\s+love\s+you)(\s+(mucho|tanto|muchísimo|muchisimo|un\s+chingo|con\s+todo|más\s+que\s+nada|mas\s+que\s+nada|de\s+verdad|por\s+siempre|para\s+siempre|demasiado|bebé|bebe|mi\s+amor|mi\s+vida|mi\s+cielo))?\s*[^\p{L}]*$/iu;
-  const personB = stats.personB;
+  const now = sorted[sorted.length - 1].timestamp;
 
-  // Last "te amo" from personB
-  let lastLove = null;
-  for (let i = sorted.length - 1; i >= 0; i--) {
-    if (sorted[i].sender === personB && lovePatterns.test(sorted[i].text)) {
-      lastLove = sorted[i];
-      break;
-    }
-  }
-  if (lastLove) {
-    milestones.push({
-      type: 'last_love',
-      date: lastLove.timestamp,
-      label: `Última vez que ${personB.split(' ')[0]} dijo "te amo/te quiero"`,
-      detail: `"${lastLove.text.substring(0, 80)}${lastLove.text.length > 80 ? '...' : ''}"`
-    });
-  }
-
-  // First "te amo" from personB
+  // First "te quiero/amo" from anyone
   let firstLove = null;
   for (let i = 0; i < sorted.length; i++) {
-    if (sorted[i].sender === personB && lovePatterns.test(sorted[i].text)) {
+    if (lovePatterns.test(sorted[i].text)) {
       firstLove = sorted[i];
       break;
     }
   }
   if (firstLove) {
+    const daysTalking = Math.round((firstLove.timestamp - sorted[0].timestamp) / (24*60*60*1000));
     milestones.push({
       type: 'first_love',
       date: firstLove.timestamp,
-      label: `Primera vez que ${personB.split(' ')[0]} dijo "te amo/te quiero"`,
-      detail: `"${firstLove.text.substring(0, 80)}${firstLove.text.length > 80 ? '...' : ''}"`
+      label: 'Primera vez que alguien dijo "te quiero"',
+      detail: `Lo dijo ${firstLove.sender.split(' ')[0]} — llevaban ${daysTalking} días hablando`
+    });
+  }
+
+  // Last "te quiero/amo" from anyone
+  let lastLove = null;
+  for (let i = sorted.length - 1; i >= 0; i--) {
+    if (lovePatterns.test(sorted[i].text)) {
+      lastLove = sorted[i];
+      break;
+    }
+  }
+  if (lastLove) {
+    const daysAgo = Math.round((now - lastLove.timestamp) / (24*60*60*1000));
+    const isOld = daysAgo > 90;
+    milestones.push({
+      type: 'last_love',
+      date: lastLove.timestamp,
+      label: isOld ? `Último "te quiero" — hace ${daysAgo} días` : 'Última vez que alguien dijo "te quiero"',
+      detail: `Lo dijo ${lastLove.sender.split(' ')[0]}${isOld ? ' — y desde entonces, silencio' : ''}`,
+      daysAgo: daysAgo,
+      isOld: isOld
+    });
+  }
+
+  // Day everything changed — sharpest daily drop vs 30-day average
+  const dailyCounts = {};
+  sorted.forEach(m => {
+    const dayKey = m.timestamp.toISOString().split('T')[0];
+    dailyCounts[dayKey] = (dailyCounts[dayKey] || 0) + 1;
+  });
+  const days = Object.keys(dailyCounts).sort();
+  let worstDrop = null;
+  if (days.length > 30) {
+    for (let i = 30; i < days.length; i++) {
+      const prev30 = days.slice(i - 30, i).reduce((s, d) => s + dailyCounts[d], 0) / 30;
+      if (prev30 >= 3) {
+        const todayCount = dailyCounts[days[i]];
+        const dropPct = ((todayCount - prev30) / prev30) * 100;
+        const next14 = days.slice(i + 1, i + 15);
+        const avgAfter = next14.length > 0 ? next14.reduce((s, d) => s + (dailyCounts[d] || 0), 0) / next14.length : todayCount;
+        const recovered = avgAfter >= prev30 * 0.7;
+        if (dropPct < -60 && !recovered && (!worstDrop || dropPct < worstDrop.dropPct)) {
+          worstDrop = { date: new Date(days[i]), avgBefore: Math.round(prev30), dropPct: Math.round(dropPct) };
+        }
+      }
+    }
+  }
+  if (worstDrop) {
+    milestones.push({
+      type: 'day_everything_changed',
+      date: worstDrop.date,
+      label: 'El día que todo cambió',
+      detail: `Los mensajes cayeron un ${Math.abs(worstDrop.dropPct)}% respecto a la media anterior (${worstDrop.avgBefore} msgs/día) y no volvieron al nivel anterior`
     });
   }
 
@@ -4059,11 +4266,6 @@ function analyzeForensicReconstruction(sorted, stats) {
   }
 
   // Find day with most messages
-  const dailyCounts = {};
-  sorted.forEach(m => {
-    const dayKey = m.timestamp.toISOString().split('T')[0];
-    dailyCounts[dayKey] = (dailyCounts[dayKey] || 0) + 1;
-  });
   const peakDay = Object.entries(dailyCounts).sort((a,b) => b[1] - a[1])[0];
   if (peakDay) {
     milestones.push({
@@ -4074,7 +4276,15 @@ function analyzeForensicReconstruction(sorted, stats) {
     });
   }
 
-  return { inflectionPoints: inflectionPoints.slice(0, 4), milestones };
+  return {
+    inflectionPoints: inflectionPoints.slice(0, 4),
+    milestones,
+    rises,
+    falls,
+    firstLove: firstLove ? { date: firstLove.timestamp, sender: firstLove.sender } : null,
+    lastLove: lastLove ? { date: lastLove.timestamp, sender: lastLove.sender, daysAgo: Math.round((now - lastLove.timestamp) / (24*60*60*1000)) } : null,
+    dayEverythingChanged: worstDrop ? { date: worstDrop.date.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }), pct: Math.abs(worstDrop.dropPct) } : null
+  };
 }
 
 function getContextAroundDate(sorted, date) {
@@ -4083,6 +4293,40 @@ function getContextAroundDate(sorted, date) {
   const before = sorted.filter(m => m.timestamp >= weekBefore && m.timestamp < date).length;
   const after = sorted.filter(m => m.timestamp >= date && m.timestamp <= weekAfter).length;
   return { msgsBefore: before, msgsAfter: after };
+}
+
+function getInflectionContext(pct, themes, direction) {
+  const themeSet = (themes || []).map(t => t.toLowerCase());
+  if (direction === 'fall') {
+    if (themeSet.some(t => ['trabajo','estres','estrés','oficina','jefe'].includes(t)))
+      return '📌 El trabajo o el estrés pueden explicar esta caída';
+    if (themeSet.some(t => ['viaje','viajes','distancia','lejos'].includes(t)))
+      return '📌 Posible período de distancia física';
+    if (pct < -70)
+      return '📌 Caída muy brusca — algo importante ocurrió este mes';
+    return '📌 La comunicación se redujo significativamente';
+  } else {
+    if (pct > 100)
+      return '📌 Algo especial encendió la relación este mes';
+    return '📌 La comunicación aumentó notablemente';
+  }
+}
+
+function getForensicNarrative(data) {
+  const { rises, falls, lastLove, dayEverythingChanged } = data;
+  const parts = [];
+  if (dayEverythingChanged) {
+    parts.push(`El ${dayEverythingChanged.date} marca un antes y un después — la actividad cayó un ${dayEverythingChanged.pct}% y no se recuperó.`);
+  }
+  if (lastLove && lastLove.daysAgo > 90) {
+    parts.push(`Hace ${lastLove.daysAgo} días que nadie dice "te quiero" en este chat.`);
+  }
+  if (falls > rises) {
+    parts.push(`La tendencia es clara: ${falls} caídas bruscas frente a ${rises} subidas. La comunicación lleva tiempo reduciéndose.`);
+  } else if (rises > 0 && falls === 0) {
+    parts.push('La relación creció sin caídas bruscas. La comunicación se fue consolidando con el tiempo.');
+  }
+  return parts.join(' ') || 'Comunicación estable sin cambios dramáticos detectados.';
 }
 
 // ── OBSESSIVE 2: ANTES VS AHORA ──
@@ -4199,55 +4443,43 @@ function analyzeBeforeVsNow(sorted, stats) {
 }
 
 // ── OBSESSIVE 3: GHOSTING SELECTIVO ──
+const GHOSTING_CATEGORIES = {
+  confesion: {
+    label: 'Confesiones de amor', emoji: '💕',
+    keywords: ['te quiero','te amo','te adoro','me gustas','me encantas','eres lo mejor','eres increíble','no sé qué haría sin ti','eres especial para mí','me haces feliz','pienso en ti','te echo de menos','te extraño','me haces falta','eres todo para mí','gracias por existir','me alegras la vida']
+  },
+  relacional: {
+    label: 'Preguntas sobre la relación', emoji: '💔',
+    keywords: ['qué somos','qué hay entre','cómo estamos','estás bien conmigo','pasa algo entre','algo va mal','me quieres','te importo','nuestra relación','tenemos que hablar','podemos hablar','necesito que me digas','qué sientes por mí','qué soy para ti','estás conmigo','sigues queriéndome']
+  },
+  emocional: {
+    label: 'Momentos de vulnerabilidad', emoji: '🥺',
+    keywords: ['estoy mal','me duele','me siento solo','me siento sola','estoy llorando','lloré','tengo miedo','me preocupa','no sé qué hacer','necesito ayuda','estoy agobiado','agobiada','me agobio','no puedo más','estoy harto','harta','me rindo','me da igual','ya nada','para qué']
+  },
+  pregunta_directa: {
+    label: 'Preguntas directas', emoji: '❓',
+    special: 'question_only'
+  },
+  casual: {
+    label: 'Conversación casual', emoji: '💬',
+    fallback: true
+  }
+};
+
 function analyzeSelectiveGhosting(sorted, stats) {
   if (sorted.length < 30) return null;
 
-  const personB = stats.personB;
   const personA = stats.personA;
+  const personB = stats.personB;
 
-  // Build conversation pairs: message from A -> response from B
-  const responseTimes = { emotional: [], casual: [], question_relation: [] };
-  const emotionalWords = /\b(?:extra[ñn]o|extra[ñn]ar|siento|sentir|amo|amor|quiero|necesito|triste|llorar|dolor|sufr|falta|miedo|solo|sola|celoso|celosa|preocup|perdón|perd[oó]n|disculpa|feliz|felicidad)\b/i;
-  const relationQuestions = /\b(?:qu[eé]\s+(?:somos|sientes|pasa|piensas)|a\s+d[oó]nde\s+vamos|est[aá]s?\s+(?:bien|molest|enoj)|me\s+(?:quieres|amas|extra[ñn]as)|te\s+(?:importo|importa)|necesito\s+hablar|hablemos|podemos\s+hablar)\b/i;
-
-  let ghostingEpisodes = 0;
-  const triggerWords = {};
-  const safeWords = {};
-
-  for (let i = 0; i < sorted.length - 1; i++) {
-    // A sends message, next message is from B (response)
-    if (sorted[i].sender !== personB) {
-      // Find next message from personB
-      for (let j = i + 1; j < sorted.length; j++) {
-        if (sorted[j].sender === personB) {
-          const responseTime = (sorted[j].timestamp - sorted[i].timestamp) / (60 * 1000); // minutes
-          if (responseTime > 0 && responseTime < 24 * 60) { // Cap at 24h
-            const msgText = sorted[i].text.toLowerCase();
-            const isEmotional = emotionalWords.test(msgText);
-            const isRelationQ = relationQuestions.test(msgText);
-
-            if (isRelationQ) {
-              responseTimes.question_relation.push(responseTime);
-            } else if (isEmotional) {
-              responseTimes.emotional.push(responseTime);
-            } else {
-              responseTimes.casual.push(responseTime);
-            }
-
-            // Track which words before long responses
-            if (responseTime > 180) { // >3h
-              ghostingEpisodes++;
-              const words = msgText.match(/\b[a-záéíóúñü]{4,}\b/g) || [];
-              words.forEach(w => { triggerWords[w] = (triggerWords[w] || 0) + 1; });
-            } else if (responseTime < 30) { // <30min
-              const words = msgText.match(/\b[a-záéíóúñü]{4,}\b/g) || [];
-              words.forEach(w => { safeWords[w] = (safeWords[w] || 0) + 1; });
-            }
-          }
-          break;
-        }
-      }
+  function classifyMessage(text) {
+    const lower = text.toLowerCase();
+    for (const cat of ['confesion','relacional','emocional']) {
+      if (GHOSTING_CATEGORIES[cat].keywords.some(kw => lower.includes(kw))) return cat;
     }
+    const wordCount = text.trim().split(/\s+/).length;
+    if (text.trim().endsWith('?') && wordCount < 15) return 'pregunta_directa';
+    return 'casual';
   }
 
   function median(arr) {
@@ -4257,175 +4489,269 @@ function analyzeSelectiveGhosting(sorted, stats) {
     return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
   }
 
-  // Find top trigger words (frequent in slow, rare in fast) — filtered through stopwords
-  const ghostNames = [stats.personA, stats.personB].flatMap(n => n.toLowerCase().split(/\s+/));
-  const topTriggers = Object.entries(triggerWords)
-    .filter(([w, c]) => c >= 3 && !isStopword(w, ghostNames) && (!safeWords[w] || c > safeWords[w]))
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 6)
-    .map(([w]) => w);
+  // Analyze for both directions: A→B and B→A
+  function analyzeDirection(sender, responder) {
+    const categories = { confesion: [], relacional: [], emocional: [], pregunta_directa: [], casual: [] };
+    const episodes = [];
+    let worstCase = null;
 
-  const topSafe = Object.entries(safeWords)
-    .filter(([w, c]) => c >= 3 && !isStopword(w, ghostNames) && (!triggerWords[w] || c > triggerWords[w]))
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 6)
-    .map(([w]) => w);
+    for (let i = 0; i < sorted.length - 1; i++) {
+      if (sorted[i].sender === sender) {
+        for (let j = i + 1; j < sorted.length; j++) {
+          if (sorted[j].sender === responder) {
+            const responseTime = (sorted[j].timestamp - sorted[i].timestamp) / (60 * 1000);
+            if (responseTime > 0 && responseTime < 48 * 60) {
+              const cat = classifyMessage(sorted[i].text);
+              categories[cat].push(responseTime);
+              // Track ghosting episodes
+              const medianGeneral = median([...categories.casual, ...categories.emocional, ...categories.confesion, ...categories.relacional, ...categories.pregunta_directa]);
+              const ghostThreshold = medianGeneral < 60 ? 180 : 360;
+              if (responseTime > ghostThreshold) {
+                episodes.push({ date: sorted[i].timestamp, responseTime, category: cat, text: sorted[i].text });
+              }
+              // Track worst case for emotional/relational
+              if ((cat === 'emocional' || cat === 'relacional' || cat === 'confesion') && (!worstCase || responseTime > worstCase.responseTime)) {
+                worstCase = { text: sorted[i].text, date: sorted[i].timestamp, responseTime, category: cat, responseDate: sorted[j].timestamp };
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
 
-  return {
-    casual: { avg: Math.round(median(responseTimes.casual)), count: responseTimes.casual.length },
-    emotional: { avg: Math.round(median(responseTimes.emotional)), count: responseTimes.emotional.length },
-    relationQ: { avg: Math.round(median(responseTimes.question_relation)), count: responseTimes.question_relation.length },
-    ghostingEpisodes,
-    triggerWords: topTriggers,
-    safeWords: topSafe,
-    personB
-  };
+    const catResults = {};
+    for (const [cat, times] of Object.entries(categories)) {
+      catResults[cat] = { median: Math.round(median(times)), count: times.length };
+    }
+
+    // Temporal trend
+    const midPoint = sorted[Math.floor(sorted.length / 2)].timestamp;
+    const firstHalf = episodes.filter(e => e.date < midPoint).length;
+    const secondHalf = episodes.filter(e => e.date >= midPoint).length;
+    const trend = secondHalf > firstHalf * 1.5 ? 'aumentando' : secondHalf < firstHalf * 0.7 ? 'mejorando' : 'estable';
+
+    // Ratio: emotional median / casual median
+    const emotionalMedian = Math.max(catResults.emocional.median, catResults.relacional.median, catResults.confesion.median);
+    const casualMedian = catResults.casual.median || 1;
+    const ratio = Math.round((emotionalMedian / casualMedian) * 10) / 10;
+
+    // Ghosting emotional percentage
+    const emotionalEpisodes = episodes.filter(e => ['emocional','relacional','confesion'].includes(e.category)).length;
+    const ghostEmotionalPct = episodes.length > 0 ? Math.round((emotionalEpisodes / episodes.length) * 100) : 0;
+
+    return { categories: catResults, episodes, worstCase, trend, firstHalf, secondHalf, ratio, ghostEmotionalPct, responderName: responder };
+  }
+
+  const bData = analyzeDirection(personA, personB);
+  const aData = analyzeDirection(personB, personA);
+
+  return { personB: bData, personA: aData, personBName: personB, personAName: personA };
+}
+
+function getGhostingVerdict(data) {
+  const { ratio, trend, ghostEmotionalPct } = data;
+  if (ratio > 8 && ghostEmotionalPct > 60) {
+    return `El patrón es inequívoco: responde mensajes banales en minutos pero puede tardar horas en contestar cuando el tema tiene carga emocional.${trend === 'aumentando' ? ' Y cada vez es más frecuente.' : ''}`;
+  }
+  if (ratio > 4) {
+    return 'Hay una diferencia clara entre cómo responde lo cotidiano y lo emocional. No es falta de tiempo — es una evasión selectiva de los temas que incomodan.';
+  }
+  if (ratio > 2) {
+    return 'Ligera tendencia a tardar más con los temas emocionales, pero sin un patrón alarmante. Puede ser forma de procesar antes de responder.';
+  }
+  if (ratio <= 1.2) {
+    return 'No hay ghosting selectivo. Los tiempos de respuesta son consistentes independientemente de lo que se le diga. Buena señal.';
+  }
+  return 'Los datos no muestran un patrón claro de evasión.';
 }
 
 // ── OBSESSIVE 4: DETECTOR DE CAMBIOS DE LENGUAJE ──
+const AFFECTIVE_VOCAB = [
+  'amor','amorcito','mi amor','cariño','mi cariño','cielo','mi cielo',
+  'vida','mi vida','bebé','bebe','corazón','mi corazón','bonita',
+  'bonito','hermosa','hermoso','preciosa','linda','lindo','guapa',
+  'guapo','chiqui','osito','osita','gordi','tontito','tontita',
+  'te quiero','te amo','te adoro','te extraño','te echo de menos',
+  'me haces feliz','eres lo mejor','eres increíble','eres especial',
+  'pienso en ti','para siempre','gracias por existir','me alegras'
+];
+
+const COLD_RESPONSES = [
+  'ok','okay','k','vale','sí','si','no','ya','bueno','bien',
+  'claro','venga','dale','aha','ajá','mhm','mm','hmm','jaja',
+  'jeje','👍','😊','😂','🙂','lol'
+];
+
+const DISTANCING_WORDS = [
+  'trabajo','trabajando','ocupado','ocupada','cansado','cansada',
+  'estrés','estres','luego','después','mañana','no puedo',
+  'no sé','igual','depende','veremos','ya veremos','imposible',
+  'difícil','complicado','no tengo tiempo','estoy liado','liada'
+];
+
 function analyzeLanguageChanges(sorted, stats) {
   if (sorted.length < 50) return null;
 
+  const personA = stats.personA;
   const personB = stats.personB;
-  const personBMsgs = sorted.filter(m => m.sender === personB);
-  if (personBMsgs.length < 20) return null;
+  const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
-  // Group personB messages by month
-  const monthlyMetrics = {};
-  personBMsgs.forEach(m => {
-    const key = `${m.timestamp.getFullYear()}-${String(m.timestamp.getMonth() + 1).padStart(2, '0')}`;
-    if (!monthlyMetrics[key]) monthlyMetrics[key] = {
-      msgs: [], nosotros: 0, yo: 0, avgLen: 0,
-      jaja: 0, nicknames: 0, exclamations: 0, totalLen: 0, count: 0
-    };
-    const metrics = monthlyMetrics[key];
-    const text = m.text.toLowerCase();
-    metrics.msgs.push(m);
-    metrics.count++;
-    metrics.totalLen += m.text.length;
+  function analyzePersonLanguage(personMsgs, personName) {
+    if (personMsgs.length < 20) return null;
 
-    if (/\b(?:nosotros|nos|nuestro|nuestra|juntos|juntas)\b/i.test(text)) metrics.nosotros++;
-    if (/\b(?:yo|mi |me |mío|mía)\b/i.test(text)) metrics.yo++;
-    if (/\b(?:jaja|jajaj|jeje|jejej|jiji|haha)\b/i.test(text)) metrics.jaja++;
-    if (/\b(?:amor|mi amor|bebe|bb|bebé|cariño|corazón|vida|mi vida|cielo|hermosa|hermoso|princesa|gordo|gorda|nena|nene|papi|tesoro|bonita|chiquita|muñeca|reina)\b/i.test(text)) metrics.nicknames++;
-    metrics.exclamations += (text.match(/!/g) || []).length;
-  });
+    // Split into 3 equal periods by message count
+    const third = Math.floor(personMsgs.length / 3);
+    const periods = [
+      personMsgs.slice(0, third),
+      personMsgs.slice(third, third * 2),
+      personMsgs.slice(third * 2)
+    ];
 
-  const months = Object.keys(monthlyMetrics).sort();
-  if (months.length < 2) return null;
+    const omittedPattern = /(?:imagen|audio|video|sticker|GIF|documento|contacto|ubicación)\s+omitid[oa]/i;
 
-  // Calculate per-month averages
-  months.forEach(key => {
-    const m = monthlyMetrics[key];
-    m.avgLen = Math.round(m.totalLen / m.count);
-    m.nicknamesPerMsg = m.count > 0 ? (m.nicknames / m.count) : 0;
-    m.jajaPerMsg = m.count > 0 ? (m.jaja / m.count) : 0;
-    m.exclamPerMsg = m.count > 0 ? (m.exclamations / m.count) : 0;
-    m.nosotrosRatio = (m.nosotros + m.yo) > 0 ? m.nosotros / (m.nosotros + m.yo) : 0.5;
-  });
+    function analyzePeriod(msgs) {
+      const filtered = msgs.filter(m => !omittedPattern.test(m.text));
+      if (filtered.length === 0) return { affectRate: 0, avgLength: 0, coldPct: 0, count: 0 };
 
-  // Build change indicators
-  const indicators = [];
-  const first = monthlyMetrics[months[0]];
-  const last = monthlyMetrics[months[months.length - 1]];
+      // Affective index per 1000 messages
+      let affectCount = 0;
+      filtered.forEach(m => {
+        const lower = m.text.toLowerCase();
+        AFFECTIVE_VOCAB.forEach(word => {
+          if (lower.includes(word)) affectCount++;
+        });
+      });
+      const affectRate = Math.round((affectCount / filtered.length) * 1000);
 
-  // Nicknames change
-  const nicknameFirst = first.nicknames;
-  const nicknameLast = last.nicknames;
-  const nicknameChange = nicknameFirst > 0 ? Math.round(((nicknameLast - nicknameFirst) / nicknameFirst) * 100) : (nicknameLast > 0 ? 100 : 0);
-  indicators.push({
-    label: 'Apodos cariñosos',
-    emoji: '💕',
-    firstVal: nicknameFirst,
-    lastVal: nicknameLast,
-    changePct: nicknameChange,
-    monthlyData: months.map(k => monthlyMetrics[k].nicknames),
-    alert: nicknameChange < -30
-  });
+      // Average message length
+      const avgLength = Math.round(filtered.reduce((s, m) => s + m.text.length, 0) / filtered.length);
 
-  // Message length change
-  const lenChange = first.avgLen > 0 ? Math.round(((last.avgLen - first.avgLen) / first.avgLen) * 100) : 0;
-  indicators.push({
-    label: 'Largo de mensajes',
-    emoji: '📝',
-    firstVal: first.avgLen + ' chars',
-    lastVal: last.avgLen + ' chars',
-    changePct: lenChange,
-    monthlyData: months.map(k => monthlyMetrics[k].avgLen),
-    alert: lenChange < -30
-  });
+      // Cold response ratio
+      let coldCount = 0;
+      filtered.forEach(m => {
+        const clean = m.text.trim().toLowerCase().replace(/[.,!?¿¡]/g, '').trim();
+        if (COLD_RESPONSES.includes(clean)) coldCount++;
+      });
+      const coldPct = Math.round((coldCount / filtered.length) * 100);
 
-  // "Jaja" frequency change
-  const jajaFirst = first.jaja;
-  const jajaLast = last.jaja;
-  const jajaChange = jajaFirst > 0 ? Math.round(((jajaLast - jajaFirst) / jajaFirst) * 100) : (jajaLast > 0 ? 100 : 0);
-  indicators.push({
-    label: '"Jaja/Jeje" (risa)',
-    emoji: '😂',
-    firstVal: jajaFirst,
-    lastVal: jajaLast,
-    changePct: jajaChange,
-    monthlyData: months.map(k => monthlyMetrics[k].jaja),
-    alert: jajaChange > 200 // Excess laughter = nervous/evasive
-  });
-
-  // Exclamation marks
-  const excFirst = first.exclamations;
-  const excLast = last.exclamations;
-  const excChange = excFirst > 0 ? Math.round(((excLast - excFirst) / excFirst) * 100) : (excLast > 0 ? 100 : 0);
-  indicators.push({
-    label: 'Signos de exclamación (!)',
-    emoji: '❗',
-    firstVal: excFirst,
-    lastVal: excLast,
-    changePct: excChange,
-    monthlyData: months.map(k => monthlyMetrics[k].exclamations),
-    alert: excChange < -50
-  });
-
-  // "Nosotros" vs "Yo" ratio
-  const nosRatioFirst = first.nosotrosRatio;
-  const nosRatioLast = last.nosotrosRatio;
-  const nosChange = nosRatioFirst > 0 ? Math.round(((nosRatioLast - nosRatioFirst) / nosRatioFirst) * 100) : 0;
-  indicators.push({
-    label: '"Nosotros" vs "Yo"',
-    emoji: '👫',
-    firstVal: Math.round(nosRatioFirst * 100) + '% nos',
-    lastVal: Math.round(nosRatioLast * 100) + '% nos',
-    changePct: nosChange,
-    monthlyData: months.map(k => Math.round(monthlyMetrics[k].nosotrosRatio * 100)),
-    alert: nosChange < -30
-  });
-
-  // Detect the biggest change month
-  let biggestChangeMonth = null;
-  let biggestChangeScore = 0;
-  for (let i = 1; i < months.length; i++) {
-    const prev = monthlyMetrics[months[i-1]];
-    const curr = monthlyMetrics[months[i]];
-    let changeScore = 0;
-    if (prev.nicknames > 0) changeScore += Math.abs((curr.nicknames - prev.nicknames) / prev.nicknames);
-    if (prev.avgLen > 0) changeScore += Math.abs((curr.avgLen - prev.avgLen) / prev.avgLen);
-    if (changeScore > biggestChangeScore) {
-      biggestChangeScore = changeScore;
-      biggestChangeMonth = months[i];
+      return { affectRate, avgLength, coldPct, count: filtered.length };
     }
+
+    const p1 = analyzePeriod(periods[0]);
+    const p2 = analyzePeriod(periods[1]);
+    const p3 = analyzePeriod(periods[2]);
+
+    // Period date labels
+    const fmtDate = d => `${monthNames[d.getMonth()]} ${d.getFullYear().toString().slice(2)}`;
+    const periodLabels = periods.map(p => {
+      if (p.length === 0) return '';
+      return `${fmtDate(p[0].timestamp)}–${fmtDate(p[p.length - 1].timestamp)}`;
+    });
+
+    // Disappeared words: high frequency in P1, <=20% in P3
+    const nameWords = [personA, personB].flatMap(n => n.toLowerCase().split(/\s+/));
+    function wordFreqs(msgs) {
+      const freq = {};
+      msgs.forEach(m => {
+        const words = m.text.toLowerCase().match(/\b[a-záéíóúñü]{4,}\b/g) || [];
+        words.forEach(w => {
+          if (!isStopword(w, nameWords)) freq[w] = (freq[w] || 0) + 1;
+        });
+      });
+      return freq;
+    }
+
+    const freqP1 = wordFreqs(periods[0]);
+    const freqP3 = wordFreqs(periods[2]);
+    const affectiveSet = new Set(AFFECTIVE_VOCAB.flatMap(v => v.split(' ').filter(w => w.length >= 4)));
+    const distancingSet = new Set(DISTANCING_WORDS.flatMap(v => v.split(' ').filter(w => w.length >= 4)));
+
+    const disappeared = Object.entries(freqP1)
+      .filter(([w, c]) => c >= 3 && (!freqP3[w] || freqP3[w] <= c * 0.2))
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([w, c]) => ({ word: w, countP1: c, countP3: freqP3[w] || 0, isAffective: affectiveSet.has(w) }));
+
+    const appeared = Object.entries(freqP3)
+      .filter(([w, c]) => c >= 3 && (!freqP1[w] || freqP1[w] <= c * 0.2))
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([w, c]) => ({ word: w, countP1: freqP1[w] || 0, countP3: c, isDistancing: distancingSet.has(w) }));
+
+    // Find warmest message from P1 and coldest from recent
+    let warmestMsg = null;
+    let warmestScore = 0;
+    periods[0].forEach(m => {
+      const lower = m.text.toLowerCase();
+      let score = 0;
+      AFFECTIVE_VOCAB.forEach(w => { if (lower.includes(w)) score++; });
+      score += m.text.length / 50; // bonus for length
+      if (score > warmestScore && m.text.length > 20) {
+        warmestScore = score;
+        warmestMsg = m;
+      }
+    });
+
+    let coldestMsg = null;
+    const recentMsgs = periods[2].slice(-Math.min(200, periods[2].length));
+    let coldestLen = Infinity;
+    recentMsgs.forEach(m => {
+      if (m.text.length > 1 && m.text.length < coldestLen && !omittedPattern.test(m.text) && m.text.length < 60) {
+        coldestLen = m.text.length;
+        coldestMsg = m;
+      }
+    });
+
+    return {
+      personName,
+      p1, p2, p3,
+      periodLabels,
+      disappeared,
+      appeared,
+      disappearedAffective: disappeared.filter(d => d.isAffective).map(d => d.word),
+      newDistancing: appeared.filter(a => a.isDistancing).map(a => a.word),
+      warmestMsg: warmestMsg ? { text: warmestMsg.text.substring(0, 120), date: warmestMsg.timestamp, sender: warmestMsg.sender } : null,
+      coldestMsg: coldestMsg ? { text: coldestMsg.text.substring(0, 120), date: coldestMsg.timestamp, sender: coldestMsg.sender } : null
+    };
   }
 
-  const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  return {
-    indicators,
-    months: months.map(k => {
-      const [y, m] = k.split('-');
-      return monthNames[parseInt(m)-1] + " '" + y.slice(2);
-    }),
-    biggestChangeMonth: biggestChangeMonth ? (() => {
-      const [y, m] = biggestChangeMonth.split('-');
-      return monthNames[parseInt(m)-1] + ' ' + y;
-    })() : null,
-    personB,
-    alertCount: indicators.filter(i => i.alert).length
-  };
+  const personBMsgs = sorted.filter(m => m.sender === personB);
+  const personAMsgs = sorted.filter(m => m.sender === personA);
+
+  const bData = analyzePersonLanguage(personBMsgs, personB);
+  const aData = analyzePersonLanguage(personAMsgs, personA);
+
+  // Check if we have at least 3 months for period comparison
+  const firstDate = sorted[0].timestamp;
+  const lastDate = sorted[sorted.length - 1].timestamp;
+  const totalMonths = (lastDate - firstDate) / (30 * 24 * 60 * 60 * 1000);
+  const hasEnoughMonths = totalMonths >= 3;
+
+  return { personBData: bData, personAData: aData, personBName: personB, personAName: personA, hasEnoughMonths };
+}
+
+function getLanguageVerdict(personData) {
+  if (!personData) return 'Sin datos suficientes para este análisis.';
+  const { p1, p3, disappearedAffective, newDistancing } = personData;
+
+  const affectDrop = p1.affectRate > 0 ? (p1.affectRate - p3.affectRate) / p1.affectRate : 0;
+  const coldIncrease = p3.coldPct - p1.coldPct;
+  const lengthDrop = p1.avgLength > 0 ? (p1.avgLength - p3.avgLength) / p1.avgLength : 0;
+
+  if (disappearedAffective.length > 2 && affectDrop > 0.6 && coldIncrease > 20) {
+    return `El cambio es difícil de ignorar: palabras como "${disappearedAffective.slice(0,2).join('" y "')}" casi han desaparecido, los mensajes son ${Math.round(lengthDrop*100)}% más cortos y las respuestas frías pasaron del ${Math.round(p1.coldPct)}% al ${Math.round(p3.coldPct)}%. No es el mismo lenguaje que al principio.`;
+  }
+  if (affectDrop > 0.5 && coldIncrease > 15) {
+    return `El lenguaje afectivo cayó un ${Math.round(affectDrop*100)}% entre el inicio y ahora. Los mensajes se volvieron más escuetos y las respuestas de una palabra más frecuentes. Es un patrón que merece atención.`;
+  }
+  if (affectDrop > 0.25) {
+    return 'Hay un enfriamiento moderado en el lenguaje. Parte puede ser normalización de la relación — parte puede ser algo más. Los números hablan por sí solos.';
+  }
+  if (affectDrop < -0.1) {
+    return 'Buena señal: el lenguaje afectivo creció con el tiempo. La forma de hablarse se volvió más cálida, no más fría.';
+  }
+  return 'El lenguaje se mantiene estable. No se detectan señales de enfriamiento significativo en la forma de comunicarse.';
 }
 
 // ── OBSESSIVE RENDER: FORENSIC RECONSTRUCTION ──
@@ -4440,8 +4766,11 @@ function renderForensicReconstruction(data, stats) {
     html += '<div style="font-family: var(--font-display); font-size: 0.9rem; margin-bottom: 12px; color: var(--yellow);">📌 Momentos Clave</div>';
     data.milestones.forEach(m => {
       const dateStr = m.date.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
-      html += `<div class="forensic-point">
-        <div class="forensic-date">📅 ${dateStr}</div>
+      const iconMap = { first_love: '💕', last_love: '💔', day_everything_changed: '⚡', first_silence: '🔇', peak_day: '🔥' };
+      const icon = iconMap[m.type] || '📅';
+      const isAlert = m.type === 'last_love' && m.isOld;
+      html += `<div class="forensic-point"${isAlert ? ' style="border-left-color: var(--pink);"' : ''}>
+        <div class="forensic-date"${isAlert ? ' style="color: var(--pink);"' : ''}>${icon} ${dateStr}</div>
         <div class="forensic-detail"><strong>${m.label}</strong></div>
         <div class="forensic-detail">${m.detail}</div>
       </div>`;
@@ -4464,13 +4793,14 @@ function renderForensicReconstruction(data, stats) {
         <div class="forensic-detail">Mensajes/mes ${p.direction === 'down' ? 'cayeron' : 'subieron'} de <strong>${p.prevCount.toLocaleString()}</strong> a <strong>${p.currCount.toLocaleString()}</strong> (<span style="color:${color};font-weight:700;">${p.changePct > 0 ? '+' : ''}${p.changePct}%</span>)</div>
         <div class="forensic-detail">Semana anterior: ${p.context.msgsBefore} msgs — Semana siguiente: ${p.context.msgsAfter} msgs</div>
         ${p.keywords && p.keywords.length > 0 ? `<div class="forensic-keywords">🗣️ Temas: ${p.keywords.map(k => `<span class="forensic-chip">${k}</span>`).join(' ')}</div>` : ''}
+        ${p.inflectionContext ? `<div class="forensic-detail" style="margin-top: 6px; color: var(--text-muted); font-size: 0.82rem;">${p.inflectionContext}</div>` : ''}
       </div>`;
     });
-
-    html += `<div class="pf-insight"><strong>🕵️ Reconstrucción:</strong> Se detectaron <strong>${data.inflectionPoints.length} puntos de inflexión</strong> donde la dinámica cambió drásticamente. ${data.inflectionPoints.filter(p => p.direction === 'down').length > 0 ? 'Las caídas abruptas pueden indicar conflictos, distanciamiento o pérdida de interés.' : 'Los picos indican momentos de alta conexión emocional.'}</div>`;
-  } else {
-    html += '<div class="pf-insight"><strong>📊 Análisis:</strong> No se detectaron cambios bruscos (>50%) mes a mes. La comunicación ha sido relativamente estable.</div>';
   }
+
+  // Forensic narrative — the human-readable story
+  const narrative = getForensicNarrative(data);
+  html += `<div class="pf-insight" style="margin-top: 16px;"><strong>🕵️ Reconstrucción:</strong> ${narrative}</div>`;
 
   body.innerHTML = html;
 }
@@ -4530,64 +4860,100 @@ function renderSelectiveGhosting(data, stats) {
     return;
   }
 
-  const personName = data.personB.split(' ')[0];
-
   function formatTime(mins) {
     if (mins < 60) return mins + ' min';
     if (mins < 1440) return Math.round(mins / 60 * 10) / 10 + 'h';
     return Math.round(mins / 1440) + ' días';
   }
 
-  let html = `<div style="font-family: var(--font-display); font-size: 0.85rem; margin-bottom: 16px; color: var(--text-muted);">Tiempo de respuesta de ${personName} según el tipo de mensaje</div>`;
-
-  // Casual response time
-  if (data.casual.count > 0) {
-    html += `<div class="ghosting-pattern fast">
-      <span class="ghosting-icon">✅</span>
-      <div class="ghosting-text"><strong>Mensajes casuales:</strong> responde en ~<strong>${formatTime(data.casual.avg)}</strong> (${data.casual.count} mensajes analizados)</div>
-    </div>`;
+  function getStatusInfo(catMedian, casualMedian) {
+    if (casualMedian <= 0) return { icon: '✅', text: 'Sin datos', cls: '' };
+    const ratio = catMedian / casualMedian;
+    if (ratio > 4) return { icon: '🚨', text: 'Evita responder', cls: 'danger' };
+    if (ratio > 2) return { icon: '🚨', text: 'Te deja esperando', cls: 'danger' };
+    if (ratio > 1.3) return { icon: '⚠️', text: 'Tarda bastante', cls: 'warn' };
+    return { icon: '✅', text: 'Responde rápido', cls: '' };
   }
 
-  // Emotional response time
-  if (data.emotional.count > 0) {
-    const isSlower = data.emotional.avg > data.casual.avg * 1.5;
-    html += `<div class="ghosting-pattern ${isSlower ? 'slow' : 'fast'}">
-      <span class="ghosting-icon">${isSlower ? '⚠️' : '✅'}</span>
-      <div class="ghosting-text"><strong>Mensajes emocionales</strong> ("te extraño", "te amo"): responde en ~<strong>${formatTime(data.emotional.avg)}</strong> (${data.emotional.count} mensajes)${isSlower ? ' — <strong style="color:#FF4757;">más lento que lo casual</strong>' : ''}</div>
-    </div>`;
-  }
+  function renderPersonGhosting(personData, personLabel) {
+    const personName = personData.responderName.split(' ')[0];
+    const cats = personData.categories;
+    let html = '';
 
-  // Relationship questions
-  if (data.relationQ.count > 0) {
-    const isSlower = data.relationQ.avg > data.casual.avg * 2;
-    html += `<div class="ghosting-pattern ${isSlower ? 'slow' : 'fast'}">
-      <span class="ghosting-icon">${isSlower ? '❌' : '✅'}</span>
-      <div class="ghosting-text"><strong>Preguntas sobre la relación</strong> ("¿qué somos?", "¿qué sientes?"): responde en ~<strong>${formatTime(data.relationQ.avg)}</strong> (${data.relationQ.count} mensajes)${isSlower ? ' — <strong style="color:#FF4757;">evade lo importante</strong>' : ''}</div>
-    </div>`;
-  }
+    // Hero stat
+    if (personData.ratio > 1.5) {
+      html += `<div class="ghosting-hero">
+        <div class="ghosting-ratio">${personData.ratio}x más lento</div>
+        <div class="ghosting-label">${personName} tarda ${personData.ratio}x más en responder cuando el tema importa</div>
+      </div>`;
+    } else {
+      html += `<div class="ghosting-hero ghosting-hero--ok">
+        <div class="ghosting-ratio">Sin patrón</div>
+        <div class="ghosting-label">${personName} responde de forma consistente independientemente del tema</div>
+      </div>`;
+    }
 
-  // Trigger words
-  if (data.triggerWords.length > 0 || data.safeWords.length > 0) {
-    html += '<div class="ghosting-words">';
-    data.safeWords.forEach(w => {
-      html += `<span class="ghosting-word safe">${w}</span>`;
+    // Category table
+    const catOrder = ['confesion','relacional','emocional','pregunta_directa','casual'];
+    catOrder.forEach(catKey => {
+      const cat = GHOSTING_CATEGORIES[catKey];
+      const catData = cats[catKey];
+      if (catData.count < 3 && catKey !== 'casual') return;
+      const casualMedian = cats.casual.median || 1;
+      const status = catKey === 'casual'
+        ? { icon: catData.median < 30 ? '✅' : '⚠️', text: catData.median < 30 ? 'Muy rápido' : 'Normal', cls: '' }
+        : getStatusInfo(catData.median, casualMedian);
+      html += `<div class="ghosting-category ${status.cls}">
+        <span class="ghosting-cat-emoji">${cat.emoji}</span>
+        <div class="ghosting-cat-info">
+          <div class="ghosting-cat-name">${cat.label}</div>
+          <div class="ghosting-cat-time">~${formatTime(catData.median)} · ${catData.count.toLocaleString()} msgs</div>
+        </div>
+        <span class="ghosting-cat-status" style="color: ${status.cls === 'danger' ? 'var(--pink)' : status.cls === 'warn' ? '#FF6B35' : 'var(--green)'};">${status.icon} ${status.text}</span>
+      </div>`;
     });
-    data.triggerWords.forEach(w => {
-      html += `<span class="ghosting-word trigger">${w}</span>`;
-    });
-    html += '</div>';
-    html += '<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">🟢 = Respuesta rápida &nbsp; 🔴 = Respuesta lenta/ghosting</div>';
+
+    // Temporal trend
+    const totalEpisodes = personData.episodes.length;
+    if (totalEpisodes > 3) {
+      html += `<div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 16px;"><strong>${totalEpisodes} episodios</strong> de respuesta tardía (+3h) detectados`;
+      if (personData.trend === 'aumentando') {
+        html += `<br><span style="color: var(--pink);">⚠️ Y van en aumento: ${personData.firstHalf} en la primera mitad vs ${personData.secondHalf} en la segunda</span>`;
+      } else if (personData.trend === 'mejorando') {
+        html += `<br><span style="color: var(--green);">✅ Pero están mejorando: ${personData.firstHalf} antes vs ${personData.secondHalf} más recientemente</span>`;
+      }
+      html += '</div>';
+    }
+
+    // Worst case — the most brutal silence
+    if (personData.worstCase) {
+      const wc = personData.worstCase;
+      const wcDate = wc.date.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
+      const wcHour = wc.date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+      const wcTime = formatTime(Math.round(wc.responseTime));
+      const wcText = wc.text.length > 60 ? wc.text.substring(0, 60) + '...' : wc.text;
+      html += `<div class="ghosting-worst">
+        <div class="ghosting-worst-title">😶 El silencio más largo ante algo importante:</div>
+        <div class="ghosting-worst-msg">"${wcText}"</div>
+        <div class="ghosting-worst-meta">Enviado el ${wcDate} a las ${wcHour} — respondido ${wcTime} después</div>
+      </div>`;
+    }
+
+    // Verdict
+    html += `<div class="pf-insight" style="margin-top: 16px;"><strong>📱 Veredicto sobre ${personName}:</strong> ${getGhostingVerdict(personData)}</div>`;
+
+    return html;
   }
 
-  // Conclusion
-  const hasPattern = data.emotional.count > 0 && data.casual.count > 0 && data.emotional.avg > data.casual.avg * 1.5;
-  if (hasPattern) {
-    html += `<div class="pf-insight" style="margin-top: 16px;"><strong>📱 Patrón detectado:</strong> ${personName} responde lo superficial rápido pero <strong style="color:#FF4757;">evade lo emocional</strong>. Tiempo casual: ~${formatTime(data.casual.avg)} vs emocional: ~${formatTime(data.emotional.avg)}. ${data.ghostingEpisodes > 10 ? `Se detectaron <strong>${data.ghostingEpisodes} episodios</strong> de respuesta tardía (3h+).` : ''}</div>`;
-  } else if (data.ghostingEpisodes > 5) {
-    html += `<div class="pf-insight" style="margin-top: 16px;"><strong>📱 Análisis:</strong> Se detectaron <strong>${data.ghostingEpisodes} episodios</strong> de respuesta tardía (3h+), pero no hay un patrón claro de evasión emocional.</div>`;
-  } else {
-    html += `<div class="pf-insight" style="margin-top: 16px;"><strong>✨ Buena señal:</strong> ${personName} responde de manera consistente sin importar el tipo de mensaje.</div>`;
-  }
+  let html = '';
+
+  // Render personB (the main suspect)
+  html += `<div style="font-family: var(--font-display); font-size: 0.9rem; margin-bottom: 12px; color: var(--pink);">Análisis de ${data.personBName.split(' ')[0]}</div>`;
+  html += renderPersonGhosting(data.personB, data.personBName);
+
+  // Render personA
+  html += `<div style="font-family: var(--font-display); font-size: 0.9rem; margin: 24px 0 12px; color: var(--purple);">Análisis de ${data.personAName.split(' ')[0]}</div>`;
+  html += renderPersonGhosting(data.personA, data.personAName);
 
   body.innerHTML = html;
 }
@@ -4601,50 +4967,135 @@ function renderLanguageChanges(data, stats) {
     return;
   }
 
-  const personName = data.personB.split(' ')[0];
-  let html = `<div style="font-family: var(--font-display); font-size: 0.85rem; margin-bottom: 16px; color: var(--text-muted);">Evolución del lenguaje de ${personName} a lo largo del tiempo</div>`;
+  function renderPersonLanguage(personData) {
+    if (!personData) return '<div class="pf-insight">Sin datos suficientes para este participante.</div>';
 
-  data.indicators.forEach(ind => {
-    const maxVal = Math.max(...ind.monthlyData, 1);
-    const changeClass = ind.alert ? 'alert' : 'ok';
-    const changeLabel = ind.alert ? '⚠️ Cambio' : '✓ Estable';
-    const arrow = ind.changePct > 0 ? '↑' : (ind.changePct < 0 ? '↓' : '→');
-    const changeColor = ind.changePct < -30 ? '#FF4757' : (ind.changePct > 100 ? '#FF4757' : 'var(--green)');
+    const name = personData.personName.split(' ')[0];
+    let html = '';
 
-    html += `<div class="lang-change-card">
-      <div class="lang-change-header">
-        <span class="lang-change-label">${ind.emoji} ${ind.label}</span>
-        <span class="lang-change-badge ${changeClass}">${changeLabel}</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px;">
-        <span>Antes: <strong style="color: var(--text);">${ind.firstVal}</strong></span>
-        <span style="color: ${changeColor}; font-weight: 700;">${arrow} ${ind.changePct > 0 ? '+' : ''}${ind.changePct}%</span>
-        <span>Ahora: <strong style="color: var(--text);">${ind.lastVal}</strong></span>
-      </div>
-      <div class="lang-change-bars">`;
+    // Before vs After comparison — the emotional punch
+    if (personData.warmestMsg && personData.coldestMsg) {
+      html += `<div class="language-comparison">
+        <div class="language-then">
+          <div class="language-period-label">Cómo te escribía al principio</div>
+          <div class="language-message language-message--warm">"${personData.warmestMsg.text}${personData.warmestMsg.text.length >= 120 ? '...' : ''}"</div>
+          <div class="language-date">${personData.warmestMsg.sender.split(' ')[0]} · ${personData.warmestMsg.date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+        </div>
+        <div class="language-vs">VS</div>
+        <div class="language-now">
+          <div class="language-period-label">Cómo te escribe ahora</div>
+          <div class="language-message language-message--cold">"${personData.coldestMsg.text}"</div>
+          <div class="language-date">${personData.coldestMsg.sender.split(' ')[0]} · ${personData.coldestMsg.date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+        </div>
+      </div>`;
+    }
 
-    ind.monthlyData.forEach((val, i) => {
-      const height = Math.max(3, (val / maxVal) * 32);
-      const barColor = i < ind.monthlyData.length / 3 ? 'var(--green)' : (i > ind.monthlyData.length * 2/3 ? 'var(--pink)' : 'var(--purple)');
-      html += `<div class="lang-bar" style="height:${height}px; background:${barColor};"></div>`;
-    });
+    // Period comparison table
+    if (data.hasEnoughMonths) {
+      const { p1, p2, p3, periodLabels } = personData;
 
-    html += `</div>
-      <div class="lang-change-legend">
-        <span>${data.months[0]}</span>
-        <span>${data.months[data.months.length - 1]}</span>
-      </div>
-    </div>`;
-  });
+      function valColor(v1, v2, v3, higherIsBetter) {
+        const vals = [v1, v2, v3];
+        const best = higherIsBetter ? Math.max(...vals) : Math.min(...vals);
+        const worst = higherIsBetter ? Math.min(...vals) : Math.max(...vals);
+        return v => v === best ? 'var(--green)' : v === worst ? '#FF4757' : 'var(--text)';
+      }
 
-  // Summary insight
-  const alerts = data.indicators.filter(i => i.alert);
-  if (alerts.length >= 2) {
-    html += `<div class="pf-insight" style="margin-top: 12px;"><strong>🚩 Alerta de distanciamiento:</strong> ${alerts.length} indicadores muestran cambios significativos en el lenguaje de ${personName}. ${alerts.map(a => a.emoji + ' ' + a.label + ' (' + (a.changePct > 0 ? '+' : '') + a.changePct + '%)').join(', ')}. ${data.biggestChangeMonth ? `El cambio más drástico fue en <strong>${data.biggestChangeMonth}</strong>.` : ''}</div>`;
-  } else if (alerts.length === 1) {
-    html += `<div class="pf-insight" style="margin-top: 12px;"><strong>⚠️ Señal aislada:</strong> Solo 1 indicador muestra cambio notable: <strong>${alerts[0].emoji} ${alerts[0].label}</strong> (${alerts[0].changePct > 0 ? '+' : ''}${alerts[0].changePct}%). No necesariamente preocupante, pero vale la pena observar.</div>`;
-  } else {
-    html += `<div class="pf-insight" style="margin-top: 12px;"><strong>✨ Estabilidad:</strong> El lenguaje de ${personName} se ha mantenido consistente. No se detectan señales claras de distanciamiento emocional en su forma de escribir.</div>`;
+      function changeArrow(v1, v3, higherIsBetter) {
+        if (v1 === 0 && v3 === 0) return '';
+        const pct = v1 > 0 ? Math.round(((v3 - v1) / v1) * 100) : 0;
+        if (Math.abs(pct) < 30) return '';
+        const isGood = higherIsBetter ? pct > 0 : pct < 0;
+        const arrow = Math.abs(pct) > 60 ? (pct > 0 ? '↑↑' : '↓↓') : (pct > 0 ? '↑' : '↓');
+        return ` <span style="color:${isGood ? 'var(--green)' : '#FF4757'};font-weight:700;">${arrow}</span>`;
+      }
+
+      const affectColor = valColor(p1.affectRate, p2.affectRate, p3.affectRate, true);
+      const lenColor = valColor(p1.avgLength, p2.avgLength, p3.avgLength, true);
+      const coldColor = valColor(p1.coldPct, p2.coldPct, p3.coldPct, false);
+
+      html += `<table class="bvn-table" style="margin-top: 16px;">
+        <thead><tr>
+          <th></th>
+          <th style="color: var(--green);">Inicio<br><span style="font-size:0.7rem;font-weight:400;">${periodLabels[0]}</span></th>
+          <th style="color: var(--purple);">Desarrollo<br><span style="font-size:0.7rem;font-weight:400;">${periodLabels[1]}</span></th>
+          <th style="color: var(--pink);">Ahora<br><span style="font-size:0.7rem;font-weight:400;">${periodLabels[2]}</span></th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td>❤️ Afecto/1000 msg</td>
+            <td style="color:${affectColor(p1.affectRate)}">${p1.affectRate}</td>
+            <td style="color:${affectColor(p2.affectRate)}">${p2.affectRate}</td>
+            <td style="color:${affectColor(p3.affectRate)}">${p3.affectRate}${changeArrow(p1.affectRate, p3.affectRate, true)}</td>
+          </tr>
+          <tr>
+            <td>📏 Long. mensaje</td>
+            <td style="color:${lenColor(p1.avgLength)}">${p1.avgLength} chars</td>
+            <td style="color:${lenColor(p2.avgLength)}">${p2.avgLength} chars</td>
+            <td style="color:${lenColor(p3.avgLength)}">${p3.avgLength} chars${changeArrow(p1.avgLength, p3.avgLength, true)}</td>
+          </tr>
+          <tr>
+            <td>🥶 Respuestas frías</td>
+            <td style="color:${coldColor(p1.coldPct)}">${p1.coldPct}%</td>
+            <td style="color:${coldColor(p2.coldPct)}">${p2.coldPct}%</td>
+            <td style="color:${coldColor(p3.coldPct)}">${p3.coldPct}%${changeArrow(p1.coldPct, p3.coldPct, false)}</td>
+          </tr>
+        </tbody>
+      </table>`;
+    }
+
+    // Disappeared words
+    if (personData.disappeared.length > 0) {
+      html += `<div style="font-family: var(--font-display); font-size: 0.85rem; margin: 20px 0 8px; color: var(--pink);">💔 Palabras que ${name} ya no usa contigo</div>`;
+      html += '<div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">Frecuentes al principio, raras o inexistentes ahora</div>';
+      html += '<div class="language-words">';
+      // Affective words first
+      personData.disappeared.filter(d => d.isAffective).forEach(d => {
+        html += `<span class="language-word affective" title="'${d.word}' — ${d.countP1} veces al inicio, ${d.countP3} veces ahora">${d.word}</span>`;
+      });
+      personData.disappeared.filter(d => !d.isAffective).forEach(d => {
+        html += `<span class="language-word normal" title="'${d.word}' — ${d.countP1} veces al inicio, ${d.countP3} veces ahora">${d.word}</span>`;
+      });
+      html += '</div>';
+    } else {
+      html += '<div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 16px;">El vocabulario se mantiene consistente — sin palabras perdidas</div>';
+    }
+
+    // Appeared words
+    if (personData.appeared.length > 0) {
+      html += `<div style="font-family: var(--font-display); font-size: 0.85rem; margin: 20px 0 8px; color: var(--purple);">🆕 Palabras que ${name} empezó a usar</div>`;
+      html += '<div class="language-words">';
+      personData.appeared.forEach(a => {
+        if (a.isDistancing) {
+          html += `<span class="language-word distancing">⚠️ ${a.word}</span>`;
+        } else {
+          html += `<span class="language-word normal">${a.word}</span>`;
+        }
+      });
+      html += '</div>';
+      if (personData.newDistancing.length > 3) {
+        html += '<div style="font-size: 0.82rem; color: #FF6B35; margin-top: 8px;">⚠️ Varias de las palabras nuevas sugieren distanciamiento o falta de disponibilidad</div>';
+      }
+    }
+
+    // Verdict
+    html += `<div class="pf-insight" style="margin-top: 16px;"><strong>🗣️ Veredicto sobre ${name}:</strong> ${getLanguageVerdict(personData)}</div>`;
+
+    return html;
+  }
+
+  let html = '';
+
+  // Render personB (main suspect)
+  if (data.personBData) {
+    html += `<div style="font-family: var(--font-display); font-size: 0.9rem; margin-bottom: 12px; color: var(--pink);">Análisis de ${data.personBName.split(' ')[0]}</div>`;
+    html += renderPersonLanguage(data.personBData);
+  }
+
+  // Render personA
+  if (data.personAData) {
+    html += `<div style="font-family: var(--font-display); font-size: 0.9rem; margin: 24px 0 12px; color: var(--purple);">Análisis de ${data.personAName.split(' ')[0]}</div>`;
+    html += renderPersonLanguage(data.personAData);
   }
 
   body.innerHTML = html;
