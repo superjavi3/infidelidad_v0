@@ -2390,8 +2390,11 @@ async function handleFile(file) {
 
 // ── WHATSAPP PARSER ──
 function parseWhatsApp(text) {
+  // Strip Unicode directional marks before parsing — iOS exports prepend U+200E to lines
+  text = text.replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '');
+
   const messages = [];
-  
+
   // Regex que soporta múltiples formatos:
   // [21/2/26, 19:35:23] Nombre: mensaje
   // 12/01/2024, 10:32 - Nombre: mensaje
