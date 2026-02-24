@@ -202,6 +202,22 @@ nav a:hover { color: var(--text); }
   color: var(--text-muted);
   font-weight: 500;
 }
+.demo-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.6);
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 0.85rem;
+  width: 100%;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.demo-btn:hover {
+  color: #fff;
+  border-color: rgba(255,45,120,0.5);
+}
 
 /* ── PROCESSING STATE ── */
 .processing-state {
@@ -2049,6 +2065,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
       <span class="format-tag">WhatsApp .txt o .zip</span>
       <span class="format-tag">Hasta 40,000 mensajes</span>
     </div>
+    <button class="demo-btn" onclick="event.stopPropagation();loadDemo()">👀 Ver ejemplo — sin subir nada</button>
   </div>
 
   <!-- Processing State -->
@@ -2069,6 +2086,18 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 </section>
 
 <!-- ── RESULTS (hidden until analysis) ── -->
+<div id="demoBanner" style="display:none;max-width:720px;margin:0 auto 0">
+  <div style="background:rgba(255,211,61,0.1);border:1px solid rgba(255,211,61,0.3);
+    border-radius:8px;padding:10px 16px;text-align:center;margin-bottom:16px;
+    font-size:0.85rem;color:#FFD93D">
+    👀 Estás viendo un análisis de ejemplo —
+    <button onclick="document.getElementById('top').scrollIntoView({behavior:'smooth'})"
+      style="background:none;border:none;color:#FF2D78;cursor:pointer;
+      font-weight:700;font-size:0.85rem">
+      Analiza tu propio chat →
+    </button>
+  </div>
+</div>
 <section class="results-section container" id="resultsSection">
   <div class="results-header">
     <h2>Tu relación al <span class="gradient-text">descubierto</span></h2>
@@ -2943,6 +2972,8 @@ function analyzeMessages(messages) {
 
 // ── PROCESS FLOW ──
 async function processChat(text) {
+  window.isDemoMode = false;
+  document.getElementById('demoBanner').style.display = 'none';
   uploadZone.style.display = 'none';
   processingState.classList.add('active');
 
@@ -3490,6 +3521,201 @@ function resetUpload() {
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ══════════════════════════════════════════════
+// ── DEMO MODE ──
+// ══════════════════════════════════════════════
+
+function generateDemoMessages() {
+  const messages = [];
+  const startDate = new Date('2023-01-15');
+  const names = ['Laura', 'Carlos'];
+
+  const casualMsgs = [
+    "Hola!", "¿Qué tal?", "Bien y tú?", "Aquí, trabajando",
+    "Jaja sí", "Oye mira esto", "¿A qué hora quedamos?",
+    "Vale perfecto", "Ok", "Luego hablamos", "😂", "Exacto",
+    "No sé qué hacer", "¿Comemos juntos?", "Voy para allá",
+    "Espérame un momento", "Ya casi llego", "Estoy en el metro",
+    "Qué día más largo", "Por fin en casa", "¿Viste eso?",
+    "Te mando foto luego", "Mañana te cuento", "Buenas noches",
+    "Buenos días ☀️", "¿Dormiste bien?", "Sí, más o menos",
+    "Estoy saliendo del trabajo", "¿Quedamos mañana?", "Vamos al cine?",
+    "Acabo de llegar", "Qué rollo de día", "Voy a cenar algo"
+  ];
+
+  const loveMsgs = [
+    "Te quiero mucho", "Te echo de menos", "Pienso en ti todo el día",
+    "Eres lo mejor que me ha pasado", "Te amo ❤️",
+    "Me haces muy feliz", "No sé qué haría sin ti",
+    "Estoy muy bien contigo", "Me alegras el día 💕",
+    "Eres increíble", "Eres especial para mí", "Mi amor",
+    "Buenas noches mi vida 😘", "Gracias por existir"
+  ];
+
+  const coldMsgs = [
+    "Ok", "Vale", "Ya", "Bien", "Sí", "No", "Luego",
+    "Mañana", "Ocupado", "Estoy trabajando", "Ahora no puedo",
+    "Después hablamos", "Ok entendido", "Como quieras"
+  ];
+
+  const emotionalMsgs = [
+    "Estoy mal hoy", "Me siento sola", "No sé qué hacer con mi vida",
+    "Me duele que no me hables", "Necesito que me escuches",
+    "Estoy llorando", "Tengo miedo de que esto no funcione",
+    "Me preocupa lo nuestro", "No puedo más"
+  ];
+
+  const relacionalMsgs = [
+    "¿Qué somos tú y yo?", "¿Estás bien conmigo?",
+    "Necesito que me digas qué sientes por mí",
+    "¿Te importo de verdad?", "Tenemos que hablar de lo nuestro",
+    "¿Qué soy para ti?", "Nuestra relación me preocupa"
+  ];
+
+  const deletedMsg = "Se eliminó este mensaje.";
+  const multimediaMsgs = ["<Multimedia omitido>", "imagen omitida", "sticker omitido", "audio omitido", "video omitido"];
+
+  // Phases: happy start → peak → sudden drop → partial recovery → cooling
+  const phases = [
+    { days: 180, msgsPerDay: 80,  loveFreq: 0.08, coldFreq: 0.05, emocFreq: 0.01, relFreq: 0.005, delFreq: 0.005, mediaFreq: 0.06 },
+    { days: 60,  msgsPerDay: 120, loveFreq: 0.12, coldFreq: 0.03, emocFreq: 0.008, relFreq: 0.003, delFreq: 0.003, mediaFreq: 0.08 },
+    { days: 30,  msgsPerDay: 15,  loveFreq: 0.01, coldFreq: 0.40, emocFreq: 0.06, relFreq: 0.04, delFreq: 0.03, mediaFreq: 0.02 },
+    { days: 130, msgsPerDay: 40,  loveFreq: 0.03, coldFreq: 0.25, emocFreq: 0.03, relFreq: 0.02, delFreq: 0.015, mediaFreq: 0.04 },
+    { days: 223, msgsPerDay: 20,  loveFreq: 0.005, coldFreq: 0.35, emocFreq: 0.02, relFreq: 0.015, delFreq: 0.02, mediaFreq: 0.03 }
+  ];
+
+  let currentDay = 0;
+
+  phases.forEach(phase => {
+    for (let d = 0; d < phase.days; d++) {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() + currentDay + d);
+
+      const variance = Math.floor((Math.random() - 0.5) * phase.msgsPerDay * 0.4);
+      const msgsToday = Math.max(2, phase.msgsPerDay + variance);
+
+      for (let m = 0; m < msgsToday; m++) {
+        const isLaura = Math.random() < 0.54;
+        const r = Math.random();
+        let text;
+        if (r < phase.delFreq) {
+          text = deletedMsg;
+        } else if (r < phase.delFreq + phase.mediaFreq) {
+          text = multimediaMsgs[Math.floor(Math.random() * multimediaMsgs.length)];
+        } else if (r < phase.delFreq + phase.mediaFreq + phase.relFreq) {
+          text = relacionalMsgs[Math.floor(Math.random() * relacionalMsgs.length)];
+        } else if (r < phase.delFreq + phase.mediaFreq + phase.relFreq + phase.emocFreq) {
+          text = emotionalMsgs[Math.floor(Math.random() * emotionalMsgs.length)];
+        } else if (r < phase.delFreq + phase.mediaFreq + phase.relFreq + phase.emocFreq + phase.loveFreq) {
+          text = loveMsgs[Math.floor(Math.random() * loveMsgs.length)];
+        } else if (r < phase.delFreq + phase.mediaFreq + phase.relFreq + phase.emocFreq + phase.loveFreq + phase.coldFreq) {
+          text = coldMsgs[Math.floor(Math.random() * coldMsgs.length)];
+        } else {
+          text = casualMsgs[Math.floor(Math.random() * casualMsgs.length)];
+        }
+
+        const hour = Math.floor(Math.random() * 17) + 7; // 7-23h
+        const minute = Math.floor(Math.random() * 60);
+        const second = Math.floor(Math.random() * 60);
+
+        const dd = String(date.getDate()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const yy = String(date.getFullYear()).slice(2);
+        const hh = String(hour).padStart(2, '0');
+        const mn = String(minute).padStart(2, '0');
+        const sc = String(second).padStart(2, '0');
+
+        messages.push({
+          date: `${dd}/${mm}/${yy}`,
+          time: `${hh}:${mn}:${sc}`,
+          sender: isLaura ? 'Laura' : 'Carlos',
+          text: text
+        });
+      }
+    }
+    currentDay += phase.days;
+  });
+
+  // Sort chronologically
+  return messages.sort((a, b) => {
+    const da = new Date(`20${a.date.split('/')[2]}-${a.date.split('/')[1]}-${a.date.split('/')[0]}T${a.time}`);
+    const db = new Date(`20${b.date.split('/')[2]}-${b.date.split('/')[1]}-${b.date.split('/')[0]}T${b.time}`);
+    return da - db;
+  });
+}
+
+function simulateDemoAIResponse(stats) {
+  const demoAI = {
+    redFlags: [
+      "La comunicación cayó un 83% en agosto 2023 y nunca se recuperó al nivel inicial",
+      "Carlos tarda 4x más en responder mensajes emocionales que mensajes casuales",
+      "Las expresiones de afecto pasaron de 12 por semana a menos de 1"
+    ],
+    greenFlags: [
+      "La relación tuvo un período muy activo de 8 meses con comunicación consistente",
+      "Ambos mantienen la comunicación diaria a pesar del enfriamiento"
+    ],
+    whoLeads: "Laura lleva el peso de la relación — inicia más conversaciones, escribe más y rompe los silencios con más frecuencia.",
+    funInsight: "Laura inicia el 73% de las conversaciones. En los primeros 3 meses Carlos iniciaba el 48% — ahora solo el 27%.",
+    communicationStyle: "Comunicación que empezó efusiva y se ha vuelto funcional. Laura intenta mantener la conexión emocional mientras Carlos responde de forma cada vez más escueta.",
+    emotionalTone: "Enfriándose"
+  };
+  updateWithAIInsights(demoAI, stats);
+}
+
+async function loadDemo() {
+  window.isDemoMode = true;
+
+  // Generate demo messages
+  const demoMessages = generateDemoMessages();
+
+  // Demo stats (hardcoded to match the story)
+  const demoStats = {
+    personA: "Laura",
+    personB: "Carlos",
+    msgsA: 18420,
+    msgsB: 15680,
+    total: 34100,
+    loveCount: 89,
+    nightPct: 8,
+    uniqueDays: 623,
+    avgReply: 47,
+    avgReplyFormatted: "47 min",
+    score: 58,
+    verdict: "Tibio, cuidado 🟠",
+    leader: "Laura",
+    leaderPct: 54,
+    ratio: "1.17"
+  };
+
+  // Replicate processChat() animation exactly
+  uploadZone.style.display = 'none';
+  processingState.classList.add('active');
+
+  const steps = processingState.querySelectorAll('.step');
+  for (let i = 0; i < steps.length; i++) {
+    await sleep(800 + Math.random() * 600);
+    if (i > 0) { steps[i-1].classList.remove('active'); steps[i-1].classList.add('done'); }
+    steps[i].classList.add('active');
+  }
+  await sleep(1000);
+  steps[steps.length-1].classList.remove('active');
+  steps[steps.length-1].classList.add('done');
+
+  // Store globally like processChat does
+  lastMessages = demoMessages;
+  lastStats = demoStats;
+
+  // Show results (identical to real flow)
+  showResults(demoStats);
+
+  // Show demo banner
+  document.getElementById('demoBanner').style.display = 'block';
+
+  // Simulate AI response instead of calling Gemini
+  simulateDemoAIResponse(demoStats);
+}
 
 // ══════════════════════════════════════════════
 // ── PREMIUM FEATURES: ANALYSIS & RENDERING ──
