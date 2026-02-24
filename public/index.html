@@ -2974,6 +2974,8 @@ function analyzeMessages(messages) {
 async function processChat(text) {
   window.isDemoMode = false;
   document.getElementById('demoBanner').style.display = 'none';
+  const chatbotBtn = document.querySelector('[onclick*="openChatbot"]');
+  if (chatbotBtn) { chatbotBtn.style.opacity = ''; chatbotBtn.style.cursor = ''; chatbotBtn.title = ''; }
   uploadZone.style.display = 'none';
   processingState.classList.add('active');
 
@@ -3712,6 +3714,14 @@ async function loadDemo() {
 
   // Show demo banner
   document.getElementById('demoBanner').style.display = 'block';
+
+  // Disable chatbot button visually in demo mode
+  const chatbotBtn = document.querySelector('[onclick*="openChatbot"]');
+  if (chatbotBtn) {
+    chatbotBtn.style.opacity = '0.5';
+    chatbotBtn.style.cursor = 'not-allowed';
+    chatbotBtn.title = 'Disponible con tu chat real';
+  }
 
   // Simulate AI response instead of calling Gemini
   simulateDemoAIResponse(demoStats);
@@ -5391,7 +5401,26 @@ function updateWithAIInsights(analysis, stats) {
 // ══════════════════════════════════════════
 let chatbotHistory = [];
 
+function showDemoUpgradePrompt(feature) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  overlay.onclick = () => overlay.remove();
+  const msgs = {
+    chatbot: 'El chatbot analiza TU relación real — sube tu chat para activarlo 💬'
+  };
+  overlay.innerHTML = `<div style="background:var(--bg-card);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px;max-width:400px;text-align:center;" onclick="event.stopPropagation()">
+    <div style="font-size:2rem;margin-bottom:12px;">👀</div>
+    <p style="font-size:1rem;margin-bottom:16px;line-height:1.5;">${msgs[feature] || 'Sube tu chat para usar esta función'}</p>
+    <button onclick="this.closest('div[style*=fixed]').remove();document.getElementById('top').scrollIntoView({behavior:'smooth'})" class="btn-primary" style="width:100%;padding:12px;font-size:0.95rem;">Analizar mi chat →</button>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
 function openChatbot() {
+  if (window.isDemoMode) {
+    showDemoUpgradePrompt('chatbot');
+    return;
+  }
   if (!lastStats || !lastMessages) {
     alert('Primero sube un chat para analizar.');
     return;
