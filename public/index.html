@@ -1312,6 +1312,12 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   transition: width .8s ease;
   min-width: 0;
 }
+.mm-counts {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.6);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 .mm-king {
   font-family: var(--font-display);
   font-size: 0.78rem;
@@ -1844,6 +1850,8 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr; }
+  .mm-row { flex-wrap: wrap; }
+  .mm-counts { width: 100%; padding-left: 40px; margin-top: -4px; font-size: 0.68rem; }
 }
 </style>
 </head>
@@ -3711,6 +3719,7 @@ function renderMultimedia(data, stats) {
         <div class="mm-bar-a" style="width:${pctA}%;" title="${shortA}: ${cA}"></div>
         <div class="mm-bar-b" style="width:${pctB}%;" title="${shortB}: ${cB}"></div>
       </div>
+      <span class="mm-counts">${shortA}: ${cA} · ${shortB}: ${cB}</span>
       <div class="mm-king">👑 <strong>${king}</strong></div>`;
     } else {
       html += `<div class="mm-empty">Sin ${t.label.toLowerCase()} en este chat</div>`;
