@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { gunzipSync } from 'zlib';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    let body;
+    const contentEncoding = req.headers.get('content-encoding');
+    if (contentEncoding === 'gzip') {
+      const compressed = Buffer.from(await req.arrayBuffer());
+      const decompressed = gunzipSync(compressed);
+      body = JSON.parse(decompressed.toString('utf-8'));
+    } else {
+      body = await req.json();
+    }
     const { mode, question, chatHistory, stats, messages } = body;
 
     console.log('API /analyze called - mode:', mode || 'analysis');
