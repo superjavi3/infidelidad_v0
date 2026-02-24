@@ -438,6 +438,46 @@ nav a:hover { color: var(--text); }
   font-size: 0.92rem;
   line-height: 1.6;
 }
+/* Step 1 OS tabs */
+.os-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.os-tab {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background .2s, color .2s, border-color .2s;
+}
+.os-tab.active {
+  background: var(--pink);
+  color: #fff;
+  border-color: var(--pink);
+}
+.os-tab-content {
+  text-align: left;
+  transition: opacity .2s ease;
+}
+.os-tab-content[hidden] {
+  display: none;
+}
+.os-tab-content ol {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.8;
+}
 
 /* ── EXAMPLES PREVIEW ── */
 .example-card {
@@ -2054,13 +2094,34 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
       <div class="step-card">
         <div class="step-number">1</div>
         <h3>Exporta tu chat de WhatsApp</h3>
-        <p>Abre el chat → toca los 3 puntos → "Más" → "Exportar chat" → "Sin archivos". Te descarga un .txt.</p>
-        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 8px; opacity: 0.7;">⚠️ Solo funciona desde el móvil, no desde WhatsApp Web</p>
+        <div class="os-tabs">
+          <button class="os-tab active" onclick="switchOsTab('android',this)">🤖 Android</button>
+          <button class="os-tab" onclick="switchOsTab('ios',this)">🍎 iPhone</button>
+        </div>
+        <div class="os-tab-content" id="osTabAndroid">
+          <ol>
+            <li>Abre el chat con tu pareja</li>
+            <li>Toca los ⋮ (3 puntos) arriba a la derecha</li>
+            <li>"Más" → "Exportar chat"</li>
+            <li>Elige "Sin archivos"</li>
+            <li>Te descarga un .zip (o .txt según el móvil)</li>
+          </ol>
+        </div>
+        <div class="os-tab-content" id="osTabIos" hidden>
+          <ol>
+            <li>Abre el chat con tu pareja</li>
+            <li>Toca el nombre de tu contacto arriba</li>
+            <li>Baja hasta "Exportar chat"</li>
+            <li>Elige "Sin archivos"</li>
+            <li>Guarda el .zip en Archivos</li>
+          </ol>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 10px; opacity: 0.7;">⚠️ Solo funciona desde el móvil, no desde WhatsApp Web</p>
       </div>
       <div class="step-card">
         <div class="step-number">2</div>
         <h3>Sube el archivo aquí</h3>
-        <p>Arrastra el .txt o tócalo para seleccionarlo. La IA analiza patrones, sentimiento y dinámicas en segundos.</p>
+        <p>Arrastra el .zip o .txt o tócalo para seleccionarlo. La IA analiza patrones, sentimiento y dinámicas en segundos.</p>
       </div>
       <div class="step-card">
         <div class="step-number">3</div>
@@ -4651,6 +4712,14 @@ function removeBlurOverlays() {
   console.log('[Paywall] removeBlurOverlays() called — window.userPlan:', window.userPlan);
   // Just re-run applyBlurOverlays — it's idempotent and recomputes everything
   applyBlurOverlays();
+}
+
+// ── OS Tab switcher (Step 1) ──
+function switchOsTab(os, btn) {
+  document.getElementById('osTabAndroid').hidden = os !== 'android';
+  document.getElementById('osTabIos').hidden = os !== 'ios';
+  btn.parentElement.querySelectorAll('.os-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
 }
 
 // ── Payment modal ──
