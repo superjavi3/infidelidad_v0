@@ -1044,6 +1044,21 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 .forensic-detail strong {
   color: var(--text);
 }
+.forensic-keywords {
+  margin-top: 8px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.forensic-chip {
+  display: inline-block;
+  background: rgba(108,92,231,0.15);
+  border: 1px solid rgba(108,92,231,0.25);
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 0.78rem;
+  color: var(--purple);
+  margin: 2px 3px;
+}
 
 /* Before vs Now comparison table */
 .bvn-table {
@@ -2384,8 +2399,11 @@ function showResults(s) {
   document.querySelectorAll('.personA').forEach(el => el.textContent = s.personA);
   document.querySelectorAll('.personB').forEach(el => el.textContent = s.personB);
 
-  document.getElementById('whoLeads').textContent =
-    `${s.leader} inicia la mayoría de las conversaciones y envía el ${s.leaderPct}% de los mensajes. El ratio es de ${s.ratio}x.`;
+  const follower = s.leader === s.personA ? s.personB : s.personA;
+  const followerPct = 100 - s.leaderPct;
+  const balance = s.leaderPct >= 65 ? 'Desequilibrio fuerte.' : s.leaderPct >= 55 ? 'Ligeramente desequilibrado.' : 'Bastante equilibrado.';
+  document.getElementById('whoLeads').innerHTML =
+    `<strong>${s.leader}</strong> lleva la relación — envía el <strong>${s.leaderPct}%</strong> de los mensajes vs <strong>${followerPct}%</strong> de ${follower.split(' ')[0]}. <strong>${balance}</strong>`;
 
   document.getElementById('funFact').innerHTML =
     `📊 <strong>Dato curioso:</strong> ${s.personA} envió <strong>${s.msgsA.toLocaleString()}</strong> mensajes y ${s.personB} envió <strong>${s.msgsB.toLocaleString()}</strong>. ${s.loveCount > 20 ? 'Hay mucho amor en este chat ❤️' : 'Podrían usar más emojis de amor... 😬'}`;
@@ -3203,6 +3221,35 @@ function renderObsessiveFeatures(messages, stats) {
   renderLanguageChanges(languageData, stats);
 }
 
+// ── KEYWORD EXTRACTION HELPER ──
+function extractKeywords(msgs, topN) {
+  if (msgs.length < 50) return [];
+  const stopwords = new Set([
+    'que','de','en','el','la','los','las','un','una','y','a','es','se','no','lo',
+    'por','con','para','me','te','le','mi','si','ya','pero','como','mas','fue',
+    'hay','del','al','su','pues','bien','ahi','aqui','esto','eso','asi','todo',
+    'nada','ok','okay','jaja','jajaja','jajajaja','jeje','jejeje','xd',
+    'tambien','hola','bueno','buena','son','ser','ver','han','van','voy','muy',
+    'tan','sin','nos','les','ella','ellos','tiene','hacer','creo','puede','donde',
+    'cuando','porque','sea','era','solo','cada','algo','otro','otra','mis','tus',
+    'sus','vez','dos','tres','dia','hoy','ayer','estoy','estas','esta','ese','esa',
+    'estos','estas','esos','esas','quien','cual','medio','tipo','cosa','cosas'
+  ]);
+  const norm = w => w.replace(/[áà]/g,'a').replace(/[éè]/g,'e').replace(/[íì]/g,'i').replace(/[óò]/g,'o').replace(/[úùü]/g,'u');
+  const freq = {};
+  msgs.forEach(m => {
+    const words = (m.text || '').toLowerCase().match(/[a-záéíóúüñ]{3,}/g) || [];
+    words.forEach(w => {
+      const n = norm(w);
+      if (!stopwords.has(n)) freq[n] = (freq[n] || 0) + 1;
+    });
+  });
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, topN || 5)
+    .map(e => e[0]);
+}
+
 // ── OBSESSIVE 1: RECONSTRUCCIÓN FORENSE ──
 function analyzeForensicReconstruction(sorted, stats) {
   if (sorted.length < 20) return { inflectionPoints: [], milestones: [] };
@@ -3235,7 +3282,8 @@ function analyzeForensicReconstruction(sorted, stats) {
         currCount: curr,
         changePct: Math.round(changePct),
         direction: changePct > 0 ? 'up' : 'down',
-        context: getContextAroundDate(sorted, date)
+        context: getContextAroundDate(sorted, date),
+        keywords: extractKeywords(monthMsgs, 5)
       });
     }
   }
@@ -3697,6 +3745,7 @@ function renderForensicReconstruction(data, stats) {
         <div class="forensic-date" style="color: ${color};">${arrow} ${monthLabel} — Punto de Inflexión</div>
         <div class="forensic-detail">Mensajes/mes ${p.direction === 'down' ? 'cayeron' : 'subieron'} de <strong>${p.prevCount.toLocaleString()}</strong> a <strong>${p.currCount.toLocaleString()}</strong> (<span style="color:${color};font-weight:700;">${p.changePct > 0 ? '+' : ''}${p.changePct}%</span>)</div>
         <div class="forensic-detail">Semana anterior: ${p.context.msgsBefore} msgs — Semana siguiente: ${p.context.msgsAfter} msgs</div>
+        ${p.keywords && p.keywords.length > 0 ? `<div class="forensic-keywords">🗣️ Temas: ${p.keywords.map(k => `<span class="forensic-chip">${k}</span>`).join(' ')}</div>` : ''}
       </div>`;
     });
 
