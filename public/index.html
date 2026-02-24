@@ -1150,82 +1150,90 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 .dt-bar-fill.pink { background: var(--pink); }
 .dt-bar-fill.purple { background: var(--purple); }
 
-/* Sticker King visuals */
-.sticker-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+/* Multimedia visuals */
+.mm-row {
+  display: flex;
+  align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
 }
-.sticker-stat-card {
+.mm-row:last-child { border-bottom: none; }
+.mm-icon { font-size: 1.3rem; flex-shrink: 0; width: 28px; text-align: center; }
+.mm-label {
+  font-size: 0.85rem;
+  min-width: 110px;
+  flex-shrink: 0;
+}
+.mm-label span { color: var(--text-muted); font-size: 0.78rem; }
+.mm-bar-wrap {
+  flex: 1;
+  display: flex;
+  height: 22px;
+  border-radius: 6px;
+  overflow: hidden;
   background: rgba(255,255,255,0.04);
-  border-radius: 12px;
-  padding: 16px;
-  text-align: center;
 }
-.sticker-stat-value {
+.mm-bar-a {
+  background: var(--pink);
+  height: 100%;
+  transition: width .8s ease;
+  min-width: 0;
+}
+.mm-bar-b {
+  background: var(--purple);
+  height: 100%;
+  transition: width .8s ease;
+  min-width: 0;
+}
+.mm-king {
   font-family: var(--font-display);
-  font-size: 1.8rem;
-  color: var(--pink);
-}
-.sticker-stat-label {
-  color: var(--text-muted);
   font-size: 0.78rem;
-  margin-top: 4px;
+  min-width: 70px;
+  text-align: right;
+  flex-shrink: 0;
 }
-.sticker-comparison {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 16px;
-}
-.sticker-person {
-  text-align: center;
-}
-.sticker-person-name {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  margin-bottom: 8px;
-}
-.sticker-person-count {
-  font-family: var(--font-display);
-  font-size: 2.5rem;
-  margin-bottom: 4px;
-}
-.sticker-person-label {
+.mm-empty {
   color: var(--text-muted);
   font-size: 0.8rem;
+  font-style: italic;
+  flex: 1;
 }
-.sticker-bar-track {
-  height: 8px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 4px;
-  margin-top: 8px;
-  overflow: hidden;
+.mm-ratio-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 16px;
 }
-.sticker-bar-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 1s ease;
+.mm-ratio-card {
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  padding: 14px 16px;
 }
-.sticker-bar-fill.pink { background: var(--pink); }
-.sticker-bar-fill.purple { background: var(--purple); }
-.sticker-streak {
-  background: rgba(255,210,63,0.1);
-  border: 1px solid rgba(255,210,63,0.25);
-  border-radius: 12px;
-  padding: 14px 18px;
-  margin-bottom: 16px;
+.mm-ratio-name {
+  font-family: var(--font-display);
   font-size: 0.9rem;
-  line-height: 1.5;
+  margin-bottom: 6px;
 }
-.sticker-streak strong {
-  color: #FFD23F;
+.mm-ratio-bar {
+  height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 4px;
 }
-.sticker-chart-wrap {
-  position: relative;
-  height: 260px;
-  margin-bottom: 16px;
+.mm-ratio-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width .8s ease;
+}
+.mm-ratio-pct {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+}
+.mm-ratio-label {
+  color: var(--text-muted);
+  font-size: 0.75rem;
 }
 
 /* Deleted messages visuals */
@@ -1889,20 +1897,16 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
       <div class="pf-body" id="doubleTextBody"></div>
     </div>
 
-    <!-- Feature 4: Rey de los Stickers -->
-    <div class="premium-feature-card" id="featureStickers" data-plan-required="detective">
+    <!-- Feature 4: Reyes del Multimedia -->
+    <div class="premium-feature-card" id="featureMultimedia" data-plan-required="detective">
       <div class="pf-header">
-        <span class="pf-icon">🏆</span>
+        <span class="pf-icon">📱</span>
         <div>
-          <h4 class="pf-title">Rey de los Stickers</h4>
-          <p class="pf-subtitle">Quién abusa más de los stickers en la conversación</p>
+          <h4 class="pf-title">Reyes del Multimedia</h4>
+          <p class="pf-subtitle">Quién habla con palabras y quién con archivos</p>
         </div>
       </div>
-      <div class="pf-body" id="stickerBody">
-        <div class="sticker-chart-wrap">
-          <canvas id="stickerChart"></canvas>
-        </div>
-      </div>
+      <div class="pf-body" id="multimediaBody"></div>
     </div>
 
     <!-- Feature 5: Mensajes Eliminados -->
@@ -2760,7 +2764,7 @@ async function generatePDF() {
     const timelineData = analyzeRelationshipTimeline(lastMessages);
     const silenceData = analyzeSilences(lastMessages);
     const doubleTextData = analyzeDoubleTexting(lastMessages);
-    const stickerData = analyzeStickers(lastMessages);
+    const multimediaData = analyzeMultimedia(lastMessages);
     const deletedData = analyzeDeletedMessages(lastMessages);
 
     const sortedForBN = [];
@@ -2808,7 +2812,8 @@ async function generatePDF() {
     const longestHours = silenceData.longest ? silenceData.longest.hours : 0;
     const silenceBrokeItems = Object.entries(silenceData.brokeCount || {});
     const dtItems = Object.entries(doubleTextData || {});
-    const stickerItems = Object.entries(stickerData.perPerson || {});
+    const mmTypes = ['audios','imagenes','videos','documentos','ubicaciones'];
+    const mmTotalAll = mmTypes.reduce((s, k) => s + multimediaData[k].total, 0);
     const delItems = Object.entries(deletedData.deleted || {});
 
     // Before/After rows
@@ -2935,10 +2940,12 @@ async function generatePDF() {
         hBarSVG(dtItems.map(([name, eps]) => [name, Array.isArray(eps) ? eps.length : eps])) + '</svg>'
       : '<p style="color:#9B96B0;font-size:13px;">No se detectaron episodios significativos de double texting.</p>';
 
-    const stickerBarsHTML = stickerItems.length > 0 ?
-      '<svg width="520" height="' + (stickerItems.length * 44 + 16) + '" xmlns="http://www.w3.org/2000/svg">' +
-        hBarSVG(stickerItems) + '</svg>'
-      : '';
+    const mmIcons = { audios: '\u{1F399}', imagenes: '\u{1F4F8}', videos: '\u{1F3AC}', documentos: '\u{1F4C4}', ubicaciones: '\u{1F4CD}' };
+    const mmLabels = { audios: 'Audios', imagenes: 'Imagenes', videos: 'Videos', documentos: 'Documentos', ubicaciones: 'Ubicaciones' };
+    const mmRows = mmTypes.map(k => {
+      const t = multimediaData[k];
+      return mmIcons[k] + ' ' + mmLabels[k] + ': ' + t.total;
+    });
 
     const delBarsHTML = delItems.length > 0 ?
       '<svg width="520" height="' + (delItems.length * 44 + 16) + '" xmlns="http://www.w3.org/2000/svg">' +
@@ -2958,15 +2965,13 @@ async function generatePDF() {
         '<div style="font-size:22px;font-weight:700;color:#FFF;margin-bottom:4px;">Mensajes y Patrones</div>' +
         '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:8px 0 16px;"></div>' +
         '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F624} Double Texting (5+ sin respuesta)</h3><div style="' + cardCSS + 'padding:16px;">' + dtBarsHTML + '</div></div>' +
-        '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F3C6} Rey de los Stickers</h3><div style="' + cardCSS + 'padding:16px;">' +
-          (stickerData.total > 0 ?
+        '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F4F1} Reyes del Multimedia</h3><div style="' + cardCSS + 'padding:16px;">' +
+          (mmTotalAll > 0 ?
             '<div style="display:flex;gap:12px;margin-bottom:10px;">' +
-              '<div style="background:#1E1B2E;border-radius:8px;padding:10px 14px;flex:1;text-align:center;"><div style="font-size:20px;font-weight:700;color:#F5C842;">' + stickerData.total + '</div><div style="font-size:10px;color:#9B96B0;">Total stickers</div></div>' +
-              '<div style="background:#1E1B2E;border-radius:8px;padding:10px 14px;flex:1;text-align:center;"><div style="font-size:20px;font-weight:700;color:#F5C842;">' + stickerData.longestStreak + '</div><div style="font-size:10px;color:#9B96B0;">Racha maxima</div></div>' +
-              '<div style="background:#1E1B2E;border-radius:8px;padding:10px 14px;flex:1;text-align:center;"><div style="font-size:16px;font-weight:700;color:#F5C842;">\u{1F451} ' + clean((stickerData.streakOwner || Object.keys(stickerData.perPerson)[0] || '').split(' ')[0]) + '</div><div style="font-size:10px;color:#9B96B0;">Rey de stickers</div></div>' +
+              '<div style="background:#1E1B2E;border-radius:8px;padding:10px 14px;flex:1;text-align:center;"><div style="font-size:20px;font-weight:700;color:#F5C842;">' + mmTotalAll + '</div><div style="font-size:10px;color:#9B96B0;">Total multimedia</div></div>' +
             '</div>' +
-            '<div style="display:flex;justify-content:center;">' + stickerBarsHTML + '</div>'
-          : '<p style="color:#9B96B0;font-size:13px;">Cero stickers. Esta conversacion es 100% texto puro.</p>') +
+            '<div style="font-size:12px;color:#9B96B0;line-height:2;">' + mmRows.join('<br>') + '</div>'
+          : '<p style="color:#9B96B0;font-size:13px;">Conversacion 100% texto puro.</p>') +
         '</div></div>' +
         '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F5D1}\u{FE0F} Mensajes Eliminados</h3><div style="' + cardCSS + 'padding:16px;">' +
           (deletedData.total > 0 ?
@@ -3280,58 +3285,29 @@ function analyzeDoubleTexting(messages) {
   return episodes;
 }
 
-// ── 3b. STICKER ANALYSIS ──
-function analyzeStickers(messages) {
-  const stickerRegex = /^<?sticker\s*omit(?:ido|ted)>?$/i;
-  const perPerson = {};
-  const monthly = {};
-  let longestStreak = 0;
-  let streakOwner = '';
-  let currentStreak = 0;
-  let currentStreakSender = null;
+// ── 3b. MULTIMEDIA ANALYSIS ──
+function analyzeMultimedia(messages) {
+  const types = {
+    audios:     { pattern: /^<?(?:audio\s+omit(?:ido|ted)|ptt\s+omitido)>?$/i, perPerson: {}, total: 0, icon: '🎙️', label: 'Audios' },
+    imagenes:   { pattern: /(?:imagen\s+omitida|image\s+omitted)/i, perPerson: {}, total: 0, icon: '📸', label: 'Imágenes' },
+    videos:     { pattern: /^<?video\s+omit(?:ido|ted)>?$/i, perPerson: {}, total: 0, icon: '🎬', label: 'Videos' },
+    documentos: { pattern: /(?:documento\s+omitido|document\s+omitted)/i, perPerson: {}, total: 0, icon: '📄', label: 'Documentos' },
+    ubicaciones:{ pattern: /(?:ubicaci[oó]n|location)\s*:\s*https?:\/\//i, perPerson: {}, total: 0, icon: '📍', label: 'Ubicaciones' }
+  };
 
-  const sorted = [];
   messages.forEach(m => {
-    try {
-      const ts = parseMessageDate(m.date, m.time);
-      if (!isNaN(ts.getTime())) sorted.push({ ...m, timestamp: ts });
-    } catch(e) {}
-  });
-  sorted.sort((a, b) => a.timestamp - b.timestamp);
-
-  sorted.forEach(m => {
-    const text = (m.text || '').trim();
-    const isSticker = stickerRegex.test(text);
-
-    if (isSticker) {
-      perPerson[m.sender] = (perPerson[m.sender] || 0) + 1;
-
-      // Monthly tracking
-      const ts = m.timestamp || parseMessageDate(m.date, m.time);
-      const key = ts.getFullYear() + '-' + String(ts.getMonth() + 1).padStart(2, '0');
-      if (!monthly[key]) monthly[key] = {};
-      monthly[key][m.sender] = (monthly[key][m.sender] || 0) + 1;
-
-      // Streak tracking
-      if (m.sender === currentStreakSender) {
-        currentStreak++;
-      } else {
-        currentStreak = 1;
-        currentStreakSender = m.sender;
+    if (!m.sender || !m.text) return;
+    const clean = (m.text || '').replace(/\u200e/g, '').trim();
+    for (const key of Object.keys(types)) {
+      if (types[key].pattern.test(clean)) {
+        types[key].perPerson[m.sender] = (types[key].perPerson[m.sender] || 0) + 1;
+        types[key].total++;
+        break;
       }
-      if (currentStreak > longestStreak) {
-        longestStreak = currentStreak;
-        streakOwner = m.sender;
-      }
-    } else {
-      currentStreak = 0;
-      currentStreakSender = null;
     }
   });
 
-  const total = Object.values(perPerson).reduce((a, b) => a + b, 0);
-
-  return { perPerson, monthly, longestStreak, streakOwner, total };
+  return types;
 }
 
 // ── 4. MENSAJES ELIMINADOS ──
@@ -3368,7 +3344,7 @@ function renderPremiumFeatures(messages, stats) {
   const timelineData = analyzeRelationshipTimeline(messages);
   const silenceData = analyzeSilences(messages);
   const doubleTextData = analyzeDoubleTexting(messages);
-  const stickerData = analyzeStickers(messages);
+  const multimediaData = analyzeMultimedia(messages);
   const deletedData = analyzeDeletedMessages(messages);
 
   document.getElementById('premiumSection').style.display = 'block';
@@ -3376,7 +3352,7 @@ function renderPremiumFeatures(messages, stats) {
   renderTimeline(timelineData, stats);
   renderSilences(silenceData, stats);
   renderDoubleTexting(doubleTextData, stats);
-  renderStickers(stickerData, stats);
+  renderMultimedia(multimediaData, stats);
   renderDeletedMessages(deletedData, stats);
 
   // ══════ OBSESSIVE FEATURES ══════
@@ -3541,136 +3517,108 @@ function renderDoubleTexting(data, stats) {
   body.innerHTML = html;
 }
 
-// ── RENDER STICKERS ──
-let stickerChartInstance = null;
-function renderStickers(data, stats) {
-  const container = document.getElementById('featureStickers');
-  container.style.display = '';
+// ── RENDER MULTIMEDIA ──
+function renderMultimedia(data, stats) {
+  const body = document.getElementById('multimediaBody');
+  const pA = stats.personA;
+  const pB = stats.personB;
+  const shortA = pA.split(' ')[0];
+  const shortB = pB.split(' ')[0];
 
-  if (data.total === 0) {
-    const body = document.getElementById('stickerBody');
-    body.innerHTML = '<div class="pf-insight"><strong>🦗 Cero stickers.</strong> Esta conversación es 100% texto puro. Ni un sticker. Respeto.</div>';
-    return;
+  const typeKeys = ['audios','imagenes','videos','documentos','ubicaciones'];
+  let html = '';
+
+  // 5 rows — one per type
+  typeKeys.forEach(key => {
+    const t = data[key];
+    const cA = t.perPerson[pA] || 0;
+    const cB = t.perPerson[pB] || 0;
+    const tot = t.total;
+    const pctA = tot > 0 ? Math.round(cA / tot * 100) : 0;
+    const pctB = tot > 0 ? 100 - pctA : 0;
+    const king = cA >= cB ? shortA : shortB;
+
+    html += `<div class="mm-row">
+      <span class="mm-icon">${t.icon}</span>
+      <div class="mm-label">${t.label} <span>(${tot})</span></div>`;
+    if (tot > 0) {
+      html += `<div class="mm-bar-wrap">
+        <div class="mm-bar-a" style="width:${pctA}%;" title="${shortA}: ${cA}"></div>
+        <div class="mm-bar-b" style="width:${pctB}%;" title="${shortB}: ${cB}"></div>
+      </div>
+      <div class="mm-king">👑 <strong>${king}</strong></div>`;
+    } else {
+      html += `<div class="mm-empty">Sin ${t.label.toLowerCase()} en este chat</div>`;
+    }
+    html += `</div>`;
+  });
+
+  // Compute totals for insight
+  let totalMM = 0;
+  let mmA = 0, mmB = 0;
+  let maxType = null, maxTotal = 0;
+  let worstRatio = 1, worstKey = null;
+  typeKeys.forEach(key => {
+    const t = data[key];
+    const cA = t.perPerson[pA] || 0;
+    const cB = t.perPerson[pB] || 0;
+    totalMM += t.total;
+    mmA += cA;
+    mmB += cB;
+    if (t.total > maxTotal) { maxTotal = t.total; maxType = t; }
+    if (t.total > 0) {
+      const r = Math.min(cA, cB) / Math.max(cA, cB, 1);
+      if (r < worstRatio) { worstRatio = r; worstKey = key; }
+    }
+  });
+
+  const ratioA = stats.msgsA > 0 ? Math.round(mmA / stats.msgsA * 100) : 0;
+  const ratioB = stats.msgsB > 0 ? Math.round(mmB / stats.msgsB * 100) : 0;
+
+  // Insight
+  const audioA = data.audios.perPerson[pA] || 0;
+  const audioB = data.audios.perPerson[pB] || 0;
+  const locTotal = data.ubicaciones.total;
+  let insight = '';
+  if (ratioA > 40 && ratioB < 20) {
+    insight = `${shortA} habla más con archivos que con palabras 👀`;
+  } else if (ratioB > 40 && ratioA < 20) {
+    insight = `${shortB} habla más con archivos que con palabras 👀`;
+  } else if (audioA > audioB * 2 && audioA > 10) {
+    insight = `${shortA} prefiere los audios al texto — manda ${audioA} vs ${audioB} de ${shortB}`;
+  } else if (audioB > audioA * 2 && audioB > 10) {
+    insight = `${shortB} prefiere los audios al texto — manda ${audioB} vs ${audioA} de ${shortA}`;
+  } else if (locTotal > 10) {
+    insight = `Esta pareja comparte ubicaciones constantemente — ${locTotal} veces en total`;
+  } else if (maxType && maxTotal > 0) {
+    insight = `${maxType.label} es el multimedia favorito — ${maxTotal} en total`;
+  } else {
+    insight = 'Conversación 100% texto puro. Ni un audio, ni una foto. Respeto.';
   }
+  html += `<div class="pf-insight" style="margin-top:16px;"><strong>📱 Insight:</strong> ${insight}</div>`;
 
-  const body = document.getElementById('stickerBody');
-  const personA = stats.personA;
-  const personB = stats.personB;
-  const countA = data.perPerson[personA] || 0;
-  const countB = data.perPerson[personB] || 0;
-  const maxCount = Math.max(countA, countB, 1);
-  const king = countA >= countB ? personA : personB;
-  const kingCount = Math.max(countA, countB);
-
-  let html = `<div class="sticker-stats">
-    <div class="sticker-stat-card">
-      <div class="sticker-stat-value">${data.total.toLocaleString()}</div>
-      <div class="sticker-stat-label">stickers totales</div>
+  // Multimedia ratio per person
+  html += `<div class="mm-ratio-wrap">
+    <div class="mm-ratio-card">
+      <div class="mm-ratio-name">${shortA}</div>
+      <div class="mm-ratio-bar"><div class="mm-ratio-fill" style="width:${Math.min(ratioA, 100)}%;background:var(--pink);"></div></div>
+      <div class="mm-ratio-pct" style="color:var(--pink);">${ratioA}%</div>
+      <div class="mm-ratio-label">de sus mensajes son multimedia</div>
     </div>
-    <div class="sticker-stat-card">
-      <div class="sticker-stat-value">${data.longestStreak}</div>
-      <div class="sticker-stat-label">racha más larga</div>
-    </div>
-    <div class="sticker-stat-card">
-      <div class="sticker-stat-value" style="font-size:1.3rem;">👑 ${king.split(' ')[0]}</div>
-      <div class="sticker-stat-label">rey de stickers</div>
+    <div class="mm-ratio-card">
+      <div class="mm-ratio-name">${shortB}</div>
+      <div class="mm-ratio-bar"><div class="mm-ratio-fill" style="width:${Math.min(ratioB, 100)}%;background:var(--purple);"></div></div>
+      <div class="mm-ratio-pct" style="color:var(--purple);">${ratioB}%</div>
+      <div class="mm-ratio-label">de sus mensajes son multimedia</div>
     </div>
   </div>`;
 
-  html += `<div class="sticker-comparison">
-    <div class="sticker-person">
-      <div class="sticker-person-name">${personA.split(' ')[0]}</div>
-      <div class="sticker-person-count" style="color: var(--pink);">${countA}</div>
-      <div class="sticker-person-label">stickers enviados</div>
-      <div class="sticker-bar-track"><div class="sticker-bar-fill pink" style="width: ${(countA / maxCount) * 100}%"></div></div>
-    </div>
-    <div class="sticker-person">
-      <div class="sticker-person-name">${personB.split(' ')[0]}</div>
-      <div class="sticker-person-count" style="color: var(--purple);">${countB}</div>
-      <div class="sticker-person-label">stickers enviados</div>
-      <div class="sticker-bar-track"><div class="sticker-bar-fill purple" style="width: ${(countB / maxCount) * 100}%"></div></div>
-    </div>
-  </div>`;
-
-  if (data.longestStreak >= 3) {
-    html += `<div class="sticker-streak"><strong>🔥 Racha épica:</strong> <strong>${data.streakOwner.split(' ')[0]}</strong> envió <strong>${data.longestStreak} stickers seguidos</strong> sin que nadie dijera nada.</div>`;
+  if (Math.abs(ratioA - ratioB) > 15) {
+    const heavier = ratioA > ratioB ? shortA : shortB;
+    html += `<div style="text-align:center;color:var(--text-muted);font-size:0.8rem;margin-top:8px;">${heavier} habla más con archivos que con palabras</div>`;
   }
-
-  html += `<div class="sticker-chart-wrap"><canvas id="stickerChart"></canvas></div>`;
-
-  const pctA = data.total > 0 ? Math.round((countA / data.total) * 100) : 0;
-  const pctB = 100 - pctA;
-  html += `<div class="pf-insight"><strong>🏆 Veredicto:</strong> <strong>${king.split(' ')[0]}</strong> es el rey de los stickers con <strong>${kingCount}</strong> enviados (<strong>${Math.max(pctA, pctB)}%</strong> del total). ${data.total > 100 ? 'Esta conversación es un álbum de stickers.' : 'Uso moderado de stickers.'}</div>`;
 
   body.innerHTML = html;
-
-  // Render Chart.js stacked bar chart
-  const monthKeys = Object.keys(data.monthly).sort();
-  if (monthKeys.length > 1) {
-    const labels = monthKeys.map(k => {
-      const [y, m] = k.split('-');
-      const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-      return months[parseInt(m) - 1] + ' ' + y.slice(2);
-    });
-    const dataA = monthKeys.map(k => (data.monthly[k][personA] || 0));
-    const dataB = monthKeys.map(k => (data.monthly[k][personB] || 0));
-
-    const canvas = document.getElementById('stickerChart');
-    if (stickerChartInstance) { stickerChartInstance.destroy(); }
-    stickerChartInstance = new Chart(canvas, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: personA.split(' ')[0],
-            data: dataA,
-            backgroundColor: 'rgba(255,45,120,0.7)',
-            borderRadius: 4,
-          },
-          {
-            label: personB.split(' ')[0],
-            data: dataB,
-            backgroundColor: 'rgba(108,92,231,0.7)',
-            borderRadius: 4,
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            labels: { color: '#a0a0b8', font: { size: 11 } }
-          },
-          tooltip: {
-            backgroundColor: '#1a1a2e',
-            titleColor: '#FAFAFA',
-            bodyColor: '#a0a0b8',
-            borderColor: 'rgba(255,255,255,0.1)',
-            borderWidth: 1,
-            cornerRadius: 12,
-            padding: 12,
-            callbacks: {
-              label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y + ' stickers'
-            }
-          }
-        },
-        scales: {
-          x: {
-            stacked: true,
-            ticks: { color: '#a0a0b8', font: { size: 10 }, maxRotation: 45 },
-            grid: { color: 'rgba(255,255,255,0.04)' }
-          },
-          y: {
-            stacked: true,
-            ticks: { color: '#a0a0b8', font: { size: 10 } },
-            grid: { color: 'rgba(255,255,255,0.04)' }
-          }
-        }
-      }
-    });
-  }
 }
 
 function renderDeletedMessages(data, stats) {
