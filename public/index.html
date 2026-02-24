@@ -4497,28 +4497,35 @@ function analyzeSelectiveGhosting(sorted, stats) {
     const episodes = [];
     let worstCase = null;
 
-    for (let i = 0; i < sorted.length - 1; i++) {
-      if (sorted[i].sender === sender) {
-        for (let j = i + 1; j < sorted.length; j++) {
-          if (sorted[j].sender === responder) {
-            const responseTime = (sorted[j].timestamp - sorted[i].timestamp) / (60 * 1000);
-            if (responseTime > 0 && responseTime < 48 * 60) {
-              const cat = classifyMessage(sorted[i].text);
-              categories[cat].push(responseTime);
-              // Track ghosting episodes
-              const medianGeneral = median([...categories.casual, ...categories.emocional, ...categories.confesion, ...categories.relacional, ...categories.pregunta_directa]);
-              const ghostThreshold = medianGeneral < 60 ? 180 : 360;
-              if (responseTime > ghostThreshold) {
-                episodes.push({ date: sorted[i].timestamp, responseTime, category: cat, text: sorted[i].text });
-              }
-              // Track worst case for emotional/relational
-              if ((cat === 'emocional' || cat === 'relacional' || cat === 'confesion') && (!worstCase || responseTime > worstCase.responseTime)) {
-                worstCase = { text: sorted[i].text, date: sorted[i].timestamp, responseTime, category: cat, responseDate: sorted[j].timestamp };
-              }
-            }
-            break;
+    // O(n) single-pass: track last unanswered message from sender
+    let pendingMessage = null;
+    let totalResponseTime = 0;
+    let responseCount = 0;
+
+    for (let i = 0; i < sorted.length; i++) {
+      const msg = sorted[i];
+      if (msg.sender === sender) {
+        // New message from sender — overwrite any previous pending (only last matters)
+        pendingMessage = { timestamp: msg.timestamp, text: msg.text, category: classifyMessage(msg.text) };
+      } else if (msg.sender === responder && pendingMessage !== null) {
+        const responseTime = (msg.timestamp - pendingMessage.timestamp) / (60 * 1000);
+        if (responseTime > 0 && responseTime < 48 * 60) {
+          const cat = pendingMessage.category;
+          categories[cat].push(responseTime);
+          totalResponseTime += responseTime;
+          responseCount++;
+          // Ghost threshold: use running average instead of recalculating median every iteration
+          const runningAvg = totalResponseTime / responseCount;
+          const ghostThreshold = runningAvg < 60 ? 180 : 360;
+          if (responseTime > ghostThreshold) {
+            episodes.push({ date: pendingMessage.timestamp, responseTime, category: cat, text: pendingMessage.text });
+          }
+          // Track worst case for emotional/relational
+          if ((cat === 'emocional' || cat === 'relacional' || cat === 'confesion') && (!worstCase || responseTime > worstCase.responseTime)) {
+            worstCase = { text: pendingMessage.text, date: pendingMessage.timestamp, responseTime, category: cat, responseDate: msg.timestamp };
           }
         }
+        pendingMessage = null;
       }
     }
 
