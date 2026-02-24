@@ -522,7 +522,7 @@ nav a:hover { color: var(--text); }
   position: relative;
 }
 .price-card.featured::before {
-  content: '⚡ OFERTA LIMITADA';
+  content: '🔥 MÁS POPULAR';
   position: absolute;
   top: -14px;
   left: 50%; transform: translateX(-50%);
@@ -554,7 +554,154 @@ nav a:hover { color: var(--text); }
 .price-features {
   text-align: left;
   list-style: none;
-  margin-bottom: 28px;
+  margin-bottom: 0;
+}
+/* ── Preview mockups in pricing cards ── */
+.price-preview {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin-top: 16px;
+  margin-bottom: 16px;
+  padding-top: 12px;
+  max-height: 220px;
+  overflow: hidden;
+  position: relative;
+  -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
+}
+.price-preview-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  text-align: left;
+}
+.price-preview-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pp-mock {
+  background: var(--bg-dark);
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: left;
+}
+.pp-mock-title {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+/* Línea de Vida bars */
+.pp-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 40px;
+}
+.pp-bar {
+  flex: 1;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(to top, var(--pink), var(--purple));
+}
+.pp-bar-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.55rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+/* Silencios stats */
+.pp-stats-row {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+.pp-stat-mini {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+.pp-stat-mini b {
+  color: var(--pink);
+  font-weight: 700;
+}
+/* Double Texting / horizontal bars */
+.pp-hbar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.pp-hbar-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 60px;
+}
+.pp-hbar-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.pp-hbar-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+/* Forense inflexión */
+.pp-inflexion {
+  border-left: 3px solid var(--pink);
+  padding-left: 8px;
+  margin-bottom: 6px;
+}
+.pp-inflexion-title {
+  font-size: 0.65rem;
+  color: #fff;
+  font-weight: 600;
+}
+.pp-inflexion-sub {
+  font-size: 0.58rem;
+  color: var(--text-muted);
+}
+.pp-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.pp-tag {
+  font-size: 0.55rem;
+  background: rgba(108,92,231,0.2);
+  color: var(--purple);
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+/* Antes vs Ahora table */
+.pp-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 8px;
+  font-size: 0.6rem;
+}
+.pp-compare-head {
+  color: var(--text-muted);
+  font-weight: 600;
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.pp-compare-cell {
+  color: rgba(255,255,255,0.7);
+}
+.pp-compare-cell.bad {
+  color: var(--pink);
+  font-weight: 600;
+}
+/* Ghosting rows */
+.pp-ghost-row {
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.7);
+  padding: 2px 0;
+}
+.pp-ghost-row.warn {
+  color: var(--pink);
 }
 .price-features li {
   padding: 7px 0;
@@ -2228,6 +2375,45 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
           <li>🗑️ Mensajes eliminados</li>
           <li>📄 Reporte PDF completo descargable</li>
         </ul>
+        <div class="price-preview">
+          <div class="price-preview-label">Vista previa del análisis →</div>
+          <div class="price-preview-stack">
+            <!-- Mockup 1 — Línea de Vida -->
+            <div class="pp-mock">
+              <div class="pp-mock-title">📉 Línea de Vida</div>
+              <div class="pp-bars">
+                <div class="pp-bar" style="height:65%"></div>
+                <div class="pp-bar" style="height:90%"></div>
+                <div class="pp-bar" style="height:75%"></div>
+                <div class="pp-bar" style="height:40%"></div>
+                <div class="pp-bar" style="height:25%"></div>
+                <div class="pp-bar" style="height:15%"></div>
+              </div>
+              <div class="pp-bar-axis"><span>Ene</span><span>Mar</span><span>Jun</span></div>
+            </div>
+            <!-- Mockup 2 — Mapa de Silencios -->
+            <div class="pp-mock">
+              <div class="pp-mock-title">🔇 Mapa de Silencios</div>
+              <div class="pp-stats-row">
+                <span class="pp-stat-mini"><b>8</b> silencios</span>
+                <span class="pp-stat-mini"><b>12.3</b> días</span>
+                <span class="pp-stat-mini"><b>Tú</b> rompes más</span>
+              </div>
+            </div>
+            <!-- Mockup 3 — Double Texting -->
+            <div class="pp-mock">
+              <div class="pp-mock-title">😤 Double Texting</div>
+              <div class="pp-hbar-row">
+                <span class="pp-hbar-label">Tú — 73%</span>
+                <div class="pp-hbar-track"><div class="pp-hbar-fill" style="width:73%;background:var(--pink)"></div></div>
+              </div>
+              <div class="pp-hbar-row">
+                <span class="pp-hbar-label">Él/Ella — 27%</span>
+                <div class="pp-hbar-track"><div class="pp-hbar-fill" style="width:27%;background:var(--purple)"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
         <button class="price-btn price-btn-primary" onclick="openPayModal('detective')">Desbloquear análisis →</button>
         <p class="fomo-text">🔥 <span class="fomo-count"></span> personas analizaron su chat hoy</p>
       </div>
@@ -2244,6 +2430,43 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
           <li>🎯 Detector de cambios de lenguaje</li>
           <li>💬 Chatbot terapeuta IA ilimitado</li>
         </ul>
+        <div class="price-preview">
+          <div class="price-preview-label">Vista previa del análisis →</div>
+          <div class="price-preview-stack">
+            <!-- Mockup 1 — Reconstrucción Forense -->
+            <div class="pp-mock">
+              <div class="pp-mock-title">🕵️ Reconstrucción Forense</div>
+              <div class="pp-inflexion">
+                <div class="pp-inflexion-title">⚡ Mar 2024 — Punto de Inflexión</div>
+                <div class="pp-inflexion-sub">Mensajes cayeron de 1,840 a 423 (-77%)</div>
+              </div>
+              <div class="pp-tags">
+                <span class="pp-tag">trabajo</span>
+                <span class="pp-tag">distancia</span>
+                <span class="pp-tag">silencio</span>
+              </div>
+            </div>
+            <!-- Mockup 2 — Antes vs Ahora -->
+            <div class="pp-mock">
+              <div class="pp-mock-title">💔 Antes vs Ahora</div>
+              <div class="pp-compare">
+                <div class="pp-compare-head">Primeros 3 meses</div>
+                <div class="pp-compare-head">Últimos 3 meses</div>
+                <div class="pp-compare-cell">Msgs/día: 187</div>
+                <div class="pp-compare-cell bad">Msgs/día: 31</div>
+                <div class="pp-compare-cell">Respuesta: 4 min</div>
+                <div class="pp-compare-cell bad">Respuesta: 3.2h</div>
+              </div>
+            </div>
+            <!-- Mockup 3 — Ghosting Selectivo -->
+            <div class="pp-mock">
+              <div class="pp-mock-title">📱 Ghosting Selectivo</div>
+              <div class="pp-ghost-row">✅ Mensajes casuales: ~3 min</div>
+              <div class="pp-ghost-row warn">⚠️ Mensajes emocionales: ~4h — más lento</div>
+              <div class="pp-ghost-row warn">⚠️ Preguntas sobre la relación: ~6h</div>
+            </div>
+          </div>
+        </div>
         <button class="price-btn price-btn-secondary" onclick="openPayModal('obsesivo')">Desbloquear $199/mes →</button>
         <p class="fomo-text">🔥 <span class="fomo-count"></span> personas analizaron su chat hoy</p>
       </div>
