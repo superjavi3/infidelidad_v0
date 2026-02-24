@@ -2451,20 +2451,48 @@ function analyzeMessages(messages) {
     if (found) loveCount += found.length;
   });
 
-  // Night messages (rough check)
+  // Night messages (00:00–05:59)
   let nightCount = 0;
   messages.forEach(m => {
-    const timeMatch = m.text ? false : false; // We'd need the full timestamp for this
+    if (m.time) {
+      const hour = parseInt(m.time.split(':')[0]);
+      if (hour >= 0 && hour < 6) nightCount++;
+    }
   });
-  const nightPct = Math.floor(Math.random() * 15) + 5; // Approximate for demo
+  const nightPct = messages.length > 0 ? Math.round((nightCount / messages.length) * 100) : 0;
 
   // Days span
   const dates = messages.map(m => m.date).filter(Boolean);
   const uniqueDays = new Set(dates).size;
 
-  // Fun stats
+  // Reply time (median of turn-switches, excluding gaps > 24h)
   const ratio = (msgsA / msgsB).toFixed(1);
-  const avgReply = Math.floor(Math.random() * 40) + 5; // Would need timestamps for real calc
+  const sortedForReply = [];
+  messages.forEach(m => {
+    try {
+      const ts = parseMessageDate(m.date, m.time);
+      if (!isNaN(ts.getTime())) sortedForReply.push({ sender: m.sender, timestamp: ts });
+    } catch(e) {}
+  });
+  sortedForReply.sort((a, b) => a.timestamp - b.timestamp);
+  const replyTimes = [];
+  for (let i = 1; i < sortedForReply.length; i++) {
+    if (sortedForReply[i].sender !== sortedForReply[i - 1].sender) {
+      const diffMin = (sortedForReply[i].timestamp - sortedForReply[i - 1].timestamp) / 60000;
+      if (diffMin > 0 && diffMin < 1440) replyTimes.push(diffMin);
+    }
+  }
+  let avgReply = 0;
+  if (replyTimes.length > 0) {
+    replyTimes.sort((a, b) => a - b);
+    const mid = Math.floor(replyTimes.length / 2);
+    avgReply = replyTimes.length % 2 === 0
+      ? Math.round((replyTimes[mid - 1] + replyTimes[mid]) / 2)
+      : Math.round(replyTimes[mid]);
+  }
+  const avgReplyFormatted = avgReply >= 1440 ? Math.floor(avgReply / 1440) + ' días'
+    : avgReply >= 60 ? Math.floor(avgReply / 60) + 'h ' + (avgReply % 60) + 'min'
+    : avgReply + ' min';
 
   // Score (fun algorithm)
   const balanceScore = Math.max(0, 30 - Math.abs(msgsA - msgsB) / total * 60);
@@ -2485,7 +2513,7 @@ function analyzeMessages(messages) {
 
   return {
     personA, personB, msgsA, msgsB, total,
-    loveCount, nightPct, uniqueDays, avgReply,
+    loveCount, nightPct, uniqueDays, avgReply, avgReplyFormatted,
     score, verdict, leader, leaderPct, ratio
   };
 }
@@ -2554,7 +2582,7 @@ function showResults(s) {
 
   document.getElementById('statMsgsA').textContent = s.msgsA.toLocaleString();
   document.getElementById('statMsgsB').textContent = s.msgsB.toLocaleString();
-  document.getElementById('statAvgReply').textContent = s.avgReply + ' min';
+  document.getElementById('statAvgReply').textContent = s.avgReplyFormatted;
   document.getElementById('statNightMsgs').textContent = s.nightPct + '%';
   document.getElementById('statEmoji').textContent = s.loveCount.toLocaleString();
   document.getElementById('statDays').textContent = s.uniqueDays;
@@ -2752,7 +2780,7 @@ async function generatePDF() {
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:500px;margin:0 auto 28px auto;">' +
         '<div style="' + cardCSS + 'text-align:center;"><span style="font-size:1.6rem;display:block;margin-bottom:4px;">\u{1F4AC}</span><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.total.toLocaleString() + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Mensajes totales</div></div>' +
         '<div style="' + cardCSS + 'text-align:center;"><span style="font-size:1.6rem;display:block;margin-bottom:4px;">\u{1F4C5}</span><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.uniqueDays + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Dias de conversacion</div></div>' +
-        '<div style="' + cardCSS + 'text-align:center;"><span style="font-size:1.6rem;display:block;margin-bottom:4px;">\u{26A1}</span><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.avgReply + ' min</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Respuesta promedio</div></div>' +
+        '<div style="' + cardCSS + 'text-align:center;"><span style="font-size:1.6rem;display:block;margin-bottom:4px;">\u{26A1}</span><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.avgReplyFormatted + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Respuesta promedio</div></div>' +
         '<div style="' + cardCSS + 'text-align:center;"><span style="font-size:1.6rem;display:block;margin-bottom:4px;">\u{2764}\u{FE0F}</span><div style="font-size:22px;font-weight:700;color:#FFF;">' + lastStats.loveCount.toLocaleString() + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Emojis de amor</div></div>' +
       '</div>' +
       '<div style="margin:0 auto 20px auto;max-width:400px;display:flex;justify-content:center;">' +
@@ -2941,7 +2969,7 @@ async function shareToStories() {
     document.getElementById('storiesDays').textContent = lastStats.uniqueDays;
     document.getElementById('storiesLeader').textContent = lastStats.leader;
     document.getElementById('storiesLeaderPct').textContent = 'lidera ' + lastStats.leaderPct + '%';
-    document.getElementById('storiesReply').textContent = lastStats.avgReply;
+    document.getElementById('storiesReply').textContent = lastStats.avgReplyFormatted;
     document.getElementById('storiesLove').textContent = lastStats.loveCount;
     document.getElementById('storiesNight').textContent = lastStats.nightPct + '%';
   }
