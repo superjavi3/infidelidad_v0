@@ -1,17 +1,4 @@
 {
-  "redirects": [
-    {
-      "source": "/index.html",
-      "destination": "/",
-      "permanent": true
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/index.html"
-    }
-  ],
   "functions": {
     "app/api/stripe-webhook/route.ts": {
       "maxDuration": 10
