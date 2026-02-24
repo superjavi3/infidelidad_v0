@@ -3288,16 +3288,16 @@ function analyzeDoubleTexting(messages) {
 // ── 3b. MULTIMEDIA ANALYSIS ──
 function analyzeMultimedia(messages) {
   const types = {
-    audios:     { pattern: /^<?(?:audio\s+omit(?:ido|ted)|ptt\s+omitido)>?$/i, perPerson: {}, total: 0, icon: '🎙️', label: 'Audios' },
+    audios:     { pattern: /(?:audio\s+omit(?:ido|ted)|ptt\s+omitido)/i, perPerson: {}, total: 0, icon: '🎙️', label: 'Audios' },
     imagenes:   { pattern: /(?:imagen\s+omitida|image\s+omitted)/i, perPerson: {}, total: 0, icon: '📸', label: 'Imágenes' },
-    videos:     { pattern: /^<?video\s+omit(?:ido|ted)>?$/i, perPerson: {}, total: 0, icon: '🎬', label: 'Videos' },
+    videos:     { pattern: /(?:video\s+omit(?:ido|ted))/i, perPerson: {}, total: 0, icon: '🎬', label: 'Videos' },
     documentos: { pattern: /(?:documento\s+omitido|document\s+omitted)/i, perPerson: {}, total: 0, icon: '📄', label: 'Documentos' },
     ubicaciones:{ pattern: /(?:ubicaci[oó]n|location)\s*:\s*https?:\/\//i, perPerson: {}, total: 0, icon: '📍', label: 'Ubicaciones' }
   };
 
   messages.forEach(m => {
     if (!m.sender || !m.text) return;
-    const clean = (m.text || '').replace(/\u200e/g, '').trim();
+    const clean = (m.text || '').replace(/[\u200e\u200f\u200b\u200c\u200d\ufeff]/g, '').replace(/[<>]/g, '').trim();
     for (const key of Object.keys(types)) {
       if (types[key].pattern.test(clean)) {
         types[key].perPerson[m.sender] = (types[key].perPerson[m.sender] || 0) + 1;
