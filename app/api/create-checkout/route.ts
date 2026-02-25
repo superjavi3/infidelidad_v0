@@ -8,7 +8,7 @@ function getStripe() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, plan } = await req.json();
+    const { email, plan, chatFingerprint } = await req.json();
 
     if (!email || !plan) {
       return NextResponse.json(
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
         mode,
         success_url: `${origin}/#results?payment=success&session_id={CHECKOUT_SESSION_ID}&plan=${plan}`,
         cancel_url: `${origin}/#pricing`,
-        metadata: { plan, country, currency: cur },
+        metadata: { plan, country, currency: cur, chatFingerprint: chatFingerprint || '' },
       });
     }
 

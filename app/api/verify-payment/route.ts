@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
         paid: true,
         email: session.metadata?.email || session.customer_email || '',
         plan: session.metadata?.plan || 'detective',
+        chatFingerprint: session.metadata?.chatFingerprint || null,
       });
     }
 

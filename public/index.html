@@ -2580,6 +2580,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
           </div>
         </div>
         <div class="price-desc">Análisis único — la verdad completa</div>
+        <span style="font-size:0.78rem;color:var(--text-muted);display:block;text-align:center;margin-bottom:8px;">Válido para 1 conversación</span>
         <ul class="price-features">
           <li>Todo lo del plan Curioso</li>
           <li>📉 Línea de vida: evolución mes a mes</li>
@@ -2610,6 +2611,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
         </div>
         <div class="price-desc">Para quien necesita saber TODO</div>
         <ul class="price-features">
+          <li>✅ ♾️ Análisis ilimitados — analiza todos los chats que quieras</li>
           <li>Todo lo del plan Detective</li>
           <li>💬 Chatbot terapeuta IA ilimitado</li>
           <li>🕵️ Reconstrucción forense de momentos clave</li>
@@ -3079,6 +3081,20 @@ function analyzeMessages(messages) {
   };
 }
 
+// ── CHAT FINGERPRINT ──
+function generateChatFingerprint(messages) {
+  const first20 = messages.slice(0, 20).map(m => m.timestamp + m.sender).join('|');
+  const last20 = messages.slice(-20).map(m => m.timestamp + m.sender).join('|');
+  const total = messages.length;
+  const raw = `${total}:${first20}:${last20}`;
+  let hash = 5381;
+  for (let i = 0; i < raw.length; i++) {
+    hash = ((hash << 5) + hash) + raw.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36);
+}
+
 // ── PROCESS FLOW ──
 async function processChat(text) {
   window.isDemoMode = false;
@@ -3118,6 +3134,13 @@ async function processChat(text) {
   }
   lastStats = stats;
   lastMessages = messages;
+
+  // Generate fingerprint for this chat
+  window.currentChatFingerprint = generateChatFingerprint(messages);
+  console.log('[Fingerprint] Chat fingerprint:', window.currentChatFingerprint);
+
+  // Re-evaluate blur overlays now that fingerprint changed
+  applyBlurOverlays();
 
   // Populate results
   showResults(stats);
@@ -6032,7 +6055,66 @@ window.adminUnlock = function() {
 };
 
 function hasPlanAccess(requiredPlan) {
-  return (PLAN_HIERARCHY[window.userPlan] || 0) >= (PLAN_HIERARCHY[requiredPlan] || 0);
+  const hierarchyOk = (PLAN_HIERARCHY[window.userPlan] || 0) >= (PLAN_HIERARCHY[requiredPlan] || 0);
+  if (!hierarchyOk) return false;
+
+  // Obsesivo: unlimited access, no fingerprint check
+  if (window.userPlan === 'obsesivo') return true;
+
+  // Detective: verify chat fingerprint
+  if (window.userPlan === 'detective') {
+    try {
+      const stored = JSON.parse(localStorage.getItem('losabia_plan') || 'null');
+      // Retrocompat: no fingerprint stored (old sessions) = allow access
+      if (!stored || !stored.chatFingerprint) return true;
+      // No chat loaded yet = allow (nothing to show anyway)
+      if (!window.currentChatFingerprint) return true;
+      // Fingerprint mismatch = block
+      if (stored.chatFingerprint !== window.currentChatFingerprint) {
+        return false;
+      }
+    } catch(e) {}
+    return true;
+  }
+
+  return hierarchyOk;
+}
+
+function isFingerprintMismatch() {
+  if (window.userPlan !== 'detective') return false;
+  try {
+    const stored = JSON.parse(localStorage.getItem('losabia_plan') || 'null');
+    if (!stored || !stored.chatFingerprint) return false;
+    if (!window.currentChatFingerprint) return false;
+    return stored.chatFingerprint !== window.currentChatFingerprint;
+  } catch(e) { return false; }
+}
+
+function showDifferentChatWarning() {
+  if (document.getElementById('fingerprintWarningModal')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'fingerprintWarningModal';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.innerHTML = `
+    <div style="background:var(--bg-card,#1A1A2E);border-radius:16px;padding:32px;max-width:420px;width:100%;text-align:center;border:1px solid rgba(255,255,255,0.1);">
+      <div style="font-size:2.5rem;margin-bottom:12px;">🔒</div>
+      <h3 style="color:#fff;font-size:1.2rem;margin:0 0 12px;">Este es un chat diferente</h3>
+      <p style="color:var(--text-muted,#9CA3AF);font-size:0.9rem;line-height:1.5;margin:0 0 20px;">
+        Tu análisis Detective fue comprado para otro chat.<br>
+        El Plan Detective es válido para <strong style="color:#fff;">1 conversación específica</strong>.<br>
+        Para analizar este chat, necesitas un nuevo análisis.
+      </p>
+      <button onclick="this.closest('#fingerprintWarningModal').remove()"
+        style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:0.9rem;margin-right:8px;">
+        Entendido
+      </button>
+      <button onclick="this.closest('#fingerprintWarningModal').remove();document.getElementById('precios')?.scrollIntoView({behavior:'smooth'})"
+        style="background:linear-gradient(135deg,var(--pink,#FF2D78),var(--purple,#6C5CE7));border:none;color:#fff;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:600;">
+        Ver Plan Obsesivo ♾️
+      </button>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
 }
 
 function getStoredPlan() {
@@ -6101,9 +6183,12 @@ function applyBlurOverlays() {
     // For premium-feature-card: add CTA below the blurred body
     const overlay = document.createElement('div');
     overlay.className = 'body-unlock-overlay';
-    const btnLabel = card.id === 'featureChatbot'
-      ? '🔥 Desbloquear Chatbot — ' + (window.localPricing ? window.localPricing.obsesivoFormatted + '/mes' : '$199 MXN/mes') + ' →'
-      : 'Desbloquear →';
+    const fpMismatch = requiredPlan === 'detective' && isFingerprintMismatch();
+    const btnLabel = fpMismatch
+      ? '🔒 Chat diferente — Ver opciones'
+      : card.id === 'featureChatbot'
+        ? '🔥 Desbloquear Chatbot — ' + (window.localPricing ? window.localPricing.obsesivoFormatted + '/mes' : '$199 MXN/mes') + ' →'
+        : 'Desbloquear →';
     overlay.innerHTML = `<button class="unlock-overlay-btn ${btnClass}" onclick="openPayModal('${requiredPlan}')">${btnLabel}</button>`;
     card.appendChild(overlay);
   });
@@ -6153,6 +6238,12 @@ function openPayModal(plan) {
   // If already has access, just unlock
   if (hasPlanAccess(plan)) {
     unlockPlan(plan);
+    return;
+  }
+
+  // Detective paid but different chat — show warning instead of pay modal
+  if (isFingerprintMismatch()) {
+    showDifferentChatWarning();
     return;
   }
 
@@ -6210,7 +6301,7 @@ async function goToStripeCheckout() {
     const res = await fetch('/api/create-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, plan: selectedPlan })
+      body: JSON.stringify({ email, plan: selectedPlan, chatFingerprint: window.currentChatFingerprint || '' })
     });
 
     const data = await res.json();
@@ -6301,6 +6392,7 @@ async function checkPaymentSuccess() {
           plan: plan,
           sessionId: sessionId,
           email: data.email,
+          chatFingerprint: data.chatFingerprint || null,
           paidAt: new Date().toISOString()
         }));
 
