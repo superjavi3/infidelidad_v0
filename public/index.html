@@ -2913,7 +2913,7 @@ function analyzeMessages(messages) {
   for (let i = 1; i < sortedForReply.length; i++) {
     if (sortedForReply[i].sender !== sortedForReply[i - 1].sender) {
       const diffMin = (sortedForReply[i].timestamp - sortedForReply[i - 1].timestamp) / 60000;
-      if (diffMin > 0 && diffMin < 1440) replyTimes.push(diffMin);
+      if (diffMin > 0 && diffMin < 2880) replyTimes.push(diffMin);
     }
   }
   let avgReply = 0;
