@@ -3350,7 +3350,7 @@ async function generatePDF() {
       '<text x="' + scoreCx + '" y="' + (scoreCy + 20) + '" text-anchor="middle" font-size="16" fill="#9B96B0">/100</text></svg>';
 
     // Build pages HTML array
-    const pageCSS = 'width:794px;min-height:1123px;padding:32px 36px 48px;position:relative;overflow:visible;background:#0A0812;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#EDE9F8;';
+    const pageCSS = 'width:794px;padding:32px 36px 48px;position:relative;overflow:visible;background:#0A0812;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#EDE9F8;';
     const cardCSS = 'background:#120F1E;border:1px solid #1E1B2E;border-radius:12px;padding:24px;margin-bottom:18px;overflow:visible;';
     const separatorHTML = '<div style="height:1px;background:linear-gradient(90deg,rgba(255,45,120,0.3),rgba(108,92,231,0.3));margin:20px 0;"></div>';
     const footerHTML = '<div style="text-align:center;font-size:10px;color:#4A4660;margin-top:auto;padding-top:24px;">YaLoSabía.com · Análisis de relaciones con IA</div>';
@@ -3360,7 +3360,7 @@ async function generatePDF() {
     // PAGE 1: COVER
     const crownA = pctA >= pctB ? '\u{1F451} ' : '';
     const crownB = pctB > pctA ? '\u{1F451} ' : '';
-    pages.push('<div style="' + pageCSS + 'display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(165deg,#0A0812 0%,#1A0F2E 40%,#0A0812 100%);">' +
+    pages.push('<div style="' + pageCSS + 'min-height:1000px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(165deg,#0A0812 0%,#1A0F2E 40%,#0A0812 100%);">' +
       '<div style="font-size:28px;font-weight:800;color:#FF2D78;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;">YALOSABIA.COM</div>' +
       '<div style="font-size:15px;color:#FF2D78;font-weight:600;margin-bottom:28px;">Plan Detective</div>' +
       '<div style="margin-bottom:20px;display:flex;justify-content:center;">' + scoreRingSVG + '</div>' +
@@ -3458,6 +3458,7 @@ async function generatePDF() {
         hBarSVG(delItems) + '</svg>'
       : '';
 
+    // PAGE 3A: SILENCES + DOUBLE TEXTING
     pages.push('<div style="' + pageCSS + '">' +
       '<div style="font-size:24px;font-weight:700;color:#FFF;margin-bottom:4px;">\u{1F507} Mapa de Silencios</div>' +
       '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:8px 0 16px;"></div>' +
@@ -3466,24 +3467,35 @@ async function generatePDF() {
         '<div style="background:#1E1B2E;border-radius:8px;padding:12px 14px;flex:1;text-align:center;"><span style="font-size:1.4rem;display:block;margin-bottom:2px;">\u{23F3}</span><div style="font-size:22px;font-weight:700;color:#F5C842;">' + longestFormatted + '</div><div style="font-size:10px;color:#9B96B0;margin-top:2px;">Silencio más largo</div></div>' +
         '<div style="background:#1E1B2E;border-radius:8px;padding:12px 14px;flex:1;text-align:center;"><span style="font-size:1.4rem;display:block;margin-bottom:2px;">\u{1F550}</span><div style="font-size:22px;font-weight:700;color:#F5C842;">' + longestHours + 'h</div><div style="font-size:10px;color:#9B96B0;margin-top:2px;">En horas</div></div>' +
       '</div>' +
-      '<div style="' + cardCSS + 'padding:16px;margin-bottom:10px;"><h3 style="font-size:14px;font-weight:600;color:#FF2D78;margin-bottom:8px;">¿Quién rompe el silencio?</h3><div style="display:flex;justify-content:center;">' + silenceBarsHTML + '</div></div>' +
+      '<div style="' + cardCSS + 'padding:16px;margin-bottom:24px;"><h3 style="font-size:14px;font-weight:600;color:#FF2D78;margin-bottom:8px;">¿Quién rompe el silencio?</h3><div style="display:flex;justify-content:center;">' + silenceBarsHTML + '</div></div>' +
       separatorHTML +
-      '<div style="margin-top:20px;">' +
-        '<div style="font-size:22px;font-weight:700;color:#FFF;margin-bottom:4px;">Mensajes y Patrones</div>' +
+      '<div style="margin-top:24px;">' +
+        '<div style="font-size:22px;font-weight:700;color:#FFF;margin-bottom:4px;">\u{1F624} Double Texting</div>' +
         '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:8px 0 16px;"></div>' +
-        '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F624} Double Texting (5+ sin respuesta)</h3><div style="' + cardCSS + 'padding:16px;">' + dtBarsHTML + '</div></div>' +
-        '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F4F1} Reyes del Multimedia</h3><div style="' + cardCSS + 'padding:16px;">' +
-          (mmTotalAll > 0 ?
-            '<div style="background:#1E1B2E;border-radius:8px;padding:8px 14px;text-align:center;margin-bottom:14px;"><div style="font-size:18px;font-weight:700;color:#F5C842;">' + mmTotalAll.toLocaleString() + '</div><div style="font-size:10px;color:#9B96B0;">Total multimedia</div></div>' +
-            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">' + mmGrid + '</div>' +
-            mmCompareHTML
-          : '<p style="color:#9B96B0;font-size:13px;">Conversación 100% texto puro.</p>') +
-        '</div></div>' +
-        '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F5D1}\u{FE0F} Mensajes Eliminados</h3><div style="' + cardCSS + 'padding:16px;">' +
+        '<div style="' + cardCSS + 'padding:16px;">' + dtBarsHTML + '</div>' +
+      '</div>' +
+      footerHTML + '</div>');
+
+    // PAGE 3B: MULTIMEDIA + DELETED MESSAGES
+    pages.push('<div style="' + pageCSS + '">' +
+      '<div style="font-size:24px;font-weight:700;color:#FFF;margin-bottom:4px;">\u{1F4F1} Reyes del Multimedia</div>' +
+      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:8px 0 16px;"></div>' +
+      '<div style="' + cardCSS + 'padding:16px;margin-bottom:24px;">' +
+        (mmTotalAll > 0 ?
+          '<div style="background:#1E1B2E;border-radius:8px;padding:8px 14px;text-align:center;margin-bottom:14px;"><div style="font-size:18px;font-weight:700;color:#F5C842;">' + mmTotalAll.toLocaleString() + '</div><div style="font-size:10px;color:#9B96B0;">Total multimedia</div></div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">' + mmGrid + '</div>' +
+          mmCompareHTML
+        : '<p style="color:#9B96B0;font-size:13px;">Conversación 100% texto puro.</p>') +
+      '</div>' +
+      separatorHTML +
+      '<div style="margin-top:24px;">' +
+        '<div style="font-size:22px;font-weight:700;color:#FFF;margin-bottom:4px;">\u{1F5D1}\u{FE0F} Mensajes Eliminados</div>' +
+        '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:8px 0 16px;"></div>' +
+        '<div style="' + cardCSS + 'padding:16px;">' +
           (deletedData.total > 0 ?
             '<div style="display:flex;gap:12px;margin-bottom:8px;"><div style="background:#1E1B2E;border-radius:8px;padding:10px 14px;flex:1;text-align:center;"><div style="font-size:22px;font-weight:700;color:#F5C842;">' + deletedData.total + '</div><div style="font-size:10px;color:#9B96B0;">Total eliminados</div></div></div>' + delBarsHTML
             : '<p style="color:#9B96B0;font-size:13px;">No se detectaron mensajes eliminados.</p>') +
-        '</div></div>' +
+        '</div>' +
       '</div>' +
       footerHTML + '</div>');
 
@@ -3501,24 +3513,29 @@ async function generatePDF() {
       baContent + footerHTML + '</div>');
 
     // PAGE 5: AI ANALYSIS
-    const aiCardCSS = cardCSS + 'height:auto;overflow:visible;';
-    const aiAtencionText = clean(aiAtencion).trim() || 'No se identificaron áreas de atención críticas en esta conversación.';
-    const aiFortalezasText = clean(aiFortalezas).trim() || 'No se pudieron identificar fortalezas con los datos disponibles.';
+    const aiCardCSS = 'background:#120F1E;border:1px solid #1E1B2E;border-radius:12px;padding:24px;margin-bottom:18px;height:auto;overflow:visible;';
+    // Clean trailing number artifacts from Gemini output (e.g. "...text 4." → "...text")
+    const cleanAI = (s) => clean(s).trim().replace(/\s*\d+\.?\s*$/, '').trim();
+    const aiEstadoText = cleanAI(aiEstado) || 'No se pudo determinar el estado de la relación.';
+    const aiFortalezasText = cleanAI(aiFortalezas) || 'No se pudieron identificar fortalezas con los datos disponibles.';
+    const aiAtencionText = cleanAI(aiAtencion) || 'No se identificaron áreas de atención críticas en esta conversación.';
+    const aiRecomendacionText = cleanAI(aiRecomendacion) || 'No hay recomendación disponible.';
     pages.push('<div style="' + pageCSS + '">' +
       '<div style="font-size:26px;font-weight:700;color:#FFF;margin-bottom:4px;">\u{1F9E0} Análisis de IA</div>' +
       '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
       '<div style="font-size:13px;color:#9B96B0;margin-bottom:28px;">Resumen generado por inteligencia artificial</div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">' +
-        '<div style="' + aiCardCSS + '"><h4 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F48A} Estado de la relación</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiEstado).trim().slice(0,500) + '</p></div>' +
-        '<div style="' + aiCardCSS + '"><h4 style="font-size:14px;font-weight:600;color:#4ADE80;margin-bottom:8px;">\u{1F4AA} Fortalezas</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + aiFortalezasText.slice(0,500) + '</p></div>' +
-        '<div style="' + aiCardCSS + '"><h4 style="font-size:14px;font-weight:600;color:#FF2D78;margin-bottom:8px;">\u{26A0}\u{FE0F} Áreas de atención</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + aiAtencionText.slice(0,500) + '</p></div>' +
-        '<div style="' + aiCardCSS + 'grid-column:1/-1;"><h4 style="font-size:14px;font-weight:600;color:#8B5CF6;margin-bottom:8px;">\u{1F3AF} Recomendación</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiRecomendacion).trim().slice(0,500) + '</p></div>' +
+        '<div style="' + aiCardCSS + '"><h4 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F48A} Estado de la relación</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + aiEstadoText + '</p></div>' +
+        '<div style="' + aiCardCSS + '"><h4 style="font-size:14px;font-weight:600;color:#4ADE80;margin-bottom:8px;">\u{1F4AA} Fortalezas</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + aiFortalezasText + '</p></div>' +
+        '<div style="' + aiCardCSS + '"><h4 style="font-size:14px;font-weight:600;color:#FF2D78;margin-bottom:8px;">\u{26A0}\u{FE0F} Áreas de atención</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + aiAtencionText + '</p></div>' +
+        '<div style="' + aiCardCSS + 'grid-column:1/-1;"><h4 style="font-size:14px;font-weight:600;color:#8B5CF6;margin-bottom:8px;">\u{1F3AF} Recomendación</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + aiRecomendacionText + '</p></div>' +
       '</div>' +
       footerHTML + '</div>');
 
-    // Render each page with html2canvas and add to jsPDF
+    // Render each page with html2canvas and add to jsPDF (dynamic page sizes)
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = 210; // mm
+    let doc = null;
 
     for (let i = 0; i < pages.length; i++) {
       const container = document.createElement('div');
@@ -3530,8 +3547,8 @@ async function generatePDF() {
       document.body.appendChild(container);
 
       const pageEl = container.firstElementChild;
-      // Measure actual rendered height, use A4 proportion as minimum
-      const actualH = Math.max(1123, pageEl.scrollHeight || pageEl.offsetHeight || 1123);
+      const actualW = pageEl.scrollWidth || 794;
+      const actualH = pageEl.scrollHeight || pageEl.offsetHeight || 600;
       const canvas = await htmlToCanvasWithTimeout(pageEl, {
         scale: 2,
         useCORS: true,
@@ -3541,17 +3558,22 @@ async function generatePDF() {
         imageTimeout: 0,
         removeContainer: true,
         backgroundColor: '#0A0812',
-        width: 794,
+        width: actualW,
         height: actualH
       });
 
       document.body.removeChild(container);
 
+      const ratio = pdfWidth / canvas.width;
+      const pdfHeight = canvas.height * ratio;
       const imgData = canvas.toDataURL('image/jpeg', 0.92);
-      if (i > 0) doc.addPage();
-      // Scale to fit A4 width (210mm), height proportional to actual content
-      const imgH = (actualH / 794) * 210;
-      doc.addImage(imgData, 'JPEG', 0, 0, 210, Math.min(imgH, 297));
+
+      if (i === 0) {
+        doc = new jsPDF({ unit: 'mm', format: [pdfWidth, pdfHeight] });
+      } else {
+        doc.addPage([pdfWidth, pdfHeight]);
+      }
+      doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
     }
 
     const safeA = (pA).replace(/[^a-zA-Z0-9]/g, '');
@@ -3921,7 +3943,7 @@ function analyzeRelationshipTimeline(messages) {
   const fullMonthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const labels = sortedMonths.map(k => {
     const [y, m] = k.split('-');
-    return monthNames[parseInt(m)-1] + " '" + y.slice(-2);
+    return monthNames[parseInt(m)-1] + " '" + String(y).padStart(4, '0').slice(-2);
   });
   const labelsLong = sortedMonths.map(k => {
     const [y, m] = k.split('-');
