@@ -5689,6 +5689,7 @@ function openChatbot() {
   sug.style.display = chatbotHistory.length > 0 ? 'none' : 'block';
 
   document.getElementById('chatbotModal').style.display = 'flex';
+  updateTherapistUI();
   document.getElementById('chatInput').focus();
 }
 
@@ -5702,11 +5703,51 @@ function askSuggestion(btn) {
   sendChatMessage();
 }
 
+function getTherapistUsage() {
+  var today = new Date().toISOString().split('T')[0];
+  try {
+    var stored = JSON.parse(localStorage.getItem('therapist_usage'));
+    if (stored && stored.date === today) return stored;
+  } catch(e) {}
+  var fresh = { count: 0, date: today };
+  localStorage.setItem('therapist_usage', JSON.stringify(fresh));
+  return fresh;
+}
+
+function updateTherapistUI() {
+  var usage = getTherapistUsage();
+  var bar = document.getElementById('chatUsageBar');
+  var input = document.getElementById('chatInput');
+  var remaining = 10 - usage.count;
+  if (bar) {
+    bar.style.display = 'block';
+    if (remaining <= 0) {
+      bar.innerHTML = '<span style="color:#FF2D78;">10/10 consultas hoy</span>';
+      if (input) { input.disabled = true; input.placeholder = 'Límite diario alcanzado'; }
+    } else {
+      bar.textContent = usage.count + '/10 consultas hoy';
+      if (input) { input.disabled = false; input.placeholder = 'Escribe tu pregunta aquí...'; }
+    }
+  }
+}
+
 async function sendChatMessage() {
+  var usage = getTherapistUsage();
+  if (usage.count >= 10) {
+    addChatMsg('assistant', '🔮 Has usado tus 10 consultas de hoy. Vuelve mañana para seguir analizando tu relación.');
+    updateTherapistUI();
+    return;
+  }
+
   const input = document.getElementById('chatInput');
   const question = input.value.trim();
   if (!question) return;
   input.value = '';
+
+  // Incrementar contador
+  usage.count++;
+  localStorage.setItem('therapist_usage', JSON.stringify(usage));
+  updateTherapistUI();
 
   addChatMsg('user', question);
   document.getElementById('typingIndicator').style.display = 'flex';
@@ -5853,6 +5894,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot
       <div class="msg-avatar">💭</div>
       <div class="typing-dots"><span></span><span></span><span></span></div>
     </div>
+    <div id="chatUsageBar" style="text-align:center;padding:4px 0;font-size:0.75rem;color:#a0a0b8;display:none;"></div>
     <div class="chat-input-wrap">
       <input type="text" id="chatInput" placeholder="Escribe tu pregunta aquí..." onkeypress="if(event.key==='Enter')sendChatMessage()">
       <button class="chat-send-btn" onclick="sendChatMessage()">➤</button>
