@@ -2255,7 +2255,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   <!-- ══════ SECCIÓN 2: PLAN DETECTIVE ══════ -->
   <div id="premiumSection" class="plan-section plan-detective-wrap" style="display:none;">
     <div class="plan-header">
-      <div class="plan-badge detective">🔍 DETECTIVE — $69 MXN</div>
+      <div class="plan-badge detective">🔍 DETECTIVE — <span class="precio-detective">$69 MXN</span></div>
       <div class="plan-title detective">Análisis Profundo</div>
       <div class="plan-subtitle">Patrones ocultos en tu conversación</div>
     </div>
@@ -2329,7 +2329,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   <!-- ══════ SECCIÓN 3: PLAN OBSESIVO ══════ -->
   <div id="obsessiveSection" class="plan-section plan-obsessive-wrap" style="display:none;">
     <div class="plan-header">
-      <div class="plan-badge obsessive">🔥 OBSESIVO — $199/mes</div>
+      <div class="plan-badge obsessive">🔥 OBSESIVO — <span class="precio-obsesivo">$199/mes</span></div>
       <div class="plan-title obsessive">Análisis Obsesivo Premium</div>
       <div class="plan-subtitle">4 análisis devastadores para quien necesita saber TODO</div>
     </div>
@@ -2571,7 +2571,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <div class="price-card featured">
         <div class="price-card-body">
         <div class="price-tier">DETECTIVE</div>
-        <div class="price-amount">$69<small> MXN</small></div>
+        <div class="price-amount precio-detective">$69<small> MXN</small></div>
         <div class="price-desc">Análisis único — la verdad completa</div>
         <ul class="price-features">
           <li>Todo lo del plan Curioso</li>
@@ -2593,7 +2593,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <div class="price-card">
         <div class="price-card-body">
         <div class="price-tier">OBSESIVO</div>
-        <div class="price-amount">$199<small> MXN/mes</small></div>
+        <div class="price-amount precio-obsesivo">$199<small> MXN/mes</small></div>
         <div class="price-desc">Para quien necesita saber TODO</div>
         <ul class="price-features">
           <li>Todo lo del plan Detective</li>
@@ -2606,7 +2606,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
         </div>
         <div class="price-card-footer">
           <button class="preview-btn" onclick="openPreview('obsesivo')">👁️ Ver vista previa del análisis</button>
-          <button class="price-btn price-btn-secondary" onclick="openPayModal('obsesivo')">Desbloquear $199/mes →</button>
+          <button class="price-btn price-btn-secondary" onclick="openPayModal('obsesivo')">Desbloquear <span class="precio-obsesivo">$199/mes</span> →</button>
           <p class="fomo-text">🔥 <span class="fomo-count"></span> personas analizaron su chat hoy</p>
         </div>
       </div>
@@ -5908,7 +5908,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot
     <button onclick="closePayModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#9CA3AF;font-size:1.5rem;cursor:pointer;">&times;</button>
     <div id="payModalIcon" style="font-size:2rem;margin-bottom:8px;">🔍</div>
     <h3 id="payModalTitle" style="color:white;margin-bottom:8px;font-size:1.3rem;">Desbloquear Plan Detective</h3>
-    <p id="payModalPrice" style="color:#9CA3AF;margin-bottom:24px;">$69 MXN — pago único</p>
+    <p id="payModalPrice" class="precio-detective" style="color:#9CA3AF;margin-bottom:24px;">$69 MXN — pago único</p>
     <input id="payEmail" type="email" name="email" autocomplete="email" inputmode="email" placeholder="tu@email.com" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0A0A14;color:white;margin-bottom:16px;box-sizing:border-box;font-size:1rem;">
     <label style="display:flex;align-items:flex-start;gap:10px;text-align:left;margin-bottom:16px;cursor:pointer;">
       <input type="checkbox" id="acceptTerms" onchange="document.getElementById('goToCheckout').disabled=!this.checked;document.getElementById('goToCheckout').style.opacity=this.checked?'1':'0.5'" style="margin-top:3px;accent-color:#FF2D78;min-width:18px;min-height:18px;cursor:pointer;">
@@ -5930,6 +5930,42 @@ window.userPlan = 'curioso'; // Default: free tier
 const PLAN_HIERARCHY = { curioso: 0, detective: 1, obsesivo: 2 };
 let selectedPlan = 'detective';
 let featuresRendered = false;
+
+// ─── DYNAMIC PRICING ───────────────────────────────────────────
+window.localPricing = null;
+
+async function loadLocalPricing() {
+  try {
+    const res = await fetch('/api/pricing');
+    if (!res.ok) return;
+    const data = await res.json();
+    window.localPricing = data;
+
+    // Actualizar todos los precios visibles en la página
+    document.querySelectorAll('.precio-detective').forEach(el => {
+      el.textContent = data.detectiveFormatted;
+    });
+    document.querySelectorAll('.precio-obsesivo').forEach(el => {
+      el.textContent = data.obsesivoFormatted;
+    });
+
+    // Actualizar también textos que contienen el precio inline
+    document.querySelectorAll('[data-precio="detective"]').forEach(el => {
+      el.textContent = data.detectiveFormatted;
+    });
+    document.querySelectorAll('[data-precio="obsesivo"]').forEach(el => {
+      el.textContent = data.obsesivoFormatted;
+    });
+
+  } catch (err) {
+    // Silencioso — si falla, los precios quedan como estaban (MXN por defecto)
+    console.log('Pricing localizado no disponible, usando MXN por defecto');
+  }
+}
+
+// Llamar al cargar
+loadLocalPricing();
+// ────────────────────────────────────────────────────────────────
 
 // ── Secret admin bypass ──
 // URL: add ?admin=losabia2026 to unlock everything
@@ -6032,7 +6068,7 @@ function applyBlurOverlays() {
     const overlay = document.createElement('div');
     overlay.className = 'body-unlock-overlay';
     const btnLabel = card.id === 'featureChatbot'
-      ? '🔥 Desbloquear Chatbot — $199 MXN/mes →'
+      ? '🔥 Desbloquear Chatbot — ' + (window.localPricing ? window.localPricing.obsesivoFormatted + '/mes' : '$199 MXN/mes') + ' →'
       : 'Desbloquear →';
     overlay.innerHTML = `<button class="unlock-overlay-btn ${btnClass}" onclick="openPayModal('${requiredPlan}')">${btnLabel}</button>`;
     card.appendChild(overlay);
@@ -6050,9 +6086,10 @@ function addSectionCTA(sectionId, plan) {
   const existing = section.querySelector('.section-cta-btn');
   if (existing) existing.remove();
 
+  const lp = window.localPricing;
   const planLabels = {
-    detective: '🔍 Desbloquear Plan Detective — $69 MXN →',
-    obsesivo: '🔥 Suscribirme al Plan Obsesivo — $199 MXN/mes →'
+    detective: '🔍 Desbloquear Plan Detective — ' + (lp ? lp.detectiveFormatted : '$69 MXN') + ' →',
+    obsesivo: '🔥 Suscribirme al Plan Obsesivo — ' + (lp ? lp.obsesivoFormatted + '/mes' : '$199 MXN/mes') + ' →'
   };
   const btnClass = plan === 'obsesivo' ? 'obsesivo-cta' : 'detective-cta';
 
@@ -6086,9 +6123,10 @@ function openPayModal(plan) {
   }
 
   selectedPlan = plan || 'detective';
+  const lp = window.localPricing;
   const config = {
-    detective: { icon: '🔍', title: 'Desbloquear Plan Detective', price: '$69 MXN — pago único' },
-    obsesivo: { icon: '🔥', title: 'Desbloquear Plan Obsesivo', price: '$199 MXN/mes — suscripción' },
+    detective: { icon: '🔍', title: 'Desbloquear Plan Detective', price: (lp ? lp.detectiveFormatted : '$69 MXN') + ' — pago único' },
+    obsesivo: { icon: '🔥', title: 'Desbloquear Plan Obsesivo', price: (lp ? lp.obsesivoFormatted : '$199 MXN') + '/mes — suscripción' },
   };
   const c = config[selectedPlan] || config.detective;
 
@@ -6316,7 +6354,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="exit-score" id="exitScore">72</div>
     <p style="color: white; font-size: 0.95rem; margin-bottom: 4px;">Tu relación tiene un score de <strong><span id="exitScoreText">72</span>/100</strong></p>
     <p style="color: var(--text-muted); font-size: 0.85rem;">Hay cosas en tu chat que aún no has visto.</p>
-    <button class="exit-cta" onclick="closeExitIntent(); document.getElementById('precios').scrollIntoView({behavior:'smooth'});">Ver el análisis completo — $69 MXN →</button>
+    <button class="exit-cta" onclick="closeExitIntent(); document.getElementById('precios').scrollIntoView({behavior:'smooth'});">Ver el análisis completo — <span class="precio-detective">$69 MXN</span> →</button>
     <button class="exit-dismiss" onclick="closeExitIntent()">No, prefiero quedarme con dudas</button>
   </div>
 </div>
