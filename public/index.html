@@ -3290,22 +3290,22 @@ async function generatePDF() {
     const aiAtencion = (aiClean.match(/(?:[AÁ]rea[^:]*:|Atenci[oó]n[^:]*:)\s*([\s\S]*?)(?=Recomend|$)/i) || [])[1] || '';
     const aiRecomendacion = (aiClean.match(/(?:Recomendaci[oó]n[^:]*:)\s*([\s\S]*?)$/i) || [])[1] || '';
 
-    // Timeline SVG (bar chart with intensity gradient, trend line, shaded area)
+    // Timeline SVG (bar chart with intensity gradient, no trend line)
     const tlLabels = timelineData.labels || [];
     const tlData = timelineData.data || [];
     const tlMax = Math.max(1, ...tlData);
-    const tlBarW = Math.max(4, Math.floor(660 / Math.max(1, tlLabels.length)) - 2);
-    const tlValueStep = Math.max(1, Math.floor(tlLabels.length / 12));
+    const tlN = Math.max(1, tlLabels.length);
+    const tlBarW = Math.max(4, Math.floor(660 / tlN) - 2);
+    const tlValueStep = Math.max(1, Math.floor(tlN / 12));
     const tlChartBase = 200;
+    // Calculate actual SVG width needed: left pad + all bars + right pad
+    const tlSvgW = 50 + tlN * (tlBarW + 2) + 20;
 
-    // Build trend line points and shaded polygon
-    const tlPoints = [];
     const tlBars = tlData.map((v, i) => {
       const h = Math.max(2, (v / tlMax) * 160);
       const x = 50 + i * (tlBarW + 2);
       const cx = x + tlBarW / 2;
       const cy = tlChartBase - h;
-      tlPoints.push({ x: cx, y: cy });
       const isPeak = v === tlMax;
       const intensity = (0.4 + (v / tlMax) * 0.55).toFixed(2);
       const bar = '<rect x="' + x + '" y="' + cy + '" width="' + tlBarW + '" height="' + h + '" rx="2" fill="' + (isPeak ? '#FF2D78' : '#8B5CF6') + '" opacity="' + (isPeak ? '1' : intensity) + '"/>';
@@ -3314,16 +3314,8 @@ async function generatePDF() {
       return bar + label;
     }).join('');
 
-    // Trend line polyline + shaded area polygon
-    const tlLinePoints = tlPoints.map(p => p.x + ',' + p.y).join(' ');
-    const tlAreaPoints = (tlPoints.length > 0) ?
-      tlPoints[0].x + ',' + tlChartBase + ' ' + tlLinePoints + ' ' + tlPoints[tlPoints.length - 1].x + ',' + tlChartBase : '';
-    const tlTrendDefs = '<defs><linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF" stop-opacity="0.05"/><stop offset="100%" stop-color="#FFF" stop-opacity="0"/></linearGradient></defs>';
-    const tlAreaSvg = tlAreaPoints ? '<polygon points="' + tlAreaPoints + '" fill="url(#trendFill)"/>' : '';
-    const tlLineSvg = tlLinePoints ? '<polyline points="' + tlLinePoints + '" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linejoin="round"/>' : '';
-
-    const tlLabelStep = Math.max(1, Math.floor(tlLabels.length / 8));
-    const tlRotate = tlLabels.length > 14;
+    const tlLabelStep = Math.max(1, Math.floor(tlN / 8));
+    const tlRotate = tlN > 14;
     const tlSvgH = tlRotate ? 270 : 240;
     const tlLabelY = 218;
     const tlLabelsSvg = tlLabels.map((l, i) => {
@@ -3334,7 +3326,7 @@ async function generatePDF() {
       }
       return '<text x="' + x + '" y="' + tlLabelY + '" text-anchor="middle" font-size="10" fill="#6B6780">' + l + '</text>';
     }).join('');
-    const timelineSVG = '<svg width="720" height="' + tlSvgH + '" xmlns="http://www.w3.org/2000/svg">' + tlTrendDefs + tlBars + tlAreaSvg + tlLineSvg + tlLabelsSvg + '</svg>';
+    const timelineSVG = '<svg width="' + tlSvgW + '" height="' + tlSvgH + '" xmlns="http://www.w3.org/2000/svg" style="display:block;max-width:100%;">' + tlBars + tlLabelsSvg + '</svg>';
 
     // Helper: horizontal bar SVG
     function hBarSVG(items, maxV) {
