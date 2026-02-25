@@ -5861,7 +5861,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot
     <div id="payModalIcon" style="font-size:2rem;margin-bottom:8px;">🔍</div>
     <h3 id="payModalTitle" style="color:white;margin-bottom:8px;font-size:1.3rem;">Desbloquear Plan Detective</h3>
     <p id="payModalPrice" style="color:#9CA3AF;margin-bottom:24px;">$69 MXN — pago único</p>
-    <input id="payEmail" type="email" placeholder="Tu email para el recibo" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0A0A14;color:white;margin-bottom:16px;box-sizing:border-box;font-size:1rem;">
+    <input id="payEmail" type="email" name="email" autocomplete="email" inputmode="email" placeholder="tu@email.com" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0A0A14;color:white;margin-bottom:16px;box-sizing:border-box;font-size:1rem;">
     <button id="goToCheckout" onclick="goToStripeCheckout()" style="width:100%;padding:14px;background:linear-gradient(135deg,#FF2D78,#6C5CE7);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:1rem;">
       Ir al pago →
     </button>
@@ -6185,8 +6185,9 @@ async function checkPaymentSuccess() {
 
         updatePlanUI();
 
-        // Clean URL
-        const cleanUrl = window.location.origin + window.location.pathname + '#results';
+        // Clean URL — only go to #results if user already has analysis data
+        const hash = (lastStats && lastMessages) ? '#results' : '';
+        const cleanUrl = window.location.origin + window.location.pathname + hash;
         window.history.replaceState(null, '', cleanUrl);
         return;
       }
