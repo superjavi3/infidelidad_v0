@@ -2571,7 +2571,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <div class="price-card featured">
         <div class="price-card-body">
         <div class="price-tier">DETECTIVE</div>
-        <div class="price-amount precio-detective">$69<small> MXN</small></div>
+        <div class="price-amount"><span class="precio-symbol">$</span><span class="precio-detective-numero">69,99</span><span class="precio-moneda-label" style="font-size:1.2rem;font-weight:600;opacity:0.7;margin-left:6px;">MXN</span></div>
         <div class="price-desc">Análisis único — la verdad completa</div>
         <ul class="price-features">
           <li>Todo lo del plan Curioso</li>
@@ -2593,7 +2593,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <div class="price-card">
         <div class="price-card-body">
         <div class="price-tier">OBSESIVO</div>
-        <div class="price-amount precio-obsesivo">$199<small> MXN/mes</small></div>
+        <div class="price-amount"><span class="precio-symbol">$</span><span class="precio-obsesivo-numero">199,99</span><span class="precio-moneda-label" style="font-size:1.2rem;font-weight:600;opacity:0.7;margin-left:6px;">MXN/mes</span></div>
         <div class="price-desc">Para quien necesita saber TODO</div>
         <ul class="price-features">
           <li>Todo lo del plan Detective</li>
@@ -5941,7 +5941,7 @@ async function loadLocalPricing() {
     const data = await res.json();
     window.localPricing = data;
 
-    // Actualizar todos los precios visibles en la página
+    // Precios formateados completos (para botones, FAQ, modal)
     document.querySelectorAll('.precio-detective').forEach(el => {
       el.textContent = data.detectiveFormatted;
     });
@@ -5949,17 +5949,40 @@ async function loadLocalPricing() {
       el.textContent = data.obsesivoFormatted;
     });
 
-    // Actualizar también textos que contienen el precio inline
-    document.querySelectorAll('[data-precio="detective"]').forEach(el => {
-      el.textContent = data.detectiveFormatted;
+    // Para los precios grandes de las cards de pricing
+    // El número grande sin label de moneda
+    const detValue = data.isZeroDecimal ? data.detective : (data.detective / 100);
+    const obsValue = data.isZeroDecimal ? data.obsesivo : (data.obsesivo / 100);
+
+    const detDisplay = detValue % 1 === 0
+      ? detValue.toLocaleString('es-ES')
+      : detValue.toFixed(2).replace('.', ',');
+    const obsDisplay = obsValue % 1 === 0
+      ? obsValue.toLocaleString('es-ES')
+      : obsValue.toFixed(2).replace('.', ',');
+
+    document.querySelectorAll('.precio-detective-numero').forEach(el => {
+      el.textContent = detDisplay;
     });
-    document.querySelectorAll('[data-precio="obsesivo"]').forEach(el => {
-      el.textContent = data.obsesivoFormatted;
+    document.querySelectorAll('.precio-obsesivo-numero').forEach(el => {
+      el.textContent = obsDisplay;
+    });
+
+    // El label de moneda (MXN, EUR, USD...)
+    document.querySelectorAll('.precio-moneda-label').forEach(el => {
+      // Preserve "/mes" suffix if present
+      const current = el.textContent || '';
+      const hasMes = current.includes('/mes');
+      el.textContent = data.label + (hasMes ? '/mes' : '');
+    });
+
+    // El símbolo ($, €...)
+    document.querySelectorAll('.precio-symbol').forEach(el => {
+      el.textContent = data.symbol;
     });
 
   } catch (err) {
-    // Silencioso — si falla, los precios quedan como estaban (MXN por defecto)
-    console.log('Pricing localizado no disponible, usando MXN por defecto');
+    console.log('Pricing localizado no disponible');
   }
 }
 

@@ -41,7 +41,7 @@ const PRICING: Record<string, CountryPricing> = {
   VE: { currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, isZeroDecimal: false },
 
   // México
-  MX: { currency: 'mxn', symbol: '$', label: 'MXN', detective: 6900, obsesivo: 19900, isZeroDecimal: false },
+  MX: { currency: 'mxn', symbol: '$', label: 'MXN', detective: 6999, obsesivo: 19999, isZeroDecimal: false },
 
   // Colombia (zero-decimal en Stripe)
   CO: { currency: 'cop', symbol: '$', label: 'COP', detective: 1590000, obsesivo: 3990000, isZeroDecimal: true },
@@ -86,16 +86,31 @@ const DEFAULT_PRICING: CountryPricing = {
 
 function formatPrice(amount: number, currency: string, isZeroDecimal: boolean): string {
   const value = isZeroDecimal ? amount : amount / 100
-  try {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: currency.toUpperCase(),
-      minimumFractionDigits: isZeroDecimal ? 0 : 2,
-      maximumFractionDigits: isZeroDecimal ? 0 : 2,
-    }).format(value)
-  } catch {
-    return `${value} ${currency.toUpperCase()}`
+
+  // Formato limpio para mostrar en UI (sin código de moneda feo)
+  const symbolMap: Record<string, string> = {
+    eur: '€', usd: '$', gbp: '£', mxn: '$',
+    cop: '$', ars: '$', clp: '$', pen: 'S/',
+    bob: 'Bs', pyg: '₲', uyu: '$', dop: 'RD$',
+    crc: '₡', gtq: 'Q', hnl: 'L', nio: 'C$',
   }
+  const symbol = symbolMap[currency.toLowerCase()] || currency.toUpperCase()
+
+  // Para monedas zero-decimal o sin centavos relevantes, mostrar sin decimales
+  const showDecimals = !isZeroDecimal && (value % 1 !== 0)
+
+  const formattedNumber = showDecimals
+    ? value.toFixed(2).replace('.', ',')
+    : Math.round(value).toLocaleString('es-ES')
+
+  // Símbolo delante para la mayoría, detrás para EUR
+  if (currency === 'eur') {
+    return `${formattedNumber} €`
+  }
+  if (['pen', 'bob', 'crc', 'gtq', 'hnl', 'nio', 'dop', 'uyu'].includes(currency)) {
+    return `${symbol} ${formattedNumber}`
+  }
+  return `${symbol}${formattedNumber}`
 }
 
 export function getPricingForCountry(country: string): CountryPricing {
