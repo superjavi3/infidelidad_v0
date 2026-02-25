@@ -3654,8 +3654,10 @@ async function shareToStories() {
   if (!insightText) {
     insightText = 'Cada mensaje cuenta una historia. ¿Ya conoces la tuya?';
   }
-  if (insightText.length > 120) {
-    insightText = insightText.substring(0, 117) + '...';
+  if (insightText.length > 80) {
+    var truncated = insightText.substring(0, 80);
+    var lastSpace = truncated.lastIndexOf(' ');
+    insightText = truncated.substring(0, lastSpace > 0 ? lastSpace : 80) + '...';
   }
   insightEl.textContent = insightText;
   insightWrap.style.display = 'block';
