@@ -2476,12 +2476,6 @@ src="https://www.facebook.com/tr?id=1502092881335834&ev=PageView&noscript=1"
         </div>
       </div>
 
-      <!-- AI Insight -->
-      <div id="storiesInsightWrap" style="z-index: 1; width: 85%; margin-top: 40px; background: rgba(255,255,255,0.15); border-radius: 16px; padding: 16px 20px; text-align: center; display: none;">
-        <div style="font-size: 28px; margin-bottom: 6px;">✨</div>
-        <div id="storiesInsight" style="font-size: 22px; color: white; font-weight: 500; line-height: 1.4;"></div>
-      </div>
-
       <!-- CTA bottom -->
       <div style="position: absolute; bottom: 120px; text-align: center; z-index: 1;">
         <div style="font-size: 30px; opacity: 0.6; letter-spacing: 1px;">Analiza tu relación en</div>
@@ -3642,25 +3636,6 @@ async function shareToStories() {
     document.getElementById('storiesLove').textContent = lastStats.loveCount;
     document.getElementById('storiesNight').textContent = lastStats.nightPct + '%';
   }
-
-  // Populate AI insight
-  var insightWrap = document.getElementById('storiesInsightWrap');
-  var insightEl = document.getElementById('storiesInsight');
-  var funFactEl = document.getElementById('funFact');
-  var insightText = '';
-  if (funFactEl) {
-    insightText = funFactEl.textContent.replace(/^[🤖📊]\s*(Insight con IA:|Dato curioso:)\s*/i, '').trim();
-  }
-  if (!insightText) {
-    insightText = 'Cada mensaje cuenta una historia. ¿Ya conoces la tuya?';
-  }
-  if (insightText.length > 80) {
-    var truncated = insightText.substring(0, 80);
-    var lastSpace = truncated.lastIndexOf(' ');
-    insightText = truncated.substring(0, lastSpace > 0 ? lastSpace : 80) + '...';
-  }
-  insightEl.textContent = insightText;
-  insightWrap.style.display = 'block';
 
   const card = document.getElementById('storiesCard');
 
