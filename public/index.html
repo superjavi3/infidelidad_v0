@@ -1448,6 +1448,25 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   color: var(--purple);
   margin: 2px 3px;
 }
+.forensic-quote {
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.65);
+  font-style: italic;
+  line-height: 1.4;
+}
+.forensic-quote-expand {
+  background: none;
+  border: none;
+  color: var(--pink);
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+}
 
 /* Before vs Now comparison table */
 .bvn-table {
@@ -1506,6 +1525,37 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 }
 .bvn-change-neutral {
   color: var(--text-muted);
+}
+.bvn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.bvn-person {
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.bvn-person-header {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bvn-person-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+@media (max-width: 600px) {
+  .bvn-grid { grid-template-columns: 1fr; }
 }
 
 /* Ghosting pattern display */
@@ -2035,6 +2085,23 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   .mm-counts { width: 100%; padding-left: 40px; margin-top: -4px; font-size: 0.68rem; }
 }
 </style>
+<!-- Meta Pixel -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1502092881335834');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1502092881335834&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel -->
 </head>
 <body>
 
@@ -3185,8 +3252,8 @@ async function generatePDF() {
     const mmTotalAll = mmTypes.reduce((s, k) => s + multimediaData[k].total, 0);
     const delItems = Object.entries(deletedData.deleted || {});
 
-    // Before/After rows
-    const baMetrics = bnData && bnData.metrics ? bnData.metrics : [];
+    // Before/After rows — combine both persons
+    const baMetrics = bnData ? [...(bnData.personA ? bnData.personA.metrics : []), ...(bnData.personB ? bnData.personB.metrics : [])] : [];
     const baRows = baMetrics.map(m => {
       const arrow = m.changePct > 0 ? '▲' : m.changePct < 0 ? '▼' : '—';
       const color = m.changePct > 20 ? '#4ADE80' : m.changePct < -20 ? '#FF2D78' : '#9B96B0';
@@ -4370,6 +4437,13 @@ function isStopword(word, extraNames) {
   return false;
 }
 
+const MEDIA_BLACKLIST = new Set([
+  'omitido','omitida','omitidos','omitidas','adjunto','multimedia',
+  'sticker','gif','audio','llamada','perdida','eliminado','eliminaste',
+  'mensaje','imagen','video','archivo','documento','contacto',
+  'ubicacion','nota','enlace'
+]);
+
 function extractKeywords(msgs, topN, participantNames) {
   if (msgs.length < 50) return [];
   const names = (participantNames || []).flatMap(n => n.toLowerCase().split(/\s+/));
@@ -4380,7 +4454,7 @@ function extractKeywords(msgs, topN, participantNames) {
     const words = (m.text || '').toLowerCase().match(/[a-záéíóúüñ]{4,}/g) || [];
     words.forEach(w => {
       const n = _normKw(w);
-      if (!isStopword(n, names) && !seen.has(n)) {
+      if (!isStopword(n, names) && !seen.has(n) && !MEDIA_BLACKLIST.has(n)) {
         seen.add(n);
         msgCount[n] = (msgCount[n] || 0) + 1;
       }
@@ -4456,7 +4530,8 @@ function analyzeForensicReconstruction(sorted, stats) {
       type: 'first_love',
       date: firstLove.timestamp,
       label: 'Primera vez que alguien dijo "te quiero"',
-      detail: `Lo dijo ${firstLove.sender.split(' ')[0]} — llevaban ${daysTalking} días hablando`
+      detail: `Lo dijo ${firstLove.sender.split(' ')[0]} — llevaban ${daysTalking} días hablando`,
+      quote: firstLove.text
     });
   }
 
@@ -4477,7 +4552,8 @@ function analyzeForensicReconstruction(sorted, stats) {
       label: isOld ? `Último "te quiero" — hace ${daysAgo} días` : 'Última vez que alguien dijo "te quiero"',
       detail: `Lo dijo ${lastLove.sender.split(' ')[0]}${isOld ? ' — y desde entonces, silencio' : ''}`,
       daysAgo: daysAgo,
-      isOld: isOld
+      isOld: isOld,
+      quote: lastLove.text
     });
   }
 
@@ -4538,6 +4614,26 @@ function analyzeForensicReconstruction(sorted, stats) {
     });
   }
 
+  // First message of the entire history
+  const firstMsg = sorted[0];
+  milestones.push({
+    type: 'first_message',
+    date: firstMsg.timestamp,
+    label: 'Primer mensaje de la historia',
+    detail: `Lo escribió ${firstMsg.sender.split(' ')[0]}`,
+    quote: firstMsg.text
+  });
+
+  // Last message of the entire history
+  const lastMsg = sorted[sorted.length - 1];
+  milestones.push({
+    type: 'last_message',
+    date: lastMsg.timestamp,
+    label: 'Último mensaje registrado',
+    detail: `Lo escribió ${lastMsg.sender.split(' ')[0]}`,
+    quote: lastMsg.text
+  });
+
   return {
     inflectionPoints: inflectionPoints.slice(0, 4),
     milestones,
@@ -4595,109 +4691,83 @@ function getForensicNarrative(data) {
 function analyzeBeforeVsNow(sorted, stats) {
   if (sorted.length < 50) return null;
 
-  // Determine first 3 months and last 3 months
   const firstDate = sorted[0].timestamp;
   const lastDate = sorted[sorted.length - 1].timestamp;
   const totalDaysSpan = (lastDate - firstDate) / (24 * 60 * 60 * 1000);
-  if (totalDaysSpan < 60) return null; // Need at least 2 months
+  if (totalDaysSpan < 60) return null;
 
-  const cutoffMonths = Math.min(3, Math.floor(totalDaysSpan / 60)); // Adaptive
+  const cutoffMonths = Math.min(3, Math.floor(totalDaysSpan / 60));
   const beforeEnd = new Date(firstDate.getTime() + cutoffMonths * 30 * 24 * 60 * 60 * 1000);
   const afterStart = new Date(lastDate.getTime() - cutoffMonths * 30 * 24 * 60 * 60 * 1000);
 
   const beforeMsgs = sorted.filter(m => m.timestamp <= beforeEnd);
   const afterMsgs = sorted.filter(m => m.timestamp >= afterStart);
 
-  const personB = stats.personB;
   const personA = stats.personA;
+  const personB = stats.personB;
 
-  function countPattern(msgs, pattern) {
-    return msgs.filter(m => pattern.test(m.text)).length;
+  const loveEmojis = /[❤️💕💖💗💘💝💓💞😍🥰😘💋💑🫶🫂💌]/g;
+  const nicknamePattern = /\b(?:amor|mi amor|bebe|bb|bebé|cariño|corazón|vida|mi vida|cielo|hermosa|hermoso|princesa|príncipe|gordo|gorda|flaco|flaca|nena|nene|papi|mami|tesoro|bonita|bonito|chiquita|chiquito|muñeca|reina|rey)\b/i;
+
+  function countLoveEmojis(msgs) {
+    let count = 0;
+    msgs.forEach(m => { const f = m.text.match(loveEmojis); if (f) count += f.length; });
+    return count;
   }
 
   function avgLength(msgs) {
     if (msgs.length === 0) return 0;
-    return Math.round(msgs.reduce((sum, m) => sum + m.text.length, 0) / msgs.length);
+    return Math.round(msgs.reduce((s, m) => s + m.text.length, 0) / msgs.length);
+  }
+
+  function countNicknames(msgs) {
+    return msgs.filter(m => nicknamePattern.test(m.text)).length;
   }
 
   function countInitiator(msgs, person) {
     let initiations = 0;
-    let lastSender = null;
     let lastTime = null;
     msgs.forEach(m => {
       const gap = lastTime ? (m.timestamp - lastTime) : Infinity;
-      if (gap > 4 * 60 * 60 * 1000 && m.sender === person) { // 4h+ gap = new conversation
-        initiations++;
-      }
-      lastSender = m.sender;
+      if (gap > 4 * 60 * 60 * 1000 && m.sender === person) initiations++;
       lastTime = m.timestamp;
     });
     return initiations;
   }
 
-  const loveEmojis = /[❤️💕💖💗💘💝💓💞😍🥰😘💋💑🫶🫂💌]/g;
-
-  function countLoveEmojis(msgs) {
-    let count = 0;
-    msgs.forEach(m => {
-      const found = m.text.match(loveEmojis);
-      if (found) count += found.length;
-    });
-    return count;
+  function countNightMsgs(msgs) {
+    return msgs.filter(m => {
+      const h = m.timestamp.getHours();
+      return h >= 0 && h < 6;
+    }).length;
   }
 
-  const goodMorningPattern = /\bbuen(?:os|as)\s+(?:días?|d[ií]a|noches?|tardes?)\b/i;
-  const nicknamePattern = /\b(?:amor|mi amor|bebe|bb|bebé|cariño|corazón|vida|mi vida|cielo|hermosa|hermoso|princesa|príncipe|gordo|gorda|flaco|flaca|nena|nene|papi|mami|tesoro|bonita|bonito|chiquita|chiquito|muñeca|reina|rey)\b/i;
+  function calcChange(before, after) {
+    if (before === 0 && after === 0) return 0;
+    if (before === 0) return 100;
+    return Math.round(((after - before) / before) * 100);
+  }
 
-  const metrics = [
-    {
-      label: '"Buenos días/noches"',
-      before: countPattern(beforeMsgs, goodMorningPattern),
-      after: countPattern(afterMsgs, goodMorningPattern)
-    },
-    {
-      label: 'Emojis de amor ❤️',
-      before: countLoveEmojis(beforeMsgs),
-      after: countLoveEmojis(afterMsgs)
-    },
-    {
-      label: 'Apodos cariñosos',
-      before: countPattern(beforeMsgs, nicknamePattern),
-      after: countPattern(afterMsgs, nicknamePattern)
-    },
-    {
-      label: 'Largo promedio de mensaje',
-      before: avgLength(beforeMsgs),
-      after: avgLength(afterMsgs),
-      suffix: ' chars'
-    },
-    {
-      label: `${personB.split(' ')[0]} inicia conversación`,
-      before: countInitiator(beforeMsgs, personB),
-      after: countInitiator(afterMsgs, personB),
-      suffix: ' veces'
-    },
-    {
-      label: 'Mensajes totales',
-      before: beforeMsgs.length,
-      after: afterMsgs.length
-    }
-  ];
-
-  // Calculate changes
-  metrics.forEach(m => {
-    if (m.before === 0 && m.after === 0) {
-      m.changePct = 0;
-    } else if (m.before === 0) {
-      m.changePct = 100;
-    } else {
-      m.changePct = Math.round(((m.after - m.before) / m.before) * 100);
-    }
-  });
+  // Per-person analysis
+  function analyzePersonBvn(person) {
+    const bMsgs = beforeMsgs.filter(m => m.sender === person);
+    const aMsgs = afterMsgs.filter(m => m.sender === person);
+    const metrics = [
+      { label: 'Mensajes enviados', before: bMsgs.length, after: aMsgs.length, positive: 'up' },
+      { label: 'Largo promedio', before: avgLength(bMsgs), after: avgLength(aMsgs), suffix: ' chars', positive: 'up' },
+      { label: 'Emojis de amor ❤️', before: countLoveEmojis(bMsgs), after: countLoveEmojis(aMsgs), positive: 'up' },
+      { label: 'Apodos cariñosos', before: countNicknames(bMsgs), after: countNicknames(aMsgs), positive: 'up' },
+      { label: 'Inicia conversación', before: countInitiator(beforeMsgs, person), after: countInitiator(afterMsgs, person), suffix: ' veces', positive: 'up' },
+      { label: 'Mensajes nocturnos', before: countNightMsgs(bMsgs), after: countNightMsgs(aMsgs), positive: 'neutral' }
+    ];
+    metrics.forEach(m => { m.changePct = calcChange(m.before, m.after); });
+    return metrics;
+  }
 
   const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   return {
-    metrics,
+    personA: { name: personA, metrics: analyzePersonBvn(personA) },
+    personB: { name: personB, metrics: analyzePersonBvn(personB) },
     beforeLabel: `${monthNames[firstDate.getMonth()]} ${firstDate.getFullYear()} — ${monthNames[beforeEnd.getMonth()]} ${beforeEnd.getFullYear()}`,
     afterLabel: `${monthNames[afterStart.getMonth()]} ${afterStart.getFullYear()} — ${monthNames[lastDate.getMonth()]} ${lastDate.getFullYear()}`,
     cutoffMonths
@@ -5035,13 +5105,21 @@ function renderForensicReconstruction(data, stats) {
     html += '<div style="font-family: var(--font-display); font-size: 0.9rem; margin-bottom: 12px; color: var(--yellow);">📌 Momentos Clave</div>';
     data.milestones.forEach(m => {
       const dateStr = m.date.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
-      const iconMap = { first_love: '💕', last_love: '💔', day_everything_changed: '⚡', first_silence: '🔇', peak_day: '🔥' };
+      const iconMap = { first_love: '💕', last_love: '💔', day_everything_changed: '⚡', first_silence: '🔇', peak_day: '🔥', first_message: '💬', last_message: '📩' };
       const icon = iconMap[m.type] || '📅';
       const isAlert = m.type === 'last_love' && m.isOld;
+      let quoteHtml = '';
+      if (m.quote) {
+        const isLong = m.quote.length > 100;
+        const shortText = isLong ? m.quote.substring(0, 100) + '…' : m.quote;
+        const uid = 'q_' + Math.random().toString(36).slice(2, 8);
+        quoteHtml = `<div class="forensic-quote"><span id="${uid}_short">\u201C${shortText}\u201D${isLong ? ` <button class="forensic-quote-expand" onclick="document.getElementById('${uid}_short').style.display='none';document.getElementById('${uid}_full').style.display='inline';">ver completo</button>` : ''}</span>${isLong ? `<span id="${uid}_full" style="display:none;">\u201C${m.quote}\u201D</span>` : ''}</div>`;
+      }
       html += `<div class="forensic-point"${isAlert ? ' style="border-left-color: var(--pink);"' : ''}>
         <div class="forensic-date"${isAlert ? ' style="color: var(--pink);"' : ''}>${icon} ${dateStr}</div>
         <div class="forensic-detail"><strong>${m.label}</strong></div>
         <div class="forensic-detail">${m.detail}</div>
+        ${quoteHtml}
       </div>`;
     });
     html += '</div>';
@@ -5061,7 +5139,7 @@ function renderForensicReconstruction(data, stats) {
         <div class="forensic-date" style="color: ${color};">${arrow} ${monthLabel} — Punto de Inflexión</div>
         <div class="forensic-detail">Mensajes/mes ${p.direction === 'down' ? 'cayeron' : 'subieron'} de <strong>${p.prevCount.toLocaleString()}</strong> a <strong>${p.currCount.toLocaleString()}</strong> (<span style="color:${color};font-weight:700;">${p.changePct > 0 ? '+' : ''}${p.changePct}%</span>)</div>
         <div class="forensic-detail">Semana anterior: ${p.context.msgsBefore} msgs — Semana siguiente: ${p.context.msgsAfter} msgs</div>
-        ${p.keywords && p.keywords.length > 0 ? `<div class="forensic-keywords">🗣️ Temas: ${p.keywords.map(k => `<span class="forensic-chip">${k}</span>`).join(' ')}</div>` : ''}
+        ${p.keywords && p.keywords.length >= 2 ? `<div class="forensic-keywords">🗣️ Temas: ${p.keywords.map(k => `<span class="forensic-chip">${k}</span>`).join(' ')}</div>` : ''}
         ${p.inflectionContext ? `<div class="forensic-detail" style="margin-top: 6px; color: var(--text-muted); font-size: 0.82rem;">${p.inflectionContext}</div>` : ''}
       </div>`;
     });
@@ -5083,36 +5161,54 @@ function renderBeforeVsNow(data, stats) {
     return;
   }
 
+  function getChangeColor(m) {
+    const positive = m.positive || 'up';
+    if (positive === 'neutral') return m.changePct === 0 ? 'bvn-change-neutral' : (Math.abs(m.changePct) > 30 ? 'bvn-change-neutral' : 'bvn-change-neutral');
+    const isGood = positive === 'up' ? m.changePct > 0 : m.changePct < 0;
+    if (Math.abs(m.changePct) < 10) return 'bvn-change-neutral';
+    return isGood ? 'bvn-change-positive' : 'bvn-change-negative';
+  }
+
+  function renderPersonBlock(personData, color) {
+    const name = personData.name.split(' ')[0];
+    let h = `<div class="bvn-person">`;
+    h += `<div class="bvn-person-header"><span class="bvn-person-dot" style="background:${color};"></span> ${name}</div>`;
+    h += '<table class="bvn-table"><thead><tr>';
+    h += '<th>Métrica</th><th>Antes</th><th>Ahora</th><th>Cambio</th>';
+    h += '</tr></thead><tbody>';
+    personData.metrics.forEach(m => {
+      const suffix = m.suffix || '';
+      const changeClass = getChangeColor(m);
+      const arrow = m.changePct > 0 ? '↑' : (m.changePct < 0 ? '↓' : '→');
+      h += `<tr>
+        <td>${m.label}</td>
+        <td>${m.before.toLocaleString()}${suffix}</td>
+        <td>${m.after.toLocaleString()}${suffix}</td>
+        <td class="${changeClass}">${arrow} ${m.changePct > 0 ? '+' : ''}${m.changePct}%</td>
+      </tr>`;
+    });
+    h += '</tbody></table></div>';
+    return h;
+  }
+
   let html = `<div style="font-size: 0.82rem; color: var(--text-muted); text-align: center; margin-bottom: 16px;">
     Comparando primeros ~${data.cutoffMonths} meses vs últimos ~${data.cutoffMonths} meses
   </div>`;
 
-  html += '<table class="bvn-table"><thead><tr>';
-  html += '<th>Métrica</th>';
-  html += `<th style="color: var(--green);">✨ Antes</th>`;
-  html += `<th style="color: var(--pink);">💔 Ahora</th>`;
-  html += '<th>Cambio</th>';
-  html += '</tr></thead><tbody>';
+  html += '<div class="bvn-grid">';
+  html += renderPersonBlock(data.personA, 'var(--pink)');
+  html += renderPersonBlock(data.personB, 'var(--purple)');
+  html += '</div>';
 
-  data.metrics.forEach(m => {
-    const suffix = m.suffix || '';
-    const changeClass = m.changePct < -30 ? 'bvn-change-negative' : (m.changePct > 30 ? 'bvn-change-positive' : 'bvn-change-neutral');
-    const arrow = m.changePct > 0 ? '↑' : (m.changePct < 0 ? '↓' : '→');
-    html += `<tr>
-      <td>${m.label}</td>
-      <td>${m.before.toLocaleString()}${suffix}</td>
-      <td>${m.after.toLocaleString()}${suffix}</td>
-      <td class="${changeClass}">${arrow} ${m.changePct > 0 ? '+' : ''}${m.changePct}%</td>
-    </tr>`;
-  });
-
-  html += '</tbody></table>';
-
-  // Devastating insight
-  const negativeChanges = data.metrics.filter(m => m.changePct < -30);
+  // Devastating insight — combine both persons
+  const allMetrics = [...data.personA.metrics, ...data.personB.metrics];
+  const negativeChanges = allMetrics.filter(m => m.positive === 'up' && m.changePct < -30);
   if (negativeChanges.length > 0) {
-    const worstMetric = data.metrics.reduce((worst, m) => m.changePct < worst.changePct ? m : worst, data.metrics[0]);
-    html += `<div class="pf-insight" style="margin-top: 16px;"><strong>💔 Conclusión devastadora:</strong> ${negativeChanges.length} de ${data.metrics.length} métricas muestran deterioro significativo (>30%). Lo más impactante: <strong>${worstMetric.label}</strong> cayó un <strong style="color:#FF4757;">${Math.abs(worstMetric.changePct)}%</strong>. La relación no es lo que era al principio.</div>`;
+    const worstMetric = negativeChanges.reduce((w, m) => m.changePct < w.changePct ? m : w, negativeChanges[0]);
+    // Find which person owns it
+    const isA = data.personA.metrics.includes(worstMetric);
+    const whoName = isA ? data.personA.name.split(' ')[0] : data.personB.name.split(' ')[0];
+    html += `<div class="pf-insight" style="margin-top: 16px;"><strong>💔 Conclusión devastadora:</strong> ${negativeChanges.length} métricas muestran deterioro significativo (>30%). Lo más impactante: <strong>${worstMetric.label}</strong> de <strong>${whoName}</strong> cayó un <strong style="color:#FF4757;">${Math.abs(worstMetric.changePct)}%</strong>.</div>`;
   } else {
     html += '<div class="pf-insight" style="margin-top: 16px;"><strong>✨ Buena señal:</strong> No se detectan caídas dramáticas entre el inicio y el estado actual de la comunicación.</div>';
   }
@@ -5864,6 +5960,8 @@ async function goToStripeCheckout() {
       } catch(e) {}
     }
 
+    if (typeof fbq !== 'undefined') fbq('track', 'InitiateCheckout');
+
     const res = await fetch('/api/create-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -5960,6 +6058,14 @@ async function checkPaymentSuccess() {
           email: data.email,
           paidAt: new Date().toISOString()
         }));
+
+        const planPrices = { 'detective': 79, 'obsesivo': 149 };
+        if (typeof fbq !== 'undefined') {
+          fbq('track', 'Purchase', {
+            value: planPrices[plan] || 79,
+            currency: 'MXN'
+          });
+        }
 
         updatePlanUI();
 
