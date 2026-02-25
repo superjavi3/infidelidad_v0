@@ -2921,12 +2921,24 @@ function analyzeMessages(messages) {
     replyTimes.sort((a, b) => a - b);
     const mid = Math.floor(replyTimes.length / 2);
     avgReply = replyTimes.length % 2 === 0
-      ? Math.round((replyTimes[mid - 1] + replyTimes[mid]) / 2)
-      : Math.round(replyTimes[mid]);
+      ? (replyTimes[mid - 1] + replyTimes[mid]) / 2
+      : replyTimes[mid];
   }
-  const avgReplyFormatted = avgReply >= 1440 ? Math.floor(avgReply / 1440) + ' días'
-    : avgReply >= 60 ? Math.floor(avgReply / 60) + 'h ' + (avgReply % 60) + 'min'
-    : avgReply + ' min';
+  function formatResponseTime(minutes) {
+    if (minutes < 1) {
+      const seconds = Math.round(minutes * 60);
+      return seconds <= 5 ? '< 5 seg' : seconds + ' seg';
+    } else if (minutes < 60) {
+      return Math.round(minutes) + ' min';
+    } else if (minutes < 1440) {
+      const hours = Math.floor(minutes / 60);
+      const mins = Math.round(minutes % 60);
+      return mins > 0 ? hours + 'h ' + mins + 'min' : hours + 'h';
+    } else {
+      return Math.floor(minutes / 1440) + ' días';
+    }
+  }
+  const avgReplyFormatted = formatResponseTime(avgReply);
 
   // ── Score v2: 6 components ──
 
@@ -3625,14 +3637,8 @@ async function shareToStories() {
     document.getElementById('storiesDays').textContent = lastStats.uniqueDays;
     document.getElementById('storiesLeader').textContent = lastStats.leader;
     document.getElementById('storiesLeaderPct').textContent = lastStats.leader.split(' ')[0] + ' lleva la voz';
-    var replyVal = lastStats.avgReplyFormatted;
-    if (replyVal === '0' || replyVal === '0 min') {
-      document.getElementById('storiesReply').textContent = '<1';
-      document.getElementById('storiesReplyLabel').textContent = 'min para responder';
-    } else {
-      document.getElementById('storiesReply').textContent = replyVal;
-      document.getElementById('storiesReplyLabel').textContent = 'para responder';
-    }
+    document.getElementById('storiesReply').textContent = lastStats.avgReplyFormatted;
+    document.getElementById('storiesReplyLabel').textContent = 'para responder';
     document.getElementById('storiesLove').textContent = lastStats.loveCount;
     document.getElementById('storiesNight').textContent = lastStats.nightPct + '%';
   }
