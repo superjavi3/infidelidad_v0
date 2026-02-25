@@ -6207,6 +6207,46 @@ async function checkPaymentSuccess() {
 
 // Run on page load
 document.addEventListener('DOMContentLoaded', checkPaymentSuccess);
+
+// ── Defensive: ensure pricing buttons ALWAYS work ──
+// Registers click handlers via addEventListener as fallback in case
+// inline onclick="openPayModal(...)" fails due to script errors.
+document.addEventListener('DOMContentLoaded', function() {
+  // Pricing section buttons
+  document.querySelectorAll('#precios .price-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      var plan = 'detective';
+      if (btn.textContent.indexOf('199') !== -1) plan = 'obsesivo';
+      if (typeof openPayModal === 'function') {
+        openPayModal(plan);
+      } else {
+        // Inline fallback: show modal directly
+        selectedPlan = plan;
+        var m = document.getElementById('payModal');
+        if (m) m.style.display = 'flex';
+      }
+    });
+  });
+
+  // Dynamically-created overlay buttons (delegation on results section)
+  var resultsEl = document.getElementById('resultsSection');
+  if (resultsEl) {
+    resultsEl.addEventListener('click', function(e) {
+      var btn = e.target.closest('.unlock-overlay-btn, .section-cta-btn');
+      if (!btn) return;
+      var plan = (btn.textContent.indexOf('Obsesivo') !== -1 || btn.textContent.indexOf('199') !== -1) ? 'obsesivo' : 'detective';
+      if (typeof openPayModal === 'function') {
+        openPayModal(plan);
+      } else {
+        selectedPlan = plan;
+        var m = document.getElementById('payModal');
+        if (m) m.style.display = 'flex';
+      }
+    });
+  }
+
+  console.log('[Payment] Defensive click handlers registered. openPayModal defined:', typeof openPayModal === 'function');
+});
 </script>
 
 <!-- ── EXIT INTENT POPUP ── -->
