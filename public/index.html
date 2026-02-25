@@ -3278,21 +3278,38 @@ async function generatePDF() {
     const aiAtencion = (aiClean.match(/(?:[AÁ]rea[^:]*:|Atenci[oó]n[^:]*:)\s*([\s\S]*?)(?=Recomend|$)/i) || [])[1] || '';
     const aiRecomendacion = (aiClean.match(/(?:Recomendaci[oó]n[^:]*:)\s*([\s\S]*?)$/i) || [])[1] || '';
 
-    // Timeline SVG (bar chart with value labels on top)
+    // Timeline SVG (bar chart with intensity gradient, trend line, shaded area)
     const tlLabels = timelineData.labels || [];
     const tlData = timelineData.data || [];
     const tlMax = Math.max(1, ...tlData);
     const tlBarW = Math.max(4, Math.floor(660 / Math.max(1, tlLabels.length)) - 2);
     const tlValueStep = Math.max(1, Math.floor(tlLabels.length / 12));
+    const tlChartBase = 200;
+
+    // Build trend line points and shaded polygon
+    const tlPoints = [];
     const tlBars = tlData.map((v, i) => {
       const h = Math.max(2, (v / tlMax) * 160);
       const x = 50 + i * (tlBarW + 2);
+      const cx = x + tlBarW / 2;
+      const cy = tlChartBase - h;
+      tlPoints.push({ x: cx, y: cy });
       const isPeak = v === tlMax;
-      const bar = '<rect x="' + x + '" y="' + (200 - h) + '" width="' + tlBarW + '" height="' + h + '" rx="2" fill="' + (isPeak ? '#FF2D78' : '#8B5CF6') + '" opacity="0.85"/>';
+      const intensity = (0.4 + (v / tlMax) * 0.55).toFixed(2);
+      const bar = '<rect x="' + x + '" y="' + cy + '" width="' + tlBarW + '" height="' + h + '" rx="2" fill="' + (isPeak ? '#FF2D78' : '#8B5CF6') + '" opacity="' + (isPeak ? '1' : intensity) + '"/>';
       const showLabel = v > 0 && (isPeak || i % tlValueStep === 0);
-      const label = showLabel ? '<text x="' + (x + tlBarW / 2) + '" y="' + (200 - h - 4) + '" text-anchor="middle" font-size="9" font-weight="700" fill="#FFF">' + v + '</text>' : '';
+      const label = showLabel ? '<text x="' + cx + '" y="' + (cy - 4) + '" text-anchor="middle" font-size="9" font-weight="700" fill="#FFF">' + v + '</text>' : '';
       return bar + label;
     }).join('');
+
+    // Trend line polyline + shaded area polygon
+    const tlLinePoints = tlPoints.map(p => p.x + ',' + p.y).join(' ');
+    const tlAreaPoints = (tlPoints.length > 0) ?
+      tlPoints[0].x + ',' + tlChartBase + ' ' + tlLinePoints + ' ' + tlPoints[tlPoints.length - 1].x + ',' + tlChartBase : '';
+    const tlTrendDefs = '<defs><linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF" stop-opacity="0.05"/><stop offset="100%" stop-color="#FFF" stop-opacity="0"/></linearGradient></defs>';
+    const tlAreaSvg = tlAreaPoints ? '<polygon points="' + tlAreaPoints + '" fill="url(#trendFill)"/>' : '';
+    const tlLineSvg = tlLinePoints ? '<polyline points="' + tlLinePoints + '" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linejoin="round"/>' : '';
+
     const tlLabelStep = Math.max(1, Math.floor(tlLabels.length / 8));
     const tlRotate = tlLabels.length > 14;
     const tlSvgH = tlRotate ? 270 : 240;
@@ -3305,7 +3322,7 @@ async function generatePDF() {
       }
       return '<text x="' + x + '" y="' + tlLabelY + '" text-anchor="middle" font-size="10" fill="#6B6780">' + l + '</text>';
     }).join('');
-    const timelineSVG = '<svg width="720" height="' + tlSvgH + '" xmlns="http://www.w3.org/2000/svg">' + tlBars + tlLabelsSvg + '</svg>';
+    const timelineSVG = '<svg width="720" height="' + tlSvgH + '" xmlns="http://www.w3.org/2000/svg">' + tlTrendDefs + tlBars + tlAreaSvg + tlLineSvg + tlLabelsSvg + '</svg>';
 
     // Helper: horizontal bar SVG
     function hBarSVG(items, maxV) {
@@ -3406,6 +3423,36 @@ async function generatePDF() {
       '</div>';
     }).join('');
 
+    // Per-person multimedia comparative bars
+    const mmCompareTypes = mmSorted.filter(k => multimediaData[k].total > 0);
+    const mmCompareLabels = { audios: 'Audios', imagenes: 'Imágenes', stickers: 'Stickers', videos: 'Videos', documentos: 'Documentos', ubicaciones: 'Ubicaciones' };
+    const mmCompareBars = mmCompareTypes.map(k => {
+      const pp = multimediaData[k].perPerson;
+      const vA = pp[pA] || 0;
+      const vB = pp[pB] || 0;
+      const localMax = Math.max(1, vA, vB);
+      const wA = Math.max(20, (vA / localMax) * 320);
+      const wB = Math.max(20, (vB / localMax) * 320);
+      return '<div style="margin-bottom:10px;">' +
+        '<div style="font-size:11px;color:#9B96B0;margin-bottom:4px;">' + mmIcons[k] + ' ' + mmCompareLabels[k] + '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">' +
+          '<div style="width:70px;font-size:10px;color:#FF2D78;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + clean(pA) + '</div>' +
+          '<div style="flex:1;height:20px;background:#1E1B2E;border-radius:4px;overflow:hidden;"><div style="height:100%;width:' + wA + 'px;max-width:100%;background:#FF2D78;border-radius:4px;opacity:0.85;"></div></div>' +
+          '<div style="width:40px;font-size:12px;font-weight:700;color:#FFF;">' + vA.toLocaleString() + '</div>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;">' +
+          '<div style="width:70px;font-size:10px;color:#8B5CF6;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + clean(pB) + '</div>' +
+          '<div style="flex:1;height:20px;background:#1E1B2E;border-radius:4px;overflow:hidden;"><div style="height:100%;width:' + wB + 'px;max-width:100%;background:#8B5CF6;border-radius:4px;opacity:0.85;"></div></div>' +
+          '<div style="width:40px;font-size:12px;font-weight:700;color:#FFF;">' + vB.toLocaleString() + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    const mmCompareHTML = mmCompareTypes.length > 0 ?
+      '<div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);">' +
+        '<h4 style="font-size:13px;font-weight:600;color:#FF2D78;margin-bottom:12px;">¿Quién manda más?</h4>' +
+        mmCompareBars +
+      '</div>' : '';
+
     const delBarsHTML = delItems.length > 0 ?
       '<svg width="520" height="' + (delItems.length * 44 + 16) + '" xmlns="http://www.w3.org/2000/svg">' +
         hBarSVG(delItems) + '</svg>'
@@ -3428,7 +3475,8 @@ async function generatePDF() {
         '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F4F1} Reyes del Multimedia</h3><div style="' + cardCSS + 'padding:16px;">' +
           (mmTotalAll > 0 ?
             '<div style="background:#1E1B2E;border-radius:8px;padding:8px 14px;text-align:center;margin-bottom:14px;"><div style="font-size:18px;font-weight:700;color:#F5C842;">' + mmTotalAll.toLocaleString() + '</div><div style="font-size:10px;color:#9B96B0;">Total multimedia</div></div>' +
-            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">' + mmGrid + '</div>'
+            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">' + mmGrid + '</div>' +
+            mmCompareHTML
           : '<p style="color:#9B96B0;font-size:13px;">Conversación 100% texto puro.</p>') +
         '</div></div>' +
         '<div style="margin-bottom:14px;"><h3 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F5D1}\u{FE0F} Mensajes Eliminados</h3><div style="' + cardCSS + 'padding:16px;">' +
@@ -3854,22 +3902,33 @@ function parseMessageDate(dateStr, timeStr, ampm) {
 // ── 1. LÍNEA DE VIDA DE LA RELACIÓN ──
 function analyzeRelationshipTimeline(messages) {
   const monthlyData = {};
+  const monthlyPerPerson = {};
   messages.forEach(m => {
     try {
       const date = parseMessageDate(m.date, m.time, m.ampm);
       if (isNaN(date.getTime())) return;
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       monthlyData[key] = (monthlyData[key] || 0) + 1;
+      if (m.sender) {
+        if (!monthlyPerPerson[key]) monthlyPerPerson[key] = {};
+        monthlyPerPerson[key][m.sender] = (monthlyPerPerson[key][m.sender] || 0) + 1;
+      }
     } catch(e) {}
   });
 
   const sortedMonths = Object.keys(monthlyData).sort();
   const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const fullMonthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const labels = sortedMonths.map(k => {
     const [y, m] = k.split('-');
-    return monthNames[parseInt(m)-1] + " '" + y.slice(2);
+    return monthNames[parseInt(m)-1] + " '" + y.slice(-2);
+  });
+  const labelsLong = sortedMonths.map(k => {
+    const [y, m] = k.split('-');
+    return fullMonthNames[parseInt(m)-1] + ' ' + y;
   });
   const data = sortedMonths.map(k => monthlyData[k]);
+  const perPerson = sortedMonths.map(k => monthlyPerPerson[k] || {});
 
   const maxVal = Math.max(...data);
   const peakIdx = data.indexOf(maxVal);
@@ -3886,7 +3945,7 @@ function analyzeRelationshipTimeline(messages) {
     }
   }
 
-  return { labels, data, peakMonth, maxVal, declineMonth, declinePct };
+  return { labels, labelsLong, data, perPerson, peakMonth, maxVal, declineMonth, declinePct };
 }
 
 // ── SILENCE HELPERS ──
@@ -4115,12 +4174,22 @@ function renderTimeline(data, stats) {
             cornerRadius: 12,
             padding: 12,
             callbacks: {
-              label: (ctx) => ctx.parsed.y.toLocaleString() + ' mensajes'
+              title: (items) => {
+                const idx = items[0].dataIndex;
+                return data.labelsLong ? data.labelsLong[idx] : items[0].label;
+              },
+              label: (ctx) => ctx.parsed.y.toLocaleString() + ' mensajes',
+              afterLabel: (ctx) => {
+                const pp = data.perPerson ? data.perPerson[ctx.dataIndex] : null;
+                if (!pp) return '';
+                const entries = Object.entries(pp).sort((a, b) => b[1] - a[1]);
+                return entries.map(([name, count]) => '  ' + name + ': ' + count.toLocaleString()).join('\n');
+              }
             }
           }
         },
         layout: {
-          padding: { bottom: 20, top: 30 }
+          padding: { bottom: 20, top: 30, right: 20 }
         },
         scales: {
           x: {
