@@ -2749,25 +2749,26 @@ function parseWhatsApp(text) {
   // 12/01/2024, 10:32 - Nombre: mensaje
   // 1/12/24, 10:32 a. m. - Nombre: mensaje
   const patterns = [
-    // Formato con corchetes: [21/2/26, 19:35:23] Nombre: mensaje  (iOS)
+    // Formato con corchetes: [21/2/26, 19:35:23 a. m.] Nombre: mensaje  (iOS)
     // Soporta segundos opcionales, AM/PM opcional, nombres con emojis Unicode
-    /^\[(\d{1,2}\/\d{1,2}\/\d{2,4}),\s*(\d{1,2}:\d{2}(?::\d{2})?)\s*(?:[aApP]\.?\s*[mM]\.?)?\]\s*(.+?):\s(.*)$/gmu,
+    /^\[(\d{1,2}\/\d{1,2}\/\d{2,4}),\s*(\d{1,2}:\d{2}(?::\d{2})?)\s*([aApP]\.?\s*[mM]\.?)?\]\s*(.+?):\s(.*)$/gmu,
 
     // Formato con guión: 12/01/2024, 10:32 a. m. - Nombre: mensaje  (Android/LatAm)
     // Soporta AM/PM con puntos y espacios, nombres con emojis Unicode
-    /^(\d{1,2}\/\d{1,2}\/\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?)\s*(?:[aApP]\.?\s*[mM]\.?)?\s*-\s*(.+?):\s(.*)$/gmu,
+    /^(\d{1,2}\/\d{1,2}\/\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?)\s*([aApP]\.?\s*[mM]\.?)?\s*-\s*(.+?):\s(.*)$/gmu,
   ];
-  
+
   for (const regex of patterns) {
     let match;
     regex.lastIndex = 0; // Reset regex
-    
+
     while ((match = regex.exec(text)) !== null) {
-      const [, date, time, sender, messageText] = match;
-      
+      const [, date, time, ampm, sender, messageText] = match;
+
       messages.push({
         date: date.trim(),
         time: time.trim(),
+        ampm: ampm ? ampm.replace(/\.\s*/g, '').toLowerCase().trim() : null,
         sender: sender.trim(),
         text: messageText.trim()
       });
@@ -2777,6 +2778,16 @@ function parseWhatsApp(text) {
   }
   
   return messages;
+}
+
+function getHour24(timeStr, ampm) {
+  const hour = parseInt(timeStr.split(':')[0]);
+  if (!ampm) return hour;
+  const isPM = ampm.includes('p');
+  const isAM = ampm.includes('a');
+  if (isPM && hour !== 12) return hour + 12;
+  if (isAM && hour === 12) return 0;
+  return hour;
 }
 
 function analyzeMessages(messages) {
@@ -2811,7 +2822,7 @@ function analyzeMessages(messages) {
   let nightCount = 0;
   messages.forEach(m => {
     if (m.time) {
-      const hour = parseInt(m.time.split(':')[0]);
+      const hour = getHour24(m.time, m.ampm);
       if (hour >= 0 && hour < 6) nightCount++;
     }
   });
@@ -2826,7 +2837,7 @@ function analyzeMessages(messages) {
   const sortedForReply = [];
   messages.forEach(m => {
     try {
-      const ts = parseMessageDate(m.date, m.time);
+      const ts = parseMessageDate(m.date, m.time, m.ampm);
       if (!isNaN(ts.getTime())) sortedForReply.push({ sender: m.sender, timestamp: ts });
     } catch(e) {}
   });
@@ -3128,7 +3139,7 @@ async function generatePDF() {
     const sortedForBN = [];
     lastMessages.forEach(m => {
       try {
-        const ts = parseMessageDate(m.date, m.time);
+        const ts = parseMessageDate(m.date, m.time, m.ampm);
         if (!isNaN(ts.getTime())) sortedForBN.push({ ...m, timestamp: ts.getTime() });
       } catch(e) {}
     });
@@ -3731,14 +3742,14 @@ async function loadDemo() {
 // ── PREMIUM FEATURES: ANALYSIS & RENDERING ──
 // ══════════════════════════════════════════════
 
-function parseMessageDate(dateStr, timeStr) {
+function parseMessageDate(dateStr, timeStr, ampm) {
   const parts = dateStr.split('/');
   let day = parseInt(parts[0]);
   let month = parseInt(parts[1]);
   let year = parseInt(parts[2]);
   if (year < 100) year += 2000;
   const timeParts = timeStr.split(':');
-  let hour = parseInt(timeParts[0]);
+  let hour = getHour24(timeStr, ampm);
   let minute = parseInt(timeParts[1]);
   let second = timeParts[2] ? parseInt(timeParts[2]) : 0;
   return new Date(year, month - 1, day, hour, minute, second);
@@ -3749,7 +3760,7 @@ function analyzeRelationshipTimeline(messages) {
   const monthlyData = {};
   messages.forEach(m => {
     try {
-      const date = parseMessageDate(m.date, m.time);
+      const date = parseMessageDate(m.date, m.time, m.ampm);
       if (isNaN(date.getTime())) return;
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       monthlyData[key] = (monthlyData[key] || 0) + 1;
@@ -3800,7 +3811,7 @@ function analyzeSilences(messages) {
   const sorted = [];
   messages.forEach(m => {
     try {
-      const ts = parseMessageDate(m.date, m.time);
+      const ts = parseMessageDate(m.date, m.time, m.ampm);
       if (!isNaN(ts.getTime())) sorted.push({ ...m, timestamp: ts });
     } catch(e) {}
   });
@@ -3840,7 +3851,7 @@ function analyzeDoubleTexting(messages) {
   const sorted = [];
   messages.forEach(m => {
     try {
-      const ts = parseMessageDate(m.date, m.time);
+      const ts = parseMessageDate(m.date, m.time, m.ampm);
       if (!isNaN(ts.getTime())) sorted.push({ ...m, timestamp: ts });
     } catch(e) {}
   });
@@ -3937,7 +3948,7 @@ function analyzeDeletedMessages(messages) {
       deleted[m.sender] = (deleted[m.sender] || 0) + 1;
       total++;
       try {
-        const ts = parseMessageDate(m.date, m.time);
+        const ts = parseMessageDate(m.date, m.time, m.ampm);
         if (!isNaN(ts.getTime())) timestamps.push({ sender: m.sender, date: ts });
       } catch(e) {}
     }
@@ -4270,7 +4281,7 @@ function renderObsessiveFeatures(messages, stats) {
   const sorted = [];
   messages.forEach(m => {
     try {
-      const ts = parseMessageDate(m.date, m.time);
+      const ts = parseMessageDate(m.date, m.time, m.ampm);
       if (!isNaN(ts.getTime())) sorted.push({ ...m, timestamp: ts });
     } catch(e) {}
   });
