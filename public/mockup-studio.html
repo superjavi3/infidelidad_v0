@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YaLoSabía — Mockup Studio</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg-deep: #0d0d0d;
+  --bg-card: #1a1a2e;
+  --pink: #FF2D78;
+  --orange: #FF6B35;
+  --yellow: #FFD23F;
+  --green: #3BCEAC;
+  --purple: #6C5CE7;
+  --blue: #0984E3;
+  --text: #FAFAFA;
+  --text-muted: #a0a0b8;
+  --radius: 20px;
+  --font-display: 'Dela Gothic One', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: #0a0a14;
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── STUDIO LAYOUT ── */
+.studio { display: flex; height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 380px;
+  min-width: 380px;
+  background: #0f0f1a;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  overflow-y: auto;
+  padding: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+.sidebar h1 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+.sidebar h1 span { color: var(--pink); }
+.sidebar-subtitle { color: var(--text-muted); font-size: 0.78rem; margin-bottom: 20px; }
+
+.section-group {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.section-group-title {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  color: var(--pink);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.field { margin-bottom: 8px; }
+.field label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+  font-weight: 500;
+}
+.field input, .field textarea, .field select {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 7px 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.field input:focus, .field textarea:focus { border-color: var(--pink); }
+.field textarea { resize: vertical; min-height: 50px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+.timeline-point {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding: 6px 8px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 6px;
+}
+.timeline-point input { font-size: 0.75rem; padding: 4px 6px; }
+
+/* ── MAIN AREA ── */
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── TOOLBAR ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: #0f0f1a;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.toolbar select {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 7px 12px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  outline: none;
+}
+.toolbar-btn {
+  padding: 7px 14px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.toolbar-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--pink); }
+.toolbar-btn.primary {
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  border: none;
+  color: #fff;
+}
+.toolbar-btn.primary:hover { opacity: 0.9; }
+.toolbar-sep { width: 1px; height: 24px; background: rgba(255,255,255,0.1); }
+.view-toggle { display: flex; gap: 0; }
+.view-toggle button {
+  padding: 7px 14px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.view-toggle button:first-child { border-radius: 8px 0 0 8px; }
+.view-toggle button:last-child { border-radius: 0 8px 8px 0; border-left: none; }
+.view-toggle button.active {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: #fff;
+}
+
+/* ── PREVIEW CONTAINER ── */
+.preview-wrap {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  background: #080812;
+  padding: 20px;
+}
+.preview-frame {
+  width: 100%;
+  max-width: 1100px;
+  transition: max-width 0.3s ease;
+}
+.preview-frame.mobile {
+  max-width: 390px;
+  border: 3px solid #333;
+  border-radius: 40px;
+  overflow: hidden;
+  box-shadow: 0 0 60px rgba(0,0,0,0.5);
+  padding: 12px 0;
+  background: var(--bg-deep);
+}
+.preview-frame.mobile .preview-content { padding: 0 16px 40px; }
+
+/* ── PREVIEW CONTENT (replicates report) ── */
+.preview-content {
+  background: var(--bg-deep);
+  padding: 40px 24px 80px;
+  font-family: var(--font-body);
+  color: var(--text);
+}
+.gradient-text {
+  background: linear-gradient(135deg, var(--pink), var(--orange), var(--yellow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.results-header { text-align: center; margin-bottom: 48px; }
+.results-header h2 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); margin-bottom: 8px; }
+
+.score-card {
+  max-width: 400px;
+  margin: 0 auto 48px;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  border-radius: var(--radius);
+  padding: 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.score-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.15), transparent 50%);
+}
+.score-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 3px; opacity: 0.8; margin-bottom: 12px; }
+.score-number { font-family: var(--font-display); font-size: 5rem; line-height: 1; margin-bottom: 4px; }
+.score-max { font-size: 1.1rem; opacity: 0.7; }
+.score-verdict { margin-top: 16px; font-size: 1.1rem; font-weight: 600; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 48px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 28px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.stat-emoji { font-size: 1.8rem; margin-bottom: 12px; }
+.stat-value { font-family: var(--font-display); font-size: 1.8rem; margin-bottom: 4px; }
+.stat-label { color: var(--text-muted); font-size: 0.88rem; }
+
+.fun-fact {
+  background: linear-gradient(135deg, rgba(255,210,63,0.1), rgba(255,107,53,0.1));
+  border: 1px solid rgba(255,210,63,0.2);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  margin-bottom: 48px;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  text-align: center;
+}
+.fun-fact strong { color: var(--yellow); }
+
+.example-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  border: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 48px;
+  text-align: center;
+  line-height: 1.7;
+}
+
+/* Feature cards */
+.premium-feature-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.pf-header { display: flex; align-items: center; gap: 16px; padding: 24px 28px 0; }
+.pf-icon { font-size: 2rem; flex-shrink: 0; }
+.pf-title { font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 2px; }
+.pf-subtitle { color: var(--text-muted); font-size: 0.85rem; }
+.pf-body { padding: 20px 28px 28px; position: relative; }
+.pf-insight {
+  background: rgba(108,92,231,0.1);
+  border: 1px solid rgba(108,92,231,0.2);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-top: 16px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+.pf-insight strong { color: var(--purple); }
+
+/* Plan sections */
+.plan-header { text-align: center; padding: 32px 0 28px; }
+.plan-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; padding: 6px 18px; border-radius: 50px; margin-bottom: 14px;
+}
+.plan-badge.free { background: rgba(16,185,129,0.12); color: #10B981; border: 1px solid rgba(16,185,129,0.25); }
+.plan-badge.detective { background: rgba(59,130,246,0.12); color: #3B82F6; border: 1px solid rgba(59,130,246,0.25); }
+.plan-badge.obsessive {
+  background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(168,85,247,0.15));
+  color: #EC4899;
+  border: 1px solid rgba(236,72,153,0.3);
+}
+.plan-title { font-family: var(--font-display); margin-bottom: 6px; }
+.plan-title.free { font-size: 1.3rem; color: var(--text); }
+.plan-title.detective { font-size: 1.5rem; color: #3B82F6; }
+.plan-title.obsessive {
+  font-size: 1.7rem;
+  background: linear-gradient(135deg, #EC4899, #A855F7);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.plan-subtitle { color: var(--text-muted); font-size: 0.92rem; }
+
+.plan-detective-wrap {
+  border-top: 4px solid #3B82F6;
+  background: linear-gradient(180deg, rgba(59,130,246,0.04) 0%, transparent 40%);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 0 4px 4px;
+  margin-top: 60px;
+}
+.plan-detective-wrap .premium-feature-card { border-color: rgba(59,130,246,0.12); }
+
+.plan-obsessive-wrap {
+  border-top: 6px solid;
+  border-image: linear-gradient(90deg, #EC4899, #A855F7) 1;
+  background: linear-gradient(180deg, rgba(236,72,153,0.06) 0%, rgba(168,85,247,0.03) 20%, transparent 50%);
+  padding: 0 4px 4px;
+  margin-top: 80px;
+  position: relative;
+}
+.plan-obsessive-wrap::before {
+  content: '';
+  position: absolute; top: -2px; left: 10%; right: 10%; height: 40px;
+  background: radial-gradient(ellipse at center, rgba(236,72,153,0.15), transparent 70%);
+  pointer-events: none;
+}
+.plan-obsessive-wrap .premium-feature-card { border-color: rgba(236,72,153,0.12); }
+
+/* Silence */
+.silence-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+.silence-stat { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 16px; text-align: center; }
+.silence-stat-value { font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 4px; }
+.silence-stat-label { color: var(--text-muted); font-size: 0.8rem; }
+.silence-bar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px;
+  padding: 10px 14px; background: rgba(255,45,120,0.06);
+  border-left: 3px solid var(--pink); border-radius: 0 8px 8px 0;
+  font-size: 0.85rem; margin-bottom: 6px;
+}
+.silence-bar-duration { font-weight: 700; color: var(--pink); min-width: 60px; }
+.silence-bar-info { color: var(--text-muted); flex: 1; }
+.silence-bar-breaker { font-weight: 600; color: var(--green); font-size: 0.8rem; }
+
+/* Double text */
+.dt-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px; }
+.dt-person { text-align: center; }
+.dt-person-name { font-family: var(--font-display); font-size: 0.95rem; margin-bottom: 8px; }
+.dt-person-count { font-family: var(--font-display); font-size: 2.5rem; margin-bottom: 4px; }
+.dt-person-label { color: var(--text-muted); font-size: 0.8rem; }
+.dt-bar-track { height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; margin-top: 8px; overflow: hidden; }
+.dt-bar-fill { height: 100%; border-radius: 4px; }
+.dt-bar-fill.pink { background: var(--pink); }
+.dt-bar-fill.purple { background: var(--purple); }
+
+/* Multimedia */
+.mm-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.mm-row:last-of-type { border-bottom: none; }
+.mm-icon { font-size: 1.3rem; flex-shrink: 0; width: 28px; text-align: center; }
+.mm-label { font-size: 0.85rem; min-width: 110px; flex-shrink: 0; }
+.mm-label span { color: var(--text-muted); font-size: 0.78rem; }
+.mm-bar-wrap { flex: 1; display: flex; height: 22px; border-radius: 6px; overflow: hidden; background: rgba(255,255,255,0.04); }
+.mm-bar-a { background: var(--pink); height: 100%; min-width: 0; }
+.mm-bar-b { background: var(--purple); height: 100%; min-width: 0; }
+.mm-counts { font-size: 0.72rem; color: rgba(255,255,255,0.6); white-space: nowrap; flex-shrink: 0; }
+.mm-king { font-family: var(--font-display); font-size: 0.78rem; min-width: 70px; text-align: right; flex-shrink: 0; }
+
+/* Deleted */
+.deleted-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.deleted-stat-card { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 20px; text-align: center; }
+.deleted-stat-value { font-family: var(--font-display); font-size: 2rem; margin-bottom: 4px; color: var(--pink); }
+.deleted-stat-label { color: var(--text-muted); font-size: 0.82rem; }
+
+/* Forensic */
+.forensic-point {
+  background: rgba(255,45,120,0.06); border-left: 3px solid var(--pink);
+  border-radius: 0 12px 12px 0; padding: 16px 20px; margin-bottom: 12px;
+}
+.forensic-date { font-family: var(--font-display); font-size: 1rem; color: var(--pink); margin-bottom: 6px; }
+.forensic-detail { color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin-bottom: 4px; }
+.forensic-detail strong { color: var(--text); }
+
+/* Before vs Now */
+.bvn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.bvn-person { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px; border: 1px solid rgba(255,255,255,0.06); }
+.bvn-person-header {
+  font-family: var(--font-display); font-size: 0.95rem; font-weight: 700;
+  margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; gap: 8px;
+}
+.bvn-person-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.bvn-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.bvn-table th {
+  font-family: var(--font-display); font-size: 0.78rem; text-transform: uppercase;
+  letter-spacing: 1px; padding: 10px 12px; border-bottom: 2px solid rgba(255,255,255,0.08);
+}
+.bvn-table th:first-child { text-align: left; color: var(--text-muted); }
+.bvn-table th:nth-child(2) { text-align: center; color: var(--green); }
+.bvn-table th:nth-child(3) { text-align: center; color: var(--pink); }
+.bvn-table th:nth-child(4) { text-align: center; color: var(--text-muted); }
+.bvn-table td { padding: 8px 12px; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.bvn-table td:first-child { color: var(--text-muted); font-weight: 500; }
+.bvn-table td:nth-child(2), .bvn-table td:nth-child(3) { text-align: center; font-family: var(--font-display); font-size: 1rem; }
+.bvn-table td:nth-child(4) { text-align: center; font-weight: 700; }
+.bvn-change-negative { color: #FF4757; }
+.bvn-change-positive { color: var(--green); }
+.bvn-change-neutral { color: var(--text-muted); }
+
+/* Ghosting */
+.ghosting-hero { text-align: center; padding: 24px 20px; margin-bottom: 20px; background: rgba(255,45,120,0.08); border-radius: 16px; border: 1px solid rgba(255,45,120,0.15); }
+.ghosting-hero--ok { background: rgba(59,206,172,0.08); border-color: rgba(59,206,172,0.15); }
+.ghosting-ratio { font-family: var(--font-display); font-size: 3rem; font-weight: 900; color: var(--pink); line-height: 1.1; }
+.ghosting-hero--ok .ghosting-ratio { color: var(--green); }
+.ghosting-label { font-size: 0.9rem; color: var(--text-muted); margin-top: 8px; line-height: 1.4; }
+.ghosting-category {
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+  margin-bottom: 8px; border-radius: 10px; background: rgba(255,255,255,0.03); border-left: 3px solid var(--green);
+}
+.ghosting-category.warn { border-left-color: #FF6B35; }
+.ghosting-category.danger { border-left-color: var(--pink); }
+.ghosting-cat-emoji { font-size: 1.2rem; flex-shrink: 0; }
+.ghosting-cat-info { flex: 1; min-width: 0; }
+.ghosting-cat-name { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+.ghosting-cat-time { font-size: 0.82rem; color: var(--text-muted); }
+.ghosting-cat-status { font-size: 0.78rem; font-weight: 700; flex-shrink: 0; white-space: nowrap; }
+.ghosting-worst {
+  background: rgba(255,45,120,0.06); border-left: 3px solid var(--pink);
+  border-radius: 0 12px 12px 0; padding: 16px 20px; margin-top: 16px;
+}
+.ghosting-worst-title { font-size: 0.82rem; color: var(--pink); font-weight: 700; margin-bottom: 8px; }
+.ghosting-worst-msg { font-style: italic; font-size: 0.85rem; color: var(--text); margin-bottom: 6px; }
+.ghosting-worst-meta { font-size: 0.75rem; color: var(--text-muted); }
+
+/* Language */
+.language-comparison { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; margin-bottom: 20px; align-items: center; }
+.language-period-label { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+.language-message { padding: 12px; font-size: 0.85rem; color: var(--text); font-style: italic; line-height: 1.5; }
+.language-message--warm { background: rgba(107,203,119,0.1); border-left: 3px solid #6BCB77; border-radius: 0 8px 8px 0; }
+.language-message--cold { background: rgba(255,45,120,0.1); border-left: 3px solid var(--pink); border-radius: 0 8px 8px 0; }
+.language-date { font-size: 0.72rem; color: var(--text-muted); margin-top: 6px; }
+.language-vs { display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--pink); font-size: 1.2rem; }
+.language-words { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.language-word { font-size: 0.78rem; padding: 4px 12px; border-radius: 50px; font-weight: 600; }
+.language-word.affective { background: rgba(255,45,120,0.2); color: var(--pink); border: 1px solid rgba(255,45,120,0.3); }
+.language-word.normal { background: rgba(108,92,231,0.15); color: var(--purple); }
+.language-word.distancing { background: rgba(255,107,53,0.15); color: #FF6B35; }
+
+/* Therapist section */
+.therapist-card {
+  background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(236,72,153,0.08));
+  border: 1px solid rgba(108,92,231,0.2);
+  border-radius: var(--radius);
+  padding: 28px;
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+.therapist-card .therapist-label {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--purple);
+  margin-bottom: 12px;
+}
+
+/* Capture flash */
+.capture-flash {
+  position: fixed; inset: 0; background: #fff; z-index: 99999;
+  opacity: 0; pointer-events: none; transition: opacity 0.15s;
+}
+.capture-flash.active { opacity: 0.3; pointer-events: auto; }
+
+/* Status toast */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+  padding: 12px 20px; font-size: 0.85rem; color: var(--text);
+  transform: translateY(100px); opacity: 0; transition: all 0.3s;
+  z-index: 10000;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+@media (max-width: 900px) {
+  .sidebar { width: 320px; min-width: 320px; }
+}
+</style>
+</head>
+<body>
+
+<div class="studio">
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+    <h1>Ya<span>Lo</span>Sabía Studio</h1>
+    <p class="sidebar-subtitle">Editor visual de mockups para redes</p>
+
+    <!-- GENERAL -->
+    <div class="section-group">
+      <div class="section-group-title">General</div>
+      <div class="field-row">
+        <div class="field"><label>Persona 1</label><input type="text" id="inP1" value="Ella"></div>
+        <div class="field"><label>Persona 2</label><input type="text" id="inP2" value="Él"></div>
+      </div>
+      <div class="field-row-3">
+        <div class="field"><label>Score (0-100)</label><input type="number" id="inScore" value="23" min="0" max="100"></div>
+        <div class="field"><label>Total msgs</label><input type="number" id="inTotalMsgs" value="34892"></div>
+        <div class="field"><label>Días</label><input type="number" id="inDays" value="847"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Msgs P1</label><input type="number" id="inMsgsA" value="22341"></div>
+        <div class="field"><label>Msgs P2</label><input type="number" id="inMsgsB" value="12551"></div>
+      </div>
+      <div class="field-row-3">
+        <div class="field"><label>Resp. prom.</label><input type="text" id="inAvgReply" value="3h 42min"></div>
+        <div class="field"><label>% noche</label><input type="text" id="inNightPct" value="31%"></div>
+        <div class="field"><label>Emojis ❤️</label><input type="number" id="inLoveCount" value="12"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Quién lleva %</label><input type="number" id="inLeaderPct" value="72" min="0" max="100"></div>
+        <div class="field"><label>Veredicto score</label><input type="text" id="inVerdict" value="Casi apagado 🔴"></div>
+      </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="section-group">
+      <div class="section-group-title">Línea de Vida</div>
+      <div class="field"><label>Puntos (mes:cantidad, separados por coma)</label>
+        <input type="text" id="inTimelineData" value="Ene 23:1820,Feb 23:2340,Mar 23:2890,Abr 23:3200,May 23:2900,Jun 23:2100,Jul 23:1400,Ago 23:980,Sep 23:620,Oct 23:410,Nov 23:280,Dic 23:190,Ene 24:120,Feb 24:85">
+      </div>
+      <div class="field"><label>Insight</label>
+        <textarea id="inTimelineInsight">En Abril 2023 vivieron su momento de máxima conexión (3,200 mensajes). Algo cambió en Julio 2023: los mensajes cayeron un 78%.</textarea>
+      </div>
+    </div>
+
+    <!-- SILENCES -->
+    <div class="section-group">
+      <div class="section-group-title">Mapa de Silencios</div>
+      <div class="field-row-3">
+        <div class="field"><label>Total silencios</label><input type="number" id="inSilTotal" value="23"></div>
+        <div class="field"><label>Más largo</label><input type="text" id="inSilLongest" value="18 días"></div>
+        <div class="field"><label>Rompe más</label><input type="text" id="inSilBreaker" value="Ella"></div>
+      </div>
+      <div class="field"><label>Insight</label>
+        <textarea id="inSilInsight">Hubo 23 silencios de más de 48 horas. Ella rompió el silencio 19 veces — es quien más busca reconectar.</textarea>
+      </div>
+    </div>
+
+    <!-- DOUBLE TEXT -->
+    <div class="section-group">
+      <div class="section-group-title">Double Texting</div>
+      <div class="field-row">
+        <div class="field"><label>Veces P1</label><input type="number" id="inDtA" value="1651"></div>
+        <div class="field"><label>Veces P2</label><input type="number" id="inDtB" value="203"></div>
+      </div>
+      <div class="field"><label>Insight</label>
+        <textarea id="inDtInsight">Ella es quien más persiste, enviando ráfagas de 5+ mensajes 1,651 veces. El récord fue 47 mensajes seguidos sin respuesta.</textarea>
+      </div>
+    </div>
+
+    <!-- DELETED -->
+    <div class="section-group">
+      <div class="section-group-title">Mensajes Eliminados</div>
+      <div class="field-row-3">
+        <div class="field"><label>Total</label><input type="number" id="inDelTotal" value="847"></div>
+        <div class="field"><label>P1 eliminó</label><input type="number" id="inDelA" value="156"></div>
+        <div class="field"><label>P2 eliminó</label><input type="number" id="inDelB" value="691"></div>
+      </div>
+      <div class="field"><label>Insight</label>
+        <textarea id="inDelInsight">Él eliminó más mensajes (691). Eso es un número significativo de mensajes borrados... ¿Qué habrá dicho?</textarea>
+      </div>
+    </div>
+
+    <!-- MULTIMEDIA -->
+    <div class="section-group">
+      <div class="section-group-title">Reyes del Multimedia</div>
+      <div class="field-row"><div class="field"><label>Audios P1</label><input type="number" id="inMmAudA" value="342"></div><div class="field"><label>Audios P2</label><input type="number" id="inMmAudB" value="23"></div></div>
+      <div class="field-row"><div class="field"><label>Fotos P1</label><input type="number" id="inMmImgA" value="890"></div><div class="field"><label>Fotos P2</label><input type="number" id="inMmImgB" value="120"></div></div>
+      <div class="field-row"><div class="field"><label>Videos P1</label><input type="number" id="inMmVidA" value="67"></div><div class="field"><label>Videos P2</label><input type="number" id="inMmVidB" value="12"></div></div>
+      <div class="field"><label>Insight</label><textarea id="inMmInsight">Ella habla más con archivos que con palabras 👀</textarea></div>
+    </div>
+
+    <!-- FORENSIC -->
+    <div class="section-group">
+      <div class="section-group-title">Reconstrucción Forense</div>
+      <div class="field"><label>Momento 1 (fecha | descripción)</label><input type="text" id="inForensic1" value="15 marzo 2023 | 💕 Primer 'te amo' — Ella lo dijo primero, a las 2:34am"></div>
+      <div class="field"><label>Momento 2</label><input type="text" id="inForensic2" value="28 julio 2023 | ⚡ Punto de inflexión — mensajes cayeron de 3,200 a 980 en un mes"></div>
+      <div class="field"><label>Momento 3</label><input type="text" id="inForensic3" value="3 enero 2024 | 💔 Último 'te quiero' — Él no respondió. Silencio de 6 días después."></div>
+      <div class="field"><label>Narrativa</label><textarea id="inForensicNarrative">Esta relación tuvo un inicio intenso que alcanzó su pico en abril 2023. A partir de julio, algo cambió drásticamente. Los mensajes cayeron un 78%, los "te quiero" desaparecieron, y los silencios se multiplicaron.</textarea></div>
+    </div>
+
+    <!-- BEFORE VS NOW -->
+    <div class="section-group">
+      <div class="section-group-title">Antes vs Ahora</div>
+      <div class="field"><label>Stat 1 (nombre | antes | ahora)</label><input type="text" id="inBvn1" value="Mensajes enviados | 2,340 | 120"></div>
+      <div class="field"><label>Stat 2</label><input type="text" id="inBvn2" value="Emojis de amor ❤️ | 89 | 2"></div>
+      <div class="field"><label>Stat 3</label><input type="text" id="inBvn3" value="Largo promedio | 47 chars | 8 chars"></div>
+      <div class="field"><label>Conclusión</label><textarea id="inBvnInsight">3 métricas muestran deterioro significativo (>30%). Lo más impactante: Emojis de amor de Él cayó un 98%.</textarea></div>
+    </div>
+
+    <!-- THERAPIST -->
+    <div class="section-group">
+      <div class="section-group-title">Terapeuta IA</div>
+      <div class="field"><label>Texto del terapeuta</label>
+        <textarea id="inTherapist" style="min-height: 100px;">Lo que veo aquí no es una relación que se enfrió de golpe. Es un desgaste lento donde una persona dejó de intentarlo mientras la otra seguía buscando conexión. Los 1,651 episodios de double texting de Ella frente a los 203 de Él hablan de un desbalance profundo. Cuando alguien borra 691 mensajes, no está corrigiendo typos — está editando la narrativa. Mi recomendación: necesitan una conversación honesta sobre si ambos quieren estar aquí.</textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN AREA ── -->
+  <div class="main-area">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="view-toggle">
+        <button class="active" onclick="setView('mobile', this)">📱 Móvil 390px</button>
+        <button onclick="setView('desktop', this)">🖥️ Desktop</button>
+      </div>
+      <div class="toolbar-sep"></div>
+      <select id="sectionJump" onchange="jumpToSection(this.value)">
+        <option value="">↓ Ir a sección...</option>
+        <option value="sec-score">Score</option>
+        <option value="sec-stats">Estadísticas</option>
+        <option value="sec-timeline">Línea de Vida</option>
+        <option value="sec-silences">Mapa de Silencios</option>
+        <option value="sec-doubletext">Double Texting</option>
+        <option value="sec-deleted">Mensajes Eliminados</option>
+        <option value="sec-multimedia">Reyes del Multimedia</option>
+        <option value="sec-forensic">Reconstrucción Forense</option>
+        <option value="sec-bvn">Antes vs Ahora</option>
+        <option value="sec-therapist">Terapeuta IA</option>
+      </select>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" onclick="captureSection()">📷 Capturar sección</button>
+      <button class="toolbar-btn" onclick="captureAll()">📸 Capturar todo</button>
+      <button class="toolbar-btn" onclick="captureClipboard()">📋 Copiar</button>
+      <button class="toolbar-btn primary" onclick="downloadPng()">⬇ Descargar PNG</button>
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-wrap" id="previewWrap">
+      <div class="preview-frame mobile" id="previewFrame">
+        <div class="preview-content" id="previewContent">
+          <!-- Content injected by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="capture-flash" id="captureFlash"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════ STATE ══════
+let timelineChart = null;
+let lastCapturedCanvas = null;
+
+// ══════ VIEW TOGGLE ══════
+function setView(mode, btn) {
+  document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const frame = document.getElementById('previewFrame');
+  if (mode === 'mobile') {
+    frame.classList.add('mobile');
+    frame.classList.remove('desktop');
+  } else {
+    frame.classList.remove('mobile');
+    frame.classList.add('desktop');
+  }
+}
+
+// ══════ SECTION JUMP ══════
+function jumpToSection(id) {
+  if (!id) return;
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('sectionJump').value = '';
+}
+
+// ══════ RENDER ══════
+function getVal(id) { return document.getElementById(id).value; }
+function getNum(id) { return parseInt(document.getElementById(id).value) || 0; }
+
+function getVerdict(score) {
+  if (score >= 95) return 'De otro planeta';
+  if (score >= 85) return 'Sólidos de verdad';
+  if (score >= 75) return 'Va muy bien';
+  if (score >= 65) return 'Bien, pero ojo';
+  if (score >= 55) return 'Tibio, cuidado';
+  if (score >= 45) return 'Enfriándose ya';
+  if (score >= 35) return 'Algo está mal';
+  if (score >= 25) return 'Bajo presión seria';
+  if (score >= 15) return 'Casi apagado';
+  return 'Houston, hablemos';
+}
+
+function render() {
+  const p1 = getVal('inP1');
+  const p2 = getVal('inP2');
+  const score = getNum('inScore');
+  const totalMsgs = getNum('inTotalMsgs');
+  const days = getNum('inDays');
+  const msgsA = getNum('inMsgsA');
+  const msgsB = getNum('inMsgsB');
+  const avgReply = getVal('inAvgReply');
+  const nightPct = getVal('inNightPct');
+  const loveCount = getNum('inLoveCount');
+  const leaderPct = getNum('inLeaderPct');
+  const verdict = getVal('inVerdict');
+  const followerPct = 100 - leaderPct;
+  const leader = leaderPct >= 50 ? p1 : p2;
+  const follower = leader === p1 ? p2 : p1;
+
+  // Timeline data
+  const timelineRaw = getVal('inTimelineData');
+  const timelinePoints = timelineRaw.split(',').map(p => {
+    const [label, val] = p.trim().split(':');
+    return { label: label.trim(), value: parseInt(val) || 0 };
+  }).filter(p => p.label);
+
+  // Forensic
+  const forensic = [getVal('inForensic1'), getVal('inForensic2'), getVal('inForensic3')]
+    .filter(v => v.trim())
+    .map(v => {
+      const [date, ...desc] = v.split('|');
+      return { date: (date || '').trim(), detail: (desc.join('|') || '').trim() };
+    });
+
+  // BVN
+  const bvnRows = [getVal('inBvn1'), getVal('inBvn2'), getVal('inBvn3')]
+    .filter(v => v.trim())
+    .map(v => {
+      const parts = v.split('|').map(s => s.trim());
+      return { label: parts[0] || '', before: parts[1] || '', after: parts[2] || '' };
+    });
+
+  // Multimedia
+  const mmAudA = getNum('inMmAudA'), mmAudB = getNum('inMmAudB');
+  const mmImgA = getNum('inMmImgA'), mmImgB = getNum('inMmImgB');
+  const mmVidA = getNum('inMmVidA'), mmVidB = getNum('inMmVidB');
+
+  const mmTypes = [
+    { icon: '🎤', label: 'Audios', a: mmAudA, b: mmAudB },
+    { icon: '📷', label: 'Imágenes', a: mmImgA, b: mmImgB },
+    { icon: '🎬', label: 'Videos', a: mmVidA, b: mmVidB },
+  ];
+
+  // Double text
+  const dtA = getNum('inDtA'), dtB = getNum('inDtB');
+  const dtMax = Math.max(dtA, dtB, 1);
+
+  // Deleted
+  const delTotal = getNum('inDelTotal'), delA = getNum('inDelA'), delB = getNum('inDelB');
+
+  // Silences
+  const silTotal = getVal('inSilTotal'), silLongest = getVal('inSilLongest'), silBreaker = getVal('inSilBreaker');
+
+  // ── Build HTML ──
+  let html = '';
+
+  // Results header
+  html += `<div class="results-header">
+    <h2>Tu relación al <span class="gradient-text">descubierto</span></h2>
+    <p style="color:var(--text-muted);">Análisis basado en <strong>${totalMsgs.toLocaleString()}</strong> mensajes</p>
+  </div>`;
+
+  // Score card
+  html += `<div id="sec-score" class="score-card">
+    <div class="score-label">Score de la relación</div>
+    <div class="score-number">${score}</div>
+    <div class="score-max">de 100</div>
+    <div class="score-verdict">${verdict}</div>
+  </div>`;
+
+  // Stats
+  html += `<div id="sec-stats"><div class="plan-header"><div class="plan-badge free">✨ GRATIS</div><div class="plan-title free">Análisis Básico</div><div class="plan-subtitle">Estadísticas generales de tu conversación</div></div>`;
+  html += `<div class="stats-grid">
+    <div class="stat-card"><div class="stat-emoji">💬</div><div class="stat-value">${msgsA.toLocaleString()}</div><div class="stat-label">Mensajes de ${p1}</div></div>
+    <div class="stat-card"><div class="stat-emoji">💬</div><div class="stat-value">${msgsB.toLocaleString()}</div><div class="stat-label">Mensajes de ${p2}</div></div>
+    <div class="stat-card"><div class="stat-emoji">⏱️</div><div class="stat-value">${avgReply}</div><div class="stat-label">Tiempo promedio de respuesta</div></div>
+    <div class="stat-card"><div class="stat-emoji">🌙</div><div class="stat-value">${nightPct}</div><div class="stat-label">Mensajes nocturnos (12am-5am)</div></div>
+    <div class="stat-card"><div class="stat-emoji">❤️</div><div class="stat-value">${loveCount.toLocaleString()}</div><div class="stat-label">Emojis de amor enviados</div></div>
+    <div class="stat-card"><div class="stat-emoji">📅</div><div class="stat-value">${days.toLocaleString()}</div><div class="stat-label">Días de conversación</div></div>
+  </div>`;
+
+  // Fun fact
+  html += `<div class="fun-fact">📊 <strong>Dato curioso:</strong> ${p1} envió <strong>${msgsA.toLocaleString()}</strong> mensajes y ${p2} envió <strong>${msgsB.toLocaleString()}</strong>. ${loveCount > 20 ? 'Hay mucho amor en este chat ❤️' : 'Podrían usar más emojis de amor... 😬'}</div>`;
+
+  // Who leads
+  const ctx = leaderPct >= 65 ? `${leader} inicia más, pregunta más, lleva el peso.` : 'Ligeramente desequilibrado pero dentro de lo normal.';
+  html += `<div class="example-card"><strong style="font-size:1.1em;">${leader} lleva la relación</strong><br>${leader}: <strong>${leaderPct}%</strong> · ${follower}: <strong>${followerPct}%</strong><br><span style="color:var(--text-muted);font-size:0.9em;">${ctx}</span></div></div>`;
+
+  // ── DETECTIVE SECTION ──
+  html += `<div class="plan-detective-wrap">
+    <div class="plan-header"><div class="plan-badge detective">🔍 DETECTIVE</div><div class="plan-title detective">Análisis Profundo</div><div class="plan-subtitle">Patrones ocultos de tu conversación</div></div>`;
+
+  // Timeline
+  html += `<div class="premium-feature-card" id="sec-timeline">
+    <div class="pf-header"><div class="pf-icon">📈</div><div><div class="pf-title">Línea de Vida de la Relación</div><div class="pf-subtitle">Evolución mensual de la comunicación</div></div></div>
+    <div class="pf-body">
+      <div style="height:320px;"><canvas id="timelineChart"></canvas></div>
+      <div class="pf-insight"><strong>📊 Análisis:</strong> ${getVal('inTimelineInsight')}</div>
+    </div>
+  </div>`;
+
+  // Silences
+  html += `<div class="premium-feature-card" id="sec-silences">
+    <div class="pf-header"><div class="pf-icon">🔇</div><div><div class="pf-title">Mapa de Silencios</div><div class="pf-subtitle">Momentos donde la comunicación se detuvo</div></div></div>
+    <div class="pf-body">
+      <div class="silence-stats">
+        <div class="silence-stat"><div class="silence-stat-value">${silTotal}</div><div class="silence-stat-label">Silencios de 48h+</div></div>
+        <div class="silence-stat"><div class="silence-stat-value">${silLongest}</div><div class="silence-stat-label">Silencio más largo</div></div>
+        <div class="silence-stat"><div class="silence-stat-value">${silBreaker}</div><div class="silence-stat-label">Rompe el silencio más</div></div>
+      </div>
+      <div class="pf-insight"><strong>🔇 Análisis:</strong> ${getVal('inSilInsight')}</div>
+    </div>
+  </div>`;
+
+  // Double texting
+  html += `<div class="premium-feature-card" id="sec-doubletext">
+    <div class="pf-header"><div class="pf-icon">💬💬</div><div><div class="pf-title">Double Texting</div><div class="pf-subtitle">Quién persiste más sin recibir respuesta</div></div></div>
+    <div class="pf-body">
+      <div class="dt-comparison">
+        <div class="dt-person">
+          <div class="dt-person-name">${p1}</div>
+          <div class="dt-person-count" style="color:var(--pink);">${dtA.toLocaleString()}</div>
+          <div class="dt-person-label">veces hizo double text</div>
+          <div class="dt-bar-track"><div class="dt-bar-fill pink" style="width:${(dtA/dtMax)*100}%"></div></div>
+        </div>
+        <div class="dt-person">
+          <div class="dt-person-name">${p2}</div>
+          <div class="dt-person-count" style="color:var(--purple);">${dtB.toLocaleString()}</div>
+          <div class="dt-person-label">veces hizo double text</div>
+          <div class="dt-bar-track"><div class="dt-bar-fill purple" style="width:${(dtB/dtMax)*100}%"></div></div>
+        </div>
+      </div>
+      <div class="pf-insight"><strong>😤 Patrón:</strong> ${getVal('inDtInsight')}</div>
+    </div>
+  </div>`;
+
+  // Multimedia
+  let mmHtml = '';
+  mmTypes.forEach(t => {
+    const tot = t.a + t.b;
+    const pctA = tot > 0 ? Math.round(t.a / tot * 100) : 0;
+    const pctB = 100 - pctA;
+    const king = t.a >= t.b ? p1 : p2;
+    mmHtml += `<div class="mm-row">
+      <span class="mm-icon">${t.icon}</span>
+      <div class="mm-label">${t.label} <span>(${tot})</span></div>`;
+    if (tot > 0) {
+      mmHtml += `<div class="mm-bar-wrap"><div class="mm-bar-a" style="width:${pctA}%"></div><div class="mm-bar-b" style="width:${pctB}%"></div></div>
+      <span class="mm-counts">${p1}: ${t.a} · ${p2}: ${t.b}</span>
+      <div class="mm-king">👑 <strong>${king}</strong></div>`;
+    }
+    mmHtml += `</div>`;
+  });
+
+  html += `<div class="premium-feature-card" id="sec-multimedia">
+    <div class="pf-header"><div class="pf-icon">📱</div><div><div class="pf-title">Reyes del Multimedia</div><div class="pf-subtitle">Quién manda más audios, fotos y videos</div></div></div>
+    <div class="pf-body">${mmHtml}
+      <div class="pf-insight" style="margin-top:16px;"><strong>📱 Insight:</strong> ${getVal('inMmInsight')}</div>
+    </div>
+  </div>`;
+
+  // Deleted
+  html += `<div class="premium-feature-card" id="sec-deleted">
+    <div class="pf-header"><div class="pf-icon">🗑️</div><div><div class="pf-title">Mensajes Eliminados</div><div class="pf-subtitle">Lo que alguien no quería que vieras</div></div></div>
+    <div class="pf-body">
+      <div class="deleted-stats">
+        <div class="deleted-stat-card"><div class="deleted-stat-value">${delTotal}</div><div class="deleted-stat-label">Total eliminados</div></div>
+        <div class="deleted-stat-card"><div class="deleted-stat-value">${delA}</div><div class="deleted-stat-label">${p1} eliminó</div></div>
+        <div class="deleted-stat-card"><div class="deleted-stat-value">${delB}</div><div class="deleted-stat-label">${p2} eliminó</div></div>
+      </div>
+      <div class="pf-insight" style="margin-top:16px;"><strong>🗑️ Análisis:</strong> ${getVal('inDelInsight')}</div>
+    </div>
+  </div>`;
+
+  html += `</div>`; // close detective wrap
+
+  // ── OBSESSIVE SECTION ──
+  html += `<div class="plan-obsessive-wrap">
+    <div class="plan-header"><div class="plan-badge obsessive">🔥 OBSESIVO</div><div class="plan-title obsessive">Análisis Total</div><div class="plan-subtitle">El análisis más profundo que existe</div></div>`;
+
+  // Forensic
+  let forensicHtml = '<div style="margin-bottom:20px;"><div style="font-family:var(--font-display);font-size:0.9rem;margin-bottom:12px;color:var(--yellow);">📌 Momentos Clave</div>';
+  forensic.forEach(f => {
+    forensicHtml += `<div class="forensic-point"><div class="forensic-date">${f.date}</div><div class="forensic-detail">${f.detail}</div></div>`;
+  });
+  forensicHtml += '</div>';
+  forensicHtml += `<div class="pf-insight" style="margin-top:16px;"><strong>🕵️ Reconstrucción:</strong> ${getVal('inForensicNarrative')}</div>`;
+
+  html += `<div class="premium-feature-card" id="sec-forensic">
+    <div class="pf-header"><div class="pf-icon">🕵️</div><div><div class="pf-title">Reconstrucción Forense</div><div class="pf-subtitle">La cronología completa de tu relación</div></div></div>
+    <div class="pf-body">${forensicHtml}</div>
+  </div>`;
+
+  // Before vs Now
+  let bvnHtml = `<div style="font-size:0.82rem;color:var(--text-muted);text-align:center;margin-bottom:16px;">Comparando primeros meses vs últimos meses</div>`;
+  bvnHtml += `<div class="bvn-grid">`;
+  [p1, p2].forEach((name, idx) => {
+    const color = idx === 0 ? 'var(--pink)' : 'var(--purple)';
+    bvnHtml += `<div class="bvn-person"><div class="bvn-person-header"><span class="bvn-person-dot" style="background:${color};"></span> ${name}</div>`;
+    bvnHtml += '<table class="bvn-table"><thead><tr><th>Métrica</th><th>Antes</th><th>Ahora</th></tr></thead><tbody>';
+    bvnRows.forEach(r => {
+      bvnHtml += `<tr><td>${r.label}</td><td>${r.before}</td><td style="color:#FF4757;">${r.after}</td></tr>`;
+    });
+    bvnHtml += '</tbody></table></div>';
+  });
+  bvnHtml += '</div>';
+  bvnHtml += `<div class="pf-insight" style="margin-top:16px;"><strong>💔 Conclusión devastadora:</strong> ${getVal('inBvnInsight')}</div>`;
+
+  html += `<div class="premium-feature-card" id="sec-bvn">
+    <div class="pf-header"><div class="pf-icon">📊</div><div><div class="pf-title">Antes vs Ahora</div><div class="pf-subtitle">Cómo ha cambiado la comunicación</div></div></div>
+    <div class="pf-body">${bvnHtml}</div>
+  </div>`;
+
+  // Therapist
+  html += `<div class="premium-feature-card" id="sec-therapist">
+    <div class="pf-header"><div class="pf-icon">🧠</div><div><div class="pf-title">Terapeuta IA</div><div class="pf-subtitle">Análisis profesional de tu relación</div></div></div>
+    <div class="pf-body">
+      <div class="therapist-card">
+        <div class="therapist-label">🧠 Terapeuta IA — Análisis profesional</div>
+        ${getVal('inTherapist')}
+      </div>
+    </div>
+  </div>`;
+
+  html += `</div>`; // close obsessive wrap
+
+  // Inject
+  document.getElementById('previewContent').innerHTML = html;
+
+  // Render chart after DOM update
+  requestAnimationFrame(() => renderChart(timelinePoints));
+}
+
+// ══════ CHART ══════
+function renderChart(points) {
+  if (timelineChart) { timelineChart.destroy(); timelineChart = null; }
+  const canvas = document.getElementById('timelineChart');
+  if (!canvas || points.length < 2) return;
+
+  const labels = points.map(p => p.label);
+  const data = points.map(p => p.value);
+  const peakIndex = data.indexOf(Math.max(...data));
+
+  timelineChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Mensajes',
+        data,
+        borderColor: '#FF2D78',
+        backgroundColor: (ctx) => {
+          const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 280);
+          gradient.addColorStop(0, 'rgba(255,45,120,0.25)');
+          gradient.addColorStop(1, 'rgba(255,45,120,0)');
+          return gradient;
+        },
+        fill: true,
+        tension: 0.4,
+        borderWidth: 2.5,
+        pointBackgroundColor: data.map((v, i) => i === peakIndex ? '#FFD23F' : '#FF2D78'),
+        pointRadius: data.map((v, i) => i === peakIndex ? 8 : 3),
+        pointBorderWidth: data.map((v, i) => i === peakIndex ? 3 : 0),
+        pointBorderColor: data.map((v, i) => i === peakIndex ? '#fff' : 'transparent'),
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1a2e',
+          titleColor: '#FAFAFA',
+          bodyColor: '#a0a0b8',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          cornerRadius: 12,
+          padding: 12,
+          callbacks: {
+            label: (ctx) => ctx.parsed.y.toLocaleString() + ' mensajes'
+          }
+        }
+      },
+      layout: { padding: { bottom: 20, top: 30, right: 20 } },
+      scales: {
+        x: {
+          ticks: {
+            color: '#a0a0b8', font: { size: 11 },
+            maxRotation: 45, minRotation: 45,
+            callback: function(val, index) {
+              const total = this.chart.data.labels.length;
+              const step = total > 24 ? 3 : total > 12 ? 2 : 1;
+              return index % step === 0 ? this.getLabelForValue(val) : '';
+            }
+          },
+          grid: { display: false }
+        },
+        y: {
+          ticks: { color: '#a0a0b8', font: { size: 10 } },
+          grid: { color: 'rgba(255,255,255,0.04)' }
+        }
+      }
+    }
+  });
+}
+
+// ══════ CAPTURE UTILITIES ══════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function flash() {
+  const f = document.getElementById('captureFlash');
+  f.classList.add('active');
+  setTimeout(() => f.classList.remove('active'), 200);
+}
+
+function getDateStr() {
+  const d = new Date();
+  return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getVisibleSectionName() {
+  const wrap = document.getElementById('previewWrap');
+  const sections = ['sec-score','sec-stats','sec-timeline','sec-silences','sec-doubletext','sec-deleted','sec-multimedia','sec-forensic','sec-bvn','sec-therapist'];
+  const wrapRect = wrap.getBoundingClientRect();
+  const center = wrapRect.top + wrapRect.height / 2;
+  let closest = 'report';
+  let closestDist = Infinity;
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const dist = Math.abs(rect.top + rect.height/2 - center);
+    if (dist < closestDist) { closestDist = dist; closest = id.replace('sec-',''); }
+  });
+  return closest;
+}
+
+async function doCapture(element) {
+  // Wait for chart to finish rendering
+  await new Promise(r => setTimeout(r, 500));
+  flash();
+  const canvas = await html2canvas(element, {
+    scale: 2,
+    backgroundColor: '#0d0d0d',
+    useCORS: true,
+    logging: false,
+    scrollX: 0,
+    scrollY: 0,
+    windowWidth: element.scrollWidth,
+    windowHeight: element.scrollHeight,
+  });
+  lastCapturedCanvas = canvas;
+  return canvas;
+}
+
+async function captureSection() {
+  const sectionName = getVisibleSectionName();
+  const el = document.getElementById('sec-' + sectionName);
+  if (!el) { showToast('No se encontró la sección'); return; }
+  showToast('Capturando sección...');
+  const canvas = await doCapture(el);
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `yalosabia-mockup-${sectionName}-${getDateStr()}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Sección descargada');
+  });
+}
+
+async function captureAll() {
+  showToast('Capturando reporte completo...');
+  const el = document.getElementById('previewContent');
+  const canvas = await doCapture(el);
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `yalosabia-mockup-completo-${getDateStr()}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Reporte completo descargado');
+  });
+}
+
+async function captureClipboard() {
+  showToast('Copiando al portapapeles...');
+  const el = document.getElementById('previewContent');
+  const canvas = await doCapture(el);
+  try {
+    canvas.toBlob(async blob => {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      showToast('Copiado al portapapeles');
+    });
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+async function downloadPng() {
+  const sectionName = getVisibleSectionName();
+  const el = document.getElementById('sec-' + sectionName) || document.getElementById('previewContent');
+  showToast('Descargando...');
+  const canvas = await doCapture(el);
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `yalosabia-mockup-${sectionName}-${getDateStr()}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('PNG descargado');
+  });
+}
+
+// ══════ LIVE UPDATES ══════
+let renderTimeout = null;
+function scheduleRender() {
+  clearTimeout(renderTimeout);
+  renderTimeout = setTimeout(render, 150);
+}
+
+// Bind all inputs
+document.querySelectorAll('.sidebar input, .sidebar textarea, .sidebar select').forEach(el => {
+  el.addEventListener('input', scheduleRender);
+});
+
+// Initial render
+render();
+</script>
+</body>
+</html>
