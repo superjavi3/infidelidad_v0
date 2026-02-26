@@ -3789,6 +3789,9 @@ function analyzeGroupMessages(messages, senderCounts, systemEvents) {
   };
   const deletedPatterns = ['Este mensaje fue eliminado', 'Se eliminó este mensaje', 'This message was deleted', 'You deleted this message', 'Eliminaste este mensaje', 'Borraste este mensaje'];
 
+  // Emoji regex (simplificado, cubre la mayoría de emojis comunes)
+  const emojiRegex = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{200D}\u{20E3}\u{231A}-\u{231B}\u{23E9}-\u{23F3}\u{23F8}-\u{23FA}\u{25AA}-\u{25AB}\u{25B6}\u{25C0}\u{25FB}-\u{25FE}\u{2614}-\u{2615}\u{2648}-\u{2653}\u{267F}\u{2693}\u{26A1}\u{26AA}-\u{26AB}\u{26BD}-\u{26BE}\u{26C4}-\u{26C5}\u{26CE}\u{26D4}\u{26EA}\u{26F2}-\u{26F3}\u{26F5}\u{26FA}\u{26FD}\u{2702}\u{2705}\u{2708}-\u{270D}\u{270F}]/gu;
+
   // Per-member analysis
   const memberMap = {};
   sorted.forEach(m => {
@@ -3807,8 +3810,15 @@ function analyzeGroupMessages(messages, senderCounts, systemEvents) {
         dailyDist: new Array(7).fill(0),
         nightMessages: 0, nightPct: 0,
         jajaCount: 0,
+        emojiCount: 0,
         urlCount: 0,
         forwardedCount: 0,
+        consecutiveMessages: 0,
+        silenceBreaks: 0,
+        uniqueInteractions: 0,
+        avgResponseTime: 999,
+        avgResponsesGenerated: 0,
+        weeklyDist: [],
         category: 'participant'
       };
     }
@@ -3825,6 +3835,7 @@ function analyzeGroupMessages(messages, senderCounts, systemEvents) {
     if (hour >= 0 && hour < 6) mem.nightMessages++;
 
     const txt = (m.text || '').toLowerCase();
+    const rawTxt = m.text || '';
     // Media detection
     let isMedia = false;
     for (const [type, pats] of Object.entries(mediaPatterns)) {
@@ -3833,11 +3844,107 @@ function analyzeGroupMessages(messages, senderCounts, systemEvents) {
     // Deleted detection
     if (deletedPatterns.some(p => txt.includes(p.toLowerCase()))) mem.deletedMessages++;
     // Jaja/humor detection
-    if (/j[aeiou]j[aeiou]/i.test(txt) || /😂|🤣|xd/i.test(txt)) mem.jajaCount++;
+    if (/j[aá]+j[aá]+(j[aá]*)*/i.test(txt) || /😂|🤣|💀/u.test(rawTxt) || /xd/i.test(txt)) mem.jajaCount++;
+    // Emoji count
+    const emojis = rawTxt.match(emojiRegex);
+    if (emojis) mem.emojiCount += emojis.length;
     // URL detection
-    if (/https?:\/\//i.test(txt)) mem.urlCount++;
+    if (/https?:\/\/|www\./i.test(txt)) mem.urlCount++;
     // Forwarded detection
     if (/reenviado/i.test(txt) || /forwarded/i.test(txt)) mem.forwardedCount++;
+  });
+
+  // ── Per-member advanced stats (single pass over sorted) ──
+  // Consecutive messages, silence breaks, interactions, response times, responses generated
+  const weekMs = 7 * 24 * 60 * 60 * 1000;
+  const weeklyBuckets = {}; // sender → Map<weekIdx, count>
+
+  for (let i = 0; i < sorted.length; i++) {
+    const m = sorted[i];
+    if (!m.sender || !memberMap[m.sender]) continue;
+    const mem = memberMap[m.sender];
+
+    // Weekly distribution bucket
+    const weekIdx = Math.floor((m.timestamp - firstDate) / weekMs);
+    if (!weeklyBuckets[m.sender]) weeklyBuckets[m.sender] = {};
+    weeklyBuckets[m.sender][weekIdx] = (weeklyBuckets[m.sender][weekIdx] || 0) + 1;
+
+    if (i === 0) continue;
+
+    const prev = sorted[i - 1];
+    const gapMin = (m.timestamp - prev.timestamp) / 60000;
+
+    // Consecutive messages (same sender in a row)
+    if (m.sender === prev.sender) {
+      mem.consecutiveMessages++;
+    }
+
+    // Silence breaks (>24h gap, who breaks it)
+    if (gapMin > 1440) {
+      mem.silenceBreaks++;
+    }
+
+    // Response time (different sender, within 30 min)
+    if (m.sender !== prev.sender && gapMin > 0 && gapMin <= 30) {
+      if (!mem._responseTimes) mem._responseTimes = [];
+      mem._responseTimes.push(gapMin);
+    }
+  }
+
+  // Unique interactions & avgResponsesGenerated (second pass, optimized)
+  for (let i = 0; i < sorted.length; i++) {
+    const m = sorted[i];
+    if (!m.sender || !memberMap[m.sender]) continue;
+    const mem = memberMap[m.sender];
+
+    // Unique interactions: who responds to me or I respond to, within 5 min
+    if (i > 0 && sorted[i - 1].sender !== m.sender) {
+      const gapMin = (m.timestamp - sorted[i - 1].timestamp) / 60000;
+      if (gapMin > 0 && gapMin <= 5) {
+        if (!mem._interactSet) mem._interactSet = new Set();
+        mem._interactSet.add(sorted[i - 1].sender);
+      }
+    }
+    if (i < sorted.length - 1 && sorted[i + 1].sender !== m.sender) {
+      const gapMin = (sorted[i + 1].timestamp - m.timestamp) / 60000;
+      if (gapMin > 0 && gapMin <= 5) {
+        if (!mem._interactSet) mem._interactSet = new Set();
+        mem._interactSet.add(sorted[i + 1].sender);
+      }
+    }
+
+    // Responses generated: count msgs from OTHERS within 10 min after this msg
+    let responses = 0;
+    for (let j = i + 1; j < sorted.length; j++) {
+      const gapMin2 = (sorted[j].timestamp - m.timestamp) / 60000;
+      if (gapMin2 > 10) break;
+      if (sorted[j].sender !== m.sender) responses++;
+    }
+    if (!mem._totalResponsesGen) mem._totalResponsesGen = 0;
+    if (!mem._msgCountForResp) mem._msgCountForResp = 0;
+    mem._totalResponsesGen += responses;
+    mem._msgCountForResp++;
+  }
+
+  // Finalize per-member advanced stats
+  const totalWeeks = Math.max(1, Math.ceil(totalDays / 7));
+  Object.values(memberMap).forEach(mem => {
+    // Weekly distribution as full array
+    const wb = weeklyBuckets[mem.name] || {};
+    mem.weeklyDist = [];
+    for (let w = 0; w <= totalWeeks; w++) {
+      mem.weeklyDist.push(wb[w] || 0);
+    }
+    // Avg response time
+    if (mem._responseTimes && mem._responseTimes.length > 0) {
+      mem.avgResponseTime = mem._responseTimes.reduce((a, b) => a + b, 0) / mem._responseTimes.length;
+    }
+    // Unique interactions count
+    mem.uniqueInteractions = mem._interactSet ? mem._interactSet.size : 0;
+    // Avg responses generated
+    mem.avgResponsesGenerated = mem._msgCountForResp > 0 ? mem._totalResponsesGen / mem._msgCountForResp : 0;
+    // Clean up temp fields
+    delete mem._responseTimes; delete mem._interactSet; delete mem._totalResponsesGen; delete mem._msgCountForResp;
   });
 
   // Build members array sorted by msgCount desc
@@ -4881,124 +4988,178 @@ function renderGroupEras(gs) {
   body.innerHTML = html;
 }
 
-// ── 10. ARQUETIPOS (STAR FEATURE) ──
-const ARCHETYPES = {
-  'El Fantasma': { emoji: '👻', color: '#666', desc: 'Está en el grupo pero nadie sabe por qué' },
-  'El Audiero': { emoji: '🎙️', color: '#6C5CE7', desc: 'Nunca escribe, solo manda audios' },
-  'El Payaso': { emoji: '🤡', color: '#FF6B35', desc: 'Vive de memes, stickers y risas' },
-  'El Nocturno': { emoji: '🌙', color: '#2D3436', desc: 'Solo aparece cuando todos duermen' },
-  'El Periodista': { emoji: '📰', color: '#0984E3', desc: 'Comparte links y noticias que nadie pidió' },
-  'El Líder': { emoji: '👑', color: '#FFD23F', desc: 'Sin esta persona el grupo no existiría' },
-  'El Polémico': { emoji: '🔥', color: '#FF2D78', desc: 'Sus mensajes generan debates inmediatos' },
-  'El Corazón': { emoji: '💖', color: '#E84393', desc: 'El pegamento emocional del grupo' },
-  'El Que Va y Viene': { emoji: '🚪', color: '#FDCB6E', desc: 'Periodos de hiperactividad seguidos de desapariciones' },
-  'El Normal': { emoji: '😐', color: '#636E72', desc: 'Participa lo justo, ni más ni menos' },
-};
+// ── 10. ARQUETIPOS (STAR FEATURE) — 30 categorías ──
+const ARCHETYPES = [
+  // === TIER 1: Roles principales (únicos) ===
+  { id: 'lider', emoji: '🏆', name: 'El Líder', color: '#FFD23F', desc: 'Sin esta persona el grupo no existiría', unique: true,
+    condition: (p, g) => (p.msgCount / g.totalMessages) >= 0.20 },
+  { id: 'copiloto', emoji: '🥈', name: 'El Copiloto', color: '#C0C0C0', desc: 'Siempre ahí, nunca al mando', unique: true,
+    condition: (p, g) => {
+      const s = [...g.members].sort((a, b) => b.msgCount - a.msgCount);
+      return s[1] && s[1].name === p.name && (p.msgCount / g.totalMessages) >= 0.10;
+    }},
+  { id: 'corazon', emoji: '❤️', name: 'El Corazón del Grupo', color: '#E84393', desc: 'Habla con todos, no deja a nadie fuera', unique: true,
+    condition: (p, g) => {
+      const activeN = g.members.filter(m => m.daysSinceLastMessage <= 30 && m.msgCount > 5).length;
+      return p.uniqueInteractions >= Math.floor(activeN * 0.70) && activeN >= 4;
+    }},
+  { id: 'fundador', emoji: '👑', name: 'El Fundador', color: '#6C5CE7', desc: 'Creó el grupo y ahí sigue', unique: true,
+    condition: (p, g) => {
+      return g.systemEvents && g.systemEvents.some(e => e.type === 'group_created' && e.actor && p.name.includes(e.actor.split(' ')[0])) && p.daysSinceLastMessage < 30;
+    }},
 
-// Calcula score de afinidad de un miembro con cada arquetipo (mayor = mejor fit)
-function scoreArchetypes(member, gs) {
-  const pct = member.msgCount / gs.totalMessages * 100;
-  const audioRatio = member.mediaCount.audios / Math.max(1, member.msgCount);
-  const mediaRatio = member.mediaCount.total / Math.max(1, member.msgCount);
-  const nightRatio = member.nightPct / 100;
-  const jajaRatio = member.jajaCount / Math.max(1, member.msgCount);
-  const urlRatio = member.urlCount / Math.max(1, member.msgCount);
-  const fwdRatio = member.forwardedCount / Math.max(1, member.msgCount);
+  // === TIER 2: Patrones de comunicación (únicos) ===
+  { id: 'audiero', emoji: '🎙️', name: 'El Audiero', color: '#6C5CE7', desc: 'Por qué escribir si puede mandar audio de 3 minutos', unique: true,
+    condition: (p) => p.mediaCount.audios > 15 && (p.mediaCount.audios / Math.max(1, p.msgCount)) > 0.25 },
+  { id: 'stickerman', emoji: '🃏', name: 'El Sticker Man', color: '#00B894', desc: 'Tiene un sticker para cada ocasión', unique: true,
+    condition: (p) => p.mediaCount.stickers > 20 && (p.mediaCount.stickers / Math.max(1, p.msgCount)) > 0.18 },
+  { id: 'fotografo', emoji: '📸', name: 'El Fotógrafo', color: '#0984E3', desc: 'Todo lo documenta con foto', unique: true,
+    condition: (p) => p.mediaCount.imagenes > 20 && (p.mediaCount.imagenes / Math.max(1, p.msgCount)) > 0.15 },
+  { id: 'escritor', emoji: '📝', name: 'El Escritor', color: '#FDCB6E', desc: 'Manda párrafos cuando todos mandan frases', unique: true,
+    condition: (p, g) => {
+      const avgGroup = g.members.reduce((s, m) => s + m.avgLength, 0) / Math.max(1, g.members.length);
+      return p.avgLength > avgGroup * 1.8 && p.avgLength > 70 && p.msgCount > 40;
+    }},
+  { id: 'telegrafo', emoji: '⚡', name: 'El Telégrafo', color: '#74B9FF', desc: 'Nunca más de 5 palabras. Eficiente o vago, tú decides', unique: true,
+    condition: (p) => p.avgLength < 20 && p.msgCount > 80 },
+  { id: 'payaso', emoji: '🤡', name: 'El Payaso', color: '#FF6B35', desc: 'Vive para hacer reír al grupo', unique: true,
+    condition: (p) => p.jajaCount > 30 && (p.jajaCount / Math.max(1, p.msgCount)) > 0.12 },
 
-  // Varianza de actividad mensual (para "El Que Va y Viene")
-  let activityVariance = 0;
-  if (gs.monthlyActivity && gs.monthlyActivity.length > 2) {
-    const monthlyCounts = gs.monthlyActivity.map(ma => ma.byPerson[member.name] || 0);
-    const avg = monthlyCounts.reduce((a, b) => a + b, 0) / monthlyCounts.length;
-    if (avg > 0) {
-      const variance = monthlyCounts.reduce((s, c) => s + Math.pow(c - avg, 2), 0) / monthlyCounts.length;
-      activityVariance = Math.sqrt(variance) / avg; // coeficiente de variación
-    }
-  }
+  // === TIER 3: Patrones de horario (únicos) ===
+  { id: 'nocturno', emoji: '🌙', name: 'El Nocturno', color: '#2D3436', desc: 'Solo aparece cuando todos duermen', unique: true,
+    condition: (p) => p.nightPct > 35 && p.msgCount > 25 },
+  { id: 'madrugador', emoji: '🌅', name: 'El Madrugador', color: '#FFEAA7', desc: 'Ya mandó 3 mensajes antes de que te suene la alarma', unique: true,
+    condition: (p) => {
+      const early = (p.hourlyDist[6] || 0) + (p.hourlyDist[7] || 0) + (p.hourlyDist[8] || 0);
+      return (early / Math.max(1, p.msgCount)) > 0.25 && p.msgCount > 25;
+    }},
+  { id: 'oficina', emoji: '💼', name: 'El De Oficina', color: '#636E72', desc: 'Solo habla en horario laboral, de 9 a 6 como reloj', unique: true,
+    condition: (p) => {
+      let work = 0; for (let h = 9; h <= 17; h++) work += (p.hourlyDist[h] || 0);
+      return (work / Math.max(1, p.msgCount)) > 0.65 && p.msgCount > 40;
+    }},
+  { id: 'dominical', emoji: '📅', name: 'El Dominical', color: '#A29BFE', desc: 'Solo aparece los fines de semana', unique: true,
+    condition: (p) => {
+      const wknd = (p.dailyDist[0] || 0) + (p.dailyDist[6] || 0);
+      return (wknd / Math.max(1, p.msgCount)) > 0.50 && p.msgCount > 25;
+    }},
 
-  // Interacción con distintos miembros (para "El Corazón")
-  let interactsWith = 0;
-  if (gs.sorted) {
-    const replied = new Set();
-    for (let i = 1; i < gs.sorted.length; i++) {
-      if (gs.sorted[i].sender === member.name && gs.sorted[i-1].sender !== member.name) {
-        const gap = (gs.sorted[i].timestamp - gs.sorted[i-1].timestamp) / 60000;
-        if (gap > 0 && gap <= 30) replied.add(gs.sorted[i-1].sender);
+  // === TIER 4: Patrones de comportamiento (únicos) ===
+  { id: 'resucitador', emoji: '⚡', name: 'El Resucitador', color: '#00CEC9', desc: 'Siempre es quien revive la conversación muerta', unique: true,
+    condition: (p, g) => {
+      const maxBreaks = Math.max(...g.members.map(m => m.silenceBreaks || 0));
+      return p.silenceBreaks > 3 && p.silenceBreaks >= maxBreaks;
+    }},
+  { id: 'rapido', emoji: '💨', name: 'El Rayo', color: '#E17055', desc: 'Contesta antes de que termines de escribir', unique: true,
+    condition: (p) => p.avgResponseTime < 3 && p.msgCount > 40 },
+  { id: 'ignorador', emoji: '🙈', name: 'El Que Te Deja En Visto', color: '#B2BEC3', desc: 'Lee todo pero no contesta casi nada', unique: true,
+    condition: (p, g) => {
+      const avgPerMember = g.totalMessages / Math.max(1, g.members.filter(m => m.daysSinceLastMessage <= 30 && m.msgCount > 5).length);
+      return p.msgCount < avgPerMember * 0.3 && p.msgCount > 8 && p.daysSinceLastMessage < 30;
+    }},
+  { id: 'bombardero', emoji: '💣', name: 'El Bombardero', color: '#D63031', desc: 'Manda 15 mensajes seguidos en vez de uno largo', unique: true,
+    condition: (p) => p.consecutiveMessages > 60 && (p.consecutiveMessages / Math.max(1, p.msgCount)) > 0.12 },
+  { id: 'periodista', emoji: '📰', name: 'El Periodista', color: '#0984E3', desc: 'El grupo se entera de las noticias por esta persona', unique: true,
+    condition: (p) => p.urlCount > 10 && (p.urlCount / Math.max(1, p.msgCount)) > 0.07 },
+  { id: 'arrepentido', emoji: '🗑️', name: 'El Arrepentido', color: '#636E72', desc: 'Borra más mensajes que nadie. ¿Qué estará ocultando?', unique: true,
+    condition: (p, g) => {
+      const maxDel = Math.max(...g.members.map(m => m.deletedMessages || 0));
+      return p.deletedMessages > 4 && p.deletedMessages >= maxDel;
+    }},
+  { id: 'multimedia', emoji: '🎬', name: 'El Multimedia', color: '#E84393', desc: 'Manda de todo menos texto plano', unique: true,
+    condition: (p) => {
+      return p.mediaCount.total > 30 && (p.mediaCount.total / Math.max(1, p.msgCount)) > 0.25;
+    }},
+
+  // === TIER 5: Roles sociales (únicos) ===
+  { id: 'polemico', emoji: '🔥', name: 'El Polémico', color: '#FF2D78', desc: 'Cada vez que habla se arma debate', unique: true,
+    condition: (p) => p.avgResponsesGenerated > 2.5 && p.msgCount > 25 },
+  { id: 'veterano', emoji: '🎖️', name: 'El Veterano', color: '#B8860B', desc: 'Lleva aquí desde el día 1 y no piensa irse', unique: true,
+    condition: (p, g) => {
+      const groupAge = Math.max(1, (g.lastDate - g.firstDate) / (1000*60*60*24));
+      const memberAge = (g.lastDate - p.firstMessage) / (1000*60*60*24);
+      return (memberAge / groupAge) > 0.92 && p.daysSinceLastMessage < 14 && p.msgCount > 80;
+    }},
+  { id: 'nuevo', emoji: '🆕', name: 'El Recién Llegado', color: '#55EFC4', desc: 'Acaba de llegar pero ya se nota su presencia', unique: true,
+    condition: (p, g) => {
+      const groupAge = Math.max(1, (g.lastDate - g.firstDate) / (1000*60*60*24));
+      const memberAge = (g.lastDate - p.firstMessage) / (1000*60*60*24);
+      return (memberAge / groupAge) < 0.20 && p.msgCount > 15;
+    }},
+  { id: 'vayven', emoji: '🚪', name: 'El Que Va y Viene', color: '#FDCB6E', desc: 'Sale del grupo y vuelve como si nada', unique: true,
+    condition: (p, g) => {
+      const exits = (g.systemEvents || []).filter(e => (e.type === 'left' || e.type === 'removed') && e.actor && p.name.includes(e.actor.split(' ')[0])).length;
+      return exits >= 2;
+    }},
+  { id: 'constante', emoji: '📊', name: 'El Constante', color: '#00B894', desc: 'Habla exactamente lo mismo todos los días, como un reloj', unique: true,
+    condition: (p) => {
+      if (!p.weeklyDist || p.weeklyDist.length < 8) return false;
+      const avg = p.weeklyDist.reduce((a, b) => a + b, 0) / p.weeklyDist.length;
+      if (avg < 3) return false;
+      const stdDev = Math.sqrt(p.weeklyDist.reduce((s, v) => s + Math.pow(v - avg, 2), 0) / p.weeklyDist.length);
+      return (stdDev / avg) < 0.55;
+    }},
+  { id: 'explosivo', emoji: '🎆', name: 'El Explosivo', color: '#E17055', desc: 'Desaparece por semanas y luego manda 200 mensajes en un día', unique: true,
+    condition: (p) => {
+      if (!p.weeklyDist || p.weeklyDist.length < 4) return false;
+      const max = Math.max(...p.weeklyDist);
+      const avg = p.weeklyDist.reduce((a, b) => a + b, 0) / p.weeklyDist.length;
+      const zeros = p.weeklyDist.filter(w => w === 0).length;
+      return max > avg * 4 && zeros > p.weeklyDist.length * 0.25 && p.msgCount > 25;
+    }},
+  { id: 'emoji_adicto', emoji: '😜', name: 'El Emoji Adicto', color: '#FDCB6E', desc: 'No puede escribir una frase sin meter 5 emojis', unique: true,
+    condition: (p) => p.emojiCount > 60 && (p.emojiCount / Math.max(1, p.msgCount)) > 1.5 },
+  { id: 'serio', emoji: '🧐', name: 'El Serio', color: '#2D3436', desc: 'Cero emojis, cero stickers. Solo texto. Muy profesional.', unique: true,
+    condition: (p) => {
+      return (p.emojiCount + p.mediaCount.stickers) < 5 && p.msgCount > 40;
+    }},
+
+  // === TIER 6: Fantasmas (pueden repetirse) ===
+  { id: 'fantasma', emoji: '👻', name: 'El Fantasma', color: '#636E72', desc: 'Está en el grupo pero nadie sabe por qué', unique: false,
+    condition: (p) => p.daysSinceLastMessage > 60 || p.msgCount <= 5 },
+
+  // === FALLBACK ===
+  { id: 'miembro', emoji: '💬', name: 'El Miembro', color: '#636E72', desc: 'Participa lo justo, ni mucho ni poco', unique: false,
+    condition: () => true },
+];
+
+// Lookup rápido por id
+const ARCHETYPE_MAP = {};
+ARCHETYPES.forEach(a => { ARCHETYPE_MAP[a.id] = a; });
+
+function assignGroupArchetypes(members, gs) {
+  const assigned = new Set();
+  const results = {}; // memberName → archetype object
+
+  // Ordenar por mensajes desc (los más activos primero tienen prioridad)
+  const sortedMembers = [...members].sort((a, b) => b.msgCount - a.msgCount);
+
+  for (const p of sortedMembers) {
+    let found = null;
+    for (const arch of ARCHETYPES) {
+      if (assigned.has(arch.id) && arch.unique !== false) continue;
+      if (arch.condition(p, gs)) {
+        found = arch;
+        if (arch.unique !== false) assigned.add(arch.id);
+        break;
       }
-      if (gs.sorted[i-1].sender === member.name && gs.sorted[i].sender !== member.name) {
-        const gap = (gs.sorted[i].timestamp - gs.sorted[i-1].timestamp) / 60000;
-        if (gap > 0 && gap <= 30) replied.add(gs.sorted[i].sender);
-      }
     }
-    interactsWith = replied.size / Math.max(1, gs.members.length - 1);
+    if (!found) found = ARCHETYPES[ARCHETYPES.length - 1]; // fallback
+    results[p.name] = found;
   }
-
-  const scores = {};
-  scores['El Fantasma'] = (member.daysSinceLastMessage > 30 ? 90 : 0) + (member.msgCount <= 5 ? 90 : 0) + Math.min(50, member.daysSinceLastMessage);
-  scores['El Audiero'] = Math.round(audioRatio * 400);
-  scores['El Payaso'] = Math.round((jajaRatio * 200) + (mediaRatio * 100));
-  scores['El Nocturno'] = Math.round(nightRatio * 250);
-  scores['El Periodista'] = Math.round((urlRatio * 300) + (fwdRatio * 200));
-  scores['El Líder'] = Math.round(pct * 5);
-  scores['El Polémico'] = Math.round(Math.min(1, pct / 10) * member.avgLength / 2);
-  scores['El Corazón'] = Math.round(interactsWith * 100);
-  scores['El Que Va y Viene'] = Math.round(activityVariance * 80);
-  scores['El Normal'] = 10; // Fallback bajo, siempre disponible
-  return scores;
-}
-
-// Asignación única: cada miembro recibe un arquetipo distinto
-function assignUniqueArchetypes(members, gs) {
-  const assignments = {}; // memberName → archetypeName
-  const usedArchetypes = new Set();
-  const archetypeNames = Object.keys(ARCHETYPES);
-
-  // Generar scores para todos los miembros
-  const allScores = members.map(m => ({
-    member: m,
-    scores: scoreArchetypes(m, gs)
-  }));
-
-  // Crear lista de (miembro, arquetipo, score) y ordenar de mayor a menor score
-  const candidates = [];
-  allScores.forEach(({ member, scores }) => {
-    archetypeNames.forEach(arch => {
-      candidates.push({ name: member.name, archetype: arch, score: scores[arch] });
-    });
-  });
-  candidates.sort((a, b) => b.score - a.score);
-
-  // Asignación greedy: el par con mayor score que no tenga conflicto
-  const assignedMembers = new Set();
-  candidates.forEach(({ name, archetype, score }) => {
-    if (assignedMembers.has(name) || usedArchetypes.has(archetype)) return;
-    assignments[name] = archetype;
-    assignedMembers.add(name);
-    usedArchetypes.add(archetype);
-  });
-
-  // Miembros sin arquetipo (más miembros que arquetipos): asignar "El Normal" con sufijo
-  members.forEach(m => {
-    if (!assignments[m.name]) {
-      assignments[m.name] = 'El Normal';
-    }
-  });
-
-  return assignments;
+  return results;
 }
 
 function renderGroupArchetypes(gs) {
   const body = document.getElementById('group-archetypesBody');
-  const activeMembers = gs.members.filter(m => m.msgCount > 5);
-  const assignments = assignUniqueArchetypes(activeMembers, gs);
+  const assignments = assignGroupArchetypes(gs.members, gs);
 
   let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;">';
-  activeMembers.forEach(member => {
-    const archName = assignments[member.name] || 'El Normal';
-    const arch = ARCHETYPES[archName] || ARCHETYPES['El Normal'];
+  gs.members.forEach(member => {
+    const arch = assignments[member.name] || ARCHETYPES[ARCHETYPES.length - 1];
     html += `<div class="group-archetype-card" style="border-left:3px solid ${arch.color};">
       <div style="font-size:2.2rem;margin-bottom:8px;">${arch.emoji}</div>
-      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:${arch.color};font-weight:700;margin-bottom:4px;">${archName}</div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:${arch.color};font-weight:700;margin-bottom:4px;">${arch.name}</div>
       <div style="font-size:1.1rem;font-weight:700;margin-bottom:6px;">${member.name}</div>
       <div style="font-size:0.8rem;color:var(--text-muted);line-height:1.4;margin-bottom:10px;">"${arch.desc}"</div>
       <div style="font-size:0.7rem;color:var(--text-muted);">${member.msgCount.toLocaleString()} msgs · ${member.pct}% · ${member.mediaCount.total} multimedia</div>
