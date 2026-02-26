@@ -3341,6 +3341,38 @@ async function processChat(text) {
     return;
   }
 
+  // Check for group chats (>2 participants)
+  const _senderCounts = {};
+  messages.forEach(m => {
+    if (m.sender && !m.text.includes('cifrado de extremo a extremo') && !m.text.includes('end-to-end encrypted')) {
+      _senderCounts[m.sender] = (_senderCounts[m.sender] || 0) + 1;
+    }
+  });
+  const _uniqueSenders = Object.keys(_senderCounts);
+  if (_uniqueSenders.length > 2) {
+    processingState.classList.remove('active');
+    processingState.style.display = 'none';
+    resultsSection.classList.add('active');
+    resultsSection.innerHTML = `
+      <div style="text-align:center;padding:80px 24px;">
+        <div style="font-size:3rem;margin-bottom:16px;">👥</div>
+        <h2 style="font-family:var(--font-display);font-size:1.4rem;margin-bottom:12px;">Chat grupal detectado</h2>
+        <p style="color:var(--text-muted);font-size:1rem;line-height:1.7;max-width:420px;margin:0 auto 8px;">
+          Detectamos <strong style="color:var(--pink);">${_uniqueSenders.length} participantes</strong> en este chat.
+        </p>
+        <p style="color:var(--text-muted);font-size:1rem;line-height:1.7;max-width:420px;margin:0 auto 32px;">
+          Por ahora solo analizamos conversaciones entre 2 personas.<br>
+          Exporta un chat individual para continuar.
+        </p>
+        <button onclick="resultsSection.classList.remove('active');resultsSection.innerHTML='';resetUpload();"
+          style="background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border:none;padding:14px 32px;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;">
+          Intentar con otro archivo
+        </button>
+      </div>`;
+    resultsSection.scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
+
   console.time('analyzeMessages');
   const stats = analyzeMessages(messages);
   console.timeEnd('analyzeMessages');
