@@ -243,6 +243,24 @@ html, body {
 .therapist-card .therapist-label {
   font-family: var(--font-display); font-size: 0.85rem; color: var(--purple); margin-bottom: 12px;
 }
+.therapist-messages { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
+.therapist-bubble {
+  max-width: 85%; padding: 12px 16px; border-radius: 16px;
+  font-size: 0.88rem; line-height: 1.5; position: relative;
+}
+.therapist-bubble .bubble-name {
+  font-family: var(--font-display); font-size: 0.72rem; margin-bottom: 4px; letter-spacing: 0.5px;
+}
+.therapist-bubble.person-a {
+  align-self: flex-start; background: rgba(255,45,120,0.12);
+  border: 1px solid rgba(255,45,120,0.2); border-bottom-left-radius: 4px;
+}
+.therapist-bubble.person-a .bubble-name { color: var(--pink); }
+.therapist-bubble.person-b {
+  align-self: flex-end; background: rgba(108,92,231,0.12);
+  border: 1px solid rgba(108,92,231,0.2); border-bottom-right-radius: 4px;
+}
+.therapist-bubble.person-b .bubble-name { color: var(--purple); text-align: right; }
 
 /* Flash */
 .capture-flash {
@@ -445,7 +463,16 @@ function renderReport(d) {
 
   // Therapist
   if (showAll || target === 'therapist') {
-    html += '<div class="premium-feature-card" id="sec-therapist"><div class="pf-header"><div class="pf-icon">\u{1F9E0}</div><div><div class="pf-title">Terapeuta IA</div><div class="pf-subtitle">Análisis profesional de tu relación</div></div></div><div class="pf-body"><div class="therapist-card"><div class="therapist-label">\u{1F9E0} Terapeuta IA — Análisis profesional</div>' + (d.therapist || '') + '</div></div></div>';
+    var tMsgA = (d.therapistMsgA || '').trim();
+    var tMsgB = (d.therapistMsgB || '').trim();
+    var tBubbles = '';
+    if (tMsgA || tMsgB) {
+      tBubbles = '<div class="therapist-messages">';
+      if (tMsgA) tBubbles += '<div class="therapist-bubble person-a"><div class="bubble-name">' + p1 + '</div>' + tMsgA + '</div>';
+      if (tMsgB) tBubbles += '<div class="therapist-bubble person-b"><div class="bubble-name">' + p2 + '</div>' + tMsgB + '</div>';
+      tBubbles += '</div>';
+    }
+    html += '<div class="premium-feature-card" id="sec-therapist"><div class="pf-header"><div class="pf-icon">\u{1F9E0}</div><div><div class="pf-title">Terapeuta IA</div><div class="pf-subtitle">Análisis profesional de tu relación</div></div></div><div class="pf-body">' + tBubbles + '<div class="therapist-card"' + (tBubbles ? ' style="margin-top:16px;"' : '') + '><div class="therapist-label">\u{1F9E0} Terapeuta IA — Análisis profesional</div>' + (d.therapist || '') + '</div></div></div>';
   }
 
   if (showObsessive) html += '</div>'; // close obsessive wrap

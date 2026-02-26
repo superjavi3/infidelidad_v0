@@ -488,6 +488,37 @@ body {
   margin-bottom: 12px;
 }
 
+/* Therapist chat bubbles */
+.therapist-messages { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
+.therapist-bubble {
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  position: relative;
+}
+.therapist-bubble .bubble-name {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+.therapist-bubble.person-a {
+  align-self: flex-start;
+  background: rgba(255,45,120,0.12);
+  border: 1px solid rgba(255,45,120,0.2);
+  border-bottom-left-radius: 4px;
+}
+.therapist-bubble.person-a .bubble-name { color: var(--pink); }
+.therapist-bubble.person-b {
+  align-self: flex-end;
+  background: rgba(108,92,231,0.12);
+  border: 1px solid rgba(108,92,231,0.2);
+  border-bottom-right-radius: 4px;
+}
+.therapist-bubble.person-b .bubble-name { color: var(--purple); text-align: right; }
+
 /* Status toast */
 .toast {
   position: fixed; bottom: 24px; right: 24px; background: var(--bg-card);
@@ -620,6 +651,12 @@ body {
       <div class="section-group-title">Terapeuta IA</div>
       <div class="field"><label>Texto del terapeuta</label>
         <textarea id="inTherapist" style="min-height: 100px;">Lo que veo aquí no es una relación que se enfrió de golpe. Es un desgaste lento donde una persona dejó de intentarlo mientras la otra seguía buscando conexión. Los 1,651 episodios de double texting de Ella frente a los 203 de Él hablan de un desbalance profundo. Cuando alguien borra 691 mensajes, no está corrigiendo typos — está editando la narrativa. Mi recomendación: necesitan una conversación honesta sobre si ambos quieren estar aquí.</textarea>
+      </div>
+      <div class="field"><label>Mensaje ejemplo Persona 1</label>
+        <textarea id="inTherapistMsgA" style="min-height: 40px;">Yo siempre soy la que escribe primero... ya me cansé de ser la única que intenta 😔</textarea>
+      </div>
+      <div class="field"><label>Mensaje ejemplo Persona 2</label>
+        <textarea id="inTherapistMsgB" style="min-height: 40px;">Es que no me dices las cosas, cómo voy a saber qué sientes si no hablas</textarea>
       </div>
     </div>
   </div>
@@ -975,12 +1012,22 @@ function render() {
   </div>`;
 
   // Therapist
+  const msgA = getVal('inTherapistMsgA').trim();
+  const msgB = getVal('inTherapistMsgB').trim();
+  let bubblesHtml = '';
+  if (msgA || msgB) {
+    bubblesHtml = '<div class="therapist-messages">';
+    if (msgA) bubblesHtml += `<div class="therapist-bubble person-a"><div class="bubble-name">${p1}</div>${msgA}</div>`;
+    if (msgB) bubblesHtml += `<div class="therapist-bubble person-b"><div class="bubble-name">${p2}</div>${msgB}</div>`;
+    bubblesHtml += '</div>';
+  }
   html += `<div class="premium-feature-card" id="sec-therapist">
     <div class="pf-header"><div class="pf-icon">🧠</div><div><div class="pf-title">Terapeuta IA</div><div class="pf-subtitle">Análisis profesional de tu relación</div></div></div>
     <div class="pf-body">
-      <div class="therapist-card">
+      ${bubblesHtml}
+      <div class="therapist-card" style="${bubblesHtml ? 'margin-top:16px;' : ''}">
         <div class="therapist-label">🧠 Terapeuta IA — Análisis profesional</div>
-        ${getVal('inTherapist')}
+        ${safe(getVal('inTherapist'))}
       </div>
     </div>
   </div>`;
@@ -1121,6 +1168,8 @@ function collectMockupData() {
     bvn1: getVal('inBvn1'), bvn2: getVal('inBvn2'), bvn3: getVal('inBvn3'),
     bvnInsight: getVal('inBvnInsight'),
     therapist: getVal('inTherapist'),
+    therapistMsgA: getVal('inTherapistMsgA'),
+    therapistMsgB: getVal('inTherapistMsgB'),
     viewMode: document.getElementById('previewFrame').classList.contains('mobile') ? 'mobile' : 'desktop',
   };
 }
