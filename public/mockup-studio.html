@@ -661,6 +661,105 @@ body {
 @media (max-width: 900px) {
   .sidebar { width: 320px; min-width: 320px; }
 }
+
+/* ── MODE TOGGLE ── */
+.studio-mode-toggle {
+  display: flex; gap: 0; margin: 0 0 16px;
+  background: rgba(255,255,255,0.04); border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08); overflow: hidden;
+}
+.studio-mode-btn {
+  flex: 1; padding: 10px 8px; border: none; background: transparent;
+  color: var(--text-muted); font-family: var(--font-body); font-size: 0.82rem;
+  font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.studio-mode-btn.active {
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  color: #fff; border-radius: 8px;
+}
+.studio-mode-btn.active-group {
+  background: linear-gradient(135deg, var(--purple), var(--green));
+  color: #fff; border-radius: 8px;
+}
+
+/* ── GROUP STYLES ── */
+.grp-score-card {
+  max-width: 400px; margin: 0 auto 32px; border-radius: var(--radius); padding: 36px; text-align: center;
+  background: linear-gradient(135deg, rgba(108,92,231,0.2), rgba(59,206,172,0.12));
+  border: 1px solid rgba(108,92,231,0.25); position: relative; overflow: hidden;
+}
+.grp-score-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.08), transparent 50%);
+}
+.grp-ranking-row {
+  display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+  background: rgba(255,255,255,0.03); border-radius: 10px; margin-bottom: 8px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.grp-ranking-medal { font-size: 1.4rem; width: 32px; text-align: center; flex-shrink: 0; }
+.grp-ranking-name { font-family: var(--font-display); font-size: 0.88rem; flex: 1; }
+.grp-ranking-stats { text-align: right; }
+.grp-ranking-msgs { font-family: var(--font-display); font-size: 1rem; }
+.grp-ranking-pct { color: var(--text-muted); font-size: 0.75rem; }
+.grp-ranking-bar { height: 6px; border-radius: 3px; margin-top: 6px; background: rgba(255,255,255,0.06); overflow: hidden; }
+.grp-ranking-bar-fill { height: 100%; border-radius: 3px; }
+
+.grp-arch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.grp-arch-card {
+  background: var(--bg-card); border-radius: 14px; padding: 18px;
+  border: 1px solid rgba(255,255,255,0.06); border-left: 4px solid;
+}
+.grp-arch-emoji { font-size: 2rem; margin-bottom: 8px; }
+.grp-arch-name { font-family: var(--font-display); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.grp-arch-member { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
+.grp-arch-desc { color: var(--text-muted); font-size: 0.82rem; font-style: italic; line-height: 1.4; margin-bottom: 8px; }
+.grp-arch-stats { font-size: 0.75rem; color: var(--text-muted); }
+
+.grp-ghost-row {
+  padding: 12px 14px; background: rgba(255,255,255,0.03); border-radius: 10px;
+  margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.04);
+}
+.grp-ghost-name { font-family: var(--font-display); font-size: 0.88rem; margin-bottom: 4px; }
+.grp-ghost-info { display: flex; gap: 16px; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px; }
+.grp-ghost-bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.06); overflow: hidden; }
+.grp-ghost-bar-fill { height: 100%; border-radius: 3px; }
+
+.grp-eras-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.grp-era-card {
+  background: rgba(255,255,255,0.03); border-radius: 14px; padding: 20px; text-align: center;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.grp-era-label { font-family: var(--font-display); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+.grp-era-value { font-family: var(--font-display); font-size: 2rem; margin-bottom: 4px; }
+.grp-era-sublabel { color: var(--text-muted); font-size: 0.8rem; }
+
+.grp-death-meter {
+  text-align: center; padding: 24px;
+}
+.grp-death-score { font-family: var(--font-display); font-size: 3.5rem; margin-bottom: 4px; }
+.grp-death-label { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px; }
+.grp-death-bar { height: 12px; border-radius: 6px; background: rgba(255,255,255,0.06); overflow: hidden; margin: 0 auto 12px; max-width: 300px; }
+.grp-death-bar-fill { height: 100%; border-radius: 6px; transition: width 0.3s; }
+.grp-death-verdict { font-family: var(--font-display); font-size: 1rem; margin-bottom: 12px; }
+.grp-death-detail { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+
+.grp-deleted-row {
+  display: flex; align-items: center; gap: 12px; padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.grp-deleted-row:last-child { border-bottom: none; }
+.grp-deleted-name { font-family: var(--font-display); font-size: 0.85rem; min-width: 100px; }
+.grp-deleted-bar-wrap { flex: 1; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.06); overflow: hidden; }
+.grp-deleted-bar-fill { height: 100%; border-radius: 4px; background: var(--pink); }
+.grp-deleted-count { font-family: var(--font-display); font-size: 0.88rem; min-width: 60px; text-align: right; }
+
+.plan-group-wrap {
+  border-top: 4px solid var(--purple);
+  background: linear-gradient(180deg, rgba(108,92,231,0.06) 0%, transparent 40%);
+  border-radius: var(--radius) var(--radius) 0 0; padding: 0 4px 4px; margin-top: 40px;
+}
+.plan-group-wrap .premium-feature-card { border-color: rgba(108,92,231,0.12); }
 </style>
 </head>
 <body>
@@ -671,6 +770,14 @@ body {
     <h1>Ya<span>Lo</span>Sabía Studio</h1>
     <p class="sidebar-subtitle">Editor visual de mockups para redes</p>
 
+    <!-- MODE TOGGLE -->
+    <div class="studio-mode-toggle">
+      <button class="studio-mode-btn active" id="btnModePar" onclick="setStudioMode('pareja')">💑 Pareja</button>
+      <button class="studio-mode-btn" id="btnModeGrp" onclick="setStudioMode('grupo')">👥 Grupo</button>
+    </div>
+
+    <!-- ═══ PAREJA SECTIONS ═══ -->
+    <div id="parejaSections">
     <!-- GENERAL -->
     <div class="section-group">
       <div class="section-group-title">General</div>
@@ -806,6 +913,127 @@ body {
         <textarea id="inTherapistMsgD" style="min-height: 40px;">Tu valor no depende de cuántos mensajes recibes. Lo que describes es un patrón de perseguidor-distanciador muy común. Mereces una relación donde no tengas que rogar atención.</textarea>
       </div>
     </div>
+    </div><!-- /parejaSections -->
+
+    <!-- ═══ GROUP SECTIONS ═══ -->
+    <div id="grupoSections" style="display:none">
+
+    <!-- GROUP GENERAL -->
+    <div class="section-group">
+      <div class="section-group-title">General del Grupo</div>
+      <div class="field"><label>Nombre del grupo</label><input type="text" id="inGrpName" value="Los Compas 🔥"></div>
+      <div class="field-row-3">
+        <div class="field"><label>Score (0-100)</label><input type="number" id="inGrpScore" value="72" min="0" max="100"></div>
+        <div class="field"><label>Total msgs</label><input type="number" id="inGrpTotalMsgs" value="28439"></div>
+        <div class="field"><label>Miembros</label><input type="number" id="inGrpMembers" value="8"></div>
+      </div>
+      <div class="field-row-3">
+        <div class="field"><label>Días</label><input type="number" id="inGrpDays" value="547"></div>
+        <div class="field"><label>Resp. prom.</label><input type="text" id="inGrpReply" value="12 min"></div>
+        <div class="field"><label>% noche</label><input type="text" id="inGrpNight" value="18%"></div>
+      </div>
+      <div class="field"><label>Total multimedia</label><input type="number" id="inGrpMedia" value="3420"></div>
+      <div class="field"><label>Dato curioso</label>
+        <textarea id="inGrpFunFact" style="min-height:40px;">Daniela ha mandado más mensajes que los 4 miembros menos activos juntos 👑</textarea>
+      </div>
+    </div>
+
+    <!-- POWER RANKING -->
+    <div class="section-group">
+      <div class="section-group-title">Ranking de Poder</div>
+      <div class="field"><label>Miembros (nombre|msgs|pct|categoría por línea)</label>
+        <textarea id="inGrpRanking" style="min-height:120px;">Daniela|4521|32|leader
+Rodrigo|3102|22|leader
+Ana|2340|16|active
+Fer|1890|13|active
+Karla|1200|8|participant
+Javi|780|5|participant
+Luisa|340|2|ghost
+Pato|120|1|ghost</textarea>
+      </div>
+    </div>
+
+    <!-- ARCHETYPES -->
+    <div class="section-group">
+      <div class="section-group-title">Arquetipos</div>
+      <div class="field"><label>Miembros (nombre|arquetipo|emoji|color|desc|msgs|pct por línea)</label>
+        <textarea id="inGrpArchetypes" style="min-height:140px;">Daniela|El Líder|🏆|#FF2D78|Domina la conversación, inicia temas y organiza al grupo|4521|32%
+Rodrigo|El Copiloto|🥈|#6C5CE7|Siempre responde, nunca inicia — el wingman perfecto|3102|22%
+Ana|El Corazón del Grupo|❤️|#E84393|Habla con todos, conecta a los que no se hablan|2340|16%
+Fer|El Payaso|😂|#FFD23F|Memes, stickers y audios de risa — el alma de la fiesta|1890|13%
+Karla|La Nocturna|🌙|#A855F7|Sus mejores conversaciones son después de medianoche|1200|8%
+Javi|El Audiero|🎙️|#FF6B35|Manda audios de 3 minutos para decir "ok"|780|5%
+Luisa|El Fantasma|👻|#666|Vio todo, no dijo nada. ¿Sigues en el grupo?|340|2%
+Pato|El Desaparecido|🕳️|#444|Fue activo alguna vez... ya ni se acuerdan de él|120|1%</textarea>
+      </div>
+    </div>
+
+    <!-- GHOSTS -->
+    <div class="section-group">
+      <div class="section-group-title">Mapa de Fantasmas</div>
+      <div class="field"><label>Miembros (nombre|mayorSilencio|últimoMsg|díasSinceLastMsg por línea)</label>
+        <textarea id="inGrpGhosts" style="min-height:100px;">Pato|5 meses|hace 4 meses|120
+Luisa|2 meses|hace 3 semanas|21
+Javi|3 semanas|hace 5 días|5
+Karla|10 días|hace 2 días|2</textarea>
+      </div>
+    </div>
+
+    <!-- ERAS -->
+    <div class="section-group">
+      <div class="section-group-title">Eras del Grupo</div>
+      <div class="field-row">
+        <div class="field"><label>1ra mitad msgs</label><input type="number" id="inGrpEra1Msgs" value="18200"></div>
+        <div class="field"><label>2da mitad msgs</label><input type="number" id="inGrpEra2Msgs" value="10239"></div>
+      </div>
+      <div class="field"><label>Comparación (métrica|antes|ahora|cambio por línea)</label>
+        <textarea id="inGrpErasData" style="min-height:80px;">Mensajes/día|67|38|-43%
+Miembros activos|8|5|-38%
+% Nocturno|22%|31%|+41%
+Long. promedio|42 chars|28 chars|-33%</textarea>
+      </div>
+    </div>
+
+    <!-- DEATH PROBABILITY -->
+    <div class="section-group">
+      <div class="section-group-title">Probabilidad de Muerte</div>
+      <div class="field-row-3">
+        <div class="field"><label>Score (0-100)</label><input type="number" id="inGrpDeathScore" value="42" min="0" max="100"></div>
+        <div class="field"><label>Fantasmas</label><input type="number" id="inGrpDeathGhosts" value="2"></div>
+        <div class="field"><label>Total miembros</label><input type="number" id="inGrpDeathMembers" value="8"></div>
+      </div>
+      <div class="field"><label>Tendencia</label>
+        <input type="text" id="inGrpDeathTrend" value="📉 34% menos mensajes que el mes anterior">
+      </div>
+    </div>
+
+    <!-- DELETED GROUP -->
+    <div class="section-group">
+      <div class="section-group-title">Mensajes Eliminados</div>
+      <div class="field"><label>Total eliminados</label><input type="number" id="inGrpDelTotal" value="234"></div>
+      <div class="field"><label>Por miembro (nombre|cantidad por línea)</label>
+        <textarea id="inGrpDeleted" style="min-height:80px;">Fer|89
+Rodrigo|52
+Daniela|41
+Ana|28
+Karla|15
+Javi|9</textarea>
+      </div>
+    </div>
+
+    <!-- TIMELINE GROUP -->
+    <div class="section-group">
+      <div class="section-group-title">Línea de Vida del Grupo</div>
+      <div class="field"><label>Puntos totales (mes:cantidad)</label>
+        <input type="text" id="inGrpTimelineData" value="Ene 24:3200,Feb 24:2890,Mar 24:3100,Abr 24:2600,May 24:2200,Jun 24:1800,Jul 24:1500,Ago 24:1200,Sep 24:900,Oct 24:700,Nov 24:500,Dic 24:400">
+      </div>
+      <div class="field"><label>Insight</label>
+        <textarea id="inGrpTimelineInsight">El grupo tuvo su pico en enero 2024. Desde abril, la actividad cae cada mes — un declive sostenido del 87%.</textarea>
+      </div>
+    </div>
+
+    </div><!-- /grupoSections -->
+
   </div>
 
   <!-- ── MAIN AREA ── -->
@@ -819,17 +1047,32 @@ body {
       <div class="toolbar-sep"></div>
       <select id="sectionJump" onchange="jumpToSection(this.value)">
         <option value="">↓ Ir a sección...</option>
-        <option value="sec-score">Score</option>
-        <option value="sec-stats">Estadísticas</option>
-        <option value="sec-timeline">Línea de Vida</option>
-        <option value="sec-silences">Mapa de Silencios</option>
-        <option value="sec-doubletext">Double Texting</option>
-        <option value="sec-deleted">Mensajes Eliminados</option>
-        <option value="sec-multimedia">Reyes del Multimedia</option>
-        <option value="sec-forensic">Reconstrucción Forense</option>
-        <option value="sec-bvn">Antes vs Ahora</option>
-        <option value="sec-leaderboard">Vs el promedio</option>
-        <option value="sec-therapist">Terapeuta IA</option>
+        <!-- Pareja -->
+        <optgroup label="Pareja" id="jumpPareja">
+          <option value="sec-score">Score</option>
+          <option value="sec-stats">Estadísticas</option>
+          <option value="sec-timeline">Línea de Vida</option>
+          <option value="sec-silences">Mapa de Silencios</option>
+          <option value="sec-doubletext">Double Texting</option>
+          <option value="sec-deleted">Mensajes Eliminados</option>
+          <option value="sec-multimedia">Reyes del Multimedia</option>
+          <option value="sec-forensic">Reconstrucción Forense</option>
+          <option value="sec-bvn">Antes vs Ahora</option>
+          <option value="sec-leaderboard">Vs el promedio</option>
+          <option value="sec-therapist">Terapeuta IA</option>
+        </optgroup>
+        <!-- Grupo -->
+        <optgroup label="Grupo" id="jumpGrupo" style="display:none">
+          <option value="sec-grp-score">Score del Grupo</option>
+          <option value="sec-grp-stats">Estadísticas</option>
+          <option value="sec-grp-ranking">Ranking de Poder</option>
+          <option value="sec-grp-archetypes">Arquetipos</option>
+          <option value="sec-grp-ghosts">Mapa de Fantasmas</option>
+          <option value="sec-grp-eras">Eras del Grupo</option>
+          <option value="sec-grp-death">Probabilidad de Muerte</option>
+          <option value="sec-grp-deleted">Mensajes Eliminados</option>
+          <option value="sec-grp-timeline">Línea de Vida</option>
+        </optgroup>
       </select>
       <div class="toolbar-sep"></div>
       <button class="toolbar-btn" id="btnSection" onclick="captureSection()">📷 Capturar sección</button>
@@ -855,6 +1098,23 @@ body {
 // ══════ STATE ══════
 let timelineChart = null;
 let lastCapturedCanvas = null;
+let studioMode = 'pareja'; // 'pareja' | 'grupo'
+
+// ══════ MODE TOGGLE ══════
+function setStudioMode(mode) {
+  studioMode = mode;
+  document.getElementById('parejaSections').style.display = mode === 'pareja' ? '' : 'none';
+  document.getElementById('grupoSections').style.display = mode === 'grupo' ? '' : 'none';
+  document.getElementById('jumpPareja').style.display = mode === 'pareja' ? '' : 'none';
+  document.getElementById('jumpGrupo').style.display = mode === 'grupo' ? '' : 'none';
+
+  const btnPar = document.getElementById('btnModePar');
+  const btnGrp = document.getElementById('btnModeGrp');
+  btnPar.className = 'studio-mode-btn' + (mode === 'pareja' ? ' active' : '');
+  btnGrp.className = 'studio-mode-btn' + (mode === 'grupo' ? ' active-group' : '');
+
+  scheduleRender();
+}
 
 // ══════ VIEW TOGGLE ══════
 function setView(mode, btn) {
@@ -905,6 +1165,7 @@ function getVerdict(score) {
 }
 
 function render() {
+  if (studioMode === 'grupo') return renderGroup();
   const p1 = safe(getVal('inP1')) || 'Persona 1';
   const p2 = safe(getVal('inP2')) || 'Persona 2';
   const score = getNum('inScore');
@@ -1251,6 +1512,290 @@ function render() {
   requestAnimationFrame(() => renderChart(timelinePoints));
 }
 
+// ══════ GROUP RENDER ══════
+function getGroupVerdict(score) {
+  if (score >= 80) return '🔥 Grupo en llamas';
+  if (score >= 60) return '✅ Grupo sano';
+  if (score >= 40) return '⚠️ Grupo en declive';
+  if (score >= 20) return '💀 Grupo zombie';
+  return '⚰️ Autopsia digital';
+}
+
+function getGroupScoreGradient(score) {
+  if (score >= 80) return 'linear-gradient(135deg, rgba(59,206,172,0.25), rgba(108,92,231,0.2))';
+  if (score >= 60) return 'linear-gradient(135deg, rgba(108,92,231,0.2), rgba(59,206,172,0.15))';
+  if (score >= 40) return 'linear-gradient(135deg, rgba(255,210,63,0.15), rgba(255,107,53,0.12))';
+  if (score >= 20) return 'linear-gradient(135deg, rgba(255,107,53,0.15), rgba(255,45,120,0.12))';
+  return 'linear-gradient(135deg, rgba(255,45,120,0.2), rgba(108,92,231,0.15))';
+}
+
+function getDeathVerdict(score) {
+  if (score <= 20) return { text: '🌱 Tu grupo está vivito y coleando', color: '#3BCEAC' };
+  if (score <= 40) return { text: '😐 Algo tranquilo, pero se mantiene', color: '#FFD23F' };
+  if (score <= 60) return { text: '⚠️ Señales de alarma — la actividad baja', color: '#FF6B35' };
+  if (score <= 80) return { text: '🚨 En cuidados intensivos', color: '#FF2D78' };
+  return { text: '💀 Prácticamente un cementerio digital', color: '#FF2D78' };
+}
+
+function parseLines(val) {
+  return val.split('\n').map(l => l.trim()).filter(l => l).map(l => l.split('|').map(s => s.trim()));
+}
+
+function getCategoryColor(cat) {
+  const map = { leader: '#FF2D78', active: '#6C5CE7', participant: '#3BCEAC', ghost: '#666', barely_alive: '#444' };
+  return map[cat] || '#888';
+}
+
+function renderGroup() {
+  const grpName = safe(getVal('inGrpName')) || 'Grupo';
+  const score = getNum('inGrpScore');
+  const totalMsgs = getNum('inGrpTotalMsgs');
+  const members = getNum('inGrpMembers');
+  const days = getNum('inGrpDays');
+  const avgReply = safe(getVal('inGrpReply'));
+  const nightPct = safe(getVal('inGrpNight'));
+  const totalMedia = getNum('inGrpMedia');
+  const funFact = safe(getVal('inGrpFunFact'));
+  const verdict = getGroupVerdict(score);
+
+  let html = '';
+
+  // ── Header ──
+  html += `<div class="results-header">
+    <h2>Análisis del <span class="gradient-text">grupo</span></h2>
+    <p style="color:var(--text-muted);">Análisis basado en <strong>${totalMsgs.toLocaleString()}</strong> mensajes de <strong>${members}</strong> participantes</p>
+  </div>`;
+
+  // ── Score card ──
+  html += `<div id="sec-grp-score" class="grp-score-card" style="background:${getGroupScoreGradient(score)};">
+    <div style="font-size:0.85rem;text-transform:uppercase;letter-spacing:3px;opacity:0.8;margin-bottom:12px;">Salud del Grupo</div>
+    <div style="font-family:var(--font-display);font-size:5rem;line-height:1;margin-bottom:4px;">${score}</div>
+    <div style="font-size:1.1rem;opacity:0.7;">de 100</div>
+    <div style="margin-top:16px;font-size:1.1rem;font-weight:600;">${verdict}</div>
+  </div>`;
+
+  // ── Stats grid ──
+  html += `<div id="sec-grp-stats"><div class="plan-header"><div class="plan-badge free">✨ GRATIS</div><div class="plan-title free">Análisis Básico</div><div class="plan-subtitle">Estadísticas generales del grupo</div></div>`;
+  html += `<div class="stats-grid">
+    <div class="stat-card"><div class="stat-emoji">💬</div><div class="stat-value">${safeNum(totalMsgs)}</div><div class="stat-label">Total de mensajes</div></div>
+    <div class="stat-card"><div class="stat-emoji">👥</div><div class="stat-value">${safeNum(members)}</div><div class="stat-label">Miembros activos</div></div>
+    <div class="stat-card"><div class="stat-emoji">📅</div><div class="stat-value">${safeNum(days)}</div><div class="stat-label">Días de actividad</div></div>
+    <div class="stat-card"><div class="stat-emoji">⏱️</div><div class="stat-value">${avgReply}</div><div class="stat-label">Respuesta promedio</div></div>
+    <div class="stat-card"><div class="stat-emoji">🌙</div><div class="stat-value">${nightPct}</div><div class="stat-label">Mensajes nocturnos</div></div>
+    <div class="stat-card"><div class="stat-emoji">📱</div><div class="stat-value">${safeNum(totalMedia)}</div><div class="stat-label">Archivos compartidos</div></div>
+  </div>`;
+
+  // Fun fact
+  html += `<div class="fun-fact">📊 <strong>Dato curioso:</strong> ${funFact}</div>`;
+
+  // Quick ranking (top 3 from ranking data)
+  const rankRows = parseLines(getVal('inGrpRanking'));
+  if (rankRows.length >= 3) {
+    const medals = ['👑', '🥈', '🥉'];
+    let topHtml = '';
+    for (let i = 0; i < Math.min(3, rankRows.length); i++) {
+      const r = rankRows[i];
+      topHtml += `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;${i < 2 ? 'border-bottom:1px solid rgba(255,255,255,0.06);' : ''}">
+        <span style="font-size:1.3rem;">${medals[i]}</span>
+        <span style="flex:1;font-family:var(--font-display);font-size:0.9rem;">${r[0]}</span>
+        <span style="font-family:var(--font-display);font-size:0.95rem;">${parseInt(r[1] || 0).toLocaleString()}</span>
+        <span style="color:var(--text-muted);font-size:0.78rem;">${r[2] || 0}%</span>
+      </div>`;
+    }
+    html += `<div class="example-card">
+      <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--purple);margin-bottom:10px;">👑 Quién domina el grupo</div>
+      ${topHtml}
+    </div>`;
+  }
+  html += `</div>`; // close stats section
+
+  // ── PREMIUM SECTION ──
+  html += `<div class="plan-group-wrap">
+    <div class="plan-header">
+      <div class="plan-badge detective" style="background:rgba(108,92,231,0.12);color:var(--purple);border-color:rgba(108,92,231,0.25);">👥 COMPLETO</div>
+      <div class="plan-title detective" style="color:var(--purple);">Análisis Completo del Grupo</div>
+      <div class="plan-subtitle">Herramientas para entender tu grupo al 100%</div>
+    </div>`;
+
+  // ── 1. POWER RANKING ──
+  if (rankRows.length > 0) {
+    const maxMsgs = Math.max(...rankRows.map(r => parseInt(r[1] || 0)));
+    const medals = ['👑', '🥈', '🥉'];
+    let rkHtml = '';
+    rankRows.forEach((r, i) => {
+      const name = r[0], msgs = parseInt(r[1] || 0), pct = r[2] || 0, cat = (r[3] || 'participant').toLowerCase();
+      const color = getCategoryColor(cat);
+      const medal = i < 3 ? medals[i] : `#${i + 1}`;
+      rkHtml += `<div class="grp-ranking-row">
+        <div class="grp-ranking-medal">${medal}</div>
+        <div class="grp-ranking-name">${name}</div>
+        <div class="grp-ranking-stats">
+          <div class="grp-ranking-msgs">${msgs.toLocaleString()}</div>
+          <div class="grp-ranking-pct">${pct}%</div>
+        </div>
+      </div>
+      <div class="grp-ranking-bar"><div class="grp-ranking-bar-fill" style="width:${maxMsgs > 0 ? (msgs/maxMsgs*100) : 0}%;background:${color};"></div></div>`;
+    });
+    html += `<div class="premium-feature-card" id="sec-grp-ranking">
+      <div class="pf-header"><div class="pf-icon">👑</div><div><div class="pf-title">Ranking de Poder</div><div class="pf-subtitle">Quién manda, quién sigue, quién desapareció</div></div></div>
+      <div class="pf-body">${rkHtml}</div>
+    </div>`;
+  }
+
+  // ── 2. ARCHETYPES ──
+  const archRows = parseLines(getVal('inGrpArchetypes'));
+  if (archRows.length > 0) {
+    let archHtml = '<div class="grp-arch-grid">';
+    archRows.forEach(r => {
+      const name = r[0], archetype = r[1] || '', emoji = r[2] || '🎭', color = r[3] || '#888';
+      const desc = r[4] || '', msgs = r[5] || '', pct = r[6] || '';
+      archHtml += `<div class="grp-arch-card" style="border-left-color:${color};">
+        <div class="grp-arch-emoji">${emoji}</div>
+        <div class="grp-arch-name" style="color:${color};">${archetype}</div>
+        <div class="grp-arch-member">${name}</div>
+        <div class="grp-arch-desc">"${desc}"</div>
+        <div class="grp-arch-stats">${msgs ? msgs + ' msgs' : ''}${pct ? ' · ' + pct : ''}</div>
+      </div>`;
+    });
+    archHtml += '</div>';
+    html += `<div class="premium-feature-card" id="sec-grp-archetypes">
+      <div class="pf-header"><div class="pf-icon">🎭</div><div><div class="pf-title">Arquetipos del Grupo</div><div class="pf-subtitle">Cada miembro tiene un rol... ¿cuál es el tuyo?</div></div></div>
+      <div class="pf-body">${archHtml}</div>
+    </div>`;
+  }
+
+  // ── 3. GHOSTS ──
+  const ghostRows = parseLines(getVal('inGrpGhosts'));
+  if (ghostRows.length > 0) {
+    const maxDays = Math.max(...ghostRows.map(r => parseInt(r[3] || 0)));
+    let ghHtml = '';
+    ghostRows.forEach(r => {
+      const name = r[0], silence = r[1] || '', lastMsg = r[2] || '', daysVal = parseInt(r[3] || 0);
+      const barPct = maxDays > 0 ? (daysVal / maxDays * 100) : 0;
+      const barColor = daysVal > 365 ? '#FF2D78' : daysVal > 90 ? '#FF6B35' : daysVal > 30 ? '#FFD23F' : '#3BCEAC';
+      ghHtml += `<div class="grp-ghost-row">
+        <div class="grp-ghost-name">👻 ${name}</div>
+        <div class="grp-ghost-info">
+          <span>Mayor silencio: <strong>${silence}</strong></span>
+          <span>Último mensaje: <strong>${lastMsg}</strong></span>
+        </div>
+        <div class="grp-ghost-bar"><div class="grp-ghost-bar-fill" style="width:${barPct}%;background:${barColor};"></div></div>
+      </div>`;
+    });
+    html += `<div class="premium-feature-card" id="sec-grp-ghosts">
+      <div class="pf-header"><div class="pf-icon">👻</div><div><div class="pf-title">Mapa de Fantasmas</div><div class="pf-subtitle">Quién desapareció y cuándo</div></div></div>
+      <div class="pf-body">${ghHtml}</div>
+    </div>`;
+  }
+
+  // ── 4. ERAS ──
+  const era1 = getNum('inGrpEra1Msgs'), era2 = getNum('inGrpEra2Msgs');
+  const erasDataRows = parseLines(getVal('inGrpErasData'));
+  if (era1 > 0 || era2 > 0) {
+    let erasHtml = `<div class="grp-eras-wrap">
+      <div class="grp-era-card">
+        <div class="grp-era-label" style="color:var(--purple);">PRIMERA MITAD</div>
+        <div class="grp-era-value">${era1.toLocaleString()}</div>
+        <div class="grp-era-sublabel">mensajes</div>
+      </div>
+      <div class="grp-era-card">
+        <div class="grp-era-label" style="color:var(--pink);">SEGUNDA MITAD</div>
+        <div class="grp-era-value">${era2.toLocaleString()}</div>
+        <div class="grp-era-sublabel">mensajes</div>
+      </div>
+    </div>`;
+    if (erasDataRows.length > 0) {
+      erasHtml += `<table style="width:100%;border-collapse:collapse;margin-top:12px;">
+        <thead><tr>
+          <th style="text-align:left;padding:8px 12px;font-size:0.78rem;color:var(--text-muted);border-bottom:2px solid rgba(255,255,255,0.08);">Métrica</th>
+          <th style="text-align:center;padding:8px 12px;font-size:0.78rem;color:var(--purple);border-bottom:2px solid rgba(255,255,255,0.08);">Antes</th>
+          <th style="text-align:center;padding:8px 12px;font-size:0.78rem;color:var(--pink);border-bottom:2px solid rgba(255,255,255,0.08);">Ahora</th>
+          <th style="text-align:center;padding:8px 12px;font-size:0.78rem;color:var(--text-muted);border-bottom:2px solid rgba(255,255,255,0.08);">Cambio</th>
+        </tr></thead><tbody>`;
+      erasDataRows.forEach(r => {
+        const change = r[3] || '';
+        const changeColor = change.startsWith('+') ? 'var(--green)' : change.startsWith('-') ? 'var(--pink)' : 'var(--text-muted)';
+        erasHtml += `<tr>
+          <td style="padding:8px 12px;font-size:0.85rem;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,0.04);">${r[0] || ''}</td>
+          <td style="text-align:center;padding:8px 12px;font-family:var(--font-display);font-size:0.95rem;border-bottom:1px solid rgba(255,255,255,0.04);">${r[1] || ''}</td>
+          <td style="text-align:center;padding:8px 12px;font-family:var(--font-display);font-size:0.95rem;border-bottom:1px solid rgba(255,255,255,0.04);">${r[2] || ''}</td>
+          <td style="text-align:center;padding:8px 12px;font-family:var(--font-display);font-size:0.95rem;color:${changeColor};border-bottom:1px solid rgba(255,255,255,0.04);">${change}</td>
+        </tr>`;
+      });
+      erasHtml += '</tbody></table>';
+    }
+    html += `<div class="premium-feature-card" id="sec-grp-eras">
+      <div class="pf-header"><div class="pf-icon">⏳</div><div><div class="pf-title">Eras del Grupo</div><div class="pf-subtitle">Primera mitad vs segunda mitad — qué cambió</div></div></div>
+      <div class="pf-body">${erasHtml}</div>
+    </div>`;
+  }
+
+  // ── 5. DEATH PROBABILITY ──
+  const deathScore = getNum('inGrpDeathScore');
+  const deathGhosts = getNum('inGrpDeathGhosts');
+  const deathMembers = getNum('inGrpDeathMembers');
+  const deathTrend = safe(getVal('inGrpDeathTrend'));
+  const dv = getDeathVerdict(deathScore);
+
+  html += `<div class="premium-feature-card" id="sec-grp-death">
+    <div class="pf-header"><div class="pf-icon">💀</div><div><div class="pf-title">¿Tu grupo va a morir?</div><div class="pf-subtitle">Probabilidad calculada con datos reales</div></div></div>
+    <div class="pf-body">
+      <div class="grp-death-meter">
+        <div class="grp-death-score" style="color:${dv.color};">${deathScore}%</div>
+        <div class="grp-death-label">probabilidad de inactividad total en 6 meses</div>
+        <div class="grp-death-bar"><div class="grp-death-bar-fill" style="width:${deathScore}%;background:linear-gradient(90deg, #3BCEAC, #FFD23F 40%, #FF6B35 70%, #FF2D78);"></div></div>
+        <div class="grp-death-verdict" style="color:${dv.color};">${dv.text}</div>
+        <div class="grp-death-detail">${deathTrend}<br>👻 ${deathGhosts} fantasmas de ${deathMembers} miembros</div>
+      </div>
+    </div>
+  </div>`;
+
+  // ── 6. DELETED ──
+  const grpDelTotal = getNum('inGrpDelTotal');
+  const delRows = parseLines(getVal('inGrpDeleted'));
+  if (grpDelTotal > 0 || delRows.length > 0) {
+    const maxDel = delRows.length > 0 ? Math.max(...delRows.map(r => parseInt(r[1] || 0))) : 1;
+    let delHtml = `<div style="font-family:var(--font-display);font-size:1rem;margin-bottom:16px;">🗑️ <strong>${grpDelTotal.toLocaleString()}</strong> mensajes eliminados en total</div>`;
+    delRows.forEach(r => {
+      const name = r[0], count = parseInt(r[1] || 0);
+      const pct = grpDelTotal > 0 ? Math.round(count / grpDelTotal * 100) : 0;
+      delHtml += `<div class="grp-deleted-row">
+        <div class="grp-deleted-name">${name}</div>
+        <div class="grp-deleted-bar-wrap"><div class="grp-deleted-bar-fill" style="width:${maxDel > 0 ? (count/maxDel*100) : 0}%;"></div></div>
+        <div class="grp-deleted-count">${count} <span style="color:var(--text-muted);font-size:0.75rem;">(${pct}%)</span></div>
+      </div>`;
+    });
+    html += `<div class="premium-feature-card" id="sec-grp-deleted">
+      <div class="pf-header"><div class="pf-icon">🗑️</div><div><div class="pf-title">Mensajes Eliminados</div><div class="pf-subtitle">Ranking de quién borra más</div></div></div>
+      <div class="pf-body">${delHtml}</div>
+    </div>`;
+  }
+
+  // ── 7. TIMELINE ──
+  const grpTimelineRaw = getVal('inGrpTimelineData');
+  const grpTimelineInsight = safe(getVal('inGrpTimelineInsight'));
+  html += `<div class="premium-feature-card" id="sec-grp-timeline">
+    <div class="pf-header"><div class="pf-icon">📈</div><div><div class="pf-title">Línea de Vida del Grupo</div><div class="pf-subtitle">Actividad mes a mes</div></div></div>
+    <div class="pf-body">
+      <div style="height:320px;"><canvas id="timelineChart"></canvas></div>
+      <div class="pf-insight"><strong>📈 Análisis:</strong> ${grpTimelineInsight}</div>
+    </div>
+  </div>`;
+
+  html += `</div>`; // close plan-group-wrap
+
+  // Inject
+  document.getElementById('previewContent').innerHTML = html;
+
+  // Render chart
+  const grpTimelinePoints = grpTimelineRaw.split(',').map(p => {
+    const [label, val] = p.trim().split(':');
+    return { label: (label || '').trim(), value: parseInt(val) || 0 };
+  }).filter(p => p.label);
+
+  requestAnimationFrame(() => renderChart(grpTimelinePoints));
+}
+
 // ══════ CHART ══════
 function renderChart(points) {
   if (timelineChart) { timelineChart.destroy(); timelineChart = null; }
@@ -1337,7 +1882,9 @@ function showToast(msg, isError) {
 }
 
 // ══════ SECTION DETECTION ══════
-const SECTIONS = ['sec-score','sec-stats','sec-timeline','sec-silences','sec-doubletext','sec-deleted','sec-multimedia','sec-forensic','sec-bvn','sec-leaderboard','sec-therapist'];
+const SECTIONS_PAREJA = ['sec-score','sec-stats','sec-timeline','sec-silences','sec-doubletext','sec-deleted','sec-multimedia','sec-forensic','sec-bvn','sec-leaderboard','sec-therapist'];
+const SECTIONS_GRUPO = ['sec-grp-score','sec-grp-stats','sec-grp-ranking','sec-grp-archetypes','sec-grp-ghosts','sec-grp-eras','sec-grp-death','sec-grp-deleted','sec-grp-timeline'];
+function getSections() { return studioMode === 'grupo' ? SECTIONS_GRUPO : SECTIONS_PAREJA; }
 
 function getVisibleSectionName() {
   const wrap = document.getElementById('previewWrap');
@@ -1345,7 +1892,7 @@ function getVisibleSectionName() {
   const center = wrapRect.top + wrapRect.height / 2;
   let closest = null;
   let closestDist = Infinity;
-  SECTIONS.forEach(id => {
+  getSections().forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -1357,7 +1904,30 @@ function getVisibleSectionName() {
 
 // ══════ COLLECT ALL FORM DATA ══════
 function collectMockupData() {
-  return {
+  const base = {
+    studioMode: studioMode,
+    viewMode: document.getElementById('previewFrame').classList.contains('mobile') ? 'mobile' : 'desktop',
+  };
+
+  if (studioMode === 'grupo') {
+    return Object.assign(base, {
+      grpName: getVal('inGrpName'), grpScore: getNum('inGrpScore'),
+      grpTotalMsgs: getNum('inGrpTotalMsgs'), grpMembers: getNum('inGrpMembers'),
+      grpDays: getNum('inGrpDays'), grpReply: getVal('inGrpReply'),
+      grpNight: getVal('inGrpNight'), grpMedia: getNum('inGrpMedia'),
+      grpFunFact: getVal('inGrpFunFact'),
+      grpRanking: getVal('inGrpRanking'), grpArchetypes: getVal('inGrpArchetypes'),
+      grpGhosts: getVal('inGrpGhosts'),
+      grpEra1Msgs: getNum('inGrpEra1Msgs'), grpEra2Msgs: getNum('inGrpEra2Msgs'),
+      grpErasData: getVal('inGrpErasData'),
+      grpDeathScore: getNum('inGrpDeathScore'), grpDeathGhosts: getNum('inGrpDeathGhosts'),
+      grpDeathMembers: getNum('inGrpDeathMembers'), grpDeathTrend: getVal('inGrpDeathTrend'),
+      grpDelTotal: getNum('inGrpDelTotal'), grpDeleted: getVal('inGrpDeleted'),
+      grpTimelineData: getVal('inGrpTimelineData'), grpTimelineInsight: getVal('inGrpTimelineInsight'),
+    });
+  }
+
+  return Object.assign(base, {
     p1: getVal('inP1'), p2: getVal('inP2'),
     score: getNum('inScore'), totalMsgs: getNum('inTotalMsgs'), days: getNum('inDays'),
     msgsA: getNum('inMsgsA'), msgsB: getNum('inMsgsB'),
@@ -1384,8 +1954,7 @@ function collectMockupData() {
     therapistMsgB: getVal('inTherapistMsgB'),
     therapistMsgC: getVal('inTherapistMsgC'),
     therapistMsgD: getVal('inTherapistMsgD'),
-    viewMode: document.getElementById('previewFrame').classList.contains('mobile') ? 'mobile' : 'desktop',
-  };
+  });
 }
 
 function openCapturePage(targetSection) {
@@ -1426,7 +1995,7 @@ function scheduleRender() {
 // Init after DOM ready
 function init() {
   try {
-    // Bind all inputs
+    // Bind all inputs (both pareja and grupo)
     document.querySelectorAll('.sidebar input, .sidebar textarea, .sidebar select').forEach(el => {
       el.addEventListener('input', scheduleRender);
     });

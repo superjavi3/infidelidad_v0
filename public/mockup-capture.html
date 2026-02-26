@@ -289,6 +289,83 @@ html, body {
 .lb-bar-extremes { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 28px; padding: 0 4px; }
 .lb-footer { text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 20px; }
 
+/* ── GROUP STYLES ── */
+.grp-score-card {
+  max-width: 400px; margin: 0 auto 32px; border-radius: var(--radius); padding: 36px; text-align: center;
+  background: linear-gradient(135deg, rgba(108,92,231,0.2), rgba(59,206,172,0.12));
+  border: 1px solid rgba(108,92,231,0.25); position: relative; overflow: hidden;
+}
+.grp-score-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.08), transparent 50%);
+}
+.grp-ranking-row {
+  display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+  background: rgba(255,255,255,0.03); border-radius: 10px; margin-bottom: 8px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.grp-ranking-medal { font-size: 1.4rem; width: 32px; text-align: center; flex-shrink: 0; }
+.grp-ranking-name { font-family: var(--font-display); font-size: 0.88rem; flex: 1; }
+.grp-ranking-stats { text-align: right; }
+.grp-ranking-msgs { font-family: var(--font-display); font-size: 1rem; }
+.grp-ranking-pct { color: var(--text-muted); font-size: 0.75rem; }
+.grp-ranking-bar { height: 6px; border-radius: 3px; margin-top: 6px; background: rgba(255,255,255,0.06); overflow: hidden; }
+.grp-ranking-bar-fill { height: 100%; border-radius: 3px; }
+
+.grp-arch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.grp-arch-card {
+  background: var(--bg-card); border-radius: 14px; padding: 18px;
+  border: 1px solid rgba(255,255,255,0.06); border-left: 4px solid;
+}
+.grp-arch-emoji { font-size: 2rem; margin-bottom: 8px; }
+.grp-arch-name { font-family: var(--font-display); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.grp-arch-member { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
+.grp-arch-desc { color: var(--text-muted); font-size: 0.82rem; font-style: italic; line-height: 1.4; margin-bottom: 8px; }
+.grp-arch-stats { font-size: 0.75rem; color: var(--text-muted); }
+
+.grp-ghost-row {
+  padding: 12px 14px; background: rgba(255,255,255,0.03); border-radius: 10px;
+  margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.04);
+}
+.grp-ghost-name { font-family: var(--font-display); font-size: 0.88rem; margin-bottom: 4px; }
+.grp-ghost-info { display: flex; gap: 16px; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px; }
+.grp-ghost-bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.06); overflow: hidden; }
+.grp-ghost-bar-fill { height: 100%; border-radius: 3px; }
+
+.grp-eras-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.grp-era-card {
+  background: rgba(255,255,255,0.03); border-radius: 14px; padding: 20px; text-align: center;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.grp-era-label { font-family: var(--font-display); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+.grp-era-value { font-family: var(--font-display); font-size: 2rem; margin-bottom: 4px; }
+.grp-era-sublabel { color: var(--text-muted); font-size: 0.8rem; }
+
+.grp-death-meter { text-align: center; padding: 24px; }
+.grp-death-score { font-family: var(--font-display); font-size: 3.5rem; margin-bottom: 4px; }
+.grp-death-label { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px; }
+.grp-death-bar { height: 12px; border-radius: 6px; background: rgba(255,255,255,0.06); overflow: hidden; margin: 0 auto 12px; max-width: 300px; }
+.grp-death-bar-fill { height: 100%; border-radius: 6px; }
+.grp-death-verdict { font-family: var(--font-display); font-size: 1rem; margin-bottom: 12px; }
+.grp-death-detail { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+
+.grp-deleted-row {
+  display: flex; align-items: center; gap: 12px; padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.grp-deleted-row:last-child { border-bottom: none; }
+.grp-deleted-name { font-family: var(--font-display); font-size: 0.85rem; min-width: 100px; }
+.grp-deleted-bar-wrap { flex: 1; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.06); overflow: hidden; }
+.grp-deleted-bar-fill { height: 100%; border-radius: 4px; background: var(--pink); }
+.grp-deleted-count { font-family: var(--font-display); font-size: 0.88rem; min-width: 60px; text-align: right; }
+
+.plan-group-wrap {
+  border-top: 4px solid var(--purple);
+  background: linear-gradient(180deg, rgba(108,92,231,0.06) 0%, transparent 40%);
+  border-radius: var(--radius) var(--radius) 0 0; padding: 0 4px 4px; margin-top: 40px;
+}
+.plan-group-wrap .premium-feature-card { border-color: rgba(108,92,231,0.12); }
+
 /* Flash */
 .capture-flash {
   position: fixed; inset: 0; background: #fff; z-index: 99999;
@@ -344,6 +421,7 @@ let mockupData = null;
 
 // ══════ RENDER ══════
 function renderReport(d) {
+  if (d.studioMode === 'grupo') return renderGroupReport(d);
   const p1 = d.p1, p2 = d.p2;
   const score = d.score, totalMsgs = d.totalMsgs, days = d.days;
   const msgsA = d.msgsA, msgsB = d.msgsB;
@@ -538,6 +616,196 @@ function renderReport(d) {
   // Render chart
   requestAnimationFrame(() => {
     renderChart(timelinePoints);
+    if (!document.getElementById('timelineChart')) {
+      chartsReady = true;
+      document.getElementById('status').textContent = 'Listo para capturar';
+    }
+  });
+}
+
+// ══════ GROUP RENDER (CAPTURE) ══════
+function parseLines(val) {
+  return (val || '').split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l; }).map(function(l) { return l.split('|').map(function(s) { return s.trim(); }); });
+}
+function getCategoryColor(cat) {
+  var map = { leader: '#FF2D78', active: '#6C5CE7', participant: '#3BCEAC', ghost: '#666', barely_alive: '#444' };
+  return map[cat] || '#888';
+}
+function getGroupVerdict(score) {
+  if (score >= 80) return '\u{1F525} Grupo en llamas';
+  if (score >= 60) return '\u2705 Grupo sano';
+  if (score >= 40) return '\u26A0\uFE0F Grupo en declive';
+  if (score >= 20) return '\u{1F480} Grupo zombie';
+  return '\u26B0\uFE0F Autopsia digital';
+}
+function getGroupScoreGradient(score) {
+  if (score >= 80) return 'linear-gradient(135deg, rgba(59,206,172,0.25), rgba(108,92,231,0.2))';
+  if (score >= 60) return 'linear-gradient(135deg, rgba(108,92,231,0.2), rgba(59,206,172,0.15))';
+  if (score >= 40) return 'linear-gradient(135deg, rgba(255,210,63,0.15), rgba(255,107,53,0.12))';
+  if (score >= 20) return 'linear-gradient(135deg, rgba(255,107,53,0.15), rgba(255,45,120,0.12))';
+  return 'linear-gradient(135deg, rgba(255,45,120,0.2), rgba(108,92,231,0.15))';
+}
+function getDeathVerdict(score) {
+  if (score <= 20) return { text: '\u{1F331} Tu grupo está vivito y coleando', color: '#3BCEAC' };
+  if (score <= 40) return { text: '\u{1F610} Algo tranquilo, pero se mantiene', color: '#FFD23F' };
+  if (score <= 60) return { text: '\u26A0\uFE0F Señales de alarma — la actividad baja', color: '#FF6B35' };
+  if (score <= 80) return { text: '\u{1F6A8} En cuidados intensivos', color: '#FF2D78' };
+  return { text: '\u{1F480} Prácticamente un cementerio digital', color: '#FF2D78' };
+}
+
+function renderGroupReport(d) {
+  var target = d.targetSection || 'all';
+  var showAll = target === 'all';
+  var score = d.grpScore || 0;
+  var totalMsgs = d.grpTotalMsgs || 0;
+  var members = d.grpMembers || 0;
+  var days = d.grpDays || 0;
+  var verdict = getGroupVerdict(score);
+  var html = '';
+
+  // Header
+  if (showAll || target === 'grp-score' || target === 'grp-stats') {
+    html += '<div class="results-header"><h2>Análisis del <span class="gradient-text">grupo</span></h2><p style="color:var(--text-muted);">Análisis basado en <strong>' + totalMsgs.toLocaleString() + '</strong> mensajes de <strong>' + members + '</strong> participantes</p></div>';
+  }
+
+  // Score
+  if (showAll || target === 'grp-score') {
+    html += '<div id="sec-grp-score" class="grp-score-card" style="background:' + getGroupScoreGradient(score) + ';"><div style="font-size:0.85rem;text-transform:uppercase;letter-spacing:3px;opacity:0.8;margin-bottom:12px;">Salud del Grupo</div><div style="font-family:var(--font-display);font-size:5rem;line-height:1;margin-bottom:4px;">' + score + '</div><div style="font-size:1.1rem;opacity:0.7;">de 100</div><div style="margin-top:16px;font-size:1.1rem;font-weight:600;">' + verdict + '</div></div>';
+  }
+
+  // Stats
+  if (showAll || target === 'grp-stats') {
+    html += '<div id="sec-grp-stats"><div class="plan-header"><div class="plan-badge free">\u2728 GRATIS</div><div class="plan-title free">Análisis Básico</div><div class="plan-subtitle">Estadísticas generales del grupo</div></div>';
+    html += '<div class="stats-grid"><div class="stat-card"><div class="stat-emoji">\u{1F4AC}</div><div class="stat-value">' + totalMsgs.toLocaleString() + '</div><div class="stat-label">Total de mensajes</div></div><div class="stat-card"><div class="stat-emoji">\u{1F465}</div><div class="stat-value">' + members + '</div><div class="stat-label">Miembros activos</div></div><div class="stat-card"><div class="stat-emoji">\u{1F4C5}</div><div class="stat-value">' + days.toLocaleString() + '</div><div class="stat-label">Días de actividad</div></div><div class="stat-card"><div class="stat-emoji">\u{23F1}\uFE0F</div><div class="stat-value">' + (d.grpReply || '') + '</div><div class="stat-label">Respuesta promedio</div></div><div class="stat-card"><div class="stat-emoji">\u{1F319}</div><div class="stat-value">' + (d.grpNight || '') + '</div><div class="stat-label">Mensajes nocturnos</div></div><div class="stat-card"><div class="stat-emoji">\u{1F4F1}</div><div class="stat-value">' + (d.grpMedia || 0).toLocaleString() + '</div><div class="stat-label">Archivos compartidos</div></div></div>';
+    html += '<div class="fun-fact">\u{1F4CA} <strong>Dato curioso:</strong> ' + (d.grpFunFact || '') + '</div>';
+
+    // Quick ranking
+    var rankRows = parseLines(d.grpRanking);
+    if (rankRows.length >= 3) {
+      var medals = ['\u{1F451}', '\u{1F948}', '\u{1F949}'];
+      var topH = '';
+      for (var i = 0; i < Math.min(3, rankRows.length); i++) {
+        var r = rankRows[i];
+        topH += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;' + (i < 2 ? 'border-bottom:1px solid rgba(255,255,255,0.06);' : '') + '"><span style="font-size:1.3rem;">' + medals[i] + '</span><span style="flex:1;font-family:var(--font-display);font-size:0.9rem;">' + r[0] + '</span><span style="font-family:var(--font-display);font-size:0.95rem;">' + parseInt(r[1] || 0).toLocaleString() + '</span><span style="color:var(--text-muted);font-size:0.78rem;">' + (r[2] || 0) + '%</span></div>';
+      }
+      html += '<div class="example-card"><div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--purple);margin-bottom:10px;">\u{1F451} Quién domina el grupo</div>' + topH + '</div>';
+    }
+    html += '</div>';
+  }
+
+  // Premium wrap
+  var showPremium = showAll || ['grp-ranking','grp-archetypes','grp-ghosts','grp-eras','grp-death','grp-deleted','grp-timeline'].includes(target);
+  if (showPremium) {
+    html += '<div class="plan-group-wrap"><div class="plan-header"><div class="plan-badge detective" style="background:rgba(108,92,231,0.12);color:var(--purple);border-color:rgba(108,92,231,0.25);">\u{1F465} COMPLETO</div><div class="plan-title detective" style="color:var(--purple);">Análisis Completo del Grupo</div><div class="plan-subtitle">Herramientas para entender tu grupo al 100%</div></div>';
+  }
+
+  // Ranking
+  if (showAll || target === 'grp-ranking') {
+    var rankRows2 = parseLines(d.grpRanking);
+    if (rankRows2.length > 0) {
+      var maxM = Math.max.apply(null, rankRows2.map(function(r2) { return parseInt(r2[1] || 0); }));
+      var medals2 = ['\u{1F451}', '\u{1F948}', '\u{1F949}'];
+      var rkH = '';
+      rankRows2.forEach(function(r2, i2) {
+        var nm = r2[0], ms = parseInt(r2[1] || 0), pc = r2[2] || 0, ct = (r2[3] || 'participant').toLowerCase();
+        var cl = getCategoryColor(ct);
+        var md = i2 < 3 ? medals2[i2] : '#' + (i2 + 1);
+        rkH += '<div class="grp-ranking-row"><div class="grp-ranking-medal">' + md + '</div><div class="grp-ranking-name">' + nm + '</div><div class="grp-ranking-stats"><div class="grp-ranking-msgs">' + ms.toLocaleString() + '</div><div class="grp-ranking-pct">' + pc + '%</div></div></div><div class="grp-ranking-bar"><div class="grp-ranking-bar-fill" style="width:' + (maxM > 0 ? (ms/maxM*100) : 0) + '%;background:' + cl + ';"></div></div>';
+      });
+      html += '<div class="premium-feature-card" id="sec-grp-ranking"><div class="pf-header"><div class="pf-icon">\u{1F451}</div><div><div class="pf-title">Ranking de Poder</div><div class="pf-subtitle">Quién manda, quién sigue, quién desapareció</div></div></div><div class="pf-body">' + rkH + '</div></div>';
+    }
+  }
+
+  // Archetypes
+  if (showAll || target === 'grp-archetypes') {
+    var archRows = parseLines(d.grpArchetypes);
+    if (archRows.length > 0) {
+      var aH = '<div class="grp-arch-grid">';
+      archRows.forEach(function(r3) {
+        var nm = r3[0], ar = r3[1] || '', em = r3[2] || '\u{1F3AD}', co = r3[3] || '#888', de = r3[4] || '', ms = r3[5] || '', pc = r3[6] || '';
+        aH += '<div class="grp-arch-card" style="border-left-color:' + co + ';"><div class="grp-arch-emoji">' + em + '</div><div class="grp-arch-name" style="color:' + co + ';">' + ar + '</div><div class="grp-arch-member">' + nm + '</div><div class="grp-arch-desc">"' + de + '"</div><div class="grp-arch-stats">' + (ms ? ms + ' msgs' : '') + (pc ? ' · ' + pc : '') + '</div></div>';
+      });
+      aH += '</div>';
+      html += '<div class="premium-feature-card" id="sec-grp-archetypes"><div class="pf-header"><div class="pf-icon">\u{1F3AD}</div><div><div class="pf-title">Arquetipos del Grupo</div><div class="pf-subtitle">Cada miembro tiene un rol... ¿cuál es el tuyo?</div></div></div><div class="pf-body">' + aH + '</div></div>';
+    }
+  }
+
+  // Ghosts
+  if (showAll || target === 'grp-ghosts') {
+    var ghostRows = parseLines(d.grpGhosts);
+    if (ghostRows.length > 0) {
+      var maxD = Math.max.apply(null, ghostRows.map(function(r4) { return parseInt(r4[3] || 0); }));
+      var gH = '';
+      ghostRows.forEach(function(r4) {
+        var nm = r4[0], si = r4[1] || '', lm = r4[2] || '', dv = parseInt(r4[3] || 0);
+        var bp = maxD > 0 ? (dv / maxD * 100) : 0;
+        var bc = dv > 365 ? '#FF2D78' : dv > 90 ? '#FF6B35' : dv > 30 ? '#FFD23F' : '#3BCEAC';
+        gH += '<div class="grp-ghost-row"><div class="grp-ghost-name">\u{1F47B} ' + nm + '</div><div class="grp-ghost-info"><span>Mayor silencio: <strong>' + si + '</strong></span><span>Último mensaje: <strong>' + lm + '</strong></span></div><div class="grp-ghost-bar"><div class="grp-ghost-bar-fill" style="width:' + bp + '%;background:' + bc + ';"></div></div></div>';
+      });
+      html += '<div class="premium-feature-card" id="sec-grp-ghosts"><div class="pf-header"><div class="pf-icon">\u{1F47B}</div><div><div class="pf-title">Mapa de Fantasmas</div><div class="pf-subtitle">Quién desapareció y cuándo</div></div></div><div class="pf-body">' + gH + '</div></div>';
+    }
+  }
+
+  // Eras
+  if (showAll || target === 'grp-eras') {
+    var era1 = d.grpEra1Msgs || 0, era2 = d.grpEra2Msgs || 0;
+    var erasRows = parseLines(d.grpErasData);
+    if (era1 > 0 || era2 > 0) {
+      var eH = '<div class="grp-eras-wrap"><div class="grp-era-card"><div class="grp-era-label" style="color:var(--purple);">PRIMERA MITAD</div><div class="grp-era-value">' + era1.toLocaleString() + '</div><div class="grp-era-sublabel">mensajes</div></div><div class="grp-era-card"><div class="grp-era-label" style="color:var(--pink);">SEGUNDA MITAD</div><div class="grp-era-value">' + era2.toLocaleString() + '</div><div class="grp-era-sublabel">mensajes</div></div></div>';
+      if (erasRows.length > 0) {
+        eH += '<table style="width:100%;border-collapse:collapse;margin-top:12px;"><thead><tr><th style="text-align:left;padding:8px 12px;font-size:0.78rem;color:var(--text-muted);border-bottom:2px solid rgba(255,255,255,0.08);">Métrica</th><th style="text-align:center;padding:8px 12px;font-size:0.78rem;color:var(--purple);border-bottom:2px solid rgba(255,255,255,0.08);">Antes</th><th style="text-align:center;padding:8px 12px;font-size:0.78rem;color:var(--pink);border-bottom:2px solid rgba(255,255,255,0.08);">Ahora</th><th style="text-align:center;padding:8px 12px;font-size:0.78rem;color:var(--text-muted);border-bottom:2px solid rgba(255,255,255,0.08);">Cambio</th></tr></thead><tbody>';
+        erasRows.forEach(function(r5) {
+          var ch = r5[3] || '';
+          var chC = ch.charAt(0) === '+' ? 'var(--green)' : ch.charAt(0) === '-' ? 'var(--pink)' : 'var(--text-muted)';
+          eH += '<tr><td style="padding:8px 12px;font-size:0.85rem;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,0.04);">' + (r5[0] || '') + '</td><td style="text-align:center;padding:8px 12px;font-family:var(--font-display);font-size:0.95rem;border-bottom:1px solid rgba(255,255,255,0.04);">' + (r5[1] || '') + '</td><td style="text-align:center;padding:8px 12px;font-family:var(--font-display);font-size:0.95rem;border-bottom:1px solid rgba(255,255,255,0.04);">' + (r5[2] || '') + '</td><td style="text-align:center;padding:8px 12px;font-family:var(--font-display);font-size:0.95rem;color:' + chC + ';border-bottom:1px solid rgba(255,255,255,0.04);">' + ch + '</td></tr>';
+        });
+        eH += '</tbody></table>';
+      }
+      html += '<div class="premium-feature-card" id="sec-grp-eras"><div class="pf-header"><div class="pf-icon">\u231B</div><div><div class="pf-title">Eras del Grupo</div><div class="pf-subtitle">Primera mitad vs segunda mitad — qué cambió</div></div></div><div class="pf-body">' + eH + '</div></div>';
+    }
+  }
+
+  // Death
+  if (showAll || target === 'grp-death') {
+    var ds = d.grpDeathScore || 0;
+    var dv2 = getDeathVerdict(ds);
+    html += '<div class="premium-feature-card" id="sec-grp-death"><div class="pf-header"><div class="pf-icon">\u{1F480}</div><div><div class="pf-title">¿Tu grupo va a morir?</div><div class="pf-subtitle">Probabilidad calculada con datos reales</div></div></div><div class="pf-body"><div class="grp-death-meter"><div class="grp-death-score" style="color:' + dv2.color + ';">' + ds + '%</div><div class="grp-death-label">probabilidad de inactividad total en 6 meses</div><div class="grp-death-bar"><div class="grp-death-bar-fill" style="width:' + ds + '%;background:linear-gradient(90deg, #3BCEAC, #FFD23F 40%, #FF6B35 70%, #FF2D78);"></div></div><div class="grp-death-verdict" style="color:' + dv2.color + ';">' + dv2.text + '</div><div class="grp-death-detail">' + (d.grpDeathTrend || '') + '<br>\u{1F47B} ' + (d.grpDeathGhosts || 0) + ' fantasmas de ' + (d.grpDeathMembers || 0) + ' miembros</div></div></div></div>';
+  }
+
+  // Deleted
+  if (showAll || target === 'grp-deleted') {
+    var gdT = d.grpDelTotal || 0;
+    var delRows = parseLines(d.grpDeleted);
+    if (gdT > 0 || delRows.length > 0) {
+      var maxDl = delRows.length > 0 ? Math.max.apply(null, delRows.map(function(r6) { return parseInt(r6[1] || 0); })) : 1;
+      var dlH = '<div style="font-family:var(--font-display);font-size:1rem;margin-bottom:16px;">\u{1F5D1}\uFE0F <strong>' + gdT.toLocaleString() + '</strong> mensajes eliminados en total</div>';
+      delRows.forEach(function(r6) {
+        var nm = r6[0], ct = parseInt(r6[1] || 0);
+        var pc = gdT > 0 ? Math.round(ct / gdT * 100) : 0;
+        dlH += '<div class="grp-deleted-row"><div class="grp-deleted-name">' + nm + '</div><div class="grp-deleted-bar-wrap"><div class="grp-deleted-bar-fill" style="width:' + (maxDl > 0 ? (ct/maxDl*100) : 0) + '%;"></div></div><div class="grp-deleted-count">' + ct + ' <span style="color:var(--text-muted);font-size:0.75rem;">(' + pc + '%)</span></div></div>';
+      });
+      html += '<div class="premium-feature-card" id="sec-grp-deleted"><div class="pf-header"><div class="pf-icon">\u{1F5D1}\uFE0F</div><div><div class="pf-title">Mensajes Eliminados</div><div class="pf-subtitle">Ranking de quién borra más</div></div></div><div class="pf-body">' + dlH + '</div></div>';
+    }
+  }
+
+  // Timeline
+  if (showAll || target === 'grp-timeline') {
+    html += '<div class="premium-feature-card" id="sec-grp-timeline"><div class="pf-header"><div class="pf-icon">\u{1F4C8}</div><div><div class="pf-title">Línea de Vida del Grupo</div><div class="pf-subtitle">Actividad mes a mes</div></div></div><div class="pf-body"><div style="height:320px;"><canvas id="timelineChart"></canvas></div><div class="pf-insight"><strong>\u{1F4C8} Análisis:</strong> ' + (d.grpTimelineInsight || '') + '</div></div></div>';
+  }
+
+  if (showPremium) html += '</div>'; // close plan-group-wrap
+
+  document.getElementById('report').innerHTML = html;
+  document.getElementById('status').textContent = 'Renderizando gráfico...';
+
+  // Parse and render chart
+  var tlPoints = (d.grpTimelineData || '').split(',').map(function(p) {
+    var parts = p.trim().split(':');
+    return { label: (parts[0] || '').trim(), value: parseInt(parts[1]) || 0 };
+  }).filter(function(p) { return p.label; });
+
+  requestAnimationFrame(function() {
+    renderChart(tlPoints);
     if (!document.getElementById('timelineChart')) {
       chartsReady = true;
       document.getElementById('status').textContent = 'Listo para capturar';
