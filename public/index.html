@@ -2919,17 +2919,6 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <div class="pf-body" id="group-deletedBody"></div>
     </div>
 
-    <!-- Feature 7: Chatbot IA -->
-    <div class="premium-feature-card" id="group-featureChatbot" data-plan-required="group-completo">
-      <div class="pf-header"><span class="pf-icon">💬</span><div><h4 class="pf-title">Chatbot IA del Grupo</h4><p class="pf-subtitle">Pregúntale lo que quieras sobre tu grupo</p></div></div>
-      <div class="pf-body" id="group-chatbotBody">
-        <div style="text-align:center;padding:16px;">
-          <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:16px;">Pregunta sobre dinámicas, relaciones entre miembros, horarios...</p>
-          <button onclick="openGroupChatbot()" class="btn-primary" style="background:linear-gradient(135deg,var(--purple),var(--pink));border:none;color:#fff;padding:14px 28px;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;width:100%;">💬 Hablar con la IA del Grupo</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Feature 8: Autopsia del Grupo -->
     <div class="premium-feature-card" id="group-featureAutopsy" data-plan-required="group-completo">
       <div class="pf-header"><span class="pf-icon">🔬</span><div><h4 class="pf-title">Autopsia del Grupo</h4><p class="pf-subtitle">Momentos clave que cambiaron la dinámica</p></div></div>
@@ -5205,69 +5194,6 @@ async function groupShareToStories() {
 }
 
 // ── GROUP CHATBOT ──
-function openGroupChatbot() {
-  if (window.isDemoMode) { showDemoUpgradePrompt('group-chatbot'); return; }
-  if (!hasPlanAccess('group-completo')) { openPayModal('group-completo'); return; }
-
-  // Reuse the existing chatbot modal but adapted for groups
-  const modal = document.getElementById('chatbotModal');
-  const header = document.getElementById('chatbotHeader');
-  if (header) {
-    const titleEl = header.querySelector('h3') || header.querySelector('span');
-    if (titleEl) titleEl.textContent = '💬 IA del Grupo';
-  }
-
-  // Change suggestions
-  const sugEl = document.getElementById('chatSuggestions');
-  if (sugEl) {
-    const gs = lastGroupStats;
-    sugEl.innerHTML = [
-      '¿Quién es el más activo del grupo?',
-      '¿Hay subgrupos o cliques?',
-      '¿Cuál es la hora pico del grupo?',
-      gs ? `¿Qué pasó el último mes?` : '¿Cómo ha cambiado el grupo?'
-    ].map(q => `<button class="chat-suggestion" onclick="sendGroupChatMsg('${q}')">${q}</button>`).join('');
-  }
-
-  // Override send function temporarily
-  window._groupChatMode = true;
-  modal.style.display = 'flex';
-  document.getElementById('chatMessages').innerHTML = '';
-}
-
-async function sendGroupChatMsg(text) {
-  if (!text) text = document.getElementById('chatInput')?.value;
-  if (!text || !text.trim()) return;
-  document.getElementById('chatInput').value = '';
-
-  addChatMsg('user', text);
-
-  const typing = document.getElementById('typingIndicator');
-  if (typing) typing.style.display = 'flex';
-
-  try {
-    const gs = lastGroupStats;
-    const sampled = sampleGroupMessages(lastGroupMessages || [], gs);
-    const res = await gzipFetch('/api/analyze', {
-      mode: 'group-chat',
-      question: text,
-      chatHistory: [],
-      stats: {
-        groupName: gs.groupName, totalMessages: gs.totalMessages, uniqueDays: gs.uniqueDays,
-        score: gs.score, activeCount: gs.activeCount, ghostCount: gs.ghostCount,
-        members: gs.members.slice(0, 20).map(m => ({ name: m.name, msgCount: m.msgCount, pct: m.pct, category: m.category }))
-      },
-      messages: sampled
-    });
-    const data = await res.json();
-    if (typing) typing.style.display = 'none';
-    addChatMsg('assistant', data.answer || 'No pude procesar tu pregunta.', true);
-  } catch(err) {
-    if (typing) typing.style.display = 'none';
-    addChatMsg('assistant', 'Error al consultar la IA. Intenta de nuevo.');
-  }
-}
-
 // ── GROUP PDF (placeholder — will implement full) ──
 async function generateGroupPDF() {
   if (!lastGroupStats || !lastGroupMessages) { alert('Primero analiza un grupo.'); return; }
@@ -6172,26 +6098,6 @@ async function loadGroupDemo() {
   renderGroupPremiumFeatures(demoMessages, groupStats);
   applyBlurOverlays();
 
-  // Re-lock the group chatbot card — needs real chat
-  const chatbotCard = document.getElementById('group-featureChatbot');
-  if (chatbotCard) {
-    chatbotCard.classList.remove('plan-unlocked');
-    chatbotCard.classList.add('plan-locked');
-    const body = chatbotCard.querySelector('.pf-body');
-    if (body) {
-      body.style.filter = 'blur(8px)';
-      body.style.pointerEvents = 'none';
-      body.style.opacity = '0.3';
-      body.style.userSelect = 'none';
-    }
-    const oldOverlay = chatbotCard.querySelector('.body-unlock-overlay');
-    if (oldOverlay) oldOverlay.remove();
-    const overlay = document.createElement('div');
-    overlay.className = 'body-unlock-overlay';
-    overlay.innerHTML = '<button class="unlock-overlay-btn detective-btn" onclick="showDemoUpgradePrompt(\'group-chatbot\')">🔒 Sube tu grupo real para usar la IA</button>';
-    chatbotCard.appendChild(overlay);
-  }
-
   // Re-lock autopsy card — needs real AI call
   const autopsyCard = document.getElementById('group-featureAutopsy');
   if (autopsyCard) {
@@ -6208,7 +6114,7 @@ async function loadGroupDemo() {
     if (oldOverlay) oldOverlay.remove();
     const overlay = document.createElement('div');
     overlay.className = 'body-unlock-overlay';
-    overlay.innerHTML = '<button class="unlock-overlay-btn detective-btn" onclick="showDemoUpgradePrompt(\'group-chatbot\')">🔒 Sube tu grupo real para la autopsia IA</button>';
+    overlay.innerHTML = '<button class="unlock-overlay-btn detective-btn" onclick="showDemoUpgradePrompt(\'autopsy\')">🔒 Sube tu grupo real para la autopsia IA</button>';
     autopsyCard.appendChild(overlay);
   }
 
@@ -7964,8 +7870,7 @@ function showDemoUpgradePrompt(feature) {
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;';
   overlay.onclick = () => overlay.remove();
   const msgs = {
-    chatbot: 'El chatbot analiza TU relación real — sube tu chat para activarlo 💬',
-    'group-chatbot': 'La IA necesita TU grupo real para analizarlo — sube tu chat grupal 👥'
+    chatbot: 'El chatbot analiza TU relación real — sube tu chat para activarlo 💬'
   };
   overlay.innerHTML = `<div style="background:var(--bg-card);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px;max-width:400px;text-align:center;" onclick="event.stopPropagation()">
     <div style="font-size:2rem;margin-bottom:12px;">👀</div>

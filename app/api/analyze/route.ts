@@ -281,50 +281,6 @@ Responde en JSON: { "funInsight": "tu dato curioso aquí" }`;
       return NextResponse.json({ success: true, analysis });
     }
 
-    // ===== MODO GROUP-CHAT — Chatbot IA del grupo =====
-    if (mode === 'group-chat') {
-      const memberList = (stats?.members || []).slice(0, 20).map((m: any) => `${m.name}: ${m.msgCount} msgs (${m.pct}%), ${m.category}`).join('\n');
-      const recentMsgs = messages ? sampleMessages(messages, 30) : [];
-      const recentHistory = chatHistory?.slice(-2).map((m: any) => `${m.role === 'user' ? 'Usuario' : 'Asistente'}: ${m.text}`).join('\n') || '';
-
-      const groupChatPrompt = `Eres un analista experto de grupos de WhatsApp. Responde CONCISO.
-
-DATOS DEL GRUPO:
-- Nombre: ${stats?.groupName || 'Sin nombre'}
-- ${stats?.totalMessages || 0} mensajes de ${stats?.members?.length || 0} miembros en ${stats?.uniqueDays || 0} días
-- Score: ${stats?.score || 'N/A'}/100
-- Activos: ${stats?.activeCount || 0} | Fantasmas: ${stats?.ghostCount || 0}
-
-MIEMBROS:
-${memberList}
-
-MENSAJES:
-${recentMsgs.map((m: any) => `[${m.date}] ${m.sender}: ${(m.text || '').substring(0, 80)}`).join('\n')}
-
-REGLAS: Máx 150 palabras. Datos concretos. Nombres reales. Si no sabes, dilo.
-
-${recentHistory ? `CONTEXTO:\n${recentHistory}\n` : ''}PREGUNTA: ${question}
-RESPONDE:`;
-
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: groupChatPrompt }] }],
-            generationConfig: { temperature: 0.7, maxOutputTokens: 1500, thinkingConfig: { thinkingBudget: 0 } }
-          })
-        }
-      );
-      const data = await response.json();
-      if (!data.candidates?.[0]) {
-        return NextResponse.json({ success: true, answer: 'No pude procesar tu pregunta. Intenta de nuevo.' });
-      }
-      const answer = data.candidates[0].content.parts[0].text.replace(/```/g, '').trim();
-      return NextResponse.json({ success: true, answer });
-    }
-
     // ===== MODO GROUP-AUTOPSY — Momentos clave del grupo =====
     if (mode === 'group-autopsy') {
       const memberList = (stats?.members || []).slice(0, 15).map((m: any) => `${m.name}: ${m.msgCount} msgs`).join(', ');
