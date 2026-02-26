@@ -1111,12 +1111,43 @@ function isMobileView() {
 
 // ══════ CORE CAPTURE ══════
 async function doCapture(element) {
-  // Wait for Chart.js animations to finish
+  const frame = document.getElementById('previewFrame');
+  const wrap  = document.getElementById('previewWrap');
+  const mobile = isMobileView();
+
+  // Save original styles
+  const origFrameOverflow = frame.style.overflow;
+  const origFrameMaxH     = frame.style.maxHeight;
+  const origFrameH        = frame.style.height;
+  const origFrameBR       = frame.style.borderRadius;
+  const origFrameClip     = frame.style.clipPath;
+  const origWrapOverflow  = wrap.style.overflow;
+  const origWrapH         = wrap.style.height;
+
+  // Remove clipping from parents so html2canvas sees full content
+  if (mobile) {
+    frame.style.overflow     = 'visible';
+    frame.style.maxHeight    = 'none';
+    frame.style.height       = 'auto';
+    frame.style.borderRadius = '0';
+    frame.style.clipPath     = 'none';
+  }
+  wrap.style.overflow = 'visible';
+  wrap.style.height   = 'auto';
+
+  // Scroll to top
+  wrap.scrollTop = 0;
+
+  // Wait for layout + Chart.js animations
   await new Promise(r => setTimeout(r, 800));
-  flash();
 
   const w = element.scrollWidth;
   const h = element.scrollHeight;
+  console.log('[Capture] target:', element.id || element.className,
+    'scrollWidth:', w, 'scrollHeight:', h,
+    'offsetWidth:', element.offsetWidth, 'offsetHeight:', element.offsetHeight);
+
+  flash();
 
   const canvas = await html2canvas(element, {
     scale: 3,
@@ -1127,11 +1158,24 @@ async function doCapture(element) {
     width: w,
     height: h,
     windowWidth: w,
+    windowHeight: h,
     scrollX: 0,
     scrollY: 0,
     x: 0,
     y: 0,
   });
+
+  // Restore original styles
+  if (mobile) {
+    frame.style.overflow     = origFrameOverflow;
+    frame.style.maxHeight    = origFrameMaxH;
+    frame.style.height       = origFrameH;
+    frame.style.borderRadius = origFrameBR;
+    frame.style.clipPath     = origFrameClip;
+  }
+  wrap.style.overflow = origWrapOverflow;
+  wrap.style.height   = origWrapH;
+
   return canvas;
 }
 
@@ -1158,6 +1202,7 @@ async function captureSection(btn) {
 
   btnBusy(btn, '📷 Capturando...');
   try {
+    console.log('[captureSection] target:', sectionName, el.id);
     const canvas = await doCapture(el);
     const blob = await canvasToPngBlob(canvas);
     downloadBlob(blob, `yalosabia-${sectionName}-${getDateStr()}.png`);
@@ -1168,11 +1213,12 @@ async function captureSection(btn) {
   }
 }
 
-// ══════ CAPTURE: ALL (full report scroll) ══════
+// ══════ CAPTURE: ALL (full previewContent) ══════
 async function captureAll(btn) {
   btnBusy(btn, '📸 Capturando...');
   try {
     const el = document.getElementById('previewContent');
+    console.log('[captureAll] target: #previewContent');
     const canvas = await doCapture(el);
     const blob = await canvasToPngBlob(canvas);
     downloadBlob(blob, `yalosabia-completo-${getDateStr()}.png`);
@@ -1187,8 +1233,9 @@ async function captureAll(btn) {
 async function captureClipboard(btn) {
   btnBusy(btn, '📋 Copiando...');
   try {
-    const sectionEl = getVisibleSectionElement() || document.getElementById('previewContent');
-    const canvas = await doCapture(sectionEl);
+    const el = getVisibleSectionElement() || document.getElementById('previewContent');
+    console.log('[captureClipboard] target:', el.id || el.className);
+    const canvas = await doCapture(el);
     const blob = await canvasToPngBlob(canvas);
     await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
     btnDone(btn);
@@ -1206,6 +1253,7 @@ async function downloadCapture(btn) {
 
   btnBusy(btn, '⬇ Descargando...');
   try {
+    console.log('[downloadCapture] target:', sectionName, el.id);
     const canvas = await doCapture(el);
     const blob = await canvasToPngBlob(canvas);
     downloadBlob(blob, `yalosabia-${sectionName}-${getDateStr()}.png`);
