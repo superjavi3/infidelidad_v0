@@ -3139,6 +3139,12 @@ async function processChat(text) {
   window.currentChatFingerprint = generateChatFingerprint(messages);
   console.log('[Fingerprint] Chat fingerprint:', window.currentChatFingerprint);
 
+  // Detectar si detective pagó por otro chat y mostrar warning
+  if (isFingerprintMismatch()) {
+    console.log('[Fingerprint] Mismatch — detective access blocked for this chat');
+    showDifferentChatWarning();
+  }
+
   // Re-evaluate blur overlays now that fingerprint changed
   applyBlurOverlays();
 
@@ -5962,8 +5968,37 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot
 <script>
 // ═══ 3-TIER PLAN SYSTEM ═══
 
-// Plan state
-window.userPlan = 'curioso'; // Default: free tier
+// Plan state (backing store — all reads go through the getter below)
+let _internalUserPlan = 'curioso';
+
+// Dynamic getter: Detective plan checks fingerprint on every read
+Object.defineProperty(window, 'userPlan', {
+  configurable: true,
+  get: function() {
+    // Obsesivo: siempre tiene acceso completo
+    if (_internalUserPlan === 'obsesivo') return 'obsesivo';
+
+    // Detective: verificar fingerprint en tiempo real
+    if (_internalUserPlan === 'detective') {
+      try {
+        var stored = JSON.parse(localStorage.getItem('losabia_plan') || 'null');
+        // Retrocompat: sin fingerprint guardado (pagos antiguos) = permitir
+        if (!stored || !stored.chatFingerprint) return 'detective';
+        // Sin chat cargado aún = denegar (no hay contenido que mostrar)
+        if (!window.currentChatFingerprint) return 'curioso';
+        // Fingerprint coincide = permitir
+        if (stored.chatFingerprint === window.currentChatFingerprint) return 'detective';
+        // Fingerprint diferente = denegar
+        return 'curioso';
+      } catch(e) { return 'detective'; }
+    }
+
+    return _internalUserPlan;
+  },
+  set: function(val) {
+    _internalUserPlan = val;
+  }
+});
 const PLAN_HIERARCHY = { curioso: 0, detective: 1, obsesivo: 2 };
 let selectedPlan = 'detective';
 let featuresRendered = false;
@@ -6081,7 +6116,8 @@ function hasPlanAccess(requiredPlan) {
 }
 
 function isFingerprintMismatch() {
-  if (window.userPlan !== 'detective') return false;
+  // Usa _internalUserPlan (plan real pagado) en vez del getter (que ya devuelve 'curioso' en mismatch)
+  if (_internalUserPlan !== 'detective') return false;
   try {
     const stored = JSON.parse(localStorage.getItem('losabia_plan') || 'null');
     if (!stored || !stored.chatFingerprint) return false;
@@ -6091,29 +6127,45 @@ function isFingerprintMismatch() {
 }
 
 function showDifferentChatWarning() {
-  if (document.getElementById('fingerprintWarningModal')) return;
+  document.getElementById('fingerprintWarningModal')?.remove();
   const overlay = document.createElement('div');
   overlay.id = 'fingerprintWarningModal';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;';
   overlay.innerHTML = `
-    <div style="background:var(--bg-card,#1A1A2E);border-radius:16px;padding:32px;max-width:420px;width:100%;text-align:center;border:1px solid rgba(255,255,255,0.1);">
-      <div style="font-size:2.5rem;margin-bottom:12px;">🔒</div>
-      <h3 style="color:#fff;font-size:1.2rem;margin:0 0 12px;">Este es un chat diferente</h3>
-      <p style="color:var(--text-muted,#9CA3AF);font-size:0.9rem;line-height:1.5;margin:0 0 20px;">
-        Tu análisis Detective fue comprado para otro chat.<br>
-        El Plan Detective es válido para <strong style="color:#fff;">1 conversación específica</strong>.<br>
-        Para analizar este chat, necesitas un nuevo análisis.
+    <div style="background:var(--bg-card,#1A1A2E);border-radius:var(--radius,16px);padding:40px;max-width:460px;width:100%;text-align:center;border:1px solid var(--pink,#FF2D78);">
+      <div style="font-size:3rem;margin-bottom:16px;">🔒</div>
+      <h3 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 12px;color:#fff;">Este chat no está incluido</h3>
+      <p style="color:var(--text-muted,#9CA3AF);line-height:1.6;margin:0 0 24px;font-size:0.95rem;">
+        Tu Plan Detective fue comprado para otro chat específico.<br>
+        Para analizar esta conversación tienes dos opciones:
       </p>
-      <button onclick="this.closest('#fingerprintWarningModal').remove()"
-        style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:0.9rem;margin-right:8px;">
-        Entendido
-      </button>
-      <button onclick="this.closest('#fingerprintWarningModal').remove();document.getElementById('precios')?.scrollIntoView({behavior:'smooth'})"
-        style="background:linear-gradient(135deg,var(--pink,#FF2D78),var(--purple,#6C5CE7));border:none;color:#fff;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:600;">
-        Ver Plan Obsesivo ♾️
-      </button>
+      <button id="fpWarningUnlockBtn" style="
+        width:100%;padding:14px;margin-bottom:12px;
+        background:linear-gradient(135deg,var(--pink,#FF2D78),var(--orange,#FF6B35));
+        border:none;border-radius:8px;color:white;
+        font-weight:700;cursor:pointer;font-size:1rem;
+      ">Desbloquear este chat — $69.99 MXN →</button>
+      <button id="fpWarningCloseBtn" style="
+        width:100%;padding:14px;
+        background:transparent;border:1px solid rgba(255,255,255,0.15);
+        border-radius:8px;color:var(--text-muted,#9CA3AF);
+        cursor:pointer;font-size:0.9rem;
+      ">Volver al análisis gratuito</button>
+      <p style="color:var(--text-muted,#9CA3AF);font-size:0.78rem;margin-top:16px;">
+        ¿Quieres analizar chats ilimitados? <a href="#precios" style="color:var(--pink,#FF2D78);" onclick="document.getElementById('fingerprintWarningModal')?.remove()">Ver Plan Obsesivo →</a>
+      </p>
     </div>`;
   document.body.appendChild(overlay);
+  // Unlock button → abre checkout para detective
+  overlay.querySelector('#fpWarningUnlockBtn').onclick = function() {
+    overlay.remove();
+    openPayModal('detective');
+  };
+  // Close button → cierra y deja en plan gratuito
+  overlay.querySelector('#fpWarningCloseBtn').onclick = function() {
+    overlay.remove();
+  };
+  // Click fuera cierra
   overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
 }
 
@@ -6328,8 +6380,9 @@ function updatePlanBadge() {
   const badge = document.getElementById('userPlanBadge');
   if (!badge) return;
   const names = { curioso: 'Plan Curioso', detective: 'Plan Detective', obsesivo: 'Plan Obsesivo' };
-  badge.textContent = names[window.userPlan] || 'Plan Curioso';
-  badge.className = 'user-plan-badge ' + (window.userPlan || 'curioso');
+  // Usa _internalUserPlan para que el badge muestre el plan pagado, no el efectivo por fingerprint
+  badge.textContent = names[_internalUserPlan] || 'Plan Curioso';
+  badge.className = 'user-plan-badge ' + (_internalUserPlan || 'curioso');
 }
 
 function unlockPlan(plan) {
