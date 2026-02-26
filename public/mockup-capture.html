@@ -564,60 +564,99 @@ function downloadBlob(blob, filename) {
   document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
-async function doCapture(element) {
-  if (!chartsReady) {
-    setStatus('Esperando que el gráfico termine...');
-    await new Promise(resolve => {
-      const check = setInterval(() => { if (chartsReady) { clearInterval(check); resolve(); } }, 200);
-    });
-  }
-
-  // Hide toolbar before capture
-  document.getElementById('toolbar').style.display = 'none';
-
-  // Kill all transitions/animations on target + children
-  const killed = [element, ...element.querySelectorAll('*')];
-  killed.forEach(el => {
-    el.style.transition = 'none';
-    el.style.animation = 'none';
-  });
-
-  await new Promise(r => setTimeout(r, 1500));
-
-  const w = element.scrollWidth;
-  const h = element.scrollHeight;
-  console.log('[doCapture] target:', element.id || element.className,
-    'scrollWidth:', w, 'scrollHeight:', h,
-    'offsetWidth:', element.offsetWidth, 'offsetHeight:', element.offsetHeight);
-
-  flash();
+// ── BUG 1 FIX: inject CSS vars into html2canvas clone ──
+async function captureElement(element) {
+  const originalBg = element.style.background;
+  element.style.background = '#0A0A14';
 
   const canvas = await html2canvas(element, {
-    scale: 3,
+    backgroundColor: '#0A0A14',
+    scale: 2,
     useCORS: true,
     allowTaint: true,
-    backgroundColor: '#0A0A14',
+    foreignObjectRendering: false,
     logging: false,
-    scrollX: 0,
-    scrollY: 0,
-    x: 0,
-    y: 0,
-    width: w,
-    height: h,
-    windowWidth: w,
-    windowHeight: h,
+    onclone: function(clonedDoc, clonedElement) {
+      // Inject all CSS variables so the clone resolves them
+      var style = clonedDoc.createElement('style');
+      style.textContent = [
+        ':root {',
+        '  --bg-deep: #0d0d0d;',
+        '  --bg-card: #1a1a2e;',
+        '  --pink: #FF2D78;',
+        '  --orange: #FF6B35;',
+        '  --yellow: #FFD23F;',
+        '  --green: #3BCEAC;',
+        '  --purple: #6C5CE7;',
+        '  --blue: #0984E3;',
+        '  --text: #FAFAFA;',
+        '  --text-muted: #a0a0b8;',
+        '  --radius: 20px;',
+        '  --font-display: "Dela Gothic One", sans-serif;',
+        '  --font-body: "DM Sans", sans-serif;',
+        '}',
+        '* { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }',
+      ].join('\n');
+      clonedDoc.head.appendChild(style);
+
+      clonedElement.style.background = '#0A0A14';
+      clonedElement.style.backgroundColor = '#0A0A14';
+    }
   });
 
-  // Restore transitions
-  killed.forEach(el => {
-    el.style.transition = '';
-    el.style.animation = '';
-  });
+  element.style.background = originalBg;
+  return canvas;
+}
 
-  // Show toolbar again
-  document.getElementById('toolbar').style.display = '';
+// ── BUG 2 FIX: position element offscreen with fixed width before capture ──
+async function prepareAndCapture(element, targetWidth) {
+  var origStyles = {
+    position: element.style.position,
+    left: element.style.left,
+    top: element.style.top,
+    width: element.style.width,
+    maxWidth: element.style.maxWidth,
+    transform: element.style.transform,
+    zIndex: element.style.zIndex,
+    margin: element.style.margin,
+  };
+
+  element.style.position = 'fixed';
+  element.style.left = '-9999px';
+  element.style.top = '0';
+  element.style.width = targetWidth + 'px';
+  element.style.maxWidth = targetWidth + 'px';
+  element.style.transform = 'none';
+  element.style.zIndex = '-1';
+  element.style.margin = '0';
+
+  // Wait for browser to apply styles and re-layout
+  await new Promise(function(r) { setTimeout(r, 300); });
+
+  console.log('[prepareAndCapture] targetWidth:', targetWidth,
+    'scrollW:', element.scrollWidth, 'scrollH:', element.scrollHeight,
+    'offsetW:', element.offsetWidth, 'offsetH:', element.offsetHeight);
+
+  var canvas = await captureElement(element);
+
+  // Restore original styles
+  Object.keys(origStyles).forEach(function(k) { element.style[k] = origStyles[k]; });
 
   return canvas;
+}
+
+// ══════ SHARED CAPTURE FLOW ══════
+function getTargetWidth() {
+  return (mockupData && mockupData.viewMode === 'desktop') ? 1200 : 390;
+}
+
+async function waitForCharts() {
+  if (!chartsReady) {
+    setStatus('Esperando que el gráfico termine...');
+    await new Promise(function(resolve) {
+      var check = setInterval(function() { if (chartsReady) { clearInterval(check); resolve(); } }, 200);
+    });
+  }
 }
 
 // ══════ CAPTURE ACTIONS ══════
@@ -625,12 +664,17 @@ async function captureAll() {
   disableButtons(true);
   setStatus('Capturando reporte completo...');
   try {
-    const el = document.getElementById('report');
-    const canvas = await doCapture(el);
-    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    await waitForCharts();
+    document.getElementById('toolbar').style.display = 'none';
+    flash();
+    var el = document.getElementById('report');
+    var canvas = await prepareAndCapture(el, getTargetWidth());
+    document.getElementById('toolbar').style.display = '';
+    var blob = await new Promise(function(r) { canvas.toBlob(r, 'image/png'); });
     downloadBlob(blob, 'yalosabia-completo-' + getDateStr() + '.png');
     setStatus('Descarga completa');
   } catch(e) {
+    document.getElementById('toolbar').style.display = '';
     console.error('[captureAll]', e);
     setStatus('Error: ' + e.message);
   }
@@ -638,18 +682,23 @@ async function captureAll() {
 }
 
 async function captureSection() {
-  const target = (mockupData && mockupData.targetSection) || null;
-  const el = target ? document.getElementById('sec-' + target) : document.getElementById('report');
+  var target = (mockupData && mockupData.targetSection) || null;
+  var el = target ? document.getElementById('sec-' + target) : document.getElementById('report');
   if (!el) { setStatus('Sección no encontrada'); return; }
 
   disableButtons(true);
   setStatus('Capturando sección...');
   try {
-    const canvas = await doCapture(el);
-    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    await waitForCharts();
+    document.getElementById('toolbar').style.display = 'none';
+    flash();
+    var canvas = await prepareAndCapture(el, getTargetWidth());
+    document.getElementById('toolbar').style.display = '';
+    var blob = await new Promise(function(r) { canvas.toBlob(r, 'image/png'); });
     downloadBlob(blob, 'yalosabia-' + (target || 'completo') + '-' + getDateStr() + '.png');
     setStatus('Descarga completa');
   } catch(e) {
+    document.getElementById('toolbar').style.display = '';
     console.error('[captureSection]', e);
     setStatus('Error: ' + e.message);
   }
@@ -660,12 +709,17 @@ async function copyToClipboard() {
   disableButtons(true);
   setStatus('Copiando...');
   try {
-    const el = document.getElementById('report');
-    const canvas = await doCapture(el);
-    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    await waitForCharts();
+    document.getElementById('toolbar').style.display = 'none';
+    flash();
+    var el = document.getElementById('report');
+    var canvas = await prepareAndCapture(el, getTargetWidth());
+    document.getElementById('toolbar').style.display = '';
+    var blob = await new Promise(function(r) { canvas.toBlob(r, 'image/png'); });
     await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
     setStatus('Copiado al portapapeles');
   } catch(e) {
+    document.getElementById('toolbar').style.display = '';
     console.error('[clipboard]', e);
     setStatus('Error: ' + e.message);
   }
@@ -676,12 +730,19 @@ async function downloadPng() {
   disableButtons(true);
   setStatus('Generando PNG...');
   try {
-    const el = document.getElementById('report');
-    const canvas = await doCapture(el);
-    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-    downloadBlob(blob, 'yalosabia-completo-' + getDateStr() + '.png');
+    await waitForCharts();
+    document.getElementById('toolbar').style.display = 'none';
+    flash();
+    var el = document.getElementById('report');
+    var canvas = await prepareAndCapture(el, getTargetWidth());
+    document.getElementById('toolbar').style.display = '';
+    var link = document.createElement('a');
+    link.download = 'yalosabia-mockup-' + Date.now() + '.png';
+    link.href = canvas.toDataURL('image/png', 1.0);
+    link.click();
     setStatus('Descarga completa');
   } catch(e) {
+    document.getElementById('toolbar').style.display = '';
     console.error('[downloadPng]', e);
     setStatus('Error: ' + e.message);
   }
