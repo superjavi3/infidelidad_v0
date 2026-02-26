@@ -472,6 +472,134 @@ body {
 .language-word.normal { background: rgba(108,92,231,0.15); color: var(--purple); }
 .language-word.distancing { background: rgba(255,107,53,0.15); color: #FF6B35; }
 
+/* Leaderboard section */
+.leaderboard-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 32px 28px;
+  margin: 36px 0 48px;
+}
+.leaderboard-card .lb-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  margin-bottom: 4px;
+}
+.leaderboard-card .lb-subtitle {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 24px;
+}
+.lb-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+@media (max-width: 520px) {
+  .lb-grid { grid-template-columns: 1fr; }
+}
+.lb-stat {
+  background: rgba(255,255,255,0.03);
+  border-radius: 14px;
+  padding: 18px 16px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.lb-stat-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.lb-stat-values {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.lb-stat-user {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+}
+.lb-stat-avg {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.lb-stat-verdict {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.lb-stat-verdict.better { color: var(--green); }
+.lb-stat-verdict.worse { color: var(--yellow); }
+.lb-percentile { margin-top: 8px; }
+.lb-percentile-title {
+  font-size: 0.92rem;
+  text-align: center;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+.lb-percentile-title strong { color: var(--pink); }
+.lb-bar-wrap {
+  position: relative;
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, rgba(255,45,120,0.3), rgba(255,165,2,0.25) 40%, rgba(59,206,172,0.3));
+  margin: 0 4px;
+}
+.lb-bar-avg {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 1px;
+  border-left: 2px dashed rgba(255,255,255,0.25);
+}
+.lb-bar-avg-label {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.lb-bar-user {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--pink);
+  border: 2.5px solid #fff;
+  box-shadow: 0 0 12px rgba(255,45,120,0.5);
+}
+.lb-bar-user-label {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--pink);
+  white-space: nowrap;
+}
+.lb-bar-user-label.shift-left { transform: translateX(-80%); }
+.lb-bar-user-label.shift-right { transform: translateX(-20%); }
+.lb-bar-extremes {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 28px;
+  padding: 0 4px;
+}
+.lb-footer {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 20px;
+}
+
 /* Therapist section */
 .therapist-card {
   background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(236,72,153,0.08));
@@ -646,6 +774,19 @@ body {
       <div class="field"><label>Conclusión</label><textarea id="inBvnInsight">3 métricas muestran deterioro significativo (>30%). Lo más impactante: Emojis de amor de Él cayó un 98%.</textarea></div>
     </div>
 
+    <!-- LEADERBOARD -->
+    <div class="section-group">
+      <div class="section-group-title">Tu relación vs el promedio</div>
+      <div class="field-row">
+        <div class="field"><label>Tiempo resp. (min)</label><input type="number" id="inLbReply" value="12"></div>
+        <div class="field"><label>Equilibrio % mayor</label><input type="number" id="inLbBalance" value="63" min="50" max="100"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Silencios</label><input type="number" id="inLbSilences" value="31"></div>
+        <div class="field"><label>Double texting</label><input type="number" id="inLbDoubles" value="287"></div>
+      </div>
+    </div>
+
     <!-- THERAPIST -->
     <div class="section-group">
       <div class="section-group-title">Terapeuta IA</div>
@@ -687,6 +828,7 @@ body {
         <option value="sec-multimedia">Reyes del Multimedia</option>
         <option value="sec-forensic">Reconstrucción Forense</option>
         <option value="sec-bvn">Antes vs Ahora</option>
+        <option value="sec-leaderboard">Vs el promedio</option>
         <option value="sec-therapist">Terapeuta IA</option>
       </select>
       <div class="toolbar-sep"></div>
@@ -891,6 +1033,62 @@ function render() {
       <span style="color:var(--text-muted);font-size:0.9em;">Los dos se implican por igual. Poco común.</span>`;
   }
   html += `<div class="example-card" style="margin-bottom:48px;">${whoLeadsHtml}</div></div>`;
+
+  // ── LEADERBOARD ──
+  const AVG_SCORE = 54, AVG_REPLY = 18, AVG_BALANCE = 58, AVG_SILENCES = 23, AVG_DOUBLES = 340;
+  const lbReply = getNum('inLbReply');
+  const lbBalance = getNum('inLbBalance');
+  const lbSilences = getNum('inLbSilences');
+  const lbDoubles = getNum('inLbDoubles');
+  const lbBalanceLow = 100 - lbBalance;
+
+  function lbPct(userVal, avgVal, higherIsBetter) {
+    const diff = higherIsBetter ? (userVal - avgVal) : (avgVal - userVal);
+    const range = avgVal > 0 ? avgVal : 1;
+    const n = Math.max(-2, Math.min(2, diff / range));
+    return Math.max(5, Math.min(99, Math.round(50 + n * 25)));
+  }
+  function fmtReply(m) {
+    if (m < 1) return '< 1 min';
+    if (m < 60) return Math.round(m) + ' min';
+    const h = Math.floor(m / 60);
+    const r = Math.round(m % 60);
+    return r > 0 ? h + 'h ' + r + 'm' : h + 'h';
+  }
+
+  const lbStats = [
+    { label: 'Tiempo de respuesta', icon: '⏱️', userDisplay: fmtReply(lbReply), avgDisplay: AVG_REPLY + ' min', better: lbReply <= AVG_REPLY, percentile: lbPct(lbReply, AVG_REPLY, false) },
+    { label: 'Equilibrio de mensajes', icon: '⚖️', userDisplay: lbBalance + '% / ' + lbBalanceLow + '%', avgDisplay: AVG_BALANCE + '% / ' + (100 - AVG_BALANCE) + '%', better: lbBalance <= AVG_BALANCE, percentile: lbPct(lbBalance, AVG_BALANCE, false) },
+    { label: 'Silencios (+48h)', icon: '🔇', userDisplay: lbSilences + ' silencios', avgDisplay: AVG_SILENCES + ' prom.', better: lbSilences <= AVG_SILENCES, percentile: lbPct(lbSilences, AVG_SILENCES, false) },
+    { label: 'Double texting', icon: '😤', userDisplay: lbDoubles + ' episodios', avgDisplay: AVG_DOUBLES + ' prom.', better: lbDoubles <= AVG_DOUBLES, percentile: lbPct(lbDoubles, AVG_DOUBLES, false) },
+  ];
+
+  let lbGridHtml = '';
+  lbStats.forEach(st => {
+    const cls = st.better ? 'better' : 'worse';
+    const arrow = st.better ? '▲' : '▼';
+    const txt = st.better ? arrow + ' Mejor que el ' + st.percentile + '% de relaciones' : arrow + ' Por debajo del promedio';
+    lbGridHtml += `<div class="lb-stat"><div class="lb-stat-label">${st.icon} ${st.label}</div><div class="lb-stat-values"><span class="lb-stat-user">${st.userDisplay}</span><span class="lb-stat-avg">vs ${st.avgDisplay}</span></div><div class="lb-stat-verdict ${cls}">${txt}</div></div>`;
+  });
+
+  const scorePct = Math.max(3, Math.min(97, score));
+  const scorePercentile = Math.max(1, Math.min(99, Math.round(50 + (score - AVG_SCORE) / AVG_SCORE * 50)));
+  const lbLabelCls = score > 85 ? ' shift-left' : (score < 15 ? ' shift-right' : '');
+
+  html += `<div class="leaderboard-card" id="sec-leaderboard">
+    <div class="lb-title">📊 Tu relación vs el promedio</div>
+    <div class="lb-subtitle">Basado en análisis de relaciones en YaLoSabía</div>
+    <div class="lb-grid">${lbGridHtml}</div>
+    <div class="lb-percentile">
+      <div class="lb-percentile-title">Tu score: <strong>${score}</strong> — mejor que el <strong>${scorePercentile}%</strong> de relaciones analizadas</div>
+      <div class="lb-bar-wrap">
+        <div class="lb-bar-avg" style="left:${AVG_SCORE}%;"><span class="lb-bar-avg-label">Promedio</span></div>
+        <div class="lb-bar-user" style="left:${scorePct}%;"><span class="lb-bar-user-label${lbLabelCls}">Tú: ${score}</span></div>
+      </div>
+      <div class="lb-bar-extremes"><span>Relaciones en crisis</span><span>Relaciones sanas</span></div>
+    </div>
+    <div class="lb-footer">Datos basados en análisis agregados y anonimizados.</div>
+  </div>`;
 
   // ── DETECTIVE SECTION ──
   html += `<div class="plan-detective-wrap">
@@ -1139,7 +1337,7 @@ function showToast(msg, isError) {
 }
 
 // ══════ SECTION DETECTION ══════
-const SECTIONS = ['sec-score','sec-stats','sec-timeline','sec-silences','sec-doubletext','sec-deleted','sec-multimedia','sec-forensic','sec-bvn','sec-therapist'];
+const SECTIONS = ['sec-score','sec-stats','sec-timeline','sec-silences','sec-doubletext','sec-deleted','sec-multimedia','sec-forensic','sec-bvn','sec-leaderboard','sec-therapist'];
 
 function getVisibleSectionName() {
   const wrap = document.getElementById('previewWrap');
@@ -1179,6 +1377,8 @@ function collectMockupData() {
     forensicNarrative: getVal('inForensicNarrative'),
     bvn1: getVal('inBvn1'), bvn2: getVal('inBvn2'), bvn3: getVal('inBvn3'),
     bvnInsight: getVal('inBvnInsight'),
+    lbReply: getNum('inLbReply'), lbBalance: getNum('inLbBalance'),
+    lbSilences: getNum('inLbSilences'), lbDoubles: getNum('inLbDoubles'),
     therapist: getVal('inTherapist'),
     therapistMsgA: getVal('inTherapistMsgA'),
     therapistMsgB: getVal('inTherapistMsgB'),

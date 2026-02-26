@@ -262,6 +262,33 @@ html, body {
 }
 .therapist-bubble.person-b .bubble-name { color: var(--purple); text-align: right; }
 
+/* Leaderboard */
+.leaderboard-card { background: var(--bg-card); border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.06); padding: 32px 28px; margin: 36px 0 48px; }
+.leaderboard-card .lb-title { font-family: var(--font-display); font-size: 1.25rem; margin-bottom: 4px; }
+.leaderboard-card .lb-subtitle { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 24px; }
+.lb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+@media (max-width: 520px) { .lb-grid { grid-template-columns: 1fr; } }
+.lb-stat { background: rgba(255,255,255,0.03); border-radius: 14px; padding: 18px 16px; border: 1px solid rgba(255,255,255,0.04); }
+.lb-stat-label { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.lb-stat-values { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.lb-stat-user { font-family: var(--font-display); font-size: 1.35rem; }
+.lb-stat-avg { font-size: 0.82rem; color: var(--text-muted); }
+.lb-stat-verdict { font-size: 0.78rem; font-weight: 600; }
+.lb-stat-verdict.better { color: var(--green); }
+.lb-stat-verdict.worse { color: var(--yellow); }
+.lb-percentile { margin-top: 8px; }
+.lb-percentile-title { font-size: 0.92rem; text-align: center; margin-bottom: 16px; line-height: 1.5; }
+.lb-percentile-title strong { color: var(--pink); }
+.lb-bar-wrap { position: relative; height: 14px; border-radius: 7px; background: linear-gradient(90deg, rgba(255,45,120,0.3), rgba(255,165,2,0.25) 40%, rgba(59,206,172,0.3)); margin: 0 4px; }
+.lb-bar-avg { position: absolute; top: -4px; bottom: -4px; width: 1px; border-left: 2px dashed rgba(255,255,255,0.25); }
+.lb-bar-avg-label { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; }
+.lb-bar-user { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 50%; background: var(--pink); border: 2.5px solid #fff; box-shadow: 0 0 12px rgba(255,45,120,0.5); }
+.lb-bar-user-label { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 700; color: var(--pink); white-space: nowrap; }
+.lb-bar-user-label.shift-left { transform: translateX(-80%); }
+.lb-bar-user-label.shift-right { transform: translateX(-20%); }
+.lb-bar-extremes { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 28px; padding: 0 4px; }
+.lb-footer { text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 20px; }
+
 /* Flash */
 .capture-flash {
   position: fixed; inset: 0; background: #fff; z-index: 99999;
@@ -382,6 +409,31 @@ function renderReport(d) {
     html += '<div class="stats-grid"><div class="stat-card"><div class="stat-emoji">\u{1F4AC}</div><div class="stat-value">' + msgsA.toLocaleString() + '</div><div class="stat-label">Mensajes de ' + p1 + '</div></div><div class="stat-card"><div class="stat-emoji">\u{1F4AC}</div><div class="stat-value">' + msgsB.toLocaleString() + '</div><div class="stat-label">Mensajes de ' + p2 + '</div></div><div class="stat-card"><div class="stat-emoji">\u{23F1}\u{FE0F}</div><div class="stat-value">' + avgReply + '</div><div class="stat-label">Tiempo promedio de respuesta</div></div><div class="stat-card"><div class="stat-emoji">\u{1F319}</div><div class="stat-value">' + nightPct + '</div><div class="stat-label">Mensajes nocturnos (12am-5am)</div></div><div class="stat-card"><div class="stat-emoji">\u{2764}\u{FE0F}</div><div class="stat-value">' + loveCount.toLocaleString() + '</div><div class="stat-label">Emojis de amor enviados</div></div><div class="stat-card"><div class="stat-emoji">\u{1F4C5}</div><div class="stat-value">' + days.toLocaleString() + '</div><div class="stat-label">Días de conversación</div></div></div>';
     html += '<div class="fun-fact">\u{1F4CA} <strong>Dato curioso:</strong> ' + p1 + ' envió <strong>' + msgsA.toLocaleString() + '</strong> mensajes y ' + p2 + ' envió <strong>' + msgsB.toLocaleString() + '</strong>. ' + (loveCount > 20 ? 'Hay mucho amor en este chat \u{2764}\u{FE0F}' : 'Podrían usar más emojis de amor... \u{1F62C}') + '</div>';
     html += '<div class="example-card"><strong style="font-size:1.1em;">' + leader + ' lleva la relación</strong><br>' + leader + ': <strong>' + leaderPct + '%</strong> · ' + follower + ': <strong>' + followerPct + '%</strong><br><span style="color:var(--text-muted);font-size:0.9em;">' + ctx + '</span></div></div>';
+  }
+
+  // ── LEADERBOARD ──
+  if (showAll || target === 'leaderboard') {
+    var AVG_SCORE_LB = 54, AVG_REPLY_LB = 18, AVG_BALANCE_LB = 58, AVG_SILENCES_LB = 23, AVG_DOUBLES_LB = 340;
+    var lbReply = d.lbReply || 12, lbBalance = d.lbBalance || 63, lbSilences = d.lbSilences || 31, lbDoubles = d.lbDoubles || 287;
+    var lbBalanceLow = 100 - lbBalance;
+    function lbPctCalc(uv, av, hib) { var df = hib ? (uv-av) : (av-uv); var r = av>0?av:1; var n = Math.max(-2,Math.min(2,df/r)); return Math.max(5,Math.min(99,Math.round(50+n*25))); }
+    function fmtReplyLb(m) { if(m<1)return'< 1 min'; if(m<60)return Math.round(m)+' min'; var h=Math.floor(m/60),r=Math.round(m%60); return r>0?h+'h '+r+'m':h+'h'; }
+    var lbItems = [
+      { label:'Tiempo de respuesta', icon:'\u23F1\uFE0F', ud:fmtReplyLb(lbReply), ad:AVG_REPLY_LB+' min', b:lbReply<=AVG_REPLY_LB, p:lbPctCalc(lbReply,AVG_REPLY_LB,false) },
+      { label:'Equilibrio de mensajes', icon:'\u2696\uFE0F', ud:lbBalance+'% / '+lbBalanceLow+'%', ad:AVG_BALANCE_LB+'% / '+(100-AVG_BALANCE_LB)+'%', b:lbBalance<=AVG_BALANCE_LB, p:lbPctCalc(lbBalance,AVG_BALANCE_LB,false) },
+      { label:'Silencios (+48h)', icon:'\u{1F507}', ud:lbSilences+' silencios', ad:AVG_SILENCES_LB+' prom.', b:lbSilences<=AVG_SILENCES_LB, p:lbPctCalc(lbSilences,AVG_SILENCES_LB,false) },
+      { label:'Double texting', icon:'\u{1F624}', ud:lbDoubles+' episodios', ad:AVG_DOUBLES_LB+' prom.', b:lbDoubles<=AVG_DOUBLES_LB, p:lbPctCalc(lbDoubles,AVG_DOUBLES_LB,false) },
+    ];
+    var lbG = '';
+    lbItems.forEach(function(st) {
+      var cls = st.b?'better':'worse', ar = st.b?'\u25B2':'\u25BC';
+      var vt = st.b ? ar+' Mejor que el '+st.p+'% de relaciones' : ar+' Por debajo del promedio';
+      lbG += '<div class="lb-stat"><div class="lb-stat-label">'+st.icon+' '+st.label+'</div><div class="lb-stat-values"><span class="lb-stat-user">'+st.ud+'</span><span class="lb-stat-avg">vs '+st.ad+'</span></div><div class="lb-stat-verdict '+cls+'">'+vt+'</div></div>';
+    });
+    var sPct = Math.max(3,Math.min(97,score));
+    var sPercentile = Math.max(1,Math.min(99,Math.round(50+(score-AVG_SCORE_LB)/AVG_SCORE_LB*50)));
+    var lCls = score>85?' shift-left':(score<15?' shift-right':'');
+    html += '<div class="leaderboard-card" id="sec-leaderboard"><div class="lb-title">\u{1F4CA} Tu relación vs el promedio</div><div class="lb-subtitle">Basado en análisis de relaciones en YaLoSabía</div><div class="lb-grid">'+lbG+'</div><div class="lb-percentile"><div class="lb-percentile-title">Tu score: <strong>'+score+'</strong> — mejor que el <strong>'+sPercentile+'%</strong> de relaciones analizadas</div><div class="lb-bar-wrap"><div class="lb-bar-avg" style="left:'+AVG_SCORE_LB+'%;"><span class="lb-bar-avg-label">Promedio</span></div><div class="lb-bar-user" style="left:'+sPct+'%;"><span class="lb-bar-user-label'+lCls+'">Tú: '+score+'</span></div></div><div class="lb-bar-extremes"><span>Relaciones en crisis</span><span>Relaciones sanas</span></div></div><div class="lb-footer">Datos basados en análisis agregados y anonimizados.</div></div>';
   }
 
   // ── DETECTIVE ──
