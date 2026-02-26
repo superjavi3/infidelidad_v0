@@ -8,7 +8,7 @@ function getStripe() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, plan, chatFingerprint } = await req.json();
+    const { email, plan, chatFingerprint, isGift, gifterEmail, recipientEmail } = await req.json();
 
     if (!email || !plan) {
       return NextResponse.json(
@@ -24,6 +24,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (isGift && (!gifterEmail || !recipientEmail)) {
+      return NextResponse.json(
+        { error: 'Para regalos se requieren ambos emails' },
+        { status: 400 }
+      );
+    }
+
     const country = req.headers.get('x-vercel-ip-country') || 'US';
     const pricing = getPricingForCountry(country);
 
@@ -35,11 +42,27 @@ export async function POST(req: NextRequest) {
     const stripe = getStripe();
     const mode = isObsesivo ? 'subscription' : 'payment';
 
+    const giftParam = isGift ? '&gift=true' : '';
+    const customerEmail = isGift ? gifterEmail : email;
+    const sessionMetadata: Record<string, string> = {
+      plan,
+      country,
+      currency: currency,
+      chatFingerprint: chatFingerprint || '',
+    };
+    if (isGift) {
+      sessionMetadata.isGift = 'true';
+      sessionMetadata.gifterEmail = gifterEmail;
+      sessionMetadata.recipientEmail = recipientEmail;
+    }
+
     async function createSession(cur: string, amt: number) {
       const priceData: Stripe.Checkout.SessionCreateParams.LineItem.PriceData = {
         currency: cur,
         product_data: {
-          name: isObsesivo ? 'Plan Obsesivo — YaLoSabía' : 'Plan Detective — YaLoSabía',
+          name: isGift
+            ? 'Regalo Plan Detective — YaLoSabía'
+            : isObsesivo ? 'Plan Obsesivo — YaLoSabía' : 'Plan Detective — YaLoSabía',
         },
         unit_amount: amt,
       };
@@ -49,12 +72,12 @@ export async function POST(req: NextRequest) {
       }
 
       return stripe.checkout.sessions.create({
-        customer_email: email,
+        customer_email: customerEmail,
         line_items: [{ price_data: priceData, quantity: 1 }],
         mode,
-        success_url: `${origin}/#results?payment=success&session_id={CHECKOUT_SESSION_ID}&plan=${plan}`,
+        success_url: `${origin}/#results?payment=success&session_id={CHECKOUT_SESSION_ID}&plan=${plan}${giftParam}`,
         cancel_url: `${origin}/#pricing`,
-        metadata: { plan, country, currency: cur, chatFingerprint: chatFingerprint || '' },
+        metadata: { ...sessionMetadata, currency: cur },
       });
     }
 

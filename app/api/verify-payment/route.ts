@@ -20,11 +20,21 @@ export async function GET(req: NextRequest) {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (session.status === 'complete') {
+      const isGift = session.metadata?.isGift === 'true';
+      const effectiveEmail = isGift
+        ? session.metadata?.recipientEmail || ''
+        : session.metadata?.email || session.customer_email || '';
+
       return NextResponse.json({
         paid: true,
-        email: session.metadata?.email || session.customer_email || '',
+        email: effectiveEmail,
         plan: session.metadata?.plan || 'detective',
         chatFingerprint: session.metadata?.chatFingerprint || null,
+        isGift,
+        ...(isGift && {
+          gifterEmail: session.metadata?.gifterEmail || '',
+          recipientEmail: session.metadata?.recipientEmail || '',
+        }),
       });
     }
 

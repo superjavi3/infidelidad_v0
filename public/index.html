@@ -1166,6 +1166,22 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 .section-cta-btn.obsesivo-cta {
   background: linear-gradient(135deg, #EC4899, #6C5CE7);
 }
+.section-gift-btn {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  margin: 12px auto 0;
+  padding: 16px 32px;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  background: linear-gradient(#1A1A2E, #1A1A2E) padding-box, linear-gradient(135deg, #FF2D78, #6C5CE7) border-box;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.section-gift-btn:hover { transform: scale(1.03); opacity: 0.9; }
 
 /* Plan badge shown in results */
 .user-plan-badge {
@@ -6042,6 +6058,27 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot
   </div>
 </div>
 
+<!-- Gift Modal -->
+<div id="giftModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1001;align-items:center;justify-content:center;">
+  <div style="background:#1A1A2E;border-radius:20px;padding:40px;max-width:420px;width:90%;text-align:center;position:relative;">
+    <button onclick="closeGiftModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#9CA3AF;font-size:1.5rem;cursor:pointer;">&times;</button>
+    <div style="font-size:2rem;margin-bottom:8px;">🎁</div>
+    <h3 style="color:white;margin-bottom:8px;font-size:1.3rem;">Regalar análisis Detective</h3>
+    <p class="precio-detective" style="color:#9CA3AF;margin-bottom:24px;">$69 MXN — pago único</p>
+    <input id="giftPayerEmail" type="email" name="gifter-email" autocomplete="email" inputmode="email" placeholder="Tu email (quien paga)" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0A0A14;color:white;margin-bottom:12px;box-sizing:border-box;font-size:1rem;">
+    <input id="giftRecipientEmail" type="email" name="recipient-email" autocomplete="off" inputmode="email" placeholder="Email de tu amiga (quien recibe)" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0A0A14;color:white;margin-bottom:16px;box-sizing:border-box;font-size:1rem;">
+    <label style="display:flex;align-items:flex-start;gap:10px;text-align:left;margin-bottom:16px;cursor:pointer;">
+      <input type="checkbox" id="giftAcceptTerms" onchange="document.getElementById('giftCheckoutBtn').disabled=!this.checked;document.getElementById('giftCheckoutBtn').style.opacity=this.checked?'1':'0.5'" style="margin-top:3px;accent-color:#FF2D78;min-width:18px;min-height:18px;cursor:pointer;">
+      <span style="color:#a0a0b8;font-size:0.8rem;line-height:1.4;">He leído y acepto los <a href="/terminos.html" target="_blank" style="color:#FF2D78;text-decoration:none;">Términos y Condiciones</a> y la <a href="/privacidad.html" target="_blank" style="color:#FF2D78;text-decoration:none;">Política de Privacidad</a></span>
+    </label>
+    <button id="giftCheckoutBtn" onclick="goToGiftCheckout()" disabled style="width:100%;padding:14px;background:linear-gradient(135deg,#FF2D78,#6C5CE7);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:1rem;opacity:0.5;transition:opacity .2s;">
+      Enviar regalo →
+    </button>
+    <p id="giftError" style="color:#FF2D78;font-size:0.85rem;margin-top:12px;display:none;"></p>
+    <p style="color:#6B7280;font-size:0.75rem;margin-top:16px;">Pago seguro con Stripe. Tu amiga recibirá acceso al Plan Detective.</p>
+  </div>
+</div>
+
 <script>
 // ═══ 3-TIER PLAN SYSTEM ═══
 
@@ -6285,9 +6322,10 @@ function applyBlurOverlays() {
 function addSectionCTA(sectionId, plan) {
   const section = document.getElementById(sectionId);
   if (!section || hasPlanAccess(plan)) return;
-  // Remove existing CTA to avoid dupes
   const existing = section.querySelector('.section-cta-btn');
   if (existing) existing.remove();
+  const existingGift = section.querySelector('.section-gift-btn');
+  if (existingGift) existingGift.remove();
 
   const lp = window.localPricing;
   const planLabels = {
@@ -6301,6 +6339,14 @@ function addSectionCTA(sectionId, plan) {
   btn.textContent = planLabels[plan];
   btn.onclick = function() { openPayModal(plan); };
   section.appendChild(btn);
+
+  if (plan === 'detective') {
+    const giftBtn = document.createElement('button');
+    giftBtn.className = 'section-gift-btn';
+    giftBtn.textContent = '🎁 Regalar a una amiga — ' + (lp ? lp.detectiveFormatted : '$69 MXN');
+    giftBtn.onclick = function() { openGiftModal(); };
+    section.appendChild(giftBtn);
+  }
 }
 
 function removeBlurOverlays() {
@@ -6373,6 +6419,74 @@ function showPayModal() { openPayModal('detective'); }
 function closePayModal() {
   document.getElementById('payModal').style.display = 'none';
   document.getElementById('payError').style.display = 'none';
+}
+
+function openGiftModal() {
+  document.getElementById('giftPayerEmail').value = '';
+  document.getElementById('giftRecipientEmail').value = '';
+  document.getElementById('giftError').style.display = 'none';
+  var cb = document.getElementById('giftAcceptTerms');
+  var btn = document.getElementById('giftCheckoutBtn');
+  if (cb) { cb.checked = false; }
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; btn.textContent = 'Enviar regalo →'; }
+  document.getElementById('giftModal').style.display = 'flex';
+}
+
+function closeGiftModal() {
+  document.getElementById('giftModal').style.display = 'none';
+  document.getElementById('giftError').style.display = 'none';
+}
+
+async function goToGiftCheckout() {
+  const gifterEmail = document.getElementById('giftPayerEmail').value.trim();
+  const recipientEmail = document.getElementById('giftRecipientEmail').value.trim();
+  const errorEl = document.getElementById('giftError');
+  const btn = document.getElementById('giftCheckoutBtn');
+
+  if (!gifterEmail || !gifterEmail.includes('@')) {
+    errorEl.textContent = 'Ingresa tu email';
+    errorEl.style.display = 'block';
+    return;
+  }
+  if (!recipientEmail || !recipientEmail.includes('@')) {
+    errorEl.textContent = 'Ingresa el email de tu amiga';
+    errorEl.style.display = 'block';
+    return;
+  }
+  if (gifterEmail.toLowerCase() === recipientEmail.toLowerCase()) {
+    errorEl.textContent = 'Los emails deben ser diferentes';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  btn.textContent = 'Redirigiendo...';
+  btn.disabled = true;
+  errorEl.style.display = 'none';
+
+  try {
+    if (typeof fbq !== 'undefined') fbq('track', 'InitiateCheckout');
+
+    const res = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: gifterEmail,
+        plan: 'detective',
+        isGift: true,
+        gifterEmail: gifterEmail,
+        recipientEmail: recipientEmail
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.details || data.error || 'Error del servidor');
+    window.location.href = data.url;
+  } catch (err) {
+    errorEl.textContent = 'Error: ' + err.message;
+    errorEl.style.display = 'block';
+    btn.textContent = 'Enviar regalo →';
+    btn.disabled = false;
+  }
 }
 
 async function goToStripeCheckout() {
@@ -6464,6 +6578,21 @@ function updatePlanUI() {
   applyBlurOverlays();
 }
 
+function showGiftSuccessToast() {
+  var existing = document.getElementById('giftSuccessToast');
+  if (existing) existing.remove();
+  var toast = document.createElement('div');
+  toast.id = 'giftSuccessToast';
+  toast.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:1002;display:flex;align-items:center;justify-content:center;';
+  toast.innerHTML = '<div style="background:#1A1A2E;border-radius:20px;padding:48px 40px;max-width:420px;width:90%;text-align:center;position:relative;">' +
+    '<div style="font-size:3rem;margin-bottom:16px;">🎁</div>' +
+    '<h3 style="color:white;margin-bottom:12px;font-size:1.4rem;">¡Tu regalo fue enviado!</h3>' +
+    '<p style="color:#9CA3AF;font-size:1rem;line-height:1.6;margin-bottom:24px;">Tu amiga recibirá acceso al Plan Detective en su email. ¡Qué buen detalle!</p>' +
+    '<button onclick="document.getElementById(\'giftSuccessToast\').remove()" style="padding:14px 40px;background:linear-gradient(135deg,#FF2D78,#6C5CE7);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:1rem;">Cerrar</button>' +
+    '</div>';
+  document.body.appendChild(toast);
+}
+
 // ── Payment verification on page load ──
 // ONLY unlocks if returning from Stripe with a valid session.
 // Normal page loads always stay 'curioso' — plan resolves in onNewChatLoaded().
@@ -6491,7 +6620,18 @@ async function checkPaymentSuccess() {
         const plan = data.plan || urlPlan || 'detective';
         console.log('[Paywall] Payment verified! Plan:', plan);
 
-        // Save to localStorage WITH the fingerprint from the current session
+        if (data.isGift) {
+          console.log('[Paywall] Gift payment — showing success message');
+          showGiftSuccessToast();
+          const planPrices = { 'detective': 79, 'obsesivo': 149 };
+          if (typeof fbq !== 'undefined') {
+            fbq('track', 'Purchase', { value: planPrices[plan] || 79, currency: 'MXN' });
+          }
+          const cleanUrl = window.location.origin + window.location.pathname;
+          window.history.replaceState(null, '', cleanUrl);
+          return;
+        }
+
         localStorage.setItem('losabia_plan', JSON.stringify({
           plan: plan,
           sessionId: sessionId,
@@ -6500,12 +6640,9 @@ async function checkPaymentSuccess() {
           paidAt: new Date().toISOString()
         }));
 
-        // Unlock directly — chat is still in memory from before Stripe redirect
-        // (fingerprint was saved to Stripe metadata at checkout time)
         if (plan === 'obsesivo' || (window.currentChatFingerprint && data.chatFingerprint === window.currentChatFingerprint)) {
           window.userPlan = plan;
         } else {
-          // Chat not in memory or fingerprint mismatch — stay curioso, will resolve on next upload
           window.userPlan = 'curioso';
         }
 
@@ -6519,7 +6656,6 @@ async function checkPaymentSuccess() {
 
         updatePlanUI();
 
-        // Clean URL
         const hash = (lastStats && lastMessages) ? '#results' : '';
         const cleanUrl = window.location.origin + window.location.pathname + hash;
         window.history.replaceState(null, '', cleanUrl);
