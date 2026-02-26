@@ -652,17 +652,17 @@ body {
       <div class="field"><label>Texto del terapeuta</label>
         <textarea id="inTherapist" style="min-height: 100px;">Lo que veo aquí no es una relación que se enfrió de golpe. Es un desgaste lento donde una persona dejó de intentarlo mientras la otra seguía buscando conexión. Los 1,651 episodios de double texting de Ella frente a los 203 de Él hablan de un desbalance profundo. Cuando alguien borra 691 mensajes, no está corrigiendo typos — está editando la narrativa. Mi recomendación: necesitan una conversación honesta sobre si ambos quieren estar aquí.</textarea>
       </div>
-      <div class="field"><label>Mensaje 1 (Persona 1)</label>
-        <textarea id="inTherapistMsgA" style="min-height: 40px;">Yo siempre soy la que escribe primero... ya me cansé de ser la única que intenta 😔</textarea>
+      <div class="field"><label>Mensaje 1 (Tú)</label>
+        <textarea id="inTherapistMsgA" style="min-height: 40px;">Siento que ya no le importo... siempre me deja en visto y yo soy la que busca 😔</textarea>
       </div>
-      <div class="field"><label>Mensaje 2 (Persona 2)</label>
-        <textarea id="inTherapistMsgB" style="min-height: 40px;">Es que no me dices las cosas, cómo voy a saber qué sientes si no hablas</textarea>
+      <div class="field"><label>Mensaje 2 (Terapeuta IA)</label>
+        <textarea id="inTherapistMsgB" style="min-height: 40px;">Entiendo tu frustración. Los datos muestran que tú inicias el 83% de las conversaciones. Eso genera un desgaste emocional real. ¿Cómo te hace sentir eso?</textarea>
       </div>
-      <div class="field"><label>Mensaje 3 (Persona 1)</label>
-        <textarea id="inTherapistMsgC" style="min-height: 40px;">¿Que no te digo? Te mandé 20 mensajes ayer y me dejaste en visto toda la noche 🙃</textarea>
+      <div class="field"><label>Mensaje 3 (Tú)</label>
+        <textarea id="inTherapistMsgC" style="min-height: 40px;">Me hace sentir que no valgo lo suficiente... que si yo no escribo, simplemente no existimos</textarea>
       </div>
-      <div class="field"><label>Mensaje 4 (Persona 2)</label>
-        <textarea id="inTherapistMsgD" style="min-height: 40px;">Estaba ocupado, no todo gira alrededor de ti</textarea>
+      <div class="field"><label>Mensaje 4 (Terapeuta IA)</label>
+        <textarea id="inTherapistMsgD" style="min-height: 40px;">Tu valor no depende de cuántos mensajes recibes. Lo que describes es un patrón de perseguidor-distanciador muy común. Mereces una relación donde no tengas que rogar atención.</textarea>
       </div>
     </div>
   </div>
@@ -1019,10 +1019,10 @@ function render() {
 
   // Therapist
   const therapistMsgs = [
-    { id: 'inTherapistMsgA', cls: 'person-a', name: p1 },
-    { id: 'inTherapistMsgB', cls: 'person-b', name: p2 },
-    { id: 'inTherapistMsgC', cls: 'person-a', name: p1 },
-    { id: 'inTherapistMsgD', cls: 'person-b', name: p2 },
+    { id: 'inTherapistMsgA', cls: 'person-a', name: 'Tú' },
+    { id: 'inTherapistMsgB', cls: 'person-b', name: 'Terapeuta IA' },
+    { id: 'inTherapistMsgC', cls: 'person-a', name: 'Tú' },
+    { id: 'inTherapistMsgD', cls: 'person-b', name: 'Terapeuta IA' },
   ];
   let bubblesHtml = '';
   const activeMsgs = therapistMsgs.filter(m => getVal(m.id).trim());

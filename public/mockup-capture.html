@@ -464,10 +464,10 @@ function renderReport(d) {
   // Therapist
   if (showAll || target === 'therapist') {
     var tMsgs = [
-      { txt: (d.therapistMsgA || '').trim(), cls: 'person-a', name: p1 },
-      { txt: (d.therapistMsgB || '').trim(), cls: 'person-b', name: p2 },
-      { txt: (d.therapistMsgC || '').trim(), cls: 'person-a', name: p1 },
-      { txt: (d.therapistMsgD || '').trim(), cls: 'person-b', name: p2 },
+      { txt: (d.therapistMsgA || '').trim(), cls: 'person-a', name: 'Tú' },
+      { txt: (d.therapistMsgB || '').trim(), cls: 'person-b', name: 'Terapeuta IA' },
+      { txt: (d.therapistMsgC || '').trim(), cls: 'person-a', name: 'Tú' },
+      { txt: (d.therapistMsgD || '').trim(), cls: 'person-b', name: 'Terapeuta IA' },
     ].filter(function(m) { return m.txt; });
     var tBubbles = '';
     if (tMsgs.length) {
