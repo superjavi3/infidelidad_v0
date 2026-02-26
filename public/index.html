@@ -3979,19 +3979,35 @@ async function loadDemo() {
   lastMessages = demoMessages;
   lastStats = demoStats;
 
-  // Show results (identical to real flow)
+  // Unlock all sections for demo (detective + obsesivo visible)
+  window.userPlan = 'obsesivo';
+
+  // Show results — applyBlurOverlays() inside will see 'obsesivo' and unlock everything
   showResults(demoStats);
+
+  // Re-lock ONLY the chatbot card — IA chatbot is not available in demo
+  const chatbotCard = document.getElementById('featureChatbot');
+  if (chatbotCard) {
+    chatbotCard.classList.remove('plan-unlocked');
+    chatbotCard.classList.add('plan-locked');
+    const body = chatbotCard.querySelector('.pf-body');
+    if (body) {
+      body.style.filter = 'blur(8px)';
+      body.style.pointerEvents = 'none';
+      body.style.opacity = '0.3';
+      body.style.userSelect = 'none';
+    }
+    // Remove any existing overlay and add demo-specific one
+    const oldOverlay = chatbotCard.querySelector('.body-unlock-overlay');
+    if (oldOverlay) oldOverlay.remove();
+    const overlay = document.createElement('div');
+    overlay.className = 'body-unlock-overlay';
+    overlay.innerHTML = '<button class="unlock-overlay-btn obsesivo-btn" onclick="showDemoUpgradePrompt(\'chatbot\')">🔒 Sube tu chat real para usar el Terapeuta IA</button>';
+    chatbotCard.appendChild(overlay);
+  }
 
   // Show demo banner
   document.getElementById('demoBanner').style.display = 'block';
-
-  // Disable chatbot button visually in demo mode
-  const chatbotBtn = document.querySelector('[onclick*="openChatbot"]');
-  if (chatbotBtn) {
-    chatbotBtn.style.opacity = '0.5';
-    chatbotBtn.style.cursor = 'not-allowed';
-    chatbotBtn.title = 'Disponible con tu chat real';
-  }
 
   // Simulate AI response instead of calling Gemini
   simulateDemoAIResponse(demoStats);
