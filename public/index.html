@@ -2373,25 +2373,15 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   "offers": [
     {
       "@type": "Offer",
-      "name": "Plan Curioso",
+      "name": "Plan Gratuito",
       "price": "0",
       "priceCurrency": "MXN"
     },
     {
       "@type": "Offer",
-      "name": "Plan Detective",
-      "price": "69",
+      "name": "Plan Premium",
+      "price": "99",
       "priceCurrency": "MXN"
-    },
-    {
-      "@type": "Offer",
-      "name": "Plan Obsesivo",
-      "price": "199",
-      "priceCurrency": "MXN",
-      "priceSpecification": {
-        "@type": "RecurringChargeSpecification",
-        "billingDuration": "P1M"
-      }
     }
   ]
 }
@@ -2490,7 +2480,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   </div>
   <!-- PDF Report CTA -->
   <div style="text-align: center; margin-top: 12px;">
-    <button class="btn-secondary" onclick="hasPlanAccess('detective') ? generatePDF() : openPayModal('detective')" style="width: 100%; max-width: 480px; padding: 14px 32px; font-size: 1rem; background: linear-gradient(135deg, #1a1a2e, #16213e); border: 1px solid rgba(255,255,255,0.1);">📄 Descargar Reporte PDF Completo</button>
+    <button class="btn-secondary" onclick="isPremiumUser() ? generatePDF() : openPayModal()" style="width: 100%; max-width: 480px; padding: 14px 32px; font-size: 1rem; background: linear-gradient(135deg, #1a1a2e, #16213e); border: 1px solid rgba(255,255,255,0.1);">📄 Descargar Reporte PDF Completo</button>
   </div>
 
   <!-- ══════ SECCIÓN 1: PLAN GRATIS ══════ -->
@@ -2552,13 +2542,13 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   <!-- ══════ SECCIÓN 2: PLAN DETECTIVE ══════ -->
   <div id="premiumSection" class="plan-section plan-detective-wrap" style="display:none;">
     <div class="plan-header">
-      <div class="plan-badge detective">🔍 DETECTIVE — <span class="precio-detective">$69 MXN</span></div>
+      <div class="plan-badge detective">🔓 PREMIUM — <span class="precio-premium">$99 MXN</span></div>
       <div class="plan-title detective">Análisis Profundo</div>
       <div class="plan-subtitle">Patrones ocultos en tu conversación</div>
     </div>
 
     <!-- Feature 1: Línea de Vida -->
-    <div class="premium-feature-card" id="featureTimeline" data-plan-required="detective">
+    <div class="premium-feature-card" id="featureTimeline" data-plan-required="premium">
       <div class="pf-header">
         <span class="pf-icon">📉</span>
         <div>
@@ -2575,7 +2565,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     </div>
 
     <!-- Feature 2: Mapa de Silencios -->
-    <div class="premium-feature-card" id="featureSilences" data-plan-required="detective">
+    <div class="premium-feature-card" id="featureSilences" data-plan-required="premium">
       <div class="pf-header">
         <span class="pf-icon">🔇</span>
         <div>
@@ -2587,7 +2577,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     </div>
 
     <!-- Feature 3: Double Texting -->
-    <div class="premium-feature-card" id="featureDoubleText" data-plan-required="detective">
+    <div class="premium-feature-card" id="featureDoubleText" data-plan-required="premium">
       <div class="pf-header">
         <span class="pf-icon">😤</span>
         <div>
@@ -2599,7 +2589,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     </div>
 
     <!-- Feature 4: Reyes del Multimedia -->
-    <div class="premium-feature-card" id="featureMultimedia" data-plan-required="detective">
+    <div class="premium-feature-card" id="featureMultimedia" data-plan-required="premium">
       <div class="pf-header">
         <span class="pf-icon">📱</span>
         <div>
@@ -2611,7 +2601,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     </div>
 
     <!-- Feature 5: Mensajes Eliminados -->
-    <div class="premium-feature-card" id="featureDeleted" data-plan-required="detective">
+    <div class="premium-feature-card" id="featureDeleted" data-plan-required="premium">
       <div class="pf-header">
         <span class="pf-icon">🗑️</span>
         <div>
@@ -2626,13 +2616,13 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   <!-- ══════ SECCIÓN 3: PLAN OBSESIVO ══════ -->
   <div id="obsessiveSection" class="plan-section plan-obsessive-wrap" style="display:none;">
     <div class="plan-header">
-      <div class="plan-badge obsessive">🔥 OBSESIVO — <span class="precio-obsesivo">$199/mes</span></div>
+      <div class="plan-badge obsessive">🔓 PREMIUM — <span class="precio-premium">$99 MXN</span></div>
       <div class="plan-title obsessive">Análisis Obsesivo Premium</div>
       <div class="plan-subtitle">4 análisis devastadores para quien necesita saber TODO</div>
     </div>
 
     <!-- Chatbot Terapeuta IA (first item, high FOMO) -->
-    <div class="premium-feature-card" id="featureChatbot" data-plan-required="obsesivo">
+    <div class="premium-feature-card" id="featureChatbot" data-plan-required="premium">
       <div class="pf-header">
         <span class="pf-icon">💬</span>
         <div>
@@ -2652,7 +2642,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     </div>
 
     <!-- Obsessive 1: Reconstrucción Forense -->
-    <div class="premium-feature-card" id="featureForensic" data-plan-required="obsesivo">
+    <div class="premium-feature-card" id="featureForensic" data-plan-required="premium">
       <div class="pf-header">
         <span class="pf-icon">🕵️</span>
         <div>
@@ -2664,7 +2654,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     </div>
 
     <!-- Obsessive 2: Antes vs Ahora -->
-    <div class="premium-feature-card" id="featureBeforeNow" data-plan-required="obsesivo">
+    <div class="premium-feature-card" id="featureBeforeNow" data-plan-required="premium">
       <div class="pf-header">
         <span class="pf-icon">💔</span>
         <div>
@@ -2676,7 +2666,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     </div>
 
     <!-- Obsessive 3: Ghosting Selectivo -->
-    <div class="premium-feature-card" id="featureGhosting" data-plan-required="obsesivo">
+    <div class="premium-feature-card" id="featureGhosting" data-plan-required="premium">
       <div class="pf-header">
         <span class="pf-icon">📱</span>
         <div>
@@ -2688,7 +2678,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     </div>
 
     <!-- Obsessive 4: Detector de Cambios de Lenguaje -->
-    <div class="premium-feature-card" id="featureLanguage" data-plan-required="obsesivo">
+    <div class="premium-feature-card" id="featureLanguage" data-plan-required="premium">
       <div class="pf-header">
         <span class="pf-icon">🎯</span>
         <div>
@@ -2878,79 +2868,79 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   <!-- ══ PREMIUM: PLAN COMPLETO ══ -->
   <div id="group-premiumSection" style="display:none;">
     <div style="text-align:center;margin-bottom:32px;">
-      <div style="display:inline-block;padding:6px 16px;border-radius:999px;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;background:linear-gradient(135deg,rgba(108,92,231,0.2),rgba(255,45,120,0.2));color:var(--pink);">👥 COMPLETO — <span class="precio-group-completo">$99 MXN</span></div>
+      <div style="display:inline-block;padding:6px 16px;border-radius:999px;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;background:linear-gradient(135deg,rgba(108,92,231,0.2),rgba(255,45,120,0.2));color:var(--pink);">🔓 PREMIUM — <span class="precio-premium">$99 MXN</span></div>
       <h3 style="font-family:var(--font-display);font-size:1.3rem;margin-top:12px;">Análisis Completo del Grupo</h3>
       <p style="color:var(--text-muted);font-size:0.9rem;margin-top:4px;">13 herramientas para entender tu grupo al 100%</p>
     </div>
 
     <!-- Feature 1: Ranking de Poder -->
-    <div class="premium-feature-card" id="group-featurePowerRanking" data-plan-required="group-completo">
+    <div class="premium-feature-card" id="group-featurePowerRanking" data-plan-required="premium">
       <div class="pf-header"><span class="pf-icon">👑</span><div><h4 class="pf-title">Ranking de Poder</h4><p class="pf-subtitle">Quién manda, quién sigue, quién desapareció</p></div></div>
       <div class="pf-body" id="group-powerRankingBody"></div>
     </div>
 
     <!-- Feature 2: Línea de Vida -->
-    <div class="premium-feature-card" id="group-featureTimeline" data-plan-required="group-completo">
+    <div class="premium-feature-card" id="group-featureTimeline" data-plan-required="premium">
       <div class="pf-header"><span class="pf-icon">📈</span><div><h4 class="pf-title">Línea de Vida del Grupo</h4><p class="pf-subtitle">Actividad mes a mes con líneas por persona</p></div></div>
       <div class="pf-body" id="group-timelineBody"><div style="position:relative;height:320px;"><canvas id="group-timelineChart"></canvas></div><div id="group-timelineInsight" style="margin-top:12px;font-size:0.9rem;color:var(--text-muted);"></div></div>
     </div>
 
     <!-- Feature 3: Mapa de Fantasmas -->
-    <div class="premium-feature-card" id="group-featureGhosts" data-plan-required="group-completo">
+    <div class="premium-feature-card" id="group-featureGhosts" data-plan-required="premium">
       <div class="pf-header"><span class="pf-icon">👻</span><div><h4 class="pf-title">Mapa de Fantasmas</h4><p class="pf-subtitle">Quién desapareció y cuándo</p></div></div>
       <div class="pf-body" id="group-ghostsBody"></div>
     </div>
 
     <!-- Feature 4: Quién Ignora a Quién -->
-    <div class="premium-feature-card" id="group-featureIgnore" data-plan-required="group-completo">
+    <div class="premium-feature-card" id="group-featureIgnore" data-plan-required="premium">
       <div class="pf-header"><span class="pf-icon">🙈</span><div><h4 class="pf-title">Quién Ignora a Quién</h4><p class="pf-subtitle">Matriz de interacciones entre miembros</p></div></div>
       <div class="pf-body" id="group-ignoreBody"></div>
     </div>
 
     <!-- Feature 5: Mapa de Horarios -->
-    <div class="premium-feature-card" id="group-featureSchedule" data-plan-required="group-completo">
+    <div class="premium-feature-card" id="group-featureSchedule" data-plan-required="premium">
       <div class="pf-header"><span class="pf-icon">🕐</span><div><h4 class="pf-title">Mapa de Horarios</h4><p class="pf-subtitle">Quién escribe a qué hora — heatmap semanal</p></div></div>
       <div class="pf-body" id="group-scheduleBody"></div>
     </div>
 
     <!-- Feature 6: Mensajes Eliminados -->
-    <div class="premium-feature-card" id="group-featureDeleted" data-plan-required="group-completo">
+    <div class="premium-feature-card" id="group-featureDeleted" data-plan-required="premium">
       <div class="pf-header"><span class="pf-icon">🗑️</span><div><h4 class="pf-title">Mensajes Eliminados</h4><p class="pf-subtitle">Ranking de quién borra más</p></div></div>
       <div class="pf-body" id="group-deletedBody"></div>
     </div>
 
     <!-- Feature 8: Autopsia del Grupo -->
-    <div class="premium-feature-card" id="group-featureAutopsy" data-plan-required="group-completo">
+    <div class="premium-feature-card" id="group-featureAutopsy" data-plan-required="premium">
       <div class="pf-header"><span class="pf-icon">🔬</span><div><h4 class="pf-title">Autopsia del Grupo</h4><p class="pf-subtitle">Momentos clave que cambiaron la dinámica</p></div></div>
       <div class="pf-body" id="group-autopsyBody"></div>
     </div>
 
     <!-- Feature 9: Eras del Grupo -->
-    <div class="premium-feature-card" id="group-featureEras" data-plan-required="group-completo">
+    <div class="premium-feature-card" id="group-featureEras" data-plan-required="premium">
       <div class="pf-header"><span class="pf-icon">⏳</span><div><h4 class="pf-title">Eras del Grupo</h4><p class="pf-subtitle">Primera mitad vs segunda mitad — qué cambió</p></div></div>
       <div class="pf-body" id="group-erasBody"></div>
     </div>
 
     <!-- Feature 10: Arquetipos (STAR) -->
-    <div class="premium-feature-card" id="group-featureArchetypes" data-plan-required="group-completo">
+    <div class="premium-feature-card" id="group-featureArchetypes" data-plan-required="premium">
       <div class="pf-header"><span class="pf-icon">🎭</span><div><h4 class="pf-title">Arquetipos del Grupo</h4><p class="pf-subtitle">Cada miembro tiene un rol... ¿cuál es el tuyo?</p></div></div>
       <div class="pf-body" id="group-archetypesBody"></div>
     </div>
 
     <!-- Feature 11: Detector de Subgrupos -->
-    <div class="premium-feature-card" id="group-featureSubgroups" data-plan-required="group-completo">
+    <div class="premium-feature-card" id="group-featureSubgroups" data-plan-required="premium">
       <div class="pf-header"><span class="pf-icon">🕸️</span><div><h4 class="pf-title">Detector de Subgrupos</h4><p class="pf-subtitle">¿Hay cliques dentro del grupo?</p></div></div>
       <div class="pf-body" id="group-subgroupsBody"></div>
     </div>
 
     <!-- Feature 12: Probabilidad de Muerte -->
-    <div class="premium-feature-card" id="group-featureDeath" data-plan-required="group-completo">
+    <div class="premium-feature-card" id="group-featureDeath" data-plan-required="premium">
       <div class="pf-header"><span class="pf-icon">💀</span><div><h4 class="pf-title">¿Tu grupo va a morir?</h4><p class="pf-subtitle">Probabilidad calculada con datos reales</p></div></div>
       <div class="pf-body" id="group-deathBody"></div>
     </div>
 
     <!-- Feature 13: PDF -->
-    <div class="premium-feature-card" id="group-featurePDF" data-plan-required="group-completo">
+    <div class="premium-feature-card" id="group-featurePDF" data-plan-required="premium">
       <div class="pf-header"><span class="pf-icon">📄</span><div><h4 class="pf-title">PDF Completo</h4><p class="pf-subtitle">Descarga el reporte completo del grupo</p></div></div>
       <div class="pf-body" id="group-pdfBody">
         <div style="text-align:center;padding:16px;">
@@ -3091,11 +3081,11 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <h2 class="section-title">Elige tu nivel de <span class="gradient-text">revelación</span></h2>
       <p class="section-subtitle">Desde estadísticas curiosas hasta un análisis profundo de tu relación</p>
     </div>
-    <div class="pricing-grid reveal">
+    <div class="pricing-grid reveal" style="max-width:800px;margin:0 auto;grid-template-columns:repeat(2,1fr);">
       <!-- Free -->
       <div class="price-card">
         <div class="price-card-body">
-          <div class="price-tier">CURIOSO</div>
+          <div class="price-tier">GRATUITO</div>
           <div class="price-amount">$0</div>
           <div class="price-desc">Para darte una probadita</div>
           <ul class="price-features">
@@ -3110,62 +3100,37 @@ if (localStorage.getItem('cookieConsent') === 'all') {
           <button class="price-btn price-btn-secondary" onclick="document.getElementById('top').scrollIntoView({behavior:'smooth'})">Analizar gratis</button>
         </div>
       </div>
-      <!-- Single -->
+      <!-- Premium -->
       <div class="price-card featured">
         <div class="price-card-body">
-        <div class="price-tier">DETECTIVE</div>
+        <div class="price-tier">PREMIUM</div>
         <div class="price-display" style="text-align:center;line-height:1;">
           <div style="font-family:var(--font-display);font-size:2.8rem;line-height:1;">
-            <span class="precio-symbol">$</span><span class="precio-detective-numero">69,99</span>
+            <span class="precio-symbol">$</span><span class="precio-premium-numero">99</span>
           </div>
           <div style="font-size:0.7rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-top:4px;font-family:var(--font-display);">
             <span class="precio-moneda-label">MXN</span> · pago único
           </div>
         </div>
-        <div class="price-desc">Análisis único — la verdad completa</div>
-        <span style="font-size:0.78rem;color:var(--text-muted);display:block;text-align:center;margin-bottom:8px;">Válido para 1 conversación</span>
+        <div class="price-desc">Todo desbloqueado — parejas y grupos</div>
         <ul class="price-features">
-          <li>Todo lo del plan Curioso</li>
+          <li>Todo lo del plan Gratuito</li>
           <li>📉 Línea de vida: evolución mes a mes</li>
           <li>🔇 Mapa de silencios + quién cede primero</li>
           <li>😤 Análisis de double texting</li>
-          <li>📱 Reyes del Multimedia (audios, fotos, stickers...)</li>
+          <li>📱 Reyes del Multimedia</li>
           <li>🗑️ Mensajes eliminados</li>
-          <li>📄 Reporte PDF completo descargable</li>
+          <li>💬 Chatbot terapeuta IA (10/día)</li>
+          <li>🕵️ Reconstrucción forense de momentos clave</li>
+          <li>💔 Comparación: Antes vs Ahora</li>
+          <li>👻 Ghosting selectivo</li>
+          <li>👥 Análisis completo de grupos</li>
+          <li>📄 Reporte PDF descargable</li>
         </ul>
         </div>
         <div class="price-card-footer">
           <button class="preview-btn" onclick="openPreview('detective')">👁️ Ver vista previa del análisis</button>
-          <button class="price-btn price-btn-primary" onclick="openPayModal('detective')">Desbloquear análisis →</button>
-          <p class="fomo-text">🔥 <span class="fomo-count"></span> personas analizaron su chat hoy</p>
-        </div>
-      </div>
-      <!-- Unlimited -->
-      <div class="price-card">
-        <div class="price-card-body">
-        <div class="price-tier">OBSESIVO</div>
-        <div class="price-display" style="text-align:center;line-height:1;">
-          <div style="font-family:var(--font-display);font-size:2.8rem;line-height:1;">
-            <span class="precio-symbol">$</span><span class="precio-obsesivo-numero">199,99</span>
-          </div>
-          <div style="font-size:0.7rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-top:4px;font-family:var(--font-display);">
-            <span class="precio-moneda-label">MXN</span> · /mes
-          </div>
-        </div>
-        <div class="price-desc">Para quien necesita saber TODO</div>
-        <ul class="price-features">
-          <li>✅ ♾️ Análisis ilimitados — analiza todos los chats que quieras</li>
-          <li>Todo lo del plan Detective</li>
-          <li>💬 Chatbot terapeuta IA ilimitado</li>
-          <li>🕵️ Reconstrucción forense de momentos clave</li>
-          <li>💔 Comparación devastadora: Antes vs Ahora</li>
-          <li>👻 Ghosting selectivo: cuándo te ignora y por qué</li>
-          <li>🗣️ Detector de cambios de lenguaje</li>
-        </ul>
-        </div>
-        <div class="price-card-footer">
-          <button class="preview-btn" onclick="openPreview('obsesivo')">👁️ Ver vista previa del análisis</button>
-          <button class="price-btn price-btn-secondary" onclick="openPayModal('obsesivo')">Desbloquear <span class="precio-obsesivo">$199/mes</span> →</button>
+          <button class="price-btn price-btn-primary" onclick="openPayModal()">Desbloquear todo →</button>
           <p class="fomo-text">🔥 <span class="fomo-count"></span> personas analizaron su chat hoy</p>
         </div>
       </div>
@@ -3212,7 +3177,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
           </div>
         </div>
         <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-        <div class="testimonial-text">Pensé que era de broma pero el chatbot me hizo preguntas que ni mi terapeuta me había hecho. El plan Obsesivo vale cada peso.</div>
+        <div class="testimonial-text">Pensé que era de broma pero el chatbot me hizo preguntas que ni mi terapeuta me había hecho. El plan Premium vale cada peso.</div>
       </div>
       <div class="testimonial-card">
         <div class="testimonial-header">
@@ -3307,7 +3272,6 @@ let lastGroupStats = null;
 let lastGroupMessages = null;
 let groupSystemEvents = [];
 window.isGroupMode = false;
-window.groupPlan = 'curioso';
 window.selectedMode = 'pareja';
 
 // ── MODE TOGGLE ──
@@ -4213,86 +4177,26 @@ function sampleGroupMessages(messages, groupStats) {
   return unique.slice(0, 350);
 }
 
-// ── CHAT FINGERPRINT ──
 // ── Plan resolution on chat load ──
-// ALL plan unlock logic lives here. Called AFTER fingerprint is computed.
 function onNewChatLoaded(messages) {
-  // Admin bypass — always obsesivo
   if (window._adminBypass) {
-    window.userPlan = 'obsesivo';
-    console.log('[Plan] Admin bypass → obsesivo');
+    window.isPremium = true;
+    console.log('[Plan] Admin bypass → premium');
     updatePlanBadge();
     return;
   }
-
-  const stored = (function() {
-    try { return JSON.parse(localStorage.getItem('losabia_plan') || 'null'); }
-    catch(e) { return null; }
-  })();
-
-  // Sin nada guardado → curioso
-  if (!stored || !stored.plan) {
-    window.userPlan = 'curioso';
-    console.log('[Plan] No stored plan → curioso');
-    updatePlanBadge();
-    return;
-  }
-
-  // Plan Obsesivo → acceso siempre, sin verificar fingerprint
-  if (stored.plan === 'obsesivo') {
-    window.userPlan = 'obsesivo';
-    console.log('[Plan] Obsesivo stored → obsesivo');
-    updatePlanBadge();
-    return;
-  }
-
-  // Plan Detective → VERIFICAR fingerprint obligatoriamente
-  if (stored.plan === 'detective') {
-    // Sin fingerprint guardado (pago antes del fix) → curioso, no dar acceso gratis
-    if (!stored.chatFingerprint) {
-      window.userPlan = 'curioso';
-      console.log('[Plan] Detective sin fingerprint guardado → curioso');
-      updatePlanBadge();
-      return;
-    }
-
-    // Fingerprint coincide → desbloquear
-    if (stored.chatFingerprint === window.currentChatFingerprint) {
-      window.userPlan = 'detective';
-      console.log('[Plan] Detective fingerprint match → detective');
-      updatePlanBadge();
-      return;
-    }
-
-    // Fingerprint diferente → bloquear y mostrar warning
-    window.userPlan = 'curioso';
-    console.log('[Plan] Detective fingerprint MISMATCH → curioso + warning');
-    updatePlanBadge();
-    showDifferentChatWarning();
-    return;
-  }
-
-  // Cualquier otro caso → curioso
-  window.userPlan = 'curioso';
+  window.isPremium = loadPremiumState();
+  console.log('[Plan] isPremium:', window.isPremium);
   updatePlanBadge();
 }
 
 // ── GROUP PLAN RESOLUTION ──
 function onNewGroupChatLoaded() {
   if (window._adminBypass) {
-    window.groupPlan = 'completo';
+    window.isPremium = true;
     return;
   }
-  try {
-    const stored = JSON.parse(localStorage.getItem('yalosabia_group_premium') || 'null');
-    if (stored && stored.plan === 'completo') {
-      window.groupPlan = 'completo';
-    } else {
-      window.groupPlan = 'curioso';
-    }
-  } catch(e) {
-    window.groupPlan = 'curioso';
-  }
+  window.isPremium = loadPremiumState();
 }
 
 function generateChatFingerprint(messages) {
@@ -4622,7 +4526,7 @@ function showResults(s) {
 
   renderLeaderboard(s);
 
-  console.log('[showResults] window.userPlan:', window.userPlan);
+  console.log('[showResults] isPremium:', window.isPremium);
 
   // Step 1: Show sections so DOM is available
   document.getElementById('premiumSection').style.display = 'block';
@@ -4642,9 +4546,7 @@ function showResults(s) {
   }
 
   // Step 3: Apply blur overlays AFTER all content is rendered
-  console.log('[showResults] Before applyBlurOverlays — window.userPlan:', window.userPlan,
-    '| currentChatFingerprint:', window.currentChatFingerprint,
-    '| storedFingerprint:', JSON.parse(localStorage.getItem('losabia_plan') || '{}').chatFingerprint);
+  console.log('[showResults] Before applyBlurOverlays — isPremium:', window.isPremium);
   applyBlurOverlays();
 
   resultsSection.classList.add('active');
@@ -4659,7 +4561,7 @@ function showResults(s) {
   // Show/hide pricing based on plan
   const pricingEl = document.getElementById('precios');
   if (pricingEl) {
-    pricingEl.style.display = hasPlanAccess('obsesivo') ? 'none' : 'block';
+    pricingEl.style.display = isPremiumUser() ? 'none' : 'block';
   }
 }
 
@@ -4713,12 +4615,12 @@ function showGroupResults(gs) {
 
   // Plan badge
   const badgeEl = document.getElementById('group-planBadge');
-  if (window.groupPlan === 'completo') {
-    badgeEl.textContent = 'Plan Completo';
+  if (isPremiumUser()) {
+    badgeEl.textContent = 'Premium';
     badgeEl.classList.remove('curioso');
     badgeEl.classList.add('detective');
   } else {
-    badgeEl.textContent = 'Análisis Gratuito';
+    badgeEl.textContent = 'Gratuito';
   }
 
   // Show group-premiumSection (features rendered separately)
@@ -5582,7 +5484,7 @@ async function generatePDF() {
     const crownB = pctB > pctA ? '\u{1F451} ' : '';
     pages.push('<div style="' + pageCSS + 'min-height:1000px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(165deg,#0A0812 0%,#1A0F2E 40%,#0A0812 100%);">' +
       '<div style="font-size:28px;font-weight:800;color:#FF2D78;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;">YALOSABIA.COM</div>' +
-      '<div style="font-size:15px;color:#FF2D78;font-weight:600;margin-bottom:28px;">Plan Detective</div>' +
+      '<div style="font-size:15px;color:#FF2D78;font-weight:600;margin-bottom:28px;">Plan Premium</div>' +
       '<div style="margin-bottom:20px;display:flex;justify-content:center;">' + scoreRingSVG + '</div>' +
       '<div style="font-size:28px;font-weight:700;color:#FFF;margin-bottom:6px;text-align:center;">' + clean(pA) + ' & ' + clean(pB) + '</div>' +
       '<div style="font-size:15px;color:#F5C842;font-weight:700;margin-bottom:32px;text-align:center;">' + verdict + '</div>' +
@@ -6099,10 +6001,10 @@ async function loadDemo() {
   lastMessages = demoMessages;
   lastStats = demoStats;
 
-  // Unlock all sections for demo (detective + obsesivo visible)
-  window.userPlan = 'obsesivo';
+  // Unlock all sections for demo
+  window.isPremium = true;
 
-  // Show results — applyBlurOverlays() inside will see 'obsesivo' and unlock everything
+  // Show results — applyBlurOverlays() inside will see isPremium and unlock everything
   showResults(demoStats);
 
   // Re-lock ONLY the chatbot card — IA chatbot is not available in demo
@@ -6306,7 +6208,7 @@ async function loadGroupDemo() {
   lastGroupStats = groupStats;
 
   // Unlock all group features for demo
-  window.groupPlan = 'completo';
+  window.isPremium = true;
 
   // Show group results
   showGroupResults(groupStats);
@@ -8104,8 +8006,8 @@ function openChatbot() {
     alert('Primero sube un chat para analizar.');
     return;
   }
-  if (!hasPlanAccess('obsesivo')) {
-    openPayModal('obsesivo');
+  if (!isPremiumUser()) {
+    openPayModal();
     return;
   }
 
@@ -8323,7 +8225,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot
     <div class="chatbot-header">
       <div style="display:flex;align-items:center;">
         <h3>💬 Terapeuta IA</h3>
-        <span class="chatbot-header-badge">Obsesivo</span>
+        <span class="chatbot-header-badge">Premium</span>
       </div>
       <button class="chatbot-close" onclick="closeChatbot()">✕</button>
     </div>
@@ -8352,13 +8254,13 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot
   </div>
 </div>
 
-<!-- Payment Modal (dynamic — updated by openPayModal) -->
+<!-- Payment Modal -->
 <div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center;">
   <div style="background:#1A1A2E;border-radius:20px;padding:40px;max-width:400px;width:90%;text-align:center;position:relative;">
     <button onclick="closePayModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#9CA3AF;font-size:1.5rem;cursor:pointer;">&times;</button>
-    <div id="payModalIcon" style="font-size:2rem;margin-bottom:8px;">🔍</div>
-    <h3 id="payModalTitle" style="color:white;margin-bottom:8px;font-size:1.3rem;">Desbloquear Plan Detective</h3>
-    <p id="payModalPrice" class="precio-detective" style="color:#9CA3AF;margin-bottom:24px;">$69 MXN — pago único</p>
+    <div id="payModalIcon" style="font-size:2rem;margin-bottom:8px;">🔓</div>
+    <h3 id="payModalTitle" style="color:white;margin-bottom:8px;font-size:1.3rem;">Desbloquear Todo</h3>
+    <p id="payModalPrice" class="precio-premium" style="color:#9CA3AF;margin-bottom:24px;">$99 MXN — pago único</p>
     <input id="payEmail" type="email" name="email" autocomplete="email" inputmode="email" placeholder="tu@email.com" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0A0A14;color:white;margin-bottom:16px;box-sizing:border-box;font-size:1rem;">
     <label style="display:flex;align-items:flex-start;gap:10px;text-align:left;margin-bottom:16px;cursor:pointer;">
       <input type="checkbox" id="acceptTerms" onchange="document.getElementById('goToCheckout').disabled=!this.checked;document.getElementById('goToCheckout').style.opacity=this.checked?'1':'0.5'" style="margin-top:3px;accent-color:#FF2D78;min-width:18px;min-height:18px;cursor:pointer;">
@@ -8372,35 +8274,11 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot
   </div>
 </div>
 
-<!-- Gift Modal -->
-<div id="giftModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1001;align-items:center;justify-content:center;">
-  <div style="background:#1A1A2E;border-radius:20px;padding:40px;max-width:420px;width:90%;text-align:center;position:relative;">
-    <button onclick="closeGiftModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#9CA3AF;font-size:1.5rem;cursor:pointer;">&times;</button>
-    <div style="font-size:2rem;margin-bottom:8px;">🎁</div>
-    <h3 style="color:white;margin-bottom:8px;font-size:1.3rem;">Regalar análisis Detective</h3>
-    <p class="precio-detective" style="color:#9CA3AF;margin-bottom:24px;">$69 MXN — pago único</p>
-    <input id="giftPayerEmail" type="email" name="gifter-email" autocomplete="email" inputmode="email" placeholder="Tu email (quien paga)" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0A0A14;color:white;margin-bottom:12px;box-sizing:border-box;font-size:1rem;">
-    <input id="giftRecipientEmail" type="email" name="recipient-email" autocomplete="off" inputmode="email" placeholder="Email de tu amiga (quien recibe)" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0A0A14;color:white;margin-bottom:16px;box-sizing:border-box;font-size:1rem;">
-    <label style="display:flex;align-items:flex-start;gap:10px;text-align:left;margin-bottom:16px;cursor:pointer;">
-      <input type="checkbox" id="giftAcceptTerms" onchange="document.getElementById('giftCheckoutBtn').disabled=!this.checked;document.getElementById('giftCheckoutBtn').style.opacity=this.checked?'1':'0.5'" style="margin-top:3px;accent-color:#FF2D78;min-width:18px;min-height:18px;cursor:pointer;">
-      <span style="color:#a0a0b8;font-size:0.8rem;line-height:1.4;">He leído y acepto los <a href="/terminos.html" target="_blank" style="color:#FF2D78;text-decoration:none;">Términos y Condiciones</a> y la <a href="/privacidad.html" target="_blank" style="color:#FF2D78;text-decoration:none;">Política de Privacidad</a></span>
-    </label>
-    <button id="giftCheckoutBtn" onclick="goToGiftCheckout()" disabled style="width:100%;padding:14px;background:linear-gradient(135deg,#FF2D78,#6C5CE7);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:1rem;opacity:0.5;transition:opacity .2s;">
-      Enviar regalo →
-    </button>
-    <p id="giftError" style="color:#FF2D78;font-size:0.85rem;margin-top:12px;display:none;"></p>
-    <p style="color:#6B7280;font-size:0.75rem;margin-top:16px;">Pago seguro con Stripe. Tu amiga recibirá acceso al Plan Detective.</p>
-  </div>
-</div>
-
 <script>
-// ═══ 3-TIER PLAN SYSTEM ═══
+// ═══ PREMIUM PLAN SYSTEM (Free + Premium) ═══
 
-// Plan state — simple variable, always starts as 'curioso'.
-// Only changes via: onNewChatLoaded(), checkPaymentSuccess(), or admin bypass.
-window.userPlan = 'curioso';
-const PLAN_HIERARCHY = { curioso: 0, detective: 1, obsesivo: 2 };
-let selectedPlan = 'detective';
+// Single boolean: true = paid, false = free
+window.isPremium = false;
 let featuresRendered = false;
 
 // ─── DYNAMIC PRICING ───────────────────────────────────────────
@@ -8413,34 +8291,22 @@ async function loadLocalPricing() {
     const data = await res.json();
     window.localPricing = data;
 
-    // Precios formateados completos (para botones, FAQ, modal)
-    document.querySelectorAll('.precio-detective').forEach(el => {
-      el.textContent = data.detectiveFormatted;
-    });
-    document.querySelectorAll('.precio-obsesivo').forEach(el => {
-      el.textContent = data.obsesivoFormatted;
+    // Precio premium formateado (para botones, badges, modal, exit intent)
+    document.querySelectorAll('.precio-premium').forEach(el => {
+      el.textContent = data.premiumFormatted;
     });
 
-    // Para los precios grandes de las cards de pricing
-    // El número grande sin label de moneda
-    const detValue = data.isZeroDecimal ? data.detective : (data.detective / 100);
-    const obsValue = data.isZeroDecimal ? data.obsesivo : (data.obsesivo / 100);
+    // Número grande para la card de pricing
+    const premValue = data.isZeroDecimal ? data.premium : (data.premium / 100);
+    const premDisplay = premValue % 1 === 0
+      ? premValue.toLocaleString('es-ES')
+      : premValue.toFixed(2).replace('.', ',');
 
-    const detDisplay = detValue % 1 === 0
-      ? detValue.toLocaleString('es-ES')
-      : detValue.toFixed(2).replace('.', ',');
-    const obsDisplay = obsValue % 1 === 0
-      ? obsValue.toLocaleString('es-ES')
-      : obsValue.toFixed(2).replace('.', ',');
-
-    document.querySelectorAll('.precio-detective-numero').forEach(el => {
-      el.textContent = detDisplay;
-    });
-    document.querySelectorAll('.precio-obsesivo-numero').forEach(el => {
-      el.textContent = obsDisplay;
+    document.querySelectorAll('.precio-premium-numero').forEach(el => {
+      el.textContent = premDisplay;
     });
 
-    // El label de moneda (MXN, EUR, USD...) — "/mes" y "pago único" son estáticos fuera del span
+    // El label de moneda (MXN, EUR, USD...)
     document.querySelectorAll('.precio-moneda-label').forEach(el => {
       el.textContent = data.label;
     });
@@ -8460,22 +8326,18 @@ loadLocalPricing();
 // ────────────────────────────────────────────────────────────────
 
 // ── Secret admin bypass ──
-// URL: add ?admin=losabia2026 to unlock everything
-// Console: type adminUnlock() to unlock
-// Sets a flag so checkPaymentSuccess() respects it
 window._adminBypass = false;
 (function checkAdminBypass() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('admin') === 'losabia2026') {
     window._adminBypass = true;
-    window.userPlan = 'obsesivo';
-    localStorage.setItem('losabia_plan', JSON.stringify({
-      plan: 'obsesivo',
+    window.isPremium = true;
+    localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
+      premium: true,
       sessionId: 'admin-bypass',
       email: 'admin@yalosabia.com',
       paidAt: new Date().toISOString()
     }));
-    // Clean the URL so the key isn't visible
     const clean = window.location.origin + window.location.pathname + window.location.hash;
     window.history.replaceState(null, '', clean);
     console.log('[Admin] Full access granted via URL bypass');
@@ -8484,117 +8346,87 @@ window._adminBypass = false;
 // Console shortcut
 window.adminUnlock = function() {
   window._adminBypass = true;
-  window.userPlan = 'obsesivo';
-  localStorage.setItem('losabia_plan', JSON.stringify({
-    plan: 'obsesivo', sessionId: 'admin-bypass',
+  window.isPremium = true;
+  localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
+    premium: true, sessionId: 'admin-bypass',
     email: 'admin@yalosabia.com', paidAt: new Date().toISOString()
   }));
   if (typeof updatePlanUI === 'function') updatePlanUI();
   console.log('[Admin] Full access granted. Reload if needed.');
 };
 
-function hasPlanAccess(requiredPlan) {
-  // Group plan is separate from couple plan
-  if (requiredPlan === 'group-completo') {
-    if (window._adminBypass) return true;
-    return window.groupPlan === 'completo';
-  }
-  // Simple hierarchy check — window.userPlan is already resolved by onNewChatLoaded()
-  return (PLAN_HIERARCHY[window.userPlan] || 0) >= (PLAN_HIERARCHY[requiredPlan] || 0);
+function isPremiumUser() {
+  return window._adminBypass || window.isPremium === true;
 }
 
-function isFingerprintMismatch() {
-  // Check if user paid for detective but loaded a different chat
+// Legacy compat alias
+function hasPlanAccess() {
+  return isPremiumUser();
+}
+
+// ── Load premium state with migration ──
+function loadPremiumState() {
   try {
-    const stored = JSON.parse(localStorage.getItem('losabia_plan') || 'null');
-    if (!stored || stored.plan !== 'detective') return false;
-    if (!stored.chatFingerprint) return false;
-    if (!window.currentChatFingerprint) return false;
-    return stored.chatFingerprint !== window.currentChatFingerprint;
-  } catch(e) { return false; }
-}
-
-function showDifferentChatWarning() {
-  document.getElementById('fingerprintWarningModal')?.remove();
-  const overlay = document.createElement('div');
-  overlay.id = 'fingerprintWarningModal';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;';
-  overlay.innerHTML = `
-    <div style="background:var(--bg-card,#1A1A2E);border-radius:var(--radius,16px);padding:40px;max-width:460px;width:100%;text-align:center;border:1px solid var(--pink,#FF2D78);">
-      <div style="font-size:3rem;margin-bottom:16px;">🔒</div>
-      <h3 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 12px;color:#fff;">Este chat no está incluido</h3>
-      <p style="color:var(--text-muted,#9CA3AF);line-height:1.6;margin:0 0 24px;font-size:0.95rem;">
-        Tu Plan Detective fue comprado para otro chat específico.<br>
-        Para analizar esta conversación tienes dos opciones:
-      </p>
-      <button id="fpWarningUnlockBtn" style="
-        width:100%;padding:14px;margin-bottom:12px;
-        background:linear-gradient(135deg,var(--pink,#FF2D78),var(--orange,#FF6B35));
-        border:none;border-radius:8px;color:white;
-        font-weight:700;cursor:pointer;font-size:1rem;
-      ">Desbloquear este chat — $69.99 MXN →</button>
-      <button id="fpWarningCloseBtn" style="
-        width:100%;padding:14px;
-        background:transparent;border:1px solid rgba(255,255,255,0.15);
-        border-radius:8px;color:var(--text-muted,#9CA3AF);
-        cursor:pointer;font-size:0.9rem;
-      ">Volver al análisis gratuito</button>
-      <p style="color:var(--text-muted,#9CA3AF);font-size:0.78rem;margin-top:16px;">
-        ¿Quieres analizar chats ilimitados? <a href="#precios" style="color:var(--pink,#FF2D78);" onclick="document.getElementById('fingerprintWarningModal')?.remove()">Ver Plan Obsesivo →</a>
-      </p>
-    </div>`;
-  document.body.appendChild(overlay);
-  // Unlock button → abre checkout para detective (bypass fingerprint check para evitar loop)
-  overlay.querySelector('#fpWarningUnlockBtn').onclick = function() {
-    overlay.remove();
-    openPayModal('detective', true);
-  };
-  // Close button → cierra y deja en plan gratuito
-  overlay.querySelector('#fpWarningCloseBtn').onclick = function() {
-    overlay.remove();
-  };
-  // Click fuera cierra
-  overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
-}
-
-function getStoredPlan() {
-  try {
-    // Check new storage format
-    const stored = localStorage.getItem('losabia_plan');
-    if (stored) {
-      const data = JSON.parse(stored);
-      if (data.plan) return data.plan;
+    // New format first
+    const v2 = localStorage.getItem('yalosabia_plan_v2');
+    if (v2) {
+      const data = JSON.parse(v2);
+      if (data.premium) return true;
+    }
+    // Migrate from old couple plans (detective/obsesivo)
+    const oldCouple = localStorage.getItem('losabia_plan');
+    if (oldCouple) {
+      const data = JSON.parse(oldCouple);
+      if (data.plan === 'detective' || data.plan === 'obsesivo') {
+        localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
+          premium: true, sessionId: data.sessionId || 'migrated',
+          email: data.email || '', paidAt: data.paidAt || new Date().toISOString()
+        }));
+        return true;
+      }
+    }
+    // Migrate from old group plan
+    const oldGroup = localStorage.getItem('yalosabia_group_premium');
+    if (oldGroup) {
+      const data = JSON.parse(oldGroup);
+      if (data.plan === 'completo') {
+        localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
+          premium: true, sessionId: data.sessionId || 'migrated',
+          email: data.email || '', paidAt: data.paidAt || new Date().toISOString()
+        }));
+        return true;
+      }
     }
     // Legacy fallback
     const legacy = localStorage.getItem('losabia_premium');
     if (legacy) {
       const data = JSON.parse(legacy);
-      if (data.paid === true) return 'detective';
+      if (data.paid === true) {
+        localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
+          premium: true, sessionId: 'migrated',
+          email: data.email || '', paidAt: new Date().toISOString()
+        }));
+        return true;
+      }
     }
   } catch(e) {}
-  return 'curioso';
+  return false;
 }
 
 // ── Blur overlay system ──
-// Idempotent: always recomputes lock state from current window.userPlan
-// Headers (.pf-header) ALWAYS visible; only .pf-body gets blurred via inline styles
+// Idempotent: recomputes lock state from isPremiumUser()
 function applyBlurOverlays() {
-  console.log('[Paywall] applyBlurOverlays() called — window.userPlan:', window.userPlan);
+  const premium = isPremiumUser();
+  console.log('[Paywall] applyBlurOverlays() — isPremium:', premium);
 
   document.querySelectorAll('[data-plan-required]').forEach(card => {
-    const requiredPlan = card.getAttribute('data-plan-required');
-    const hasAccess = hasPlanAccess(requiredPlan);
-
-    console.log('[Paywall]', card.id || card.className, '→ requires:', requiredPlan, '| hasAccess:', hasAccess);
-
     // Clean previous state
     card.classList.remove('plan-locked', 'plan-unlocked');
     const oldOverlay = card.querySelector('.body-unlock-overlay');
     if (oldOverlay) oldOverlay.remove();
 
-    if (hasAccess) {
+    if (premium) {
       card.classList.add('plan-unlocked');
-      // Clear any inline blur styles
       const body = card.querySelector('.pf-body');
       if (body) {
         body.style.filter = '';
@@ -8607,8 +8439,6 @@ function applyBlurOverlays() {
 
     // ── LOCK the card ──
     card.classList.add('plan-locked');
-
-    // Apply inline blur styles directly to .pf-body (bulletproof, no CSS dep)
     const body = card.querySelector('.pf-body');
     if (body) {
       body.style.filter = 'blur(8px)';
@@ -8617,66 +8447,37 @@ function applyBlurOverlays() {
       body.style.userSelect = 'none';
     }
 
-    const btnClass = requiredPlan === 'obsesivo' ? 'obsesivo-btn' : requiredPlan === 'group-completo' ? 'detective-btn' : 'detective-btn';
-
-    // For premium-feature-card: add CTA below the blurred body
+    const lp = window.localPricing;
+    const btnLabel = 'Desbloquear — ' + (lp ? lp.premiumFormatted : '$99 MXN') + ' →';
     const overlay = document.createElement('div');
     overlay.className = 'body-unlock-overlay';
-    const fpMismatch = requiredPlan === 'detective' && isFingerprintMismatch();
-    let btnLabel;
-    if (requiredPlan === 'group-completo') {
-      btnLabel = '👥 Desbloquear — ' + (window.localPricing ? window.localPricing.groupCompletoFormatted : '$99 MXN') + ' →';
-    } else if (fpMismatch) {
-      btnLabel = '🔒 Chat diferente — Ver opciones';
-    } else if (card.id === 'featureChatbot') {
-      btnLabel = '🔥 Desbloquear Chatbot — ' + (window.localPricing ? window.localPricing.obsesivoFormatted + '/mes' : '$199 MXN/mes') + ' →';
-    } else {
-      btnLabel = 'Desbloquear →';
-    }
-    overlay.innerHTML = `<button class="unlock-overlay-btn ${btnClass}" onclick="openPayModal('${requiredPlan}')">${btnLabel}</button>`;
+    overlay.innerHTML = `<button class="unlock-overlay-btn detective-btn" onclick="openPayModal()">${btnLabel}</button>`;
     card.appendChild(overlay);
   });
 
   // Add section-level CTA buttons
-  addSectionCTA('premiumSection', 'detective');
-  addSectionCTA('obsessiveSection', 'obsesivo');
-  addSectionCTA('group-premiumSection', 'group-completo');
+  addSectionCTA('premiumSection');
+  addSectionCTA('obsessiveSection');
+  addSectionCTA('group-premiumSection');
 }
 
-function addSectionCTA(sectionId, plan) {
+function addSectionCTA(sectionId) {
   const section = document.getElementById(sectionId);
-  if (!section || hasPlanAccess(plan)) return;
+  if (!section || isPremiumUser()) return;
   const existing = section.querySelector('.section-cta-btn');
   if (existing) existing.remove();
   const existingGift = section.querySelector('.section-gift-btn');
   if (existingGift) existingGift.remove();
 
   const lp = window.localPricing;
-  const planLabels = {
-    detective: '🔍 Desbloquear Plan Detective — ' + (lp ? lp.detectiveFormatted : '$69 MXN') + ' →',
-    obsesivo: '🔥 Suscribirme al Plan Obsesivo — ' + (lp ? lp.obsesivoFormatted + '/mes' : '$199 MXN/mes') + ' →',
-    'group-completo': '👥 Desbloquear Análisis Completo — ' + (lp ? lp.groupCompletoFormatted : '$99 MXN') + ' →'
-  };
-  const btnClass = plan === 'obsesivo' ? 'obsesivo-cta' : 'detective-cta';
-
   const btn = document.createElement('button');
-  btn.className = 'section-cta-btn ' + btnClass;
-  btn.textContent = planLabels[plan];
-  btn.onclick = function() { openPayModal(plan); };
+  btn.className = 'section-cta-btn detective-cta';
+  btn.textContent = 'Desbloquear Todo — ' + (lp ? lp.premiumFormatted : '$99 MXN') + ' →';
+  btn.onclick = function() { openPayModal(); };
   section.appendChild(btn);
-
-  if (plan === 'detective') {
-    const giftBtn = document.createElement('button');
-    giftBtn.className = 'section-gift-btn';
-    giftBtn.textContent = '🎁 Regalar a una amiga — ' + (lp ? lp.detectiveFormatted : '$69 MXN');
-    giftBtn.onclick = function() { openGiftModal(); };
-    section.appendChild(giftBtn);
-  }
 }
 
 function removeBlurOverlays() {
-  console.log('[Paywall] removeBlurOverlays() called — window.userPlan:', window.userPlan);
-  // Just re-run applyBlurOverlays — it's idempotent and recomputes everything
   applyBlurOverlays();
 }
 
@@ -8689,49 +8490,26 @@ function switchOsTab(os, btn) {
 }
 
 // ── Payment modal ──
-function openPayModal(plan, bypassFingerprintCheck) {
-  // Re-verify fingerprint in real time before deciding
-  try {
-    const stored = JSON.parse(localStorage.getItem('losabia_plan') || 'null');
-    if (stored && stored.plan === 'obsesivo') {
-      window.userPlan = 'obsesivo';
-      applyBlurOverlays();
-      return;
-    }
-    if (stored && stored.plan === 'detective' && stored.chatFingerprint
-        && window.currentChatFingerprint
-        && stored.chatFingerprint === window.currentChatFingerprint) {
-      window.userPlan = 'detective';
-      applyBlurOverlays();
-      return;
-    }
-  } catch(e) {}
-
-  // If already has access (e.g. admin bypass), just unlock
-  if (hasPlanAccess(plan)) {
-    unlockPlan(plan);
+function openPayModal() {
+  // If already premium, just unlock
+  if (isPremiumUser()) {
+    unlockPlan();
     return;
   }
 
-  // Detective paid but different chat — show warning instead of pay modal
-  // bypassFingerprintCheck=true cuando el usuario ya vio el warning y quiere pagar
-  if (!bypassFingerprintCheck && isFingerprintMismatch()) {
-    showDifferentChatWarning();
+  // Re-check storage in case of recent payment
+  if (loadPremiumState()) {
+    window.isPremium = true;
+    applyBlurOverlays();
     return;
   }
 
-  selectedPlan = plan || 'detective';
   const lp = window.localPricing;
-  const config = {
-    detective: { icon: '🔍', title: 'Desbloquear Plan Detective', price: (lp ? lp.detectiveFormatted : '$69 MXN') + ' — pago único' },
-    obsesivo: { icon: '🔥', title: 'Desbloquear Plan Obsesivo', price: (lp ? lp.obsesivoFormatted : '$199 MXN') + '/mes — suscripción' },
-    'group-completo': { icon: '👥', title: 'Desbloquear Análisis Completo del Grupo', price: (lp ? lp.groupCompletoFormatted : '$99 MXN') + ' — pago único' },
-  };
-  const c = config[selectedPlan] || config.detective;
+  const price = (lp ? lp.premiumFormatted : '$99 MXN') + ' — pago único';
 
-  document.getElementById('payModalIcon').textContent = c.icon;
-  document.getElementById('payModalTitle').textContent = c.title;
-  document.getElementById('payModalPrice').textContent = c.price;
+  document.getElementById('payModalIcon').textContent = '🔓';
+  document.getElementById('payModalTitle').textContent = 'Desbloquear Todo';
+  document.getElementById('payModalPrice').textContent = price;
   // Reset checkbox and button state
   var cb = document.getElementById('acceptTerms');
   var btn = document.getElementById('goToCheckout');
@@ -8740,79 +8518,11 @@ function openPayModal(plan, bypassFingerprintCheck) {
   document.getElementById('payModal').style.display = 'flex';
 }
 
-function showPayModal() { openPayModal('detective'); }
+function showPayModal() { openPayModal(); }
 
 function closePayModal() {
   document.getElementById('payModal').style.display = 'none';
   document.getElementById('payError').style.display = 'none';
-}
-
-function openGiftModal() {
-  document.getElementById('giftPayerEmail').value = '';
-  document.getElementById('giftRecipientEmail').value = '';
-  document.getElementById('giftError').style.display = 'none';
-  var cb = document.getElementById('giftAcceptTerms');
-  var btn = document.getElementById('giftCheckoutBtn');
-  if (cb) { cb.checked = false; }
-  if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; btn.textContent = 'Enviar regalo →'; }
-  document.getElementById('giftModal').style.display = 'flex';
-}
-
-function closeGiftModal() {
-  document.getElementById('giftModal').style.display = 'none';
-  document.getElementById('giftError').style.display = 'none';
-}
-
-async function goToGiftCheckout() {
-  const gifterEmail = document.getElementById('giftPayerEmail').value.trim();
-  const recipientEmail = document.getElementById('giftRecipientEmail').value.trim();
-  const errorEl = document.getElementById('giftError');
-  const btn = document.getElementById('giftCheckoutBtn');
-
-  if (!gifterEmail || !gifterEmail.includes('@')) {
-    errorEl.textContent = 'Ingresa tu email';
-    errorEl.style.display = 'block';
-    return;
-  }
-  if (!recipientEmail || !recipientEmail.includes('@')) {
-    errorEl.textContent = 'Ingresa el email de tu amiga';
-    errorEl.style.display = 'block';
-    return;
-  }
-  if (gifterEmail.toLowerCase() === recipientEmail.toLowerCase()) {
-    errorEl.textContent = 'Los emails deben ser diferentes';
-    errorEl.style.display = 'block';
-    return;
-  }
-
-  btn.textContent = 'Redirigiendo...';
-  btn.disabled = true;
-  errorEl.style.display = 'none';
-
-  try {
-    if (typeof fbq !== 'undefined') fbq('track', 'InitiateCheckout');
-
-    const res = await fetch('/api/create-checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: gifterEmail,
-        plan: 'detective',
-        isGift: true,
-        gifterEmail: gifterEmail,
-        recipientEmail: recipientEmail
-      })
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.details || data.error || 'Error del servidor');
-    window.location.href = data.url;
-  } catch (err) {
-    errorEl.textContent = 'Error: ' + err.message;
-    errorEl.style.display = 'block';
-    btn.textContent = 'Enviar regalo →';
-    btn.disabled = false;
-  }
 }
 
 async function goToStripeCheckout() {
@@ -8843,7 +8553,7 @@ async function goToStripeCheckout() {
     const res = await fetch('/api/create-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, plan: selectedPlan, chatFingerprint: window.currentChatFingerprint || '' })
+      body: JSON.stringify({ email, plan: 'premium' })
     });
 
     const data = await res.json();
@@ -8863,19 +8573,18 @@ async function goToStripeCheckout() {
 
 // ── Plan state helpers ──
 function isPremiumUnlocked() {
-  return hasPlanAccess('detective');
+  return isPremiumUser();
 }
 
 function updatePlanBadge() {
   const badge = document.getElementById('userPlanBadge');
   if (!badge) return;
-  const names = { curioso: 'Plan Curioso', detective: 'Plan Detective', obsesivo: 'Plan Obsesivo' };
-  badge.textContent = names[window.userPlan] || 'Plan Curioso';
-  badge.className = 'user-plan-badge ' + (window.userPlan || 'curioso');
+  badge.textContent = isPremiumUser() ? 'Premium' : 'Gratuito';
+  badge.className = 'user-plan-badge ' + (isPremiumUser() ? 'detective' : 'curioso');
 }
 
-function unlockPlan(plan) {
-  console.log('[Paywall] unlockPlan() called — plan:', plan, '| window.userPlan:', window.userPlan);
+function unlockPlan() {
+  console.log('[Paywall] unlockPlan() — isPremium:', window.isPremium);
 
   // Show both sections so features can render
   const premiumEl = document.getElementById('premiumSection');
@@ -8889,52 +8598,30 @@ function unlockPlan(plan) {
     renderPremiumFeatures(lastMessages, lastStats);
   }
 
-  // Recompute all blur states (idempotent)
   applyBlurOverlays();
   closePayModal();
 }
 
 function unlockPremium() {
-  unlockPlan(window.userPlan);
+  unlockPlan();
 }
 
 function updatePlanUI() {
   updatePlanBadge();
-  // Always recompute overlays regardless of plan
   applyBlurOverlays();
 }
 
-function showGiftSuccessToast() {
-  var existing = document.getElementById('giftSuccessToast');
-  if (existing) existing.remove();
-  var toast = document.createElement('div');
-  toast.id = 'giftSuccessToast';
-  toast.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:1002;display:flex;align-items:center;justify-content:center;';
-  toast.innerHTML = '<div style="background:#1A1A2E;border-radius:20px;padding:48px 40px;max-width:420px;width:90%;text-align:center;position:relative;">' +
-    '<div style="font-size:3rem;margin-bottom:16px;">🎁</div>' +
-    '<h3 style="color:white;margin-bottom:12px;font-size:1.4rem;">¡Tu regalo fue enviado!</h3>' +
-    '<p style="color:#9CA3AF;font-size:1rem;line-height:1.6;margin-bottom:24px;">Tu amiga recibirá acceso al Plan Detective en su email. ¡Qué buen detalle!</p>' +
-    '<button onclick="document.getElementById(\'giftSuccessToast\').remove()" style="padding:14px 40px;background:linear-gradient(135deg,#FF2D78,#6C5CE7);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:1rem;">Cerrar</button>' +
-    '</div>';
-  document.body.appendChild(toast);
-}
-
 // ── Payment verification on page load ──
-// ONLY unlocks if returning from Stripe with a valid session.
-// Normal page loads always stay 'curioso' — plan resolves in onNewChatLoaded().
 async function checkPaymentSuccess() {
   console.log('[Paywall] checkPaymentSuccess() called');
 
   // Check URL for fresh payment return
   const fullUrl = window.location.href;
   let sessionId = null;
-  let urlPlan = null;
 
   if (fullUrl.includes('payment=success')) {
     const sidMatch = fullUrl.match(/session_id=([^&\s#]+)/);
     if (sidMatch) sessionId = sidMatch[1];
-    const planMatch = fullUrl.match(/plan=([^&\s#]+)/);
-    if (planMatch) urlPlan = planMatch[1];
   }
 
   if (sessionId) {
@@ -8943,59 +8630,19 @@ async function checkPaymentSuccess() {
       const data = await res.json();
 
       if (data.paid) {
-        const plan = data.plan || urlPlan || 'detective';
-        console.log('[Paywall] Payment verified! Plan:', plan);
+        console.log('[Paywall] Payment verified! Premium unlocked.');
 
-        if (data.isGift) {
-          console.log('[Paywall] Gift payment — showing success message');
-          showGiftSuccessToast();
-          const planPrices = { 'detective': 79, 'obsesivo': 149 };
-          if (typeof fbq !== 'undefined') {
-            fbq('track', 'Purchase', { value: planPrices[plan] || 79, currency: 'MXN' });
-          }
-          const cleanUrl = window.location.origin + window.location.pathname;
-          window.history.replaceState(null, '', cleanUrl);
-          return;
-        }
-
-        // Group plan — separate storage
-        if (plan === 'group-completo') {
-          localStorage.setItem('yalosabia_group_premium', JSON.stringify({
-            plan: 'completo',
-            sessionId: sessionId,
-            email: data.email || '',
-            paidAt: new Date().toISOString()
-          }));
-          window.groupPlan = 'completo';
-          if (typeof fbq !== 'undefined') {
-            fbq('track', 'Purchase', { value: 99, currency: 'MXN', content_name: 'group-completo' });
-          }
-          applyBlurOverlays();
-          const cleanUrl = window.location.origin + window.location.pathname;
-          window.history.replaceState(null, '', cleanUrl);
-          return;
-        }
-
-        localStorage.setItem('losabia_plan', JSON.stringify({
-          plan: plan,
+        localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
+          premium: true,
           sessionId: sessionId,
-          email: data.email,
-          chatFingerprint: data.chatFingerprint || window.currentChatFingerprint || null,
+          email: data.email || '',
           paidAt: new Date().toISOString()
         }));
 
-        if (plan === 'obsesivo' || (window.currentChatFingerprint && data.chatFingerprint === window.currentChatFingerprint)) {
-          window.userPlan = plan;
-        } else {
-          window.userPlan = 'curioso';
-        }
+        window.isPremium = true;
 
-        const planPrices = { 'detective': 79, 'obsesivo': 149 };
         if (typeof fbq !== 'undefined') {
-          fbq('track', 'Purchase', {
-            value: planPrices[plan] || 79,
-            currency: 'MXN'
-          });
+          fbq('track', 'Purchase', { value: 99, currency: 'MXN', content_name: 'premium' });
         }
 
         updatePlanUI();
@@ -9012,16 +8659,15 @@ async function checkPaymentSuccess() {
 
   // Admin bypass — don't overwrite
   if (window._adminBypass) {
-    console.log('[Paywall] Admin bypass active — keeping obsesivo');
+    console.log('[Paywall] Admin bypass active — keeping premium');
     updatePlanBadge();
     applyBlurOverlays();
     return;
   }
 
-  // Normal page load — always start as curioso.
-  // Plan will be resolved in onNewChatLoaded() when user uploads a chat.
-  window.userPlan = 'curioso';
-  console.log('[Paywall] Page load → curioso (plan resolves on chat upload)');
+  // Load stored premium state (with migration)
+  window.isPremium = loadPremiumState();
+  console.log('[Paywall] Page load — isPremium:', window.isPremium);
   updatePlanBadge();
   applyBlurOverlays();
 }
@@ -9030,43 +8676,31 @@ async function checkPaymentSuccess() {
 document.addEventListener('DOMContentLoaded', checkPaymentSuccess);
 
 // ── Defensive: ensure pricing buttons ALWAYS work ──
-// Registers click handlers via addEventListener as fallback in case
-// inline onclick="openPayModal(...)" fails due to script errors.
 document.addEventListener('DOMContentLoaded', function() {
-  // Pricing section buttons
   document.querySelectorAll('#precios .price-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      var plan = 'detective';
-      if (btn.textContent.indexOf('199') !== -1) plan = 'obsesivo';
+    btn.addEventListener('click', function() {
       if (typeof openPayModal === 'function') {
-        openPayModal(plan);
+        openPayModal();
       } else {
-        // Inline fallback: show modal directly
-        selectedPlan = plan;
         var m = document.getElementById('payModal');
         if (m) m.style.display = 'flex';
       }
     });
   });
 
-  // Dynamically-created overlay buttons (delegation on results section)
   var resultsEl = document.getElementById('resultsSection');
   if (resultsEl) {
     resultsEl.addEventListener('click', function(e) {
       var btn = e.target.closest('.unlock-overlay-btn, .section-cta-btn');
       if (!btn) return;
-      var plan = (btn.textContent.indexOf('Obsesivo') !== -1 || btn.textContent.indexOf('199') !== -1) ? 'obsesivo' : 'detective';
       if (typeof openPayModal === 'function') {
-        openPayModal(plan);
+        openPayModal();
       } else {
-        selectedPlan = plan;
         var m = document.getElementById('payModal');
         if (m) m.style.display = 'flex';
       }
     });
   }
-
-  console.log('[Payment] Defensive click handlers registered. openPayModal defined:', typeof openPayModal === 'function');
 });
 </script>
 
@@ -9080,7 +8714,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="exit-score" id="exitScore">72</div>
     <p style="color: white; font-size: 0.95rem; margin-bottom: 4px;">Tu relación tiene un score de <strong><span id="exitScoreText">72</span>/100</strong></p>
     <p style="color: var(--text-muted); font-size: 0.85rem;">Hay cosas en tu chat que aún no has visto.</p>
-    <button class="exit-cta" onclick="closeExitIntent(); document.getElementById('precios').scrollIntoView({behavior:'smooth'});">Ver el análisis completo — <span class="precio-detective">$69 MXN</span> →</button>
+    <button class="exit-cta" onclick="closeExitIntent(); document.getElementById('precios').scrollIntoView({behavior:'smooth'});">Ver el análisis completo — <span class="precio-premium">$99 MXN</span> →</button>
     <button class="exit-dismiss" onclick="closeExitIntent()">No, prefiero quedarme con dudas</button>
   </div>
 </div>
@@ -9101,7 +8735,7 @@ function closeExitIntent() {
 function showExitIntent() {
   if (sessionStorage.getItem('exitShown')) return;
   if (!lastStats || !lastStats.score) return;
-  if (window.userPlan !== 'curioso') return;
+  if (isPremiumUser()) return;
   document.getElementById('exitScore').textContent = lastStats.score;
   document.getElementById('exitScoreText').textContent = lastStats.score;
   document.getElementById('exitOverlay').classList.add('active');
@@ -9246,8 +8880,8 @@ function openPreview(plan) {
   const dotsContainer = document.getElementById('preview-dots');
   const total = document.getElementById('slide-total');
   title.textContent = plan === 'detective'
-    ? '\u{1F50D} Plan Detective — Vista previa'
-    : '\u{1F52C} Plan Obsesivo — Vista previa';
+    ? '\u{1F50D} Premium — Vista previa'
+    : '\u{1F52C} Premium — Vista previa';
   const slides = previewSlides[plan];
   total.textContent = slides.length;
   slidesContainer.innerHTML = slides.join('');
