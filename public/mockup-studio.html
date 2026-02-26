@@ -696,6 +696,15 @@ function jumpToSection(id) {
 // ══════ RENDER ══════
 function getVal(id) { return document.getElementById(id).value; }
 function getNum(id) { return parseInt(document.getElementById(id).value) || 0; }
+function safe(val) { return (val === '' || val === undefined || val === null) ? '—' : val; }
+function safeNum(val) { return (isNaN(val) || val === null || val === undefined) ? '—' : val.toLocaleString(); }
+
+function getScoreGradient(score) {
+  if (score >= 75) return 'linear-gradient(135deg, #3BCEAC, #6C5CE7)';
+  if (score >= 50) return 'linear-gradient(135deg, #FFD23F, #FF6B35)';
+  if (score >= 25) return 'linear-gradient(135deg, #FF6B35, #FF2D78)';
+  return 'linear-gradient(135deg, #FF2D78, #6C5CE7)';
+}
 
 function getVerdict(score) {
   if (score >= 95) return 'De otro planeta';
@@ -711,21 +720,25 @@ function getVerdict(score) {
 }
 
 function render() {
-  const p1 = getVal('inP1');
-  const p2 = getVal('inP2');
+  const p1 = safe(getVal('inP1')) || 'Persona 1';
+  const p2 = safe(getVal('inP2')) || 'Persona 2';
   const score = getNum('inScore');
   const totalMsgs = getNum('inTotalMsgs');
   const days = getNum('inDays');
   const msgsA = getNum('inMsgsA');
   const msgsB = getNum('inMsgsB');
-  const avgReply = getVal('inAvgReply');
-  const nightPct = getVal('inNightPct');
+  const avgReply = safe(getVal('inAvgReply'));
+  const nightPct = safe(getVal('inNightPct'));
   const loveCount = getNum('inLoveCount');
   const leaderPct = getNum('inLeaderPct');
-  const verdict = getVal('inVerdict');
+  const verdict = safe(getVal('inVerdict'));
   const followerPct = 100 - leaderPct;
   const leader = leaderPct >= 50 ? p1 : p2;
   const follower = leader === p1 ? p2 : p1;
+
+  console.log('[render] score:', score, 'totalMsgs:', totalMsgs, 'days:', days,
+    'msgsA:', msgsA, 'msgsB:', msgsB, 'avgReply:', avgReply, 'nightPct:', nightPct,
+    'loveCount:', loveCount, 'leaderPct:', leaderPct, 'verdict:', verdict);
 
   // Timeline data
   const timelineRaw = getVal('inTimelineData');
@@ -780,10 +793,10 @@ function render() {
     <p style="color:var(--text-muted);">Análisis basado en <strong>${totalMsgs.toLocaleString()}</strong> mensajes</p>
   </div>`;
 
-  // Score card
-  html += `<div id="sec-score" class="score-card">
+  // Score card (dynamic gradient based on score value)
+  html += `<div id="sec-score" class="score-card" style="background:${getScoreGradient(score)};">
     <div class="score-label">Score de la relación</div>
-    <div class="score-number">${score}</div>
+    <div class="score-number">${safeNum(score)}</div>
     <div class="score-max">de 100</div>
     <div class="score-verdict">${verdict}</div>
   </div>`;
@@ -791,20 +804,50 @@ function render() {
   // Stats
   html += `<div id="sec-stats"><div class="plan-header"><div class="plan-badge free">✨ GRATIS</div><div class="plan-title free">Análisis Básico</div><div class="plan-subtitle">Estadísticas generales de tu conversación</div></div>`;
   html += `<div class="stats-grid">
-    <div class="stat-card"><div class="stat-emoji">💬</div><div class="stat-value">${msgsA.toLocaleString()}</div><div class="stat-label">Mensajes de ${p1}</div></div>
-    <div class="stat-card"><div class="stat-emoji">💬</div><div class="stat-value">${msgsB.toLocaleString()}</div><div class="stat-label">Mensajes de ${p2}</div></div>
+    <div class="stat-card"><div class="stat-emoji">💬</div><div class="stat-value">${safeNum(msgsA)}</div><div class="stat-label">Mensajes de ${p1}</div></div>
+    <div class="stat-card"><div class="stat-emoji">💬</div><div class="stat-value">${safeNum(msgsB)}</div><div class="stat-label">Mensajes de ${p2}</div></div>
     <div class="stat-card"><div class="stat-emoji">⏱️</div><div class="stat-value">${avgReply}</div><div class="stat-label">Tiempo promedio de respuesta</div></div>
     <div class="stat-card"><div class="stat-emoji">🌙</div><div class="stat-value">${nightPct}</div><div class="stat-label">Mensajes nocturnos (12am-5am)</div></div>
-    <div class="stat-card"><div class="stat-emoji">❤️</div><div class="stat-value">${loveCount.toLocaleString()}</div><div class="stat-label">Emojis de amor enviados</div></div>
-    <div class="stat-card"><div class="stat-emoji">📅</div><div class="stat-value">${days.toLocaleString()}</div><div class="stat-label">Días de conversación</div></div>
+    <div class="stat-card"><div class="stat-emoji">❤️</div><div class="stat-value">${safeNum(loveCount)}</div><div class="stat-label">Emojis de amor enviados</div></div>
+    <div class="stat-card"><div class="stat-emoji">📅</div><div class="stat-value">${safeNum(days)}</div><div class="stat-label">Días de conversación</div></div>
   </div>`;
 
-  // Fun fact
-  html += `<div class="fun-fact">📊 <strong>Dato curioso:</strong> ${p1} envió <strong>${msgsA.toLocaleString()}</strong> mensajes y ${p2} envió <strong>${msgsB.toLocaleString()}</strong>. ${loveCount > 20 ? 'Hay mucho amor en este chat ❤️' : 'Podrían usar más emojis de amor... 😬'}</div>`;
+  // Fun fact — auto-generated from current sidebar values
+  const nightNum = parseInt(nightPct) || 0;
+  const msgsPerDay = days > 0 ? Math.round(totalMsgs / days) : 0;
+  let funFactText = `${p1} envió <strong>${safeNum(msgsA)}</strong> mensajes y ${p2} envió <strong>${safeNum(msgsB)}</strong>.`;
+  if (msgsPerDay > 0) funFactText += ` Eso es ~<strong>${safeNum(msgsPerDay)}</strong> mensajes por día.`;
+  if (nightNum > 25) funFactText += ` El <strong>${nightPct}</strong> fueron de madrugada... 👀`;
+  else if (avgReply && avgReply !== '—') funFactText += ` Tiempo promedio de respuesta: <strong>${avgReply}</strong>.`;
+  if (loveCount > 50) funFactText += ' Hay mucho amor en este chat ❤️';
+  else if (loveCount < 10) funFactText += ' Podrían usar más emojis de amor... 😬';
+  html += `<div class="fun-fact">📊 <strong>Dato curioso:</strong> ${funFactText}</div>`;
 
-  // Who leads
-  const ctx = leaderPct >= 65 ? `${leader} inicia más, pregunta más, lleva el peso.` : 'Ligeramente desequilibrado pero dentro de lo normal.';
-  html += `<div class="example-card"><strong style="font-size:1.1em;">${leader} lleva la relación</strong><br>${leader}: <strong>${leaderPct}%</strong> · ${follower}: <strong>${followerPct}%</strong><br><span style="color:var(--text-muted);font-size:0.9em;">${ctx}</span></div></div>`;
+  // Who leads — with balanced case and visual bar
+  let whoLeadsHtml = '';
+  if (leaderPct >= 55) {
+    const ctx = leaderPct >= 65 ? `${leader} inicia más, pregunta más, lleva el peso.` : 'Ligeramente desequilibrado pero dentro de lo normal.';
+    whoLeadsHtml = `<div class="example-label" style="font-size:0.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--yellow);margin-bottom:8px;">⚡ Dinámica</div>
+      <h4 style="font-family:var(--font-display);font-size:1.1rem;margin-bottom:12px;">Quién lleva la relación</h4>
+      <strong style="font-size:1.1em;">${leader} lleva la relación</strong><br>
+      ${leader}: <strong>${leaderPct}%</strong> · ${follower}: <strong>${followerPct}%</strong>
+      <div style="display:flex;height:8px;border-radius:4px;overflow:hidden;margin:12px 0 8px;background:rgba(255,255,255,0.06);">
+        <div style="width:${leaderPct}%;background:var(--pink);border-radius:4px 0 0 4px;"></div>
+        <div style="width:${followerPct}%;background:var(--purple);border-radius:0 4px 4px 0;"></div>
+      </div>
+      <span style="color:var(--text-muted);font-size:0.9em;">${ctx}</span>`;
+  } else {
+    whoLeadsHtml = `<div class="example-label" style="font-size:0.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:8px;">⚡ Dinámica</div>
+      <h4 style="font-family:var(--font-display);font-size:1.1rem;margin-bottom:12px;">Quién lleva la relación</h4>
+      <strong style="font-size:1.1em;">Relación equilibrada</strong><br>
+      ${p1}: <strong>${leaderPct}%</strong> · ${p2}: <strong>${followerPct}%</strong>
+      <div style="display:flex;height:8px;border-radius:4px;overflow:hidden;margin:12px 0 8px;background:rgba(255,255,255,0.06);">
+        <div style="width:${leaderPct}%;background:var(--pink);border-radius:4px 0 0 4px;"></div>
+        <div style="width:${followerPct}%;background:var(--purple);border-radius:0 4px 4px 0;"></div>
+      </div>
+      <span style="color:var(--text-muted);font-size:0.9em;">Los dos se implican por igual. Poco común.</span>`;
+  }
+  html += `<div class="example-card" style="margin-bottom:48px;">${whoLeadsHtml}</div></div>`;
 
   // ── DETECTIVE SECTION ──
   html += `<div class="plan-detective-wrap">
@@ -815,7 +858,7 @@ function render() {
     <div class="pf-header"><div class="pf-icon">📈</div><div><div class="pf-title">Línea de Vida de la Relación</div><div class="pf-subtitle">Evolución mensual de la comunicación</div></div></div>
     <div class="pf-body">
       <div style="height:320px;"><canvas id="timelineChart"></canvas></div>
-      <div class="pf-insight"><strong>📊 Análisis:</strong> ${getVal('inTimelineInsight')}</div>
+      <div class="pf-insight"><strong>📊 Análisis:</strong> ${safe(getVal('inTimelineInsight'))}</div>
     </div>
   </div>`;
 
@@ -824,11 +867,11 @@ function render() {
     <div class="pf-header"><div class="pf-icon">🔇</div><div><div class="pf-title">Mapa de Silencios</div><div class="pf-subtitle">Momentos donde la comunicación se detuvo</div></div></div>
     <div class="pf-body">
       <div class="silence-stats">
-        <div class="silence-stat"><div class="silence-stat-value">${silTotal}</div><div class="silence-stat-label">Silencios de 48h+</div></div>
-        <div class="silence-stat"><div class="silence-stat-value">${silLongest}</div><div class="silence-stat-label">Silencio más largo</div></div>
-        <div class="silence-stat"><div class="silence-stat-value">${silBreaker}</div><div class="silence-stat-label">Rompe el silencio más</div></div>
+        <div class="silence-stat"><div class="silence-stat-value">${safe(silTotal)}</div><div class="silence-stat-label">Silencios de 48h+</div></div>
+        <div class="silence-stat"><div class="silence-stat-value">${safe(silLongest)}</div><div class="silence-stat-label">Silencio más largo</div></div>
+        <div class="silence-stat"><div class="silence-stat-value">${safe(silBreaker)}</div><div class="silence-stat-label">Rompe el silencio más</div></div>
       </div>
-      <div class="pf-insight"><strong>🔇 Análisis:</strong> ${getVal('inSilInsight')}</div>
+      <div class="pf-insight"><strong>🔇 Análisis:</strong> ${safe(getVal('inSilInsight'))}</div>
     </div>
   </div>`;
 
@@ -839,18 +882,18 @@ function render() {
       <div class="dt-comparison">
         <div class="dt-person">
           <div class="dt-person-name">${p1}</div>
-          <div class="dt-person-count" style="color:var(--pink);">${dtA.toLocaleString()}</div>
+          <div class="dt-person-count" style="color:var(--pink);">${safeNum(dtA)}</div>
           <div class="dt-person-label">veces hizo double text</div>
           <div class="dt-bar-track"><div class="dt-bar-fill pink" style="width:${(dtA/dtMax)*100}%"></div></div>
         </div>
         <div class="dt-person">
           <div class="dt-person-name">${p2}</div>
-          <div class="dt-person-count" style="color:var(--purple);">${dtB.toLocaleString()}</div>
+          <div class="dt-person-count" style="color:var(--purple);">${safeNum(dtB)}</div>
           <div class="dt-person-label">veces hizo double text</div>
           <div class="dt-bar-track"><div class="dt-bar-fill purple" style="width:${(dtB/dtMax)*100}%"></div></div>
         </div>
       </div>
-      <div class="pf-insight"><strong>😤 Patrón:</strong> ${getVal('inDtInsight')}</div>
+      <div class="pf-insight"><strong>😤 Patrón:</strong> ${safe(getVal('inDtInsight'))}</div>
     </div>
   </div>`;
 
@@ -875,7 +918,7 @@ function render() {
   html += `<div class="premium-feature-card" id="sec-multimedia">
     <div class="pf-header"><div class="pf-icon">📱</div><div><div class="pf-title">Reyes del Multimedia</div><div class="pf-subtitle">Quién manda más audios, fotos y videos</div></div></div>
     <div class="pf-body">${mmHtml}
-      <div class="pf-insight" style="margin-top:16px;"><strong>📱 Insight:</strong> ${getVal('inMmInsight')}</div>
+      <div class="pf-insight" style="margin-top:16px;"><strong>📱 Insight:</strong> ${safe(getVal('inMmInsight'))}</div>
     </div>
   </div>`;
 
@@ -884,11 +927,11 @@ function render() {
     <div class="pf-header"><div class="pf-icon">🗑️</div><div><div class="pf-title">Mensajes Eliminados</div><div class="pf-subtitle">Lo que alguien no quería que vieras</div></div></div>
     <div class="pf-body">
       <div class="deleted-stats">
-        <div class="deleted-stat-card"><div class="deleted-stat-value">${delTotal}</div><div class="deleted-stat-label">Total eliminados</div></div>
-        <div class="deleted-stat-card"><div class="deleted-stat-value">${delA}</div><div class="deleted-stat-label">${p1} eliminó</div></div>
-        <div class="deleted-stat-card"><div class="deleted-stat-value">${delB}</div><div class="deleted-stat-label">${p2} eliminó</div></div>
+        <div class="deleted-stat-card"><div class="deleted-stat-value">${safeNum(delTotal)}</div><div class="deleted-stat-label">Total eliminados</div></div>
+        <div class="deleted-stat-card"><div class="deleted-stat-value">${safeNum(delA)}</div><div class="deleted-stat-label">${p1} eliminó</div></div>
+        <div class="deleted-stat-card"><div class="deleted-stat-value">${safeNum(delB)}</div><div class="deleted-stat-label">${p2} eliminó</div></div>
       </div>
-      <div class="pf-insight" style="margin-top:16px;"><strong>🗑️ Análisis:</strong> ${getVal('inDelInsight')}</div>
+      <div class="pf-insight" style="margin-top:16px;"><strong>🗑️ Análisis:</strong> ${safe(getVal('inDelInsight'))}</div>
     </div>
   </div>`;
 
@@ -904,7 +947,7 @@ function render() {
     forensicHtml += `<div class="forensic-point"><div class="forensic-date">${f.date}</div><div class="forensic-detail">${f.detail}</div></div>`;
   });
   forensicHtml += '</div>';
-  forensicHtml += `<div class="pf-insight" style="margin-top:16px;"><strong>🕵️ Reconstrucción:</strong> ${getVal('inForensicNarrative')}</div>`;
+  forensicHtml += `<div class="pf-insight" style="margin-top:16px;"><strong>🕵️ Reconstrucción:</strong> ${safe(getVal('inForensicNarrative'))}</div>`;
 
   html += `<div class="premium-feature-card" id="sec-forensic">
     <div class="pf-header"><div class="pf-icon">🕵️</div><div><div class="pf-title">Reconstrucción Forense</div><div class="pf-subtitle">La cronología completa de tu relación</div></div></div>
@@ -924,7 +967,7 @@ function render() {
     bvnHtml += '</tbody></table></div>';
   });
   bvnHtml += '</div>';
-  bvnHtml += `<div class="pf-insight" style="margin-top:16px;"><strong>💔 Conclusión devastadora:</strong> ${getVal('inBvnInsight')}</div>`;
+  bvnHtml += `<div class="pf-insight" style="margin-top:16px;"><strong>💔 Conclusión devastadora:</strong> ${safe(getVal('inBvnInsight'))}</div>`;
 
   html += `<div class="premium-feature-card" id="sec-bvn">
     <div class="pf-header"><div class="pf-icon">📊</div><div><div class="pf-title">Antes vs Ahora</div><div class="pf-subtitle">Cómo ha cambiado la comunicación</div></div></div>
