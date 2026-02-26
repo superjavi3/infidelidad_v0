@@ -236,6 +236,142 @@ Basándome en el análisis de ${stats?.total || 0} mensajes entre ${stats?.perso
       return NextResponse.json({ success: true, answer });
     }
 
+    // ===== MODO GROUP-ANALYSIS — Fun fact del grupo =====
+    if (mode === 'group-analysis') {
+      const memberList = (stats?.members || []).map((m: any) => `${m.name} (${m.msgCount} msgs, ${m.pct}%, ${m.category})`).join(', ');
+      const sampleMsgs = (messages || []).slice(-50).map((m: any) => `${m.sender}: ${(m.text || '').substring(0, 60)}`).join('\n');
+
+      const groupPrompt = `Eres un analista de grupos de WhatsApp con humor. Te doy datos de un grupo.
+Genera UN SOLO dato curioso, sorprendente y divertido sobre este grupo.
+Debe ser específico con nombres y números reales del grupo.
+Máximo 2 frases. Tono: divertido, como si se lo contaras a un amigo.
+Ejemplos de estilo:
+- "Si todos los audios de Carlos se pusieran seguidos, durarían más que Titanic"
+- "María ha escrito 'jajaja' 2,847 veces. Eso es un jajaja cada 6 horas"
+- "Pedro solo aparece cuando alguien dice 'tacos'. El 73% de sus mensajes son después de mencionar comida"
+
+DATOS DEL GRUPO:
+- ${stats?.totalMessages || 0} mensajes de ${stats?.members?.length || 0} participantes en ${stats?.uniqueDays || 0} días
+- Score de salud: ${stats?.score || 'N/A'}/100
+- Miembros: ${memberList}
+
+MUESTRA DE MENSAJES:
+${sampleMsgs}
+
+Responde en JSON: { "funInsight": "tu dato curioso aquí" }`;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: groupPrompt }] }],
+            generationConfig: { temperature: 0.8, maxOutputTokens: 300, thinkingConfig: { thinkingBudget: 0 } }
+          })
+        }
+      );
+      const data = await response.json();
+      if (!data.candidates?.[0]) {
+        return NextResponse.json({ success: true, analysis: { funInsight: 'No pudimos generar un dato curioso para este grupo.' } });
+      }
+      const text = data.candidates[0].content.parts[0].text;
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      const analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : { funInsight: text.replace(/```/g, '').trim() };
+      return NextResponse.json({ success: true, analysis });
+    }
+
+    // ===== MODO GROUP-CHAT — Chatbot IA del grupo =====
+    if (mode === 'group-chat') {
+      const memberList = (stats?.members || []).slice(0, 20).map((m: any) => `${m.name}: ${m.msgCount} msgs (${m.pct}%), ${m.category}`).join('\n');
+      const recentMsgs = messages ? sampleMessages(messages, 30) : [];
+      const recentHistory = chatHistory?.slice(-2).map((m: any) => `${m.role === 'user' ? 'Usuario' : 'Asistente'}: ${m.text}`).join('\n') || '';
+
+      const groupChatPrompt = `Eres un analista experto de grupos de WhatsApp. Responde CONCISO.
+
+DATOS DEL GRUPO:
+- Nombre: ${stats?.groupName || 'Sin nombre'}
+- ${stats?.totalMessages || 0} mensajes de ${stats?.members?.length || 0} miembros en ${stats?.uniqueDays || 0} días
+- Score: ${stats?.score || 'N/A'}/100
+- Activos: ${stats?.activeCount || 0} | Fantasmas: ${stats?.ghostCount || 0}
+
+MIEMBROS:
+${memberList}
+
+MENSAJES:
+${recentMsgs.map((m: any) => `[${m.date}] ${m.sender}: ${(m.text || '').substring(0, 80)}`).join('\n')}
+
+REGLAS: Máx 150 palabras. Datos concretos. Nombres reales. Si no sabes, dilo.
+
+${recentHistory ? `CONTEXTO:\n${recentHistory}\n` : ''}PREGUNTA: ${question}
+RESPONDE:`;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: groupChatPrompt }] }],
+            generationConfig: { temperature: 0.7, maxOutputTokens: 1500, thinkingConfig: { thinkingBudget: 0 } }
+          })
+        }
+      );
+      const data = await response.json();
+      if (!data.candidates?.[0]) {
+        return NextResponse.json({ success: true, answer: 'No pude procesar tu pregunta. Intenta de nuevo.' });
+      }
+      const answer = data.candidates[0].content.parts[0].text.replace(/```/g, '').trim();
+      return NextResponse.json({ success: true, answer });
+    }
+
+    // ===== MODO GROUP-AUTOPSY — Momentos clave del grupo =====
+    if (mode === 'group-autopsy') {
+      const memberList = (stats?.members || []).slice(0, 15).map((m: any) => `${m.name}: ${m.msgCount} msgs`).join(', ');
+      const monthlyData = (stats?.monthlyActivity || []).map((m: any) => `${m.month}: ${m.total} msgs`).join(', ');
+      const events = (stats?.systemEvents || []).slice(0, 30).map((e: any) => `${e.date} - ${e.type}: ${e.actor}${e.target ? ' → ' + e.target : ''}${e.detail ? ' (' + e.detail + ')' : ''}`).join('\n');
+      const sampleMsgs = (messages || []).slice(-100).map((m: any) => `[${m.date}] ${m.sender}: ${(m.text || '').substring(0, 60)}`).join('\n');
+
+      const autopsyPrompt = `Eres un analista forense de grupos de WhatsApp. Identifica los 3-5 momentos clave donde la dinámica del grupo cambió.
+
+DATOS:
+- ${stats?.totalMessages || 0} msgs de ${stats?.members?.length || 0} miembros
+- Miembros: ${memberList}
+
+ACTIVIDAD MENSUAL: ${monthlyData}
+
+EVENTOS DEL GRUPO:
+${events || 'No se detectaron eventos de sistema'}
+
+MUESTRA DE MENSAJES:
+${sampleMsgs}
+
+Responde en JSON array:
+[{"date":"Mes Año","title":"Título corto","description":"Qué pasó (con nombres)","impact":"Cómo cambió el grupo","severity":"high|medium|low"}]
+
+Máximo 5 momentos. Sé específico con nombres y datos.`;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: autopsyPrompt }] }],
+            generationConfig: { temperature: 0.7, maxOutputTokens: 2000, thinkingConfig: { thinkingBudget: 0 } }
+          })
+        }
+      );
+      const data = await response.json();
+      if (!data.candidates?.[0]) {
+        return NextResponse.json({ success: true, autopsy: [] });
+      }
+      const text = data.candidates[0].content.parts[0].text;
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      const autopsy = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
+      return NextResponse.json({ success: true, autopsy });
+    }
+
     // ===== MODO ANALYSIS - ORIGINAL =====
     // Samplear mensajes (no enviar todos)
     const sample = sampleMessages(messages, 300);

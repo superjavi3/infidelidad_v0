@@ -17,9 +17,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (plan !== 'detective' && plan !== 'obsesivo') {
+    if (plan !== 'detective' && plan !== 'obsesivo' && plan !== 'group-completo') {
       return NextResponse.json(
-        { error: 'Plan inválido. Usa "detective" o "obsesivo"' },
+        { error: 'Plan inválido. Usa "detective", "obsesivo" o "group-completo"' },
         { status: 400 }
       );
     }
@@ -35,7 +35,8 @@ export async function POST(req: NextRequest) {
     const pricing = getPricingForCountry(country);
 
     const isObsesivo = plan === 'obsesivo';
-    const amount = isObsesivo ? pricing.obsesivo : pricing.detective;
+    const isGroupCompleto = plan === 'group-completo';
+    const amount = isGroupCompleto ? pricing.groupCompleto : isObsesivo ? pricing.obsesivo : pricing.detective;
     const currency = pricing.currency;
 
     const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://yalosabia.com';
@@ -62,6 +63,7 @@ export async function POST(req: NextRequest) {
         product_data: {
           name: isGift
             ? 'Regalo Plan Detective — YaLoSabía'
+            : isGroupCompleto ? 'Análisis Completo de Grupo — YaLoSabía'
             : isObsesivo ? 'Plan Obsesivo — YaLoSabía' : 'Plan Detective — YaLoSabía',
         },
         unit_amount: amt,

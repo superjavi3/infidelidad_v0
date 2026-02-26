@@ -6,82 +6,83 @@ export interface CountryPricing {
   label: string
   detective: number
   obsesivo: number
+  groupCompleto: number
   isZeroDecimal: boolean
 }
 
 const PRICING: Record<string, CountryPricing> = {
   // Europa
-  ES: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
-  PT: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
-  IT: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
-  FR: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
-  DE: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
-  NL: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
-  BE: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
-  AT: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
-  IE: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
-  FI: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
-  GR: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
-  PL: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
-  SE: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
-  NO: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
-  DK: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
-  CH: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, isZeroDecimal: false },
+  ES: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
+  PT: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
+  IT: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
+  FR: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
+  DE: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
+  NL: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
+  BE: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
+  AT: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
+  IE: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
+  FI: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
+  GR: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
+  PL: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
+  SE: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
+  NO: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
+  DK: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
+  CH: { currency: 'eur', symbol: '€', label: 'EUR', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
 
   // UK
-  GB: { currency: 'gbp', symbol: '£', label: 'GBP', detective: 399, obsesivo: 999, isZeroDecimal: false },
+  GB: { currency: 'gbp', symbol: '£', label: 'GBP', detective: 399, obsesivo: 999, groupCompleto: 599, isZeroDecimal: false },
 
   // USA + dolarizados
-  US: { currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, isZeroDecimal: false },
-  CA: { currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, isZeroDecimal: false },
-  AU: { currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, isZeroDecimal: false },
-  EC: { currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, isZeroDecimal: false },
-  PA: { currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, isZeroDecimal: false },
-  SV: { currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, isZeroDecimal: false },
-  VE: { currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, isZeroDecimal: false },
+  US: { currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, groupCompleto: 599, isZeroDecimal: false },
+  CA: { currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, groupCompleto: 599, isZeroDecimal: false },
+  AU: { currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, groupCompleto: 599, isZeroDecimal: false },
+  EC: { currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, groupCompleto: 599, isZeroDecimal: false },
+  PA: { currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, groupCompleto: 599, isZeroDecimal: false },
+  SV: { currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, groupCompleto: 599, isZeroDecimal: false },
+  VE: { currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, groupCompleto: 599, isZeroDecimal: false },
 
   // México
-  MX: { currency: 'mxn', symbol: '$', label: 'MXN', detective: 6999, obsesivo: 19999, isZeroDecimal: false },
+  MX: { currency: 'mxn', symbol: '$', label: 'MXN', detective: 6999, obsesivo: 19999, groupCompleto: 9900, isZeroDecimal: false },
 
   // Colombia (zero-decimal en Stripe)
-  CO: { currency: 'cop', symbol: '$', label: 'COP', detective: 1590000, obsesivo: 3990000, isZeroDecimal: true },
+  CO: { currency: 'cop', symbol: '$', label: 'COP', detective: 1590000, obsesivo: 3990000, groupCompleto: 2390000, isZeroDecimal: true },
 
   // Argentina (zero-decimal en Stripe)
-  AR: { currency: 'ars', symbol: '$', label: 'ARS', detective: 390000, obsesivo: 990000, isZeroDecimal: true },
+  AR: { currency: 'ars', symbol: '$', label: 'ARS', detective: 390000, obsesivo: 990000, groupCompleto: 590000, isZeroDecimal: true },
 
   // Chile (zero-decimal en Stripe)
-  CL: { currency: 'clp', symbol: '$', label: 'CLP', detective: 3990, obsesivo: 9990, isZeroDecimal: true },
+  CL: { currency: 'clp', symbol: '$', label: 'CLP', detective: 3990, obsesivo: 9990, groupCompleto: 5990, isZeroDecimal: true },
 
   // Perú
-  PE: { currency: 'pen', symbol: 'S/', label: 'PEN', detective: 1590, obsesivo: 3990, isZeroDecimal: false },
+  PE: { currency: 'pen', symbol: 'S/', label: 'PEN', detective: 1590, obsesivo: 3990, groupCompleto: 2390, isZeroDecimal: false },
 
   // Bolivia
-  BO: { currency: 'bob', symbol: 'Bs', label: 'BOB', detective: 3090, obsesivo: 7490, isZeroDecimal: false },
+  BO: { currency: 'bob', symbol: 'Bs', label: 'BOB', detective: 3090, obsesivo: 7490, groupCompleto: 4990, isZeroDecimal: false },
 
   // Paraguay (zero-decimal en Stripe)
-  PY: { currency: 'pyg', symbol: '₲', label: 'PYG', detective: 3290000, obsesivo: 7990000, isZeroDecimal: true },
+  PY: { currency: 'pyg', symbol: '₲', label: 'PYG', detective: 3290000, obsesivo: 7990000, groupCompleto: 4990000, isZeroDecimal: true },
 
   // Uruguay
-  UY: { currency: 'uyu', symbol: '$', label: 'UYU', detective: 17900, obsesivo: 44900, isZeroDecimal: false },
+  UY: { currency: 'uyu', symbol: '$', label: 'UYU', detective: 17900, obsesivo: 44900, groupCompleto: 27900, isZeroDecimal: false },
 
   // República Dominicana
-  DO: { currency: 'dop', symbol: 'RD$', label: 'DOP', detective: 2690, obsesivo: 6590, isZeroDecimal: false },
+  DO: { currency: 'dop', symbol: 'RD$', label: 'DOP', detective: 2690, obsesivo: 6590, groupCompleto: 3990, isZeroDecimal: false },
 
   // Costa Rica
-  CR: { currency: 'crc', symbol: '₡', label: 'CRC', detective: 23900, obsesivo: 57900, isZeroDecimal: false },
+  CR: { currency: 'crc', symbol: '₡', label: 'CRC', detective: 23900, obsesivo: 57900, groupCompleto: 34900, isZeroDecimal: false },
 
   // Guatemala
-  GT: { currency: 'gtq', symbol: 'Q', label: 'GTQ', detective: 349, obsesivo: 849, isZeroDecimal: false },
+  GT: { currency: 'gtq', symbol: 'Q', label: 'GTQ', detective: 349, obsesivo: 849, groupCompleto: 499, isZeroDecimal: false },
 
   // Honduras
-  HN: { currency: 'hnl', symbol: 'L', label: 'HNL', detective: 1099, obsesivo: 2690, isZeroDecimal: false },
+  HN: { currency: 'hnl', symbol: 'L', label: 'HNL', detective: 1099, obsesivo: 2690, groupCompleto: 1690, isZeroDecimal: false },
 
   // Nicaragua
-  NI: { currency: 'nio', symbol: 'C$', label: 'NIO', detective: 1640, obsesivo: 3990, isZeroDecimal: false },
+  NI: { currency: 'nio', symbol: 'C$', label: 'NIO', detective: 1640, obsesivo: 3990, groupCompleto: 2490, isZeroDecimal: false },
 }
 
 const DEFAULT_PRICING: CountryPricing = {
-  currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, isZeroDecimal: false
+  currency: 'usd', symbol: '$', label: 'USD', detective: 449, obsesivo: 1099, groupCompleto: 599, isZeroDecimal: false
 }
 
 function formatPrice(amount: number, currency: string, isZeroDecimal: boolean): string {
@@ -134,5 +135,7 @@ export async function GET(req: NextRequest) {
     isZeroDecimal: pricing.isZeroDecimal,
     detectiveFormatted: formatPrice(pricing.detective, pricing.currency, pricing.isZeroDecimal),
     obsesivoFormatted: formatPrice(pricing.obsesivo, pricing.currency, pricing.isZeroDecimal),
+    groupCompleto: pricing.groupCompleto,
+    groupCompletoFormatted: formatPrice(pricing.groupCompleto, pricing.currency, pricing.isZeroDecimal),
   })
 }

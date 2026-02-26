@@ -2094,12 +2094,26 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 }
 
 /* ── RESPONSIVE ── */
+/* ── GROUP MODE STYLES ── */
+#group-statsGrid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.group-archetype-card { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; text-align: center; transition: transform 0.2s; }
+.group-archetype-card:hover { transform: translateY(-4px); }
+.group-heatmap-grid { display: grid; grid-template-columns: 40px repeat(24, 1fr); gap: 2px; }
+.group-heatmap-cell { aspect-ratio: 1; border-radius: 3px; min-width: 0; }
+.group-matrix-cell { font-size: 0.7rem; padding: 4px; text-align: center; border: 1px solid rgba(255,255,255,0.04); }
+.group-death-meter { height: 20px; border-radius: 10px; background: linear-gradient(to right, #3BCEAC, #FFD23F, #FF2D78); position: relative; overflow: hidden; }
+.group-ranking-bar { height: 8px; border-radius: 4px; transition: width 0.5s ease; }
+.group-era-card { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 16px; flex: 1; }
+
 @media (max-width: 768px) {
   .nav-links a:not(.nav-cta) { display: none; }
   .steps { grid-template-columns: 1fr; }
   .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
   .testimonials-grid { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  #group-statsGrid { grid-template-columns: repeat(2, 1fr); }
+  .group-heatmap-grid { overflow-x: auto; }
+  .group-archetype-card { padding: 16px; }
   .hero { padding: 100px 20px 60px; }
   .upload-zone { padding: 36px 24px; }
   .silence-stats { grid-template-columns: 1fr; }
@@ -2117,6 +2131,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr; }
+  #group-statsGrid { grid-template-columns: 1fr; }
   .mm-row { flex-wrap: wrap; }
   .mm-counts { width: 100%; padding-left: 40px; margin-top: -4px; font-size: 0.68rem; }
   nav { padding: 10px 16px; }
@@ -2335,6 +2350,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   <div class="hero-badge"><span class="dot"></span> +12,000 chats analizados</div>
   <h1>Ya lo sabías,<br>pero ahora <span class="gradient-text">tienes pruebas</span></h1>
   <p>Sube tu chat de WhatsApp y la IA te revela lo que tus conversaciones dicen de tu relación. Gratis.</p>
+  <p style="font-size:0.9rem;color:var(--text-muted);margin-top:-8px;">Funciona con chats de pareja y grupos 👥</p>
 
   <!-- Upload Zone -->
   <div class="upload-zone" id="uploadZone">
@@ -2710,6 +2726,251 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   </div>
 </section>
 
+<!-- ══════════════════════════════════════════════ -->
+<!-- ── GROUP ANALYSIS RESULTS (hidden by default) ── -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="results-section container" id="groupResultsSection" style="display:none; padding-top: 40px;">
+  <div style="text-align:center;margin-bottom:32px;">
+    <h2 style="font-family:var(--font-display);font-size:1.6rem;margin-bottom:8px;">Análisis del <span class="gradient-text">grupo</span></h2>
+    <p style="color:var(--text-muted);font-size:0.95rem;">Análisis basado en <span id="group-totalMsgs">0</span> mensajes de <span id="group-totalMembers">0</span> participantes</p>
+  </div>
+
+  <!-- Group Score Card -->
+  <div class="score-card" style="background:linear-gradient(135deg,rgba(108,92,231,0.15),rgba(59,206,172,0.1));border:1px solid rgba(108,92,231,0.2);border-radius:20px;padding:32px;text-align:center;margin-bottom:24px;">
+    <div style="font-size:0.85rem;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">Salud del Grupo</div>
+    <div class="score-number" id="group-scoreNumber" style="font-family:var(--font-display);font-size:5rem;line-height:1;background:linear-gradient(135deg,var(--purple),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">72</div>
+    <div style="font-size:1rem;color:var(--text-muted);margin-top:4px;">de 100</div>
+    <div id="group-scoreVerdict" style="font-size:1.05rem;margin-top:12px;line-height:1.5;font-weight:600;">Grupo sano</div>
+    <div class="user-plan-badge curioso" id="group-planBadge" style="display:inline-block;margin-top:12px;padding:4px 14px;border-radius:999px;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;background:rgba(108,92,231,0.15);color:var(--purple);">Análisis Gratuito</div>
+  </div>
+
+  <!-- Share Stories CTA -->
+  <div style="text-align:center;margin-bottom:32px;">
+    <button class="btn-secondary" onclick="groupShareToStories()" style="width:100%;max-width:480px;padding:14px 28px;font-size:1rem;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;cursor:pointer;font-weight:600;">
+      📸 Comparte tu score grupal en Stories
+    </button>
+  </div>
+
+  <!-- ══ FREE: 6 Group Stats ══ -->
+  <div style="margin-bottom:12px;">
+    <div style="display:inline-block;padding:4px 12px;border-radius:999px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;background:rgba(59,206,172,0.15);color:var(--green);">✨ GRATIS</div>
+  </div>
+
+  <div class="stats-grid" id="group-statsGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;">
+    <div class="stat-card" style="background:var(--bg-card);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px 14px;text-align:center;">
+      <div style="font-size:1.5rem;margin-bottom:6px;">💬</div>
+      <div class="stat-value" id="group-statTotal" style="font-family:var(--font-display);font-size:1.4rem;">0</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Total de mensajes</div>
+    </div>
+    <div class="stat-card" style="background:var(--bg-card);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px 14px;text-align:center;">
+      <div style="font-size:1.5rem;margin-bottom:6px;">👥</div>
+      <div class="stat-value" id="group-statMembers" style="font-family:var(--font-display);font-size:1.4rem;">0</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Miembros activos</div>
+    </div>
+    <div class="stat-card" style="background:var(--bg-card);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px 14px;text-align:center;">
+      <div style="font-size:1.5rem;margin-bottom:6px;">📅</div>
+      <div class="stat-value" id="group-statDays" style="font-family:var(--font-display);font-size:1.4rem;">0</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Días de actividad</div>
+    </div>
+    <div class="stat-card" style="background:var(--bg-card);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px 14px;text-align:center;">
+      <div style="font-size:1.5rem;margin-bottom:6px;">⏱️</div>
+      <div class="stat-value" id="group-statReply" style="font-family:var(--font-display);font-size:1.4rem;">0 min</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Respuesta promedio</div>
+    </div>
+    <div class="stat-card" style="background:var(--bg-card);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px 14px;text-align:center;">
+      <div style="font-size:1.5rem;margin-bottom:6px;">🌙</div>
+      <div class="stat-value" id="group-statNight" style="font-family:var(--font-display);font-size:1.4rem;">0%</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Mensajes nocturnos</div>
+    </div>
+    <div class="stat-card" style="background:var(--bg-card);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px 14px;text-align:center;">
+      <div style="font-size:1.5rem;margin-bottom:6px;">📱</div>
+      <div class="stat-value" id="group-statMedia" style="font-family:var(--font-display);font-size:1.4rem;">0</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Archivos compartidos</div>
+    </div>
+  </div>
+
+  <!-- AI Fun Fact -->
+  <div class="example-card" id="group-funFact" style="background:var(--bg-card);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px 20px;margin-bottom:24px;font-size:0.95rem;line-height:1.6;">
+    📊 <strong>Dato curioso:</strong> Cargando...
+  </div>
+
+  <!-- Quick ranking (free) -->
+  <div class="example-card" style="background:var(--bg-card);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px 20px;margin-bottom:48px;">
+    <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px;">👑 Quién domina el grupo</div>
+    <h4 id="group-whoLeads" style="font-size:1rem;line-height:1.5;margin-bottom:12px;">Analizando participación...</h4>
+    <div id="group-quickRanking"></div>
+  </div>
+
+  <!-- ══ PREMIUM: PLAN COMPLETO ══ -->
+  <div id="group-premiumSection" style="display:none;">
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="display:inline-block;padding:6px 16px;border-radius:999px;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;background:linear-gradient(135deg,rgba(108,92,231,0.2),rgba(255,45,120,0.2));color:var(--pink);">👥 COMPLETO — <span class="precio-group-completo">$99 MXN</span></div>
+      <h3 style="font-family:var(--font-display);font-size:1.3rem;margin-top:12px;">Análisis Completo del Grupo</h3>
+      <p style="color:var(--text-muted);font-size:0.9rem;margin-top:4px;">13 herramientas para entender tu grupo al 100%</p>
+    </div>
+
+    <!-- Feature 1: Ranking de Poder -->
+    <div class="premium-feature-card" id="group-featurePowerRanking" data-plan-required="group-completo">
+      <div class="pf-header"><span class="pf-icon">👑</span><div><h4 class="pf-title">Ranking de Poder</h4><p class="pf-subtitle">Quién manda, quién sigue, quién desapareció</p></div></div>
+      <div class="pf-body" id="group-powerRankingBody"></div>
+    </div>
+
+    <!-- Feature 2: Línea de Vida -->
+    <div class="premium-feature-card" id="group-featureTimeline" data-plan-required="group-completo">
+      <div class="pf-header"><span class="pf-icon">📈</span><div><h4 class="pf-title">Línea de Vida del Grupo</h4><p class="pf-subtitle">Actividad mes a mes con líneas por persona</p></div></div>
+      <div class="pf-body" id="group-timelineBody"><div style="position:relative;height:320px;"><canvas id="group-timelineChart"></canvas></div><div id="group-timelineInsight" style="margin-top:12px;font-size:0.9rem;color:var(--text-muted);"></div></div>
+    </div>
+
+    <!-- Feature 3: Mapa de Fantasmas -->
+    <div class="premium-feature-card" id="group-featureGhosts" data-plan-required="group-completo">
+      <div class="pf-header"><span class="pf-icon">👻</span><div><h4 class="pf-title">Mapa de Fantasmas</h4><p class="pf-subtitle">Quién desapareció y cuándo</p></div></div>
+      <div class="pf-body" id="group-ghostsBody"></div>
+    </div>
+
+    <!-- Feature 4: Quién Ignora a Quién -->
+    <div class="premium-feature-card" id="group-featureIgnore" data-plan-required="group-completo">
+      <div class="pf-header"><span class="pf-icon">🙈</span><div><h4 class="pf-title">Quién Ignora a Quién</h4><p class="pf-subtitle">Matriz de interacciones entre miembros</p></div></div>
+      <div class="pf-body" id="group-ignoreBody"></div>
+    </div>
+
+    <!-- Feature 5: Mapa de Horarios -->
+    <div class="premium-feature-card" id="group-featureSchedule" data-plan-required="group-completo">
+      <div class="pf-header"><span class="pf-icon">🕐</span><div><h4 class="pf-title">Mapa de Horarios</h4><p class="pf-subtitle">Quién escribe a qué hora — heatmap semanal</p></div></div>
+      <div class="pf-body" id="group-scheduleBody"></div>
+    </div>
+
+    <!-- Feature 6: Mensajes Eliminados -->
+    <div class="premium-feature-card" id="group-featureDeleted" data-plan-required="group-completo">
+      <div class="pf-header"><span class="pf-icon">🗑️</span><div><h4 class="pf-title">Mensajes Eliminados</h4><p class="pf-subtitle">Ranking de quién borra más</p></div></div>
+      <div class="pf-body" id="group-deletedBody"></div>
+    </div>
+
+    <!-- Feature 7: Chatbot IA -->
+    <div class="premium-feature-card" id="group-featureChatbot" data-plan-required="group-completo">
+      <div class="pf-header"><span class="pf-icon">💬</span><div><h4 class="pf-title">Chatbot IA del Grupo</h4><p class="pf-subtitle">Pregúntale lo que quieras sobre tu grupo</p></div></div>
+      <div class="pf-body" id="group-chatbotBody">
+        <div style="text-align:center;padding:16px;">
+          <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:16px;">Pregunta sobre dinámicas, relaciones entre miembros, horarios...</p>
+          <button onclick="openGroupChatbot()" class="btn-primary" style="background:linear-gradient(135deg,var(--purple),var(--pink));border:none;color:#fff;padding:14px 28px;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;width:100%;">💬 Hablar con la IA del Grupo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 8: Autopsia del Grupo -->
+    <div class="premium-feature-card" id="group-featureAutopsy" data-plan-required="group-completo">
+      <div class="pf-header"><span class="pf-icon">🔬</span><div><h4 class="pf-title">Autopsia del Grupo</h4><p class="pf-subtitle">Momentos clave que cambiaron la dinámica</p></div></div>
+      <div class="pf-body" id="group-autopsyBody"></div>
+    </div>
+
+    <!-- Feature 9: Eras del Grupo -->
+    <div class="premium-feature-card" id="group-featureEras" data-plan-required="group-completo">
+      <div class="pf-header"><span class="pf-icon">⏳</span><div><h4 class="pf-title">Eras del Grupo</h4><p class="pf-subtitle">Primera mitad vs segunda mitad — qué cambió</p></div></div>
+      <div class="pf-body" id="group-erasBody"></div>
+    </div>
+
+    <!-- Feature 10: Arquetipos (STAR) -->
+    <div class="premium-feature-card" id="group-featureArchetypes" data-plan-required="group-completo">
+      <div class="pf-header"><span class="pf-icon">🎭</span><div><h4 class="pf-title">Arquetipos del Grupo</h4><p class="pf-subtitle">Cada miembro tiene un rol... ¿cuál es el tuyo?</p></div></div>
+      <div class="pf-body" id="group-archetypesBody"></div>
+    </div>
+
+    <!-- Feature 11: Detector de Subgrupos -->
+    <div class="premium-feature-card" id="group-featureSubgroups" data-plan-required="group-completo">
+      <div class="pf-header"><span class="pf-icon">🕸️</span><div><h4 class="pf-title">Detector de Subgrupos</h4><p class="pf-subtitle">¿Hay cliques dentro del grupo?</p></div></div>
+      <div class="pf-body" id="group-subgroupsBody"></div>
+    </div>
+
+    <!-- Feature 12: Probabilidad de Muerte -->
+    <div class="premium-feature-card" id="group-featureDeath" data-plan-required="group-completo">
+      <div class="pf-header"><span class="pf-icon">💀</span><div><h4 class="pf-title">¿Tu grupo va a morir?</h4><p class="pf-subtitle">Probabilidad calculada con datos reales</p></div></div>
+      <div class="pf-body" id="group-deathBody"></div>
+    </div>
+
+    <!-- Feature 13: PDF -->
+    <div class="premium-feature-card" id="group-featurePDF" data-plan-required="group-completo">
+      <div class="pf-header"><span class="pf-icon">📄</span><div><h4 class="pf-title">PDF Completo</h4><p class="pf-subtitle">Descarga el reporte completo del grupo</p></div></div>
+      <div class="pf-body" id="group-pdfBody">
+        <div style="text-align:center;padding:16px;">
+          <button onclick="generateGroupPDF()" class="btn-primary" style="background:linear-gradient(135deg,var(--purple),var(--pink));border:none;color:#fff;padding:14px 28px;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;width:100%;">📄 Descargar PDF del Grupo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Hidden: Group Stories Card (1080x1920) -->
+<div id="group-storiesContainer" style="position:absolute;left:-9999px;top:0;">
+  <div id="group-storiesCard" style="
+    width: 1080px;
+    height: 1920px;
+    background: linear-gradient(135deg, #6C5CE7, #3BCEAC);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Sans', sans-serif;
+    color: #FAFAFA;
+    position: relative;
+    overflow: hidden;
+  ">
+    <div style="position: absolute; inset: 0; background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.15), transparent 50%);"></div>
+
+    <!-- Logo top -->
+    <div style="position: absolute; top: 120px; text-align: center; z-index: 1;">
+      <div style="font-family: 'Dela Gothic One', sans-serif; font-size: 56px; letter-spacing: -1px;">
+        YaLo<span style="color: #FF2D78;">Sabía</span>.com
+      </div>
+      <div style="font-size: 24px; opacity: 0.7; margin-top: 8px; letter-spacing: 2px;">SCORE DEL GRUPO</div>
+    </div>
+
+    <!-- Group name -->
+    <div style="position: absolute; top: 240px; text-align: center; z-index: 1; padding: 0 60px;">
+      <div id="group-storiesGroupName" style="font-size: 36px; font-weight: 700; opacity: 0.9;">Mi Grupo</div>
+    </div>
+
+    <!-- Score center -->
+    <div style="text-align: center; z-index: 1; margin-top: -60px;">
+      <div id="group-storiesScore" style="font-family: 'Dela Gothic One', sans-serif; font-size: 242px; line-height: 1;">72</div>
+      <div style="font-size: 40px; opacity: 0.7; margin-top: -10px;">de 100</div>
+    </div>
+
+    <!-- Top 3 members -->
+    <div style="z-index: 1; margin-top: 48px; width: 80%; display: flex; flex-direction: column; gap: 16px;">
+      <div id="group-storiesTop3" style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.12);border-radius:16px;padding:20px 24px;">
+          <span style="font-size:36px;">🏆</span>
+          <span style="font-size:32px;font-weight:700;flex:1;">Carlos</span>
+          <span style="font-size:28px;opacity:0.7;">31%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div style="z-index: 1; margin-top: 48px; display: flex; gap: 32px;">
+      <div style="text-align:center;">
+        <div id="group-storiesMemberCount" style="font-family:'Dela Gothic One',sans-serif;font-size:52px;">23</div>
+        <div style="font-size:22px;opacity:0.6;">miembros</div>
+      </div>
+      <div style="text-align:center;">
+        <div id="group-storiesMsgCount" style="font-family:'Dela Gothic One',sans-serif;font-size:52px;">42K</div>
+        <div style="font-size:22px;opacity:0.6;">mensajes</div>
+      </div>
+      <div style="text-align:center;">
+        <div id="group-storiesActiveCount" style="font-family:'Dela Gothic One',sans-serif;font-size:52px;">8</div>
+        <div style="font-size:22px;opacity:0.6;">activos</div>
+      </div>
+    </div>
+
+    <!-- CTA bottom -->
+    <div style="position: absolute; bottom: 120px; text-align: center; z-index: 1;">
+      <div style="font-size: 30px; opacity: 0.6; letter-spacing: 1px;">Analiza tu grupo en</div>
+      <div style="font-family: 'Dela Gothic One', sans-serif; font-size: 44px; margin-top: 8px;">
+        YaLo<span style="color: #FF2D78;">Sabía</span>.com
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ── HOW IT WORKS ── -->
 <section class="section" id="como-funciona">
   <div class="container">
@@ -2979,6 +3240,11 @@ const processingState = document.getElementById('processingState');
 const resultsSection = document.getElementById('resultsSection');
 let lastStats = null;
 let lastMessages = null;
+let lastGroupStats = null;
+let lastGroupMessages = null;
+let groupSystemEvents = [];
+window.isGroupMode = false;
+window.groupPlan = 'curioso';
 
 uploadZone.addEventListener('click', () => fileInput.click());
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
@@ -3086,6 +3352,73 @@ function parseWhatsApp(text) {
   }
   
   return messages;
+}
+
+// ══════════════════════════════════════════════
+// ── SYSTEM MESSAGE PARSER (GROUPS) ──
+// ══════════════════════════════════════════════
+function parseSystemEvents(text) {
+  text = text.replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '');
+  const events = [];
+
+  const eventPatterns = [
+    { type: 'group_created', re: /^(.+?) creó el grupo "?(.+?)"?\s*$/, extract: m => ({ actor: m[1], detail: m[2] }) },
+    { type: 'group_created', re: /^(.+?) created group "?(.+?)"?\s*$/, extract: m => ({ actor: m[1], detail: m[2] }) },
+    { type: 'joined', re: /^(.+?) se unió con el enlace/i, extract: m => ({ actor: m[1] }) },
+    { type: 'joined', re: /^(.+?) se unió usando el enlace/i, extract: m => ({ actor: m[1] }) },
+    { type: 'joined', re: /^(.+?) joined using this group/i, extract: m => ({ actor: m[1] }) },
+    { type: 'left', re: /^(.+?) salió$/i, extract: m => ({ actor: m[1] }) },
+    { type: 'left', re: /^(.+?) left$/i, extract: m => ({ actor: m[1] }) },
+    { type: 'added', re: /^(.+?) (?:añadió|agregó) a (.+)/i, extract: m => ({ actor: m[1], target: m[2] }) },
+    { type: 'added', re: /^(.+?) added (.+)/i, extract: m => ({ actor: m[1], target: m[2] }) },
+    { type: 'removed', re: /^(.+?) eliminó a (.+)/i, extract: m => ({ actor: m[1], target: m[2] }) },
+    { type: 'removed', re: /^(.+?) removed (.+)/i, extract: m => ({ actor: m[1], target: m[2] }) },
+    { type: 'admin', re: /^(.+?) ahora es admin/i, extract: m => ({ actor: m[1] }) },
+    { type: 'admin', re: /^(.+?) is now an admin/i, extract: m => ({ actor: m[1] }) },
+    { type: 'subject_changed', re: /^(.+?) cambió el (?:nombre|asunto) del grupo a "?(.+?)"?\s*$/i, extract: m => ({ actor: m[1], detail: m[2] }) },
+    { type: 'subject_changed', re: /^(.+?) changed the subject to "?(.+?)"?\s*$/i, extract: m => ({ actor: m[1], detail: m[2] }) },
+    { type: 'icon_changed', re: /^(.+?) cambió el (?:ícono|icono) del grupo/i, extract: m => ({ actor: m[1] }) },
+    { type: 'icon_changed', re: /^(.+?) changed this group's icon/i, extract: m => ({ actor: m[1] }) },
+    { type: 'desc_changed', re: /^(.+?) cambió la descripción del grupo/i, extract: m => ({ actor: m[1] }) },
+  ];
+
+  const lines = text.split('\n');
+  for (const line of lines) {
+    // Try bracket format: [date, time] rest
+    let bm = line.match(/^\[(\d{1,2}\/\d{1,2}\/\d{2,4}),\s*(\d{1,2}:\d{2}(?::\d{2})?)\s*([aApP]\.?\s*[mM]\.?)?\]\s*(.+)/);
+    // Try dash format: date, time - rest
+    let dm = line.match(/^(\d{1,2}\/\d{1,2}\/\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?)\s*([aApP]\.?\s*[mM]\.?)?\s*-\s*(.+)/);
+    const m = bm || dm;
+    if (!m) continue;
+
+    const dateStr = m[1], timeStr = m[2], ampmStr = m[3] || null, rest = m[4].trim();
+
+    // Skip encryption notices
+    if (rest.includes('cifrado de extremo a extremo') || rest.includes('end-to-end encrypted')) continue;
+
+    // If it has "Name: message" pattern → regular message, skip
+    // But first check system patterns (some contain colons in group names)
+    let matched = false;
+    for (const pat of eventPatterns) {
+      const em = rest.match(pat.re);
+      if (em) {
+        const extracted = pat.extract(em);
+        events.push({
+          date: dateStr.trim(),
+          time: timeStr.trim(),
+          ampm: ampmStr ? ampmStr.replace(/\.\s*/g, '').toLowerCase().trim() : null,
+          type: pat.type,
+          actor: (extracted.actor || '').trim(),
+          target: (extracted.target || '').trim() || null,
+          detail: (extracted.detail || '').trim() || null,
+        });
+        matched = true;
+        break;
+      }
+    }
+    // Not a system event — it's likely a regular message (handled by parseWhatsApp)
+  }
+  return events;
 }
 
 function getHour24(timeStr, ampm) {
@@ -3302,6 +3635,327 @@ function analyzeMessages(messages) {
   };
 }
 
+// ══════════════════════════════════════════════
+// ── GROUP ANALYSIS ENGINE ──
+// ══════════════════════════════════════════════
+function analyzeGroupMessages(messages, senderCounts, systemEvents) {
+  if (!messages || messages.length < 10) return null;
+
+  // Build sorted messages with timestamps
+  const sorted = [];
+  messages.forEach(m => {
+    try {
+      const ts = parseMessageDate(m.date, m.time, m.ampm);
+      if (!isNaN(ts.getTime())) sorted.push({ ...m, timestamp: ts });
+    } catch(e) {}
+  });
+  if (sorted.length < 10) return null;
+  sorted.sort((a, b) => a.timestamp - b.timestamp);
+
+  const totalMessages = sorted.length;
+  const firstDate = sorted[0].timestamp;
+  const lastDate = sorted[sorted.length - 1].timestamp;
+  const totalDays = Math.max(1, Math.round((lastDate - firstDate) / (1000 * 60 * 60 * 24)));
+
+  // Unique days
+  const daySet = new Set();
+  sorted.forEach(m => daySet.add(m.date));
+  const uniqueDays = daySet.size;
+
+  // Group name from system events
+  let groupName = '';
+  const createdEvt = systemEvents.find(e => e.type === 'group_created');
+  if (createdEvt && createdEvt.detail) groupName = createdEvt.detail;
+  const renamedEvts = systemEvents.filter(e => e.type === 'subject_changed');
+  if (renamedEvts.length > 0) groupName = renamedEvts[renamedEvts.length - 1].detail || groupName;
+
+  // Media detection patterns (reuse from existing analyzeMultimedia)
+  const mediaPatterns = {
+    audios: [/audio omitido/i, /audio omitted/i, /ptt omitido/i, /ptt omitted/i],
+    imagenes: [/imagen omitida/i, /image omitted/i],
+    stickers: [/sticker omitido/i, /sticker omitted/i],
+    videos: [/video omitido/i, /video omitted/i],
+    documentos: [/documento omitido/i, /document omitted/i],
+    ubicaciones: [/ubicación:/i, /ubicacion:/i, /location:/i, /maps\.google\.com/i],
+    gifs: [/gif omitido/i, /gif omitted/i]
+  };
+  const deletedPatterns = ['Este mensaje fue eliminado', 'Se eliminó este mensaje', 'This message was deleted', 'You deleted this message', 'Eliminaste este mensaje', 'Borraste este mensaje'];
+
+  // Per-member analysis
+  const memberMap = {};
+  sorted.forEach(m => {
+    if (!m.sender) return;
+    if (!memberMap[m.sender]) {
+      memberMap[m.sender] = {
+        name: m.sender,
+        msgCount: 0, pct: 0,
+        totalChars: 0, avgLength: 0,
+        mediaCount: { audios: 0, imagenes: 0, stickers: 0, videos: 0, documentos: 0, ubicaciones: 0, gifs: 0, total: 0 },
+        deletedMessages: 0,
+        firstMessage: m.timestamp,
+        lastMessage: m.timestamp,
+        daysSinceLastMessage: 0,
+        hourlyDist: new Array(24).fill(0),
+        dailyDist: new Array(7).fill(0),
+        nightMessages: 0, nightPct: 0,
+        jajaCount: 0,
+        urlCount: 0,
+        forwardedCount: 0,
+        category: 'participant'
+      };
+    }
+    const mem = memberMap[m.sender];
+    mem.msgCount++;
+    mem.totalChars += (m.text || '').length;
+    if (m.timestamp < mem.firstMessage) mem.firstMessage = m.timestamp;
+    if (m.timestamp > mem.lastMessage) mem.lastMessage = m.timestamp;
+
+    const hour = m.timestamp.getHours();
+    const dow = m.timestamp.getDay();
+    mem.hourlyDist[hour]++;
+    mem.dailyDist[dow]++;
+    if (hour >= 0 && hour < 6) mem.nightMessages++;
+
+    const txt = (m.text || '').toLowerCase();
+    // Media detection
+    let isMedia = false;
+    for (const [type, pats] of Object.entries(mediaPatterns)) {
+      if (pats.some(p => p.test(txt))) { mem.mediaCount[type]++; mem.mediaCount.total++; isMedia = true; break; }
+    }
+    // Deleted detection
+    if (deletedPatterns.some(p => txt.includes(p.toLowerCase()))) mem.deletedMessages++;
+    // Jaja/humor detection
+    if (/j[aeiou]j[aeiou]/i.test(txt) || /😂|🤣|xd/i.test(txt)) mem.jajaCount++;
+    // URL detection
+    if (/https?:\/\//i.test(txt)) mem.urlCount++;
+    // Forwarded detection
+    if (/reenviado/i.test(txt) || /forwarded/i.test(txt)) mem.forwardedCount++;
+  });
+
+  // Build members array sorted by msgCount desc
+  const members = Object.values(memberMap).sort((a, b) => b.msgCount - a.msgCount);
+  members.forEach(m => {
+    m.pct = Math.round(m.msgCount / totalMessages * 1000) / 10;
+    m.avgLength = m.msgCount > 0 ? Math.round(m.totalChars / m.msgCount) : 0;
+    m.nightPct = m.msgCount > 0 ? Math.round(m.nightMessages / m.msgCount * 100) : 0;
+    m.daysSinceLastMessage = Math.round((lastDate - m.lastMessage) / (1000 * 60 * 60 * 24));
+  });
+
+  // Categorize members
+  members.forEach(m => {
+    const pct = m.msgCount / totalMessages * 100;
+    if (m.daysSinceLastMessage > 30 || m.msgCount <= 5) m.category = 'ghost';
+    else if (pct >= 15) m.category = 'leader';
+    else if (pct >= 5) m.category = 'active';
+    else if (pct >= 1) m.category = 'participant';
+    else m.category = 'barely_alive';
+  });
+
+  const categoryLabels = {
+    leader: '🏆 Líder', active: '⭐ Activo', participant: '💬 Participante',
+    ghost: '👻 Fantasma', barely_alive: '💀 Técnicamente vivo'
+  };
+
+  // Global counts
+  const totalMedia = members.reduce((s, m) => s + m.mediaCount.total, 0);
+  const totalDeleted = members.reduce((s, m) => s + m.deletedMessages, 0);
+  const totalNight = members.reduce((s, m) => s + m.nightMessages, 0);
+  const nightPct = totalMessages > 0 ? Math.round(totalNight / totalMessages * 100) : 0;
+  const ghostCount = members.filter(m => m.category === 'ghost').length;
+  const activeCount = members.filter(m => m.daysSinceLastMessage <= 30 && m.msgCount > 5).length;
+
+  // Peak hour and day
+  const hourlyTotal = new Array(24).fill(0);
+  const dailyTotal = new Array(7).fill(0);
+  members.forEach(m => {
+    m.hourlyDist.forEach((c, i) => hourlyTotal[i] += c);
+    m.dailyDist.forEach((c, i) => dailyTotal[i] += c);
+  });
+  const peakHour = hourlyTotal.indexOf(Math.max(...hourlyTotal));
+  const peakDay = dailyTotal.indexOf(Math.max(...dailyTotal));
+  const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+  // Average response time (time between consecutive messages from different senders)
+  let replyTimes = [];
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i].sender !== sorted[i - 1].sender) {
+      const gap = (sorted[i].timestamp - sorted[i - 1].timestamp) / 60000;
+      if (gap > 0 && gap < 1440) replyTimes.push(gap);
+    }
+  }
+  replyTimes.sort((a, b) => a - b);
+  const avgReply = replyTimes.length > 0 ? replyTimes[Math.floor(replyTimes.length / 2)] : 0;
+  let avgReplyFormatted = '';
+  if (avgReply < 1) avgReplyFormatted = '<1 min';
+  else if (avgReply < 60) avgReplyFormatted = Math.round(avgReply) + ' min';
+  else if (avgReply < 1440) avgReplyFormatted = Math.round(avgReply / 60) + ' hrs';
+  else avgReplyFormatted = Math.round(avgReply / 1440) + ' días';
+
+  // Monthly activity breakdown
+  const monthlyMap = {};
+  sorted.forEach(m => {
+    const key = m.timestamp.getFullYear() + '-' + String(m.timestamp.getMonth() + 1).padStart(2, '0');
+    if (!monthlyMap[key]) monthlyMap[key] = { month: key, total: 0, byPerson: {} };
+    monthlyMap[key].total++;
+    monthlyMap[key].byPerson[m.sender] = (monthlyMap[key].byPerson[m.sender] || 0) + 1;
+  });
+  const monthlyActivity = Object.values(monthlyMap).sort((a, b) => a.month.localeCompare(b.month));
+
+  // Hourly heatmap data (7x24)
+  const hourlyHeatmap = [];
+  for (let d = 0; d < 7; d++) {
+    for (let h = 0; h < 24; h++) {
+      let count = 0;
+      members.forEach(m => {
+        // Need per day-hour — recount from sorted
+      });
+      hourlyHeatmap.push({ day: d, hour: h, count: 0 });
+    }
+  }
+  // Recount properly
+  sorted.forEach(m => {
+    const dow = m.timestamp.getDay();
+    const hr = m.timestamp.getHours();
+    const idx = dow * 24 + hr;
+    if (hourlyHeatmap[idx]) hourlyHeatmap[idx].count++;
+  });
+
+  // ── SCORE CALCULATION ──
+  // 1. Participation balance via Gini coefficient (0-25 pts)
+  const counts = members.filter(m => m.msgCount > 0).map(m => m.msgCount);
+  const n = counts.length;
+  const mean = counts.reduce((a, b) => a + b, 0) / n;
+  let sumAbsDiff = 0;
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      sumAbsDiff += Math.abs(counts[i] - counts[j]);
+    }
+  }
+  const gini = (mean > 0 && n > 1) ? sumAbsDiff / (2 * n * n * mean) : 0;
+  const balanceScore = Math.round((1 - gini) * 25);
+
+  // 2. Recent vs historical activity (0-20 pts)
+  const fourWeeksAgo = new Date(lastDate.getTime() - 28 * 24 * 60 * 60 * 1000);
+  const eightWeeksAgo = new Date(lastDate.getTime() - 56 * 24 * 60 * 60 * 1000);
+  const recentMsgs = sorted.filter(m => m.timestamp >= fourWeeksAgo).length;
+  const prevMsgs = sorted.filter(m => m.timestamp >= eightWeeksAgo && m.timestamp < fourWeeksAgo).length;
+  const avgPerFourWeeks = totalMessages / Math.max(1, totalDays / 28);
+  const activityRatio = avgPerFourWeeks > 0 ? Math.min(1, recentMsgs / Math.max(1, avgPerFourWeeks)) : 0;
+  const activityScore = Math.round(activityRatio * 20);
+
+  // 3. Collective response rate (0-20 pts)
+  let replies30 = 0, opportunities = 0;
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i].sender !== sorted[i - 1].sender) {
+      const gap = (sorted[i].timestamp - sorted[i - 1].timestamp) / 60000;
+      if (gap > 0 && gap < 1440) { opportunities++; if (gap <= 30) replies30++; }
+    }
+  }
+  const responseRate = opportunities > 0 ? replies30 / opportunities : 0;
+  const responseScore = Math.round(responseRate * 20);
+
+  // 4. Multimedia diversity (0-10 pts)
+  const mediaTypes = new Set();
+  for (const [type, pats] of Object.entries(mediaPatterns)) {
+    if (sorted.some(m => pats.some(p => p.test((m.text || '').toLowerCase())))) mediaTypes.add(type);
+  }
+  const mediaScore = Math.min(10, mediaTypes.size * 2);
+
+  // 5. Ghost penalty (0 to -15)
+  const ghostPenalty = Math.min(15, Math.round((ghostCount / Math.max(1, members.length)) * 15));
+
+  // 6. Inactivity penalty (0 to -10)
+  const daysSinceLastMsg = Math.round((Date.now() - lastDate) / (1000 * 60 * 60 * 24));
+  const inactivityPenalty = daysSinceLastMsg > 30 ? 10 : daysSinceLastMsg > 14 ? 5 : 0;
+
+  const rawScore = balanceScore + activityScore + responseScore + mediaScore - ghostPenalty - inactivityPenalty;
+  const score = Math.max(0, Math.min(100, rawScore));
+
+  // Verdict
+  let verdict = '';
+  if (score >= 80) verdict = '🔥 Grupo en llamas — Esto está más vivo que un viernes de quincena';
+  else if (score >= 60) verdict = '✅ Grupo sano — Funciona bien, aunque algunos se esconden';
+  else if (score >= 40) verdict = '⚠️ Grupo en declive — Los buenos tiempos ya fueron';
+  else if (score >= 20) verdict = '💀 Grupo zombie — Técnicamente vivo, prácticamente muerto';
+  else verdict = '⚰️ Autopsia digital — Descansa en paz, grupo';
+
+  // "Payaso" — member with most multimedia + jaja
+  const payaso = [...members].sort((a, b) => (b.mediaCount.total + b.jajaCount) - (a.mediaCount.total + a.jajaCount))[0];
+
+  // Multimedia king
+  const multimediaKing = [...members].sort((a, b) => b.mediaCount.total - a.mediaCount.total)[0];
+
+  // Ghost mayor (active member with most days since last message, >10 msgs historically)
+  const ghostMayor = [...members].filter(m => m.msgCount > 10).sort((a, b) => b.daysSinceLastMessage - a.daysSinceLastMessage)[0];
+
+  return {
+    groupName,
+    totalMessages,
+    totalDays,
+    uniqueDays,
+    members,
+    score,
+    verdict,
+    systemEvents,
+    firstDate,
+    lastDate,
+    nightPct,
+    totalMedia,
+    totalDeleted,
+    avgReply,
+    avgReplyFormatted,
+    peakHour,
+    peakDay,
+    dayNames,
+    hourlyTotal,
+    dailyTotal,
+    monthlyActivity,
+    hourlyHeatmap,
+    ghostCount,
+    activeCount,
+    categoryLabels,
+    payaso,
+    multimediaKing,
+    ghostMayor,
+    sorted
+  };
+}
+
+function sampleGroupMessages(messages, groupStats) {
+  if (messages.length <= 350) return messages;
+
+  const sample = [];
+  // First 50
+  sample.push(...messages.slice(0, 50));
+  // Last 50
+  sample.push(...messages.slice(-50));
+  // 50 from peak activity days
+  const dayMsgMap = {};
+  messages.forEach(m => { dayMsgMap[m.date] = (dayMsgMap[m.date] || 0) + 1; });
+  const topDays = Object.entries(dayMsgMap).sort((a, b) => b[1] - a[1]).slice(0, 3).map(d => d[0]);
+  let peakMsgs = messages.filter(m => topDays.includes(m.date));
+  sample.push(...peakMsgs.slice(0, 50));
+  // 50 with emotional load (caps, !, emojis)
+  const emotional = messages.filter(m => /[A-ZÁÉÍÓÚÑ]{3,}|!!!|😂|😡|❤️|😭|🔥/.test(m.text || ''));
+  sample.push(...emotional.slice(0, 50));
+  // 50 random from top 5 members
+  const top5Names = groupStats.members.slice(0, 5).map(m => m.name);
+  const top5Msgs = messages.filter(m => top5Names.includes(m.sender));
+  for (let i = 0; i < 50 && top5Msgs.length > 0; i++) {
+    const idx = Math.floor(Math.random() * top5Msgs.length);
+    sample.push(top5Msgs.splice(idx, 1)[0]);
+  }
+
+  // Deduplicate by index in original array and sort
+  const seen = new Set();
+  const unique = [];
+  sample.forEach(m => {
+    const key = m.date + m.time + m.sender + (m.text || '').substring(0, 30);
+    if (!seen.has(key)) { seen.add(key); unique.push(m); }
+  });
+  return unique.slice(0, 350);
+}
+
 // ── CHAT FINGERPRINT ──
 // ── Plan resolution on chat load ──
 // ALL plan unlock logic lives here. Called AFTER fingerprint is computed.
@@ -3366,6 +4020,24 @@ function onNewChatLoaded(messages) {
   updatePlanBadge();
 }
 
+// ── GROUP PLAN RESOLUTION ──
+function onNewGroupChatLoaded() {
+  if (window._adminBypass) {
+    window.groupPlan = 'completo';
+    return;
+  }
+  try {
+    const stored = JSON.parse(localStorage.getItem('yalosabia_group_premium') || 'null');
+    if (stored && stored.plan === 'completo') {
+      window.groupPlan = 'completo';
+    } else {
+      window.groupPlan = 'curioso';
+    }
+  } catch(e) {
+    window.groupPlan = 'curioso';
+  }
+}
+
 function generateChatFingerprint(messages) {
   const first20 = messages.slice(0, 20).map(m => m.timestamp + m.sender).join('|');
   const last20 = messages.slice(-20).map(m => m.timestamp + m.sender).join('|');
@@ -3417,28 +4089,69 @@ async function processChat(text) {
   });
   const _uniqueSenders = Object.keys(_senderCounts);
   if (_uniqueSenders.length > 2) {
-    processingState.classList.remove('active');
-    processingState.style.display = 'none';
-    resultsSection.classList.add('active');
-    resultsSection.innerHTML = `
-      <div style="text-align:center;padding:80px 24px;">
-        <div style="font-size:3rem;margin-bottom:16px;">👥</div>
-        <h2 style="font-family:var(--font-display);font-size:1.4rem;margin-bottom:12px;">Chat grupal detectado</h2>
-        <p style="color:var(--text-muted);font-size:1rem;line-height:1.7;max-width:420px;margin:0 auto 8px;">
-          Detectamos <strong style="color:var(--pink);">${_uniqueSenders.length} participantes</strong> en este chat.
-        </p>
-        <p style="color:var(--text-muted);font-size:1rem;line-height:1.7;max-width:420px;margin:0 auto 32px;">
-          Por ahora solo analizamos conversaciones entre 2 personas.<br>
-          Exporta un chat individual para continuar.
-        </p>
-        <button onclick="resultsSection.classList.remove('active');resultsSection.innerHTML='';resetUpload();"
-          style="background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border:none;padding:14px 32px;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;">
-          Intentar con otro archivo
-        </button>
-      </div>`;
-    resultsSection.scrollIntoView({ behavior: 'smooth' });
+    // ── GROUP MODE ──
+    window.isGroupMode = true;
+    window.chatMode = 'group';
+    window.groupParticipants = _uniqueSenders;
+    console.log('[Mode] Group chat detected:', _uniqueSenders.length, 'participants');
+
+    // Parse system events from raw text
+    groupSystemEvents = parseSystemEvents(text);
+    console.log('[Group] System events found:', groupSystemEvents.length);
+
+    const groupStats = analyzeGroupMessages(messages, _senderCounts, groupSystemEvents);
+    if (!groupStats) {
+      alert('No se pudieron analizar los participantes del grupo.');
+      resetUpload();
+      return;
+    }
+    lastGroupStats = groupStats;
+    lastGroupMessages = messages;
+
+    // Resolve group plan
+    onNewGroupChatLoaded();
+
+    // Show group results
+    showGroupResults(groupStats);
+
+    // Render premium features (blurred if curioso)
+    renderGroupPremiumFeatures(messages, groupStats);
+    applyBlurOverlays();
+
+    // AI fun fact (async, non-blocking)
+    (async () => {
+      try {
+        const sampled = sampleGroupMessages(messages, groupStats);
+        const aiRes = await gzipFetch('/api/analyze', {
+          mode: 'group-analysis',
+          messages: sampled,
+          stats: {
+            totalMessages: groupStats.totalMessages,
+            uniqueDays: groupStats.uniqueDays,
+            score: groupStats.score,
+            members: groupStats.members.slice(0, 15).map(m => ({
+              name: m.name, msgCount: m.msgCount, pct: m.pct, category: m.category
+            }))
+          }
+        });
+        const aiData = await aiRes.json();
+        if (aiData.success && aiData.analysis) {
+          const funFactEl = document.getElementById('group-funFact');
+          if (funFactEl && aiData.analysis.funInsight) {
+            funFactEl.innerHTML = '📊 <strong>Dato curioso:</strong> ' + aiData.analysis.funInsight;
+          }
+        }
+      } catch (err) {
+        console.error('[Group] AI fun fact error:', err);
+      }
+    })();
+
     return;
   }
+
+  // ── COUPLE MODE (existing, unchanged) ──
+  window.isGroupMode = false;
+  window.chatMode = 'couple';
 
   console.time('analyzeMessages');
   const stats = analyzeMessages(messages);
@@ -3684,6 +4397,684 @@ function showResults(s) {
   if (pricingEl) {
     pricingEl.style.display = hasPlanAccess('obsesivo') ? 'none' : 'block';
   }
+}
+
+// ══════════════════════════════════════════════
+// ── GROUP RESULTS DISPLAY ──
+// ══════════════════════════════════════════════
+function showGroupResults(gs) {
+  processingState.classList.remove('active');
+  processingState.style.display = 'none';
+
+  // Hide couple results, show group results
+  resultsSection.classList.remove('active');
+  resultsSection.style.display = 'none';
+  const groupSection = document.getElementById('groupResultsSection');
+  groupSection.style.display = 'block';
+
+  // Score
+  document.getElementById('group-scoreNumber').textContent = gs.score;
+  document.getElementById('group-scoreVerdict').textContent = gs.verdict;
+  document.getElementById('group-totalMsgs').textContent = gs.totalMessages.toLocaleString();
+  document.getElementById('group-totalMembers').textContent = gs.members.length;
+
+  // 6 stats
+  document.getElementById('group-statTotal').textContent = gs.totalMessages.toLocaleString();
+  document.getElementById('group-statMembers').textContent = gs.activeCount + ' de ' + gs.members.length + ' activos';
+  document.getElementById('group-statDays').textContent = gs.uniqueDays;
+  document.getElementById('group-statReply').textContent = gs.avgReplyFormatted;
+  document.getElementById('group-statNight').textContent = gs.nightPct + '%';
+  document.getElementById('group-statMedia').textContent = gs.totalMedia.toLocaleString();
+
+  // Quick ranking (top 3 free)
+  const top3 = gs.members.slice(0, 3);
+  const medals = ['🏆', '🥈', '🥉'];
+  const qrEl = document.getElementById('group-quickRanking');
+  qrEl.innerHTML = top3.map((m, i) =>
+    `<div style="display:flex;align-items:center;gap:10px;margin:8px 0;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:8px;">
+      <span style="font-size:1.3rem;">${medals[i]}</span>
+      <span style="flex:1;font-weight:600;">${m.name}</span>
+      <span style="color:var(--text-muted);">${m.msgCount.toLocaleString()} msgs (${m.pct}%)</span>
+    </div>`
+  ).join('');
+
+  // Who leads
+  const leader = gs.members[0];
+  const whoLeadsEl = document.getElementById('group-whoLeads');
+  whoLeadsEl.innerHTML = `<strong style="font-size:1.1em;">${leader.name.split(' ')[0]} es el alma del grupo</strong><br>` +
+    `<span style="color:var(--text-muted);font-size:0.9em;">${leader.msgCount.toLocaleString()} mensajes (${leader.pct}%) — ${gs.categoryLabels[leader.category]}</span>`;
+
+  // Ghost mayor
+  if (gs.ghostMayor && gs.ghostMayor.daysSinceLastMessage > 0) {
+    const gm = gs.ghostMayor;
+    whoLeadsEl.innerHTML += `<br><br><strong style="font-size:1.1em;">👻 Fantasma mayor: ${gm.name.split(' ')[0]}</strong><br>` +
+      `<span style="color:var(--text-muted);font-size:0.9em;">Último mensaje hace ${gm.daysSinceLastMessage} días</span>`;
+  }
+
+  // Fun fact placeholder (will be filled by AI)
+  document.getElementById('group-funFact').innerHTML = '📊 <strong>Dato curioso:</strong> Analizando el grupo con IA...';
+
+  // Plan badge
+  const badgeEl = document.getElementById('group-planBadge');
+  if (window.groupPlan === 'completo') {
+    badgeEl.textContent = 'Plan Completo';
+    badgeEl.classList.remove('curioso');
+    badgeEl.classList.add('detective');
+  } else {
+    badgeEl.textContent = 'Análisis Gratuito';
+  }
+
+  // Show group-premiumSection (features rendered separately)
+  document.getElementById('group-premiumSection').style.display = 'block';
+
+  // Scroll to results
+  groupSection.scrollIntoView({ behavior: 'smooth' });
+
+  // Hide landing sections
+  ['exportGuide', 'como-funciona', 'faq'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+}
+
+// ══════════════════════════════════════════════
+// ── GROUP PREMIUM FEATURES ──
+// ══════════════════════════════════════════════
+function renderGroupPremiumFeatures(messages, gs) {
+  document.getElementById('group-premiumSection').style.display = 'block';
+  renderGroupPowerRanking(gs);
+  renderGroupTimeline(gs);
+  renderGroupGhosts(gs);
+  renderGroupIgnoreMatrix(gs);
+  renderGroupScheduleHeatmap(gs);
+  renderGroupDeletedMessages(gs);
+  renderGroupEras(gs);
+  renderGroupArchetypes(gs);
+  renderGroupSubgroups(gs);
+  renderGroupDeathProbability(gs);
+
+  // AI features (async)
+  renderGroupAutopsy(messages, gs);
+}
+
+// ── 1. RANKING DE PODER ──
+function renderGroupPowerRanking(gs) {
+  const body = document.getElementById('group-powerRankingBody');
+  const maxMsgs = gs.members[0].msgCount;
+  const shown = gs.members.length > 20 ? gs.members.slice(0, 15) : gs.members;
+  const categoryColors = { leader: '#FF2D78', active: '#6C5CE7', participant: '#3BCEAC', ghost: '#666', barely_alive: '#444' };
+  const medals = ['👑', '🥈', '🥉'];
+
+  let html = '<div style="display:flex;flex-direction:column;gap:14px;">';
+  shown.forEach((m, i) => {
+    const pct = (m.msgCount / maxMsgs * 100).toFixed(0);
+    const color = categoryColors[m.category] || '#888';
+    const medal = i < 3 ? medals[i] : `#${i + 1}`;
+    html += `<div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:0.95rem;"><strong>${medal}</strong> ${m.name} <span style="color:${color};font-size:0.75rem;padding:2px 8px;background:${color}22;border-radius:6px;">${gs.categoryLabels[m.category]}</span></span>
+        <span style="color:var(--text-muted);font-size:0.8rem;">${m.msgCount.toLocaleString()} (${m.pct}%)</span>
+      </div>
+      <div style="height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;">
+        <div class="group-ranking-bar" style="width:${pct}%;height:100%;background:linear-gradient(90deg,${color},${color}88);"></div>
+      </div>
+      <div style="font-size:0.7rem;color:var(--text-muted);margin-top:2px;">Promedio ${m.avgLength} chars/msg · ${m.nightPct}% nocturno</div>
+    </div>`;
+  });
+  if (gs.members.length > 20) {
+    html += `<button onclick="this.parentElement.innerHTML=renderGroupPowerRankingFull()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px;border-radius:8px;cursor:pointer;font-size:0.9rem;">Ver los ${gs.members.length} miembros</button>`;
+  }
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+// ── 2. LÍNEA DE VIDA ──
+function renderGroupTimeline(gs) {
+  const canvas = document.getElementById('group-timelineChart');
+  if (!canvas || !gs.monthlyActivity || gs.monthlyActivity.length < 2) return;
+
+  const labels = gs.monthlyActivity.map(m => {
+    const [y, mo] = m.month.split('-');
+    const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    return months[parseInt(mo) - 1] + " '" + y.slice(2);
+  });
+  const totalData = gs.monthlyActivity.map(m => m.total);
+
+  const colors = ['#FF2D78', '#6C5CE7', '#3BCEAC', '#FFD23F', '#FF6B35', '#0984E3', '#E84393', '#00CEC9'];
+  const top5 = gs.members.slice(0, 5);
+  const datasets = [{
+    label: 'Total', data: totalData, borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 3, fill: true, tension: 0.4, pointRadius: 2
+  }];
+  top5.forEach((member, i) => {
+    datasets.push({
+      label: member.name.split(' ')[0],
+      data: gs.monthlyActivity.map(m => m.byPerson[member.name] || 0),
+      borderColor: colors[i], backgroundColor: 'transparent',
+      borderWidth: 1.5, fill: false, tension: 0.4, pointRadius: 0, borderDash: [4, 2]
+    });
+  });
+
+  // Destroy previous if exists
+  const existing = Chart.getChart(canvas);
+  if (existing) existing.destroy();
+
+  new Chart(canvas, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888' } },
+               x: { grid: { display: false }, ticks: { color: '#888', maxRotation: 45 } } },
+      plugins: { legend: { display: true, labels: { color: '#ccc', boxWidth: 12, font: { size: 11 } } } }
+    }
+  });
+
+  // Peak insight
+  const peakIdx = totalData.indexOf(Math.max(...totalData));
+  document.getElementById('group-timelineInsight').innerHTML =
+    `📈 <strong>Pico de actividad:</strong> ${labels[peakIdx]} con ${totalData[peakIdx].toLocaleString()} mensajes`;
+}
+
+// ── 3. MAPA DE FANTASMAS ──
+function renderGroupGhosts(gs) {
+  const body = document.getElementById('group-ghostsBody');
+  const ghosts = [...gs.members].sort((a, b) => b.daysSinceLastMessage - a.daysSinceLastMessage);
+  const longAbsent = ghosts.filter(m => m.daysSinceLastMessage > 90);
+
+  let html = '';
+  if (longAbsent.length > 0) {
+    html += `<div style="background:rgba(255,45,120,0.08);border:1px solid rgba(255,45,120,0.2);border-radius:10px;padding:14px;margin-bottom:16px;font-size:0.9rem;">
+      👻 <strong>${longAbsent.length} de ${gs.members.length} miembros</strong> no han hablado en más de 90 días</div>`;
+  }
+  html += '<div style="display:flex;flex-direction:column;gap:8px;">';
+  ghosts.slice(0, 20).forEach(m => {
+    const bar = Math.min(100, m.daysSinceLastMessage / Math.max(1, gs.totalDays) * 100);
+    const color = m.daysSinceLastMessage > 90 ? '#FF2D78' : m.daysSinceLastMessage > 30 ? '#FFD23F' : '#3BCEAC';
+    html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;">
+      <span style="width:120px;font-weight:600;font-size:0.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.name}</span>
+      <div style="flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">
+        <div style="width:${bar}%;height:100%;background:${color};border-radius:3px;"></div>
+      </div>
+      <span style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;">${m.daysSinceLastMessage}d · ${m.msgCount} msgs</span>
+    </div>`;
+  });
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+// ── 4. QUIÉN IGNORA A QUIÉN ──
+function renderGroupIgnoreMatrix(gs) {
+  const body = document.getElementById('group-ignoreBody');
+  const topMembers = gs.members.slice(0, 8);
+  const sorted = gs.sorted;
+  if (!sorted || topMembers.length < 3) { body.innerHTML = '<p style="color:var(--text-muted);">Se necesitan al menos 3 miembros activos.</p>'; return; }
+
+  // Build interaction matrix
+  const names = topMembers.map(m => m.name);
+  const matrix = {};
+  names.forEach(a => { matrix[a] = {}; names.forEach(b => { matrix[a][b] = 0; }); });
+
+  for (let i = 1; i < sorted.length; i++) {
+    const a = sorted[i - 1].sender, b = sorted[i].sender;
+    if (a !== b && names.includes(a) && names.includes(b)) {
+      const gap = (sorted[i].timestamp - sorted[i - 1].timestamp) / 60000;
+      if (gap > 0 && gap <= 5) matrix[a][b]++;
+    }
+  }
+
+  const allVals = [];
+  names.forEach(a => names.forEach(b => { if (a !== b) allVals.push(matrix[a][b]); }));
+  const maxVal = Math.max(1, ...allVals);
+
+  let html = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.7rem;">';
+  html += '<tr><td></td>' + names.map(n => `<td style="padding:4px;text-align:center;font-weight:600;color:var(--text-muted);">${n.split(' ')[0].substring(0, 6)}</td>`).join('') + '</tr>';
+  names.forEach(a => {
+    html += `<tr><td style="padding:4px;font-weight:600;white-space:nowrap;">${a.split(' ')[0].substring(0, 8)}</td>`;
+    names.forEach(b => {
+      if (a === b) { html += '<td class="group-matrix-cell" style="background:rgba(255,255,255,0.02);">—</td>'; return; }
+      const val = matrix[a][b];
+      const intensity = val / maxVal;
+      const bg = intensity > 0.6 ? `rgba(59,206,172,${0.2 + intensity * 0.5})` : intensity > 0.2 ? `rgba(108,92,231,${0.1 + intensity * 0.4})` : `rgba(255,255,255,0.03)`;
+      html += `<td class="group-matrix-cell" style="background:${bg};" title="${a.split(' ')[0]} → ${b.split(' ')[0]}: ${val}">${val}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</table></div>';
+
+  // Find strongest and weakest pair
+  let strongest = { a: '', b: '', val: 0 }, weakest = { a: '', b: '', val: Infinity };
+  names.forEach(a => names.forEach(b => {
+    if (a !== b) {
+      const total = matrix[a][b] + matrix[b][a];
+      if (total > strongest.val) strongest = { a, b, val: total };
+      if (total < weakest.val && total >= 0) weakest = { a, b, val: total };
+    }
+  }));
+  html += `<div style="margin-top:12px;font-size:0.85rem;color:var(--text-muted);">
+    💬 <strong>${strongest.a.split(' ')[0]} y ${strongest.b.split(' ')[0]}</strong> son los que más interactúan (${strongest.val} veces)
+    ${weakest.val < 3 ? `<br>🙈 <strong>${weakest.a.split(' ')[0]} y ${weakest.b.split(' ')[0]}</strong> casi nunca se hablan (${weakest.val} veces)` : ''}
+  </div>`;
+
+  body.innerHTML = html;
+}
+
+// ── 5. MAPA DE HORARIOS ──
+function renderGroupScheduleHeatmap(gs) {
+  const body = document.getElementById('group-scheduleBody');
+  const heatmap = gs.hourlyHeatmap;
+  if (!heatmap || heatmap.length === 0) return;
+
+  const maxCount = Math.max(1, ...heatmap.map(h => h.count));
+  const dayLabels = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+  let html = '<div class="group-heatmap-grid">';
+  // Header row
+  html += '<div></div>';
+  for (let h = 0; h < 24; h++) {
+    html += `<div style="font-size:0.55rem;color:var(--text-muted);text-align:center;">${h}</div>`;
+  }
+  // Data rows
+  for (let d = 0; d < 7; d++) {
+    html += `<div style="font-size:0.65rem;color:var(--text-muted);display:flex;align-items:center;justify-content:flex-end;padding-right:4px;">${dayLabels[d]}</div>`;
+    for (let h = 0; h < 24; h++) {
+      const cell = heatmap[d * 24 + h];
+      const intensity = cell ? cell.count / maxCount : 0;
+      const bg = intensity === 0 ? 'rgba(255,255,255,0.03)' :
+        `rgba(255,45,120,${0.1 + intensity * 0.8})`;
+      html += `<div class="group-heatmap-cell" style="background:${bg};" title="${dayLabels[d]} ${h}:00 — ${cell ? cell.count : 0} msgs"></div>`;
+    }
+  }
+  html += '</div>';
+
+  // Top 3 moments
+  const sorted = [...heatmap].sort((a, b) => b.count - a.count).slice(0, 3);
+  html += '<div style="margin-top:12px;font-size:0.85rem;color:var(--text-muted);">🔥 Top momentos: ';
+  html += sorted.map((s, i) => `${i + 1}) ${dayLabels[s.day]} ${s.hour}:00 (${s.count} msgs)`).join(' · ');
+  html += '</div>';
+
+  body.innerHTML = html;
+}
+
+// ── 6. MENSAJES ELIMINADOS ──
+function renderGroupDeletedMessages(gs) {
+  const body = document.getElementById('group-deletedBody');
+  const deleters = gs.members.filter(m => m.deletedMessages > 0).sort((a, b) => b.deletedMessages - a.deletedMessages);
+  if (deleters.length === 0) {
+    body.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem;">No se detectaron mensajes eliminados en este grupo.</p>';
+    return;
+  }
+  const maxDel = deleters[0].deletedMessages;
+  let html = `<div style="margin-bottom:12px;font-size:0.9rem;">🗑️ <strong>${gs.totalDeleted}</strong> mensajes eliminados en total</div>`;
+  html += '<div style="display:flex;flex-direction:column;gap:10px;">';
+  deleters.slice(0, 10).forEach(m => {
+    const pct = (m.deletedMessages / maxDel * 100).toFixed(0);
+    const totalPct = (m.deletedMessages / gs.totalDeleted * 100).toFixed(0);
+    html += `<div>
+      <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:3px;">
+        <span>${m.name}</span><span style="color:var(--text-muted);">${m.deletedMessages} (${totalPct}%)</span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">
+        <div style="width:${pct}%;height:100%;background:var(--pink);border-radius:3px;"></div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+// ── 9. ERAS DEL GRUPO ──
+function renderGroupEras(gs) {
+  const body = document.getElementById('group-erasBody');
+  const sorted = gs.sorted;
+  if (!sorted || sorted.length < 100) { body.innerHTML = '<p style="color:var(--text-muted);">Se necesitan más mensajes para comparar eras.</p>'; return; }
+
+  const mid = Math.floor(sorted.length / 2);
+  const first = sorted.slice(0, mid);
+  const second = sorted.slice(mid);
+
+  const calcMetrics = (msgs) => {
+    const days = Math.max(1, (msgs[msgs.length - 1].timestamp - msgs[0].timestamp) / (1000 * 60 * 60 * 24));
+    const uniqueSenders = new Set(msgs.map(m => m.sender)).size;
+    const nightCount = msgs.filter(m => m.timestamp.getHours() >= 0 && m.timestamp.getHours() < 6).length;
+    const avgLen = msgs.reduce((s, m) => s + (m.text || '').length, 0) / msgs.length;
+    return { msgsPerDay: (msgs.length / days).toFixed(1), activeSenders: uniqueSenders, nightPct: Math.round(nightCount / msgs.length * 100), avgLen: Math.round(avgLen), total: msgs.length };
+  };
+  const e1 = calcMetrics(first), e2 = calcMetrics(second);
+
+  const change = (v1, v2) => {
+    const diff = ((v2 - v1) / Math.max(1, v1) * 100).toFixed(0);
+    return diff > 0 ? `<span style="color:var(--green);">+${diff}%</span>` : `<span style="color:var(--pink);">${diff}%</span>`;
+  };
+
+  const rows = [
+    ['Mensajes/día', e1.msgsPerDay, e2.msgsPerDay],
+    ['Miembros activos', e1.activeSenders, e2.activeSenders],
+    ['% Nocturno', e1.nightPct + '%', e2.nightPct + '%'],
+    ['Long. promedio msg', e1.avgLen + ' chars', e2.avgLen + ' chars'],
+  ];
+
+  let html = '<div style="display:flex;gap:12px;flex-wrap:wrap;">';
+  html += `<div class="group-era-card"><div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--purple);margin-bottom:8px;">Primera mitad</div><div style="font-family:var(--font-display);font-size:1.3rem;">${e1.total.toLocaleString()}</div><div style="font-size:0.75rem;color:var(--text-muted);">mensajes</div></div>`;
+  html += `<div class="group-era-card"><div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--pink);margin-bottom:8px;">Segunda mitad</div><div style="font-family:var(--font-display);font-size:1.3rem;">${e2.total.toLocaleString()}</div><div style="font-size:0.75rem;color:var(--text-muted);">mensajes</div></div>`;
+  html += '</div>';
+
+  html += '<table style="width:100%;margin-top:16px;border-collapse:collapse;font-size:0.85rem;">';
+  html += '<tr style="color:var(--text-muted);font-size:0.7rem;text-transform:uppercase;"><th style="text-align:left;padding:8px 4px;">Métrica</th><th style="text-align:center;padding:8px 4px;">1ra mitad</th><th style="text-align:center;padding:8px 4px;">2da mitad</th><th style="text-align:center;padding:8px 4px;">Cambio</th></tr>';
+  rows.forEach(([label, v1, v2]) => {
+    html += `<tr style="border-top:1px solid rgba(255,255,255,0.04);"><td style="padding:8px 4px;">${label}</td><td style="text-align:center;padding:8px 4px;">${v1}</td><td style="text-align:center;padding:8px 4px;">${v2}</td><td style="text-align:center;padding:8px 4px;">${change(parseFloat(v1), parseFloat(v2))}</td></tr>`;
+  });
+  html += '</table>';
+  body.innerHTML = html;
+}
+
+// ── 10. ARQUETIPOS (STAR FEATURE) ──
+const ARCHETYPES = {
+  'El Fantasma': { emoji: '👻', color: '#666', desc: 'Está en el grupo pero nadie sabe por qué' },
+  'El Audiero': { emoji: '🎙️', color: '#6C5CE7', desc: 'Nunca escribe, solo manda audios' },
+  'El Payaso': { emoji: '🤡', color: '#FF6B35', desc: 'Vive de memes, stickers y risas' },
+  'El Nocturno': { emoji: '🌙', color: '#2D3436', desc: 'Solo aparece cuando todos duermen' },
+  'El Periodista': { emoji: '📰', color: '#0984E3', desc: 'Comparte links y noticias que nadie pidió' },
+  'El Líder': { emoji: '👑', color: '#FFD23F', desc: 'Sin esta persona el grupo no existiría' },
+  'El Polémico': { emoji: '🔥', color: '#FF2D78', desc: 'Sus mensajes generan debates inmediatos' },
+  'El Corazón': { emoji: '💖', color: '#E84393', desc: 'El pegamento emocional del grupo' },
+  'El Que Va y Viene': { emoji: '🚪', color: '#FDCB6E', desc: 'Periodos de hiperactividad seguidos de desapariciones' },
+  'El Normal': { emoji: '😐', color: '#636E72', desc: 'Participa lo justo, ni más ni menos' },
+};
+
+function assignArchetype(member, gs) {
+  const pct = member.msgCount / gs.totalMessages * 100;
+  const audioRatio = member.mediaCount.audios / Math.max(1, member.msgCount);
+  const mediaRatio = member.mediaCount.total / Math.max(1, member.msgCount);
+  const nightRatio = member.nightPct / 100;
+  const jajaRatio = member.jajaCount / Math.max(1, member.msgCount);
+  const urlRatio = member.urlCount / Math.max(1, member.msgCount);
+
+  if (member.daysSinceLastMessage > 30 || member.msgCount <= 5) return 'El Fantasma';
+  if (audioRatio > 0.15) return 'El Audiero';
+  if ((mediaRatio > 0.3 && jajaRatio > 0.1) || jajaRatio > 0.25) return 'El Payaso';
+  if (nightRatio > 0.4) return 'El Nocturno';
+  if (urlRatio > 0.08 || member.forwardedCount > member.msgCount * 0.05) return 'El Periodista';
+  if (pct >= 15) return 'El Líder';
+  // Check for "El Polémico" — messages that trigger many rapid replies
+  // Simplified: high engagement rate
+  if (pct >= 8 && member.avgLength > 50) return 'El Polémico';
+  if (pct >= 3 && member.mediaCount.total < member.msgCount * 0.1) return 'El Corazón';
+  return 'El Normal';
+}
+
+function renderGroupArchetypes(gs) {
+  const body = document.getElementById('group-archetypesBody');
+  const activeMembers = gs.members.filter(m => m.msgCount > 5);
+
+  let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;">';
+  activeMembers.forEach(member => {
+    const archName = assignArchetype(member, gs);
+    const arch = ARCHETYPES[archName] || ARCHETYPES['El Normal'];
+    html += `<div class="group-archetype-card" style="border-left:3px solid ${arch.color};">
+      <div style="font-size:2.2rem;margin-bottom:8px;">${arch.emoji}</div>
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:${arch.color};font-weight:700;margin-bottom:4px;">${archName}</div>
+      <div style="font-size:1.1rem;font-weight:700;margin-bottom:6px;">${member.name}</div>
+      <div style="font-size:0.8rem;color:var(--text-muted);line-height:1.4;margin-bottom:10px;">"${arch.desc}"</div>
+      <div style="font-size:0.7rem;color:var(--text-muted);">${member.msgCount.toLocaleString()} msgs · ${member.pct}% · ${member.mediaCount.total} multimedia</div>
+    </div>`;
+  });
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+// ── 11. DETECTOR DE SUBGRUPOS ──
+function renderGroupSubgroups(gs) {
+  const body = document.getElementById('group-subgroupsBody');
+  const topMembers = gs.members.slice(0, 10);
+  const sorted = gs.sorted;
+  if (!sorted || topMembers.length < 4) { body.innerHTML = '<p style="color:var(--text-muted);">Se necesitan al menos 4 miembros para detectar subgrupos.</p>'; return; }
+
+  const names = topMembers.map(m => m.name);
+  const affinity = {};
+  names.forEach(a => { affinity[a] = {}; names.forEach(b => { affinity[a][b] = 0; }); });
+
+  for (let i = 1; i < sorted.length; i++) {
+    const a = sorted[i - 1].sender, b = sorted[i].sender;
+    if (a !== b && names.includes(a) && names.includes(b)) {
+      const gap = (sorted[i].timestamp - sorted[i - 1].timestamp) / 60000;
+      if (gap > 0 && gap <= 10) { affinity[a][b]++; affinity[b][a]++; }
+    }
+  }
+
+  // Simple clustering: each member's top 2 affinities
+  const clusters = [];
+  const assigned = new Set();
+  names.forEach(name => {
+    if (assigned.has(name)) return;
+    const sorted2 = names.filter(n => n !== name).sort((a, b) => affinity[name][b] - affinity[name][a]);
+    const top2 = sorted2.slice(0, 2);
+    const cluster = [name, ...top2.filter(t => !assigned.has(t))];
+    if (cluster.length >= 2) {
+      cluster.forEach(c => assigned.add(c));
+      const totalAff = cluster.reduce((s, a) => s + cluster.reduce((s2, b) => s2 + (a !== b ? affinity[a][b] : 0), 0), 0);
+      clusters.push({ members: cluster, affinity: totalAff });
+    }
+  });
+
+  let html = '<div style="display:flex;flex-direction:column;gap:12px;">';
+  clusters.forEach((cl, i) => {
+    html += `<div style="background:rgba(108,92,231,0.08);border:1px solid rgba(108,92,231,0.15);border-radius:12px;padding:14px;">
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--purple);margin-bottom:6px;">Subgrupo ${i + 1}</div>
+      <div style="font-size:1rem;font-weight:600;margin-bottom:4px;">${cl.members.map(n => n.split(' ')[0]).join(', ')}</div>
+      <div style="font-size:0.8rem;color:var(--text-muted);">${cl.affinity} interacciones entre ellos</div>
+    </div>`;
+  });
+  if (clusters.length === 0) html += '<p style="color:var(--text-muted);">No se detectaron subgrupos claros.</p>';
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+// ── 12. ¿TU GRUPO VA A MORIR? ──
+function renderGroupDeathProbability(gs) {
+  const body = document.getElementById('group-deathBody');
+  const sorted = gs.sorted;
+  if (!sorted || sorted.length < 50) { body.innerHTML = '<p style="color:var(--text-muted);">Se necesitan más datos.</p>'; return; }
+
+  let deathScore = 0;
+
+  // Factor 1: Recent trend (last 30d vs previous 30d)
+  const now = sorted[sorted.length - 1].timestamp;
+  const d30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const d60 = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+  const recent = sorted.filter(m => m.timestamp >= d30).length;
+  const previous = sorted.filter(m => m.timestamp >= d60 && m.timestamp < d30).length;
+  const trend = previous > 0 ? recent / previous : 1;
+  if (trend < 0.3) deathScore += 40;
+  else if (trend < 0.5) deathScore += 25;
+  else if (trend < 0.7) deathScore += 10;
+
+  // Factor 2: Ghost ratio
+  deathScore += Math.round((gs.ghostCount / Math.max(1, gs.members.length)) * 30);
+
+  // Factor 3: Days since last message
+  const daysSinceLast = Math.round((Date.now() - now) / (1000 * 60 * 60 * 24));
+  if (daysSinceLast > 30) deathScore += 20;
+  else if (daysSinceLast > 7) deathScore += 10;
+
+  deathScore = Math.min(99, Math.max(0, deathScore));
+
+  const verdicts = [
+    { max: 20, text: '🌱 Tu grupo está vivito y coleando', color: '#3BCEAC' },
+    { max: 40, text: '😐 Algo tranquilo, pero se mantiene', color: '#FFD23F' },
+    { max: 60, text: '⚠️ Señales de alarma — la actividad baja', color: '#FF6B35' },
+    { max: 80, text: '🚨 En cuidados intensivos', color: '#FF2D78' },
+    { max: 100, text: '💀 Prácticamente un cementerio digital', color: '#FF2D78' },
+  ];
+  const v = verdicts.find(v => deathScore <= v.max) || verdicts[verdicts.length - 1];
+
+  let html = `<div style="text-align:center;margin-bottom:20px;">
+    <div style="font-family:var(--font-display);font-size:3.5rem;color:${v.color};">${deathScore}%</div>
+    <div style="font-size:0.9rem;color:var(--text-muted);margin-top:4px;">probabilidad de inactividad total en 6 meses</div>
+  </div>`;
+  html += `<div class="group-death-meter"><div style="position:absolute;left:${deathScore}%;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;background:#fff;border-radius:50%;box-shadow:0 0 8px rgba(0,0,0,0.3);"></div></div>`;
+  html += `<div style="text-align:center;margin-top:16px;font-size:0.95rem;font-weight:600;">${v.text}</div>`;
+  html += `<div style="margin-top:12px;font-size:0.8rem;color:var(--text-muted);text-align:center;">
+    Tendencia: ${trend < 1 ? '📉 ' + Math.round((1 - trend) * 100) + '% menos msgs que el mes anterior' : '📈 Actividad estable o creciendo'}
+    · ${gs.ghostCount} fantasmas de ${gs.members.length} miembros
+  </div>`;
+  body.innerHTML = html;
+}
+
+// ── 8. AUTOPSIA DEL GRUPO (AI) ──
+async function renderGroupAutopsy(messages, gs) {
+  const body = document.getElementById('group-autopsyBody');
+  body.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);">🔬 Analizando momentos clave con IA...</div>';
+  try {
+    const sampled = sampleGroupMessages(messages, gs);
+    const res = await gzipFetch('/api/analyze', {
+      mode: 'group-autopsy',
+      messages: sampled,
+      stats: {
+        totalMessages: gs.totalMessages, uniqueDays: gs.uniqueDays,
+        members: gs.members.slice(0, 15).map(m => ({ name: m.name, msgCount: m.msgCount })),
+        monthlyActivity: gs.monthlyActivity,
+        systemEvents: gs.systemEvents.slice(0, 30)
+      }
+    });
+    const data = await res.json();
+    if (!data.success || !data.autopsy || data.autopsy.length === 0) {
+      body.innerHTML = '<p style="color:var(--text-muted);">No se pudieron identificar momentos clave.</p>';
+      return;
+    }
+    const severityColors = { high: '#FF2D78', medium: '#FFD23F', low: '#3BCEAC' };
+    let html = '<div style="position:relative;padding-left:24px;border-left:2px solid rgba(255,255,255,0.1);">';
+    data.autopsy.forEach((evt, i) => {
+      const color = severityColors[evt.severity] || '#6C5CE7';
+      html += `<div style="margin-bottom:24px;position:relative;">
+        <div style="position:absolute;left:-31px;top:4px;width:14px;height:14px;border-radius:50%;background:${color};border:2px solid var(--bg);"></div>
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:${color};margin-bottom:4px;">${evt.date}</div>
+        <div style="font-size:1rem;font-weight:700;margin-bottom:4px;">${evt.title}</div>
+        <div style="font-size:0.85rem;color:var(--text-muted);line-height:1.5;margin-bottom:4px;">${evt.description}</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);font-style:italic;">💡 ${evt.impact}</div>
+      </div>`;
+    });
+    html += '</div>';
+    body.innerHTML = html;
+  } catch(err) {
+    console.error('[Group Autopsy]', err);
+    body.innerHTML = '<p style="color:var(--text-muted);">Error al generar la autopsia. Intenta de nuevo.</p>';
+  }
+}
+
+// ── GROUP STORIES ──
+async function groupShareToStories() {
+  if (!lastGroupStats) { alert('Primero analiza un grupo.'); return; }
+  const gs = lastGroupStats;
+
+  document.getElementById('group-storiesScore').textContent = gs.score;
+  document.getElementById('group-storiesGroupName').textContent = gs.groupName || 'Mi Grupo';
+  document.getElementById('group-storiesMemberCount').textContent = gs.members.length;
+  document.getElementById('group-storiesMsgCount').textContent = gs.totalMessages > 1000 ? Math.round(gs.totalMessages / 1000) + 'K' : gs.totalMessages;
+  document.getElementById('group-storiesActiveCount').textContent = gs.activeCount;
+
+  // Top 3
+  const medals = ['🏆', '🥈', '🥉'];
+  const top3Html = gs.members.slice(0, 3).map((m, i) =>
+    `<div style="display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.12);border-radius:16px;padding:20px 24px;">
+      <span style="font-size:36px;">${medals[i]}</span>
+      <span style="font-size:32px;font-weight:700;flex:1;">${m.name.split(' ')[0]}</span>
+      <span style="font-size:28px;opacity:0.7;">${m.pct}%</span>
+    </div>`
+  ).join('');
+  document.getElementById('group-storiesTop3').innerHTML = top3Html;
+
+  const card = document.getElementById('group-storiesCard');
+  const origFont = card.style.fontFamily;
+  card.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif';
+
+  try {
+    const canvas = await htmlToCanvasWithTimeout(card, {
+      width: 1080, height: 1920, scale: 2, useCORS: true, allowTaint: false,
+      foreignObjectRendering: false, logging: false, imageTimeout: 0, removeContainer: true, backgroundColor: null
+    });
+    canvas.toBlob(function(blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'yalosabia-grupo.jpg';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+    }, 'image/jpeg', 0.95);
+  } catch(err) {
+    console.error('Error generando imagen grupo:', err);
+    alert('Error al generar la imagen: ' + err.message);
+  } finally {
+    card.style.fontFamily = origFont;
+  }
+}
+
+// ── GROUP CHATBOT ──
+function openGroupChatbot() {
+  if (!hasPlanAccess('group-completo')) { openPayModal('group-completo'); return; }
+
+  // Reuse the existing chatbot modal but adapted for groups
+  const modal = document.getElementById('chatbotModal');
+  const header = document.getElementById('chatbotHeader');
+  if (header) {
+    const titleEl = header.querySelector('h3') || header.querySelector('span');
+    if (titleEl) titleEl.textContent = '💬 IA del Grupo';
+  }
+
+  // Change suggestions
+  const sugEl = document.getElementById('chatSuggestions');
+  if (sugEl) {
+    const gs = lastGroupStats;
+    sugEl.innerHTML = [
+      '¿Quién es el más activo del grupo?',
+      '¿Hay subgrupos o cliques?',
+      '¿Cuál es la hora pico del grupo?',
+      gs ? `¿Qué pasó el último mes?` : '¿Cómo ha cambiado el grupo?'
+    ].map(q => `<button class="chat-suggestion" onclick="sendGroupChatMsg('${q}')">${q}</button>`).join('');
+  }
+
+  // Override send function temporarily
+  window._groupChatMode = true;
+  modal.style.display = 'flex';
+  document.getElementById('chatMessages').innerHTML = '';
+}
+
+async function sendGroupChatMsg(text) {
+  if (!text) text = document.getElementById('chatInput')?.value;
+  if (!text || !text.trim()) return;
+  document.getElementById('chatInput').value = '';
+
+  addChatMsg('user', text);
+
+  const typing = document.getElementById('typingIndicator');
+  if (typing) typing.style.display = 'flex';
+
+  try {
+    const gs = lastGroupStats;
+    const sampled = sampleGroupMessages(lastGroupMessages || [], gs);
+    const res = await gzipFetch('/api/analyze', {
+      mode: 'group-chat',
+      question: text,
+      chatHistory: [],
+      stats: {
+        groupName: gs.groupName, totalMessages: gs.totalMessages, uniqueDays: gs.uniqueDays,
+        score: gs.score, activeCount: gs.activeCount, ghostCount: gs.ghostCount,
+        members: gs.members.slice(0, 20).map(m => ({ name: m.name, msgCount: m.msgCount, pct: m.pct, category: m.category }))
+      },
+      messages: sampled
+    });
+    const data = await res.json();
+    if (typing) typing.style.display = 'none';
+    addChatMsg('assistant', data.answer || 'No pude procesar tu pregunta.', true);
+  } catch(err) {
+    if (typing) typing.style.display = 'none';
+    addChatMsg('assistant', 'Error al consultar la IA. Intenta de nuevo.');
+  }
+}
+
+// ── GROUP PDF (placeholder — will implement full) ──
+async function generateGroupPDF() {
+  if (!lastGroupStats || !lastGroupMessages) { alert('Primero analiza un grupo.'); return; }
+  alert('La generación de PDF de grupo estará disponible próximamente.');
 }
 
 async function generatePDF() {
@@ -6551,6 +7942,11 @@ window.adminUnlock = function() {
 };
 
 function hasPlanAccess(requiredPlan) {
+  // Group plan is separate from couple plan
+  if (requiredPlan === 'group-completo') {
+    if (window._adminBypass) return true;
+    return window.groupPlan === 'completo';
+  }
   // Simple hierarchy check — window.userPlan is already resolved by onNewChatLoaded()
   return (PLAN_HIERARCHY[window.userPlan] || 0) >= (PLAN_HIERARCHY[requiredPlan] || 0);
 }
@@ -6669,18 +8065,22 @@ function applyBlurOverlays() {
       body.style.userSelect = 'none';
     }
 
-    const btnClass = requiredPlan === 'obsesivo' ? 'obsesivo-btn' : 'detective-btn';
-    const planNames = { detective: 'Detective', obsesivo: 'Obsesivo' };
+    const btnClass = requiredPlan === 'obsesivo' ? 'obsesivo-btn' : requiredPlan === 'group-completo' ? 'detective-btn' : 'detective-btn';
 
     // For premium-feature-card: add CTA below the blurred body
     const overlay = document.createElement('div');
     overlay.className = 'body-unlock-overlay';
     const fpMismatch = requiredPlan === 'detective' && isFingerprintMismatch();
-    const btnLabel = fpMismatch
-      ? '🔒 Chat diferente — Ver opciones'
-      : card.id === 'featureChatbot'
-        ? '🔥 Desbloquear Chatbot — ' + (window.localPricing ? window.localPricing.obsesivoFormatted + '/mes' : '$199 MXN/mes') + ' →'
-        : 'Desbloquear →';
+    let btnLabel;
+    if (requiredPlan === 'group-completo') {
+      btnLabel = '👥 Desbloquear — ' + (window.localPricing ? window.localPricing.groupCompletoFormatted : '$99 MXN') + ' →';
+    } else if (fpMismatch) {
+      btnLabel = '🔒 Chat diferente — Ver opciones';
+    } else if (card.id === 'featureChatbot') {
+      btnLabel = '🔥 Desbloquear Chatbot — ' + (window.localPricing ? window.localPricing.obsesivoFormatted + '/mes' : '$199 MXN/mes') + ' →';
+    } else {
+      btnLabel = 'Desbloquear →';
+    }
     overlay.innerHTML = `<button class="unlock-overlay-btn ${btnClass}" onclick="openPayModal('${requiredPlan}')">${btnLabel}</button>`;
     card.appendChild(overlay);
   });
@@ -6688,6 +8088,7 @@ function applyBlurOverlays() {
   // Add section-level CTA buttons
   addSectionCTA('premiumSection', 'detective');
   addSectionCTA('obsessiveSection', 'obsesivo');
+  addSectionCTA('group-premiumSection', 'group-completo');
 }
 
 function addSectionCTA(sectionId, plan) {
@@ -6701,7 +8102,8 @@ function addSectionCTA(sectionId, plan) {
   const lp = window.localPricing;
   const planLabels = {
     detective: '🔍 Desbloquear Plan Detective — ' + (lp ? lp.detectiveFormatted : '$69 MXN') + ' →',
-    obsesivo: '🔥 Suscribirme al Plan Obsesivo — ' + (lp ? lp.obsesivoFormatted + '/mes' : '$199 MXN/mes') + ' →'
+    obsesivo: '🔥 Suscribirme al Plan Obsesivo — ' + (lp ? lp.obsesivoFormatted + '/mes' : '$199 MXN/mes') + ' →',
+    'group-completo': '👥 Desbloquear Análisis Completo — ' + (lp ? lp.groupCompletoFormatted : '$99 MXN') + ' →'
   };
   const btnClass = plan === 'obsesivo' ? 'obsesivo-cta' : 'detective-cta';
 
@@ -6771,6 +8173,7 @@ function openPayModal(plan, bypassFingerprintCheck) {
   const config = {
     detective: { icon: '🔍', title: 'Desbloquear Plan Detective', price: (lp ? lp.detectiveFormatted : '$69 MXN') + ' — pago único' },
     obsesivo: { icon: '🔥', title: 'Desbloquear Plan Obsesivo', price: (lp ? lp.obsesivoFormatted : '$199 MXN') + '/mes — suscripción' },
+    'group-completo': { icon: '👥', title: 'Desbloquear Análisis Completo del Grupo', price: (lp ? lp.groupCompletoFormatted : '$99 MXN') + ' — pago único' },
   };
   const c = config[selectedPlan] || config.detective;
 
@@ -6998,6 +8401,24 @@ async function checkPaymentSuccess() {
           if (typeof fbq !== 'undefined') {
             fbq('track', 'Purchase', { value: planPrices[plan] || 79, currency: 'MXN' });
           }
+          const cleanUrl = window.location.origin + window.location.pathname;
+          window.history.replaceState(null, '', cleanUrl);
+          return;
+        }
+
+        // Group plan — separate storage
+        if (plan === 'group-completo') {
+          localStorage.setItem('yalosabia_group_premium', JSON.stringify({
+            plan: 'completo',
+            sessionId: sessionId,
+            email: data.email || '',
+            paidAt: new Date().toISOString()
+          }));
+          window.groupPlan = 'completo';
+          if (typeof fbq !== 'undefined') {
+            fbq('track', 'Purchase', { value: 99, currency: 'MXN', content_name: 'group-completo' });
+          }
+          applyBlurOverlays();
           const cleanUrl = window.location.origin + window.location.pathname;
           window.history.replaceState(null, '', cleanUrl);
           return;
