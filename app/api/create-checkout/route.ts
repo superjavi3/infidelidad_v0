@@ -75,6 +75,7 @@ export async function POST(req: NextRequest) {
         customer_email: customerEmail,
         line_items: [{ price_data: priceData, quantity: 1 }],
         mode,
+        allow_promotion_codes: true,
         success_url: `${origin}/#results?payment=success&session_id={CHECKOUT_SESSION_ID}&plan=${plan}${giftParam}`,
         cancel_url: `${origin}/#pricing`,
         metadata: { ...sessionMetadata, currency: cur },
