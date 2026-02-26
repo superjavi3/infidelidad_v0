@@ -3082,6 +3082,69 @@ function analyzeMessages(messages) {
 }
 
 // ── CHAT FINGERPRINT ──
+// ── Plan resolution on chat load ──
+// ALL plan unlock logic lives here. Called AFTER fingerprint is computed.
+function onNewChatLoaded(messages) {
+  // Admin bypass — always obsesivo
+  if (window._adminBypass) {
+    window.userPlan = 'obsesivo';
+    console.log('[Plan] Admin bypass → obsesivo');
+    updatePlanBadge();
+    return;
+  }
+
+  const stored = (function() {
+    try { return JSON.parse(localStorage.getItem('losabia_plan') || 'null'); }
+    catch(e) { return null; }
+  })();
+
+  // Sin nada guardado → curioso
+  if (!stored || !stored.plan) {
+    window.userPlan = 'curioso';
+    console.log('[Plan] No stored plan → curioso');
+    updatePlanBadge();
+    return;
+  }
+
+  // Plan Obsesivo → acceso siempre, sin verificar fingerprint
+  if (stored.plan === 'obsesivo') {
+    window.userPlan = 'obsesivo';
+    console.log('[Plan] Obsesivo stored → obsesivo');
+    updatePlanBadge();
+    return;
+  }
+
+  // Plan Detective → VERIFICAR fingerprint obligatoriamente
+  if (stored.plan === 'detective') {
+    // Sin fingerprint guardado (pago antes del fix) → curioso, no dar acceso gratis
+    if (!stored.chatFingerprint) {
+      window.userPlan = 'curioso';
+      console.log('[Plan] Detective sin fingerprint guardado → curioso');
+      updatePlanBadge();
+      return;
+    }
+
+    // Fingerprint coincide → desbloquear
+    if (stored.chatFingerprint === window.currentChatFingerprint) {
+      window.userPlan = 'detective';
+      console.log('[Plan] Detective fingerprint match → detective');
+      updatePlanBadge();
+      return;
+    }
+
+    // Fingerprint diferente → bloquear y mostrar warning
+    window.userPlan = 'curioso';
+    console.log('[Plan] Detective fingerprint MISMATCH → curioso + warning');
+    updatePlanBadge();
+    showDifferentChatWarning();
+    return;
+  }
+
+  // Cualquier otro caso → curioso
+  window.userPlan = 'curioso';
+  updatePlanBadge();
+}
+
 function generateChatFingerprint(messages) {
   const first20 = messages.slice(0, 20).map(m => m.timestamp + m.sender).join('|');
   const last20 = messages.slice(-20).map(m => m.timestamp + m.sender).join('|');
@@ -3135,15 +3198,12 @@ async function processChat(text) {
   lastStats = stats;
   lastMessages = messages;
 
-  // Generate fingerprint for this chat
+  // Generate fingerprint BEFORE deciding plan access
   window.currentChatFingerprint = generateChatFingerprint(messages);
   console.log('[Fingerprint] Chat fingerprint:', window.currentChatFingerprint);
 
-  // Detectar si detective pagó por otro chat y mostrar warning
-  if (isFingerprintMismatch()) {
-    console.log('[Fingerprint] Mismatch — detective access blocked for this chat');
-    showDifferentChatWarning();
-  }
+  // Resolve plan access now that we have the fingerprint
+  onNewChatLoaded(messages);
 
   // Populate results (showResults calls applyBlurOverlays AFTER rendering features)
   showResults(stats);
@@ -3226,8 +3286,7 @@ function showResults(s) {
   }
 
   // Step 3: Apply blur overlays AFTER all content is rendered
-  console.log('[showResults] Before applyBlurOverlays — _internalUserPlan:', _internalUserPlan,
-    '| window.userPlan (getter):', window.userPlan,
+  console.log('[showResults] Before applyBlurOverlays — window.userPlan:', window.userPlan,
     '| currentChatFingerprint:', window.currentChatFingerprint,
     '| storedFingerprint:', JSON.parse(localStorage.getItem('losabia_plan') || '{}').chatFingerprint);
   applyBlurOverlays();
@@ -5969,37 +6028,9 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot
 <script>
 // ═══ 3-TIER PLAN SYSTEM ═══
 
-// Plan state (backing store — all reads go through the getter below)
-let _internalUserPlan = 'curioso';
-
-// Dynamic getter: Detective plan checks fingerprint on every read
-Object.defineProperty(window, 'userPlan', {
-  configurable: true,
-  get: function() {
-    // Obsesivo: siempre tiene acceso completo
-    if (_internalUserPlan === 'obsesivo') return 'obsesivo';
-
-    // Detective: verificar fingerprint en tiempo real
-    if (_internalUserPlan === 'detective') {
-      try {
-        var stored = JSON.parse(localStorage.getItem('losabia_plan') || 'null');
-        // Retrocompat: sin fingerprint guardado (pagos antiguos) = permitir
-        if (!stored || !stored.chatFingerprint) return 'detective';
-        // Sin chat cargado aún = denegar (no hay contenido que mostrar)
-        if (!window.currentChatFingerprint) return 'curioso';
-        // Fingerprint coincide = permitir
-        if (stored.chatFingerprint === window.currentChatFingerprint) return 'detective';
-        // Fingerprint diferente = denegar
-        return 'curioso';
-      } catch(e) { return 'detective'; }
-    }
-
-    return _internalUserPlan;
-  },
-  set: function(val) {
-    _internalUserPlan = val;
-  }
-});
+// Plan state — simple variable, always starts as 'curioso'.
+// Only changes via: onNewChatLoaded(), checkPaymentSuccess(), or admin bypass.
+window.userPlan = 'curioso';
 const PLAN_HIERARCHY = { curioso: 0, detective: 1, obsesivo: 2 };
 let selectedPlan = 'detective';
 let featuresRendered = false;
@@ -6063,9 +6094,12 @@ loadLocalPricing();
 // ── Secret admin bypass ──
 // URL: add ?admin=losabia2026 to unlock everything
 // Console: type adminUnlock() to unlock
+// Sets a flag so checkPaymentSuccess() respects it
+window._adminBypass = false;
 (function checkAdminBypass() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('admin') === 'losabia2026') {
+    window._adminBypass = true;
     window.userPlan = 'obsesivo';
     localStorage.setItem('losabia_plan', JSON.stringify({
       plan: 'obsesivo',
@@ -6081,6 +6115,7 @@ loadLocalPricing();
 })();
 // Console shortcut
 window.adminUnlock = function() {
+  window._adminBypass = true;
   window.userPlan = 'obsesivo';
   localStorage.setItem('losabia_plan', JSON.stringify({
     plan: 'obsesivo', sessionId: 'admin-bypass',
@@ -6091,37 +6126,16 @@ window.adminUnlock = function() {
 };
 
 function hasPlanAccess(requiredPlan) {
-  const hierarchyOk = (PLAN_HIERARCHY[window.userPlan] || 0) >= (PLAN_HIERARCHY[requiredPlan] || 0);
-  if (!hierarchyOk) return false;
-
-  // Obsesivo: unlimited access, no fingerprint check
-  if (window.userPlan === 'obsesivo') return true;
-
-  // Detective: verify chat fingerprint
-  if (window.userPlan === 'detective') {
-    try {
-      const stored = JSON.parse(localStorage.getItem('losabia_plan') || 'null');
-      // Retrocompat: no fingerprint stored (old sessions) = allow access
-      if (!stored || !stored.chatFingerprint) return true;
-      // No chat loaded yet = allow (nothing to show anyway)
-      if (!window.currentChatFingerprint) return true;
-      // Fingerprint mismatch = block
-      if (stored.chatFingerprint !== window.currentChatFingerprint) {
-        return false;
-      }
-    } catch(e) {}
-    return true;
-  }
-
-  return hierarchyOk;
+  // Simple hierarchy check — window.userPlan is already resolved by onNewChatLoaded()
+  return (PLAN_HIERARCHY[window.userPlan] || 0) >= (PLAN_HIERARCHY[requiredPlan] || 0);
 }
 
 function isFingerprintMismatch() {
-  // Usa _internalUserPlan (plan real pagado) en vez del getter (que ya devuelve 'curioso' en mismatch)
-  if (_internalUserPlan !== 'detective') return false;
+  // Check if user paid for detective but loaded a different chat
   try {
     const stored = JSON.parse(localStorage.getItem('losabia_plan') || 'null');
-    if (!stored || !stored.chatFingerprint) return false;
+    if (!stored || stored.plan !== 'detective') return false;
+    if (!stored.chatFingerprint) return false;
     if (!window.currentChatFingerprint) return false;
     return stored.chatFingerprint !== window.currentChatFingerprint;
   } catch(e) { return false; }
@@ -6288,7 +6302,24 @@ function switchOsTab(os, btn) {
 
 // ── Payment modal ──
 function openPayModal(plan, bypassFingerprintCheck) {
-  // If already has access, just unlock
+  // Re-verify fingerprint in real time before deciding
+  try {
+    const stored = JSON.parse(localStorage.getItem('losabia_plan') || 'null');
+    if (stored && stored.plan === 'obsesivo') {
+      window.userPlan = 'obsesivo';
+      applyBlurOverlays();
+      return;
+    }
+    if (stored && stored.plan === 'detective' && stored.chatFingerprint
+        && window.currentChatFingerprint
+        && stored.chatFingerprint === window.currentChatFingerprint) {
+      window.userPlan = 'detective';
+      applyBlurOverlays();
+      return;
+    }
+  } catch(e) {}
+
+  // If already has access (e.g. admin bypass), just unlock
   if (hasPlanAccess(plan)) {
     unlockPlan(plan);
     return;
@@ -6382,9 +6413,8 @@ function updatePlanBadge() {
   const badge = document.getElementById('userPlanBadge');
   if (!badge) return;
   const names = { curioso: 'Plan Curioso', detective: 'Plan Detective', obsesivo: 'Plan Obsesivo' };
-  // Usa _internalUserPlan para que el badge muestre el plan pagado, no el efectivo por fingerprint
-  badge.textContent = names[_internalUserPlan] || 'Plan Curioso';
-  badge.className = 'user-plan-badge ' + (_internalUserPlan || 'curioso');
+  badge.textContent = names[window.userPlan] || 'Plan Curioso';
+  badge.className = 'user-plan-badge ' + (window.userPlan || 'curioso');
 }
 
 function unlockPlan(plan) {
@@ -6418,10 +6448,12 @@ function updatePlanUI() {
 }
 
 // ── Payment verification on page load ──
+// ONLY unlocks if returning from Stripe with a valid session.
+// Normal page loads always stay 'curioso' — plan resolves in onNewChatLoaded().
 async function checkPaymentSuccess() {
   console.log('[Paywall] checkPaymentSuccess() called');
 
-  // 1. Check URL for fresh payment return
+  // Check URL for fresh payment return
   const fullUrl = window.location.href;
   let sessionId = null;
   let urlPlan = null;
@@ -6440,16 +6472,25 @@ async function checkPaymentSuccess() {
 
       if (data.paid) {
         const plan = data.plan || urlPlan || 'detective';
-        window.userPlan = plan;
-        console.log('[Paywall] Payment verified! Plan set to:', plan);
+        console.log('[Paywall] Payment verified! Plan:', plan);
 
+        // Save to localStorage WITH the fingerprint from the current session
         localStorage.setItem('losabia_plan', JSON.stringify({
           plan: plan,
           sessionId: sessionId,
           email: data.email,
-          chatFingerprint: data.chatFingerprint || null,
+          chatFingerprint: data.chatFingerprint || window.currentChatFingerprint || null,
           paidAt: new Date().toISOString()
         }));
+
+        // Unlock directly — chat is still in memory from before Stripe redirect
+        // (fingerprint was saved to Stripe metadata at checkout time)
+        if (plan === 'obsesivo' || (window.currentChatFingerprint && data.chatFingerprint === window.currentChatFingerprint)) {
+          window.userPlan = plan;
+        } else {
+          // Chat not in memory or fingerprint mismatch — stay curioso, will resolve on next upload
+          window.userPlan = 'curioso';
+        }
 
         const planPrices = { 'detective': 79, 'obsesivo': 149 };
         if (typeof fbq !== 'undefined') {
@@ -6461,7 +6502,7 @@ async function checkPaymentSuccess() {
 
         updatePlanUI();
 
-        // Clean URL — only go to #results if user already has analysis data
+        // Clean URL
         const hash = (lastStats && lastMessages) ? '#results' : '';
         const cleanUrl = window.location.origin + window.location.pathname + hash;
         window.history.replaceState(null, '', cleanUrl);
@@ -6472,11 +6513,18 @@ async function checkPaymentSuccess() {
     }
   }
 
-  // 2. Fall back to stored plan
-  const storedPlan = getStoredPlan();
-  window.userPlan = storedPlan;
-  console.log('[Paywall] Loaded stored plan:', window.userPlan);
+  // Admin bypass — don't overwrite
+  if (window._adminBypass) {
+    console.log('[Paywall] Admin bypass active — keeping obsesivo');
+    updatePlanBadge();
+    applyBlurOverlays();
+    return;
+  }
 
+  // Normal page load — always start as curioso.
+  // Plan will be resolved in onNewChatLoaded() when user uploads a chat.
+  window.userPlan = 'curioso';
+  console.log('[Paywall] Page load → curioso (plan resolves on chat upload)');
   updatePlanBadge();
   applyBlurOverlays();
 }
