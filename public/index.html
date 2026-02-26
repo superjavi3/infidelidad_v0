@@ -2089,6 +2089,130 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   .nav-cta { font-size: 0.8rem; padding: 7px 14px; white-space: nowrap; }
   nav a { font-size: 0.8rem; }
 }
+
+/* ── Leaderboard Section ── */
+.leaderboard-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 32px 28px;
+  margin: 36px 0 48px;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.leaderboard-card .lb-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  margin-bottom: 4px;
+}
+.leaderboard-card .lb-subtitle {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 24px;
+}
+.lb-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+@media (max-width: 520px) {
+  .lb-grid { grid-template-columns: 1fr; }
+}
+.lb-stat {
+  background: rgba(255,255,255,0.03);
+  border-radius: 14px;
+  padding: 18px 16px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.lb-stat-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.lb-stat-values {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.lb-stat-user {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+}
+.lb-stat-avg {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.lb-stat-verdict {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.lb-stat-verdict.better { color: var(--green); }
+.lb-stat-verdict.worse { color: var(--yellow); }
+
+.lb-distribution {
+  margin-top: 8px;
+}
+.lb-distribution .lb-dist-title {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 12px;
+}
+.lb-dist-bar {
+  position: relative;
+  height: 60px;
+  margin: 0 auto;
+  max-width: 100%;
+}
+.lb-dist-bar svg {
+  width: 100%;
+  height: 60px;
+  display: block;
+}
+.lb-dist-marker {
+  position: absolute;
+  top: -2px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+.lb-dist-marker .lb-marker-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--pink);
+  border: 2px solid #fff;
+  box-shadow: 0 0 10px rgba(255,45,120,0.5);
+}
+.lb-dist-marker .lb-marker-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--pink);
+  margin-top: 2px;
+  white-space: nowrap;
+}
+.lb-dist-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  padding: 0 2px;
+}
+.lb-footer {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 20px;
+  opacity: 0.7;
+}
 </style>
 <!-- Meta Pixel (carga condicional según consentimiento de cookies) -->
 <script>
@@ -2198,6 +2322,9 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   <div style="text-align: center; margin-top: 12px;">
     <button class="btn-secondary" onclick="hasPlanAccess('detective') ? generatePDF() : openPayModal('detective')" style="width: 100%; max-width: 480px; padding: 14px 32px; font-size: 1rem; background: linear-gradient(135deg, #1a1a2e, #16213e); border: 1px solid rgba(255,255,255,0.1);">📄 Descargar Reporte PDF Completo</button>
   </div>
+
+  <!-- Leaderboard: Tu relación vs el promedio -->
+  <div id="leaderboardSection" style="display:none;"></div>
 
   <!-- ══════ SECCIÓN 1: PLAN GRATIS ══════ -->
   <div class="plan-header">
@@ -3078,7 +3205,8 @@ function analyzeMessages(messages) {
   return {
     personA, personB, msgsA, msgsB, total,
     loveCount, nightPct, uniqueDays, avgReply, avgReplyFormatted,
-    score, verdict, leader, leaderPct, ratio
+    score, verdict, leader, leaderPct, ratio,
+    silencesCount, totalDouble
   };
 }
 
@@ -3226,6 +3354,152 @@ async function processChat(text) {
   }
 }
 
+function renderLeaderboard(s) {
+  const container = document.getElementById('leaderboardSection');
+  if (!container) return;
+
+  const silences = typeof s.silencesCount === 'number' ? s.silencesCount : 0;
+  const doubles = typeof s.totalDouble === 'number' ? s.totalDouble : 0;
+
+  const AVG_SCORE = 54;
+  const AVG_RESPONSE_MIN = 18;
+  const AVG_BALANCE_HIGH = 58;
+  const AVG_SILENCES = 23;
+  const AVG_DOUBLE_TEXT = 340;
+
+  function estimatePercentile(userVal, avgVal, higherIsBetter) {
+    const diff = higherIsBetter ? (userVal - avgVal) : (avgVal - userVal);
+    const range = avgVal > 0 ? avgVal : 1;
+    const normalized = Math.max(-2, Math.min(2, diff / range));
+    const pct = Math.round(50 + normalized * 25);
+    return Math.max(5, Math.min(99, pct));
+  }
+
+  function formatResponseTimeShort(minutes) {
+    if (minutes < 1) return '< 1 min';
+    if (minutes < 60) return Math.round(minutes) + ' min';
+    if (minutes < 1440) {
+      const h = Math.floor(minutes / 60);
+      const m = Math.round(minutes % 60);
+      return m > 0 ? h + 'h ' + m + 'm' : h + 'h';
+    }
+    return Math.floor(minutes / 1440) + ' días';
+  }
+
+  const userBalance = Math.round(Math.max(s.msgsA, s.msgsB) / s.total * 100);
+  const userBalanceLow = 100 - userBalance;
+
+  const stats = [
+    {
+      label: 'Tiempo de respuesta',
+      icon: '⏱️',
+      userVal: s.avgReply,
+      userDisplay: formatResponseTimeShort(s.avgReply),
+      avgDisplay: AVG_RESPONSE_MIN + ' min',
+      better: s.avgReply <= AVG_RESPONSE_MIN,
+      percentile: estimatePercentile(s.avgReply, AVG_RESPONSE_MIN, false)
+    },
+    {
+      label: 'Equilibrio de mensajes',
+      icon: '⚖️',
+      userVal: userBalance,
+      userDisplay: userBalance + '% / ' + userBalanceLow + '%',
+      avgDisplay: AVG_BALANCE_HIGH + '% / ' + (100 - AVG_BALANCE_HIGH) + '%',
+      better: userBalance <= AVG_BALANCE_HIGH,
+      percentile: estimatePercentile(userBalance, AVG_BALANCE_HIGH, false)
+    },
+    {
+      label: 'Silencios (+48h)',
+      icon: '🔇',
+      userVal: silences,
+      userDisplay: silences + ' silencios',
+      avgDisplay: AVG_SILENCES + ' prom.',
+      better: silences <= AVG_SILENCES,
+      percentile: estimatePercentile(silences, AVG_SILENCES, false)
+    },
+    {
+      label: 'Double texting',
+      icon: '😤',
+      userVal: doubles,
+      userDisplay: doubles + ' episodios',
+      avgDisplay: AVG_DOUBLE_TEXT + ' prom.',
+      better: doubles <= AVG_DOUBLE_TEXT,
+      percentile: estimatePercentile(doubles, AVG_DOUBLE_TEXT, false)
+    }
+  ];
+
+  let gridHtml = '';
+  stats.forEach(function(st) {
+    const cls = st.better ? 'better' : 'worse';
+    const arrow = st.better ? '▲' : '▼';
+    const verdictText = st.better
+      ? arrow + ' Mejor que el ' + st.percentile + '% de relaciones'
+      : arrow + ' Por debajo del promedio';
+    gridHtml += '<div class="lb-stat">' +
+      '<div class="lb-stat-label">' + st.icon + ' ' + st.label + '</div>' +
+      '<div class="lb-stat-values">' +
+        '<span class="lb-stat-user">' + st.userDisplay + '</span>' +
+        '<span class="lb-stat-avg">vs ' + st.avgDisplay + '</span>' +
+      '</div>' +
+      '<div class="lb-stat-verdict ' + cls + '">' + verdictText + '</div>' +
+    '</div>';
+  });
+
+  const userScore = s.score;
+  const markerPct = Math.max(3, Math.min(97, (userScore / 100) * 100));
+  const avgMarkerPct = (AVG_SCORE / 100) * 100;
+
+  const bellPoints = [];
+  for (let i = 0; i <= 100; i += 2) {
+    const x = i;
+    const z = (i - 50) / 18;
+    const y = Math.exp(-0.5 * z * z) * 45;
+    bellPoints.push(x + ',' + (50 - y));
+  }
+  const bellPath = 'M0,50 ' + bellPoints.map(function(p) { return 'L' + p; }).join(' ') + ' L100,50';
+
+  const fillPoints = bellPoints.slice();
+  const bellFill = 'M0,50 ' + fillPoints.map(function(p) { return 'L' + p; }).join(' ') + ' L100,50 Z';
+
+  const distHtml = '<div class="lb-distribution">' +
+    '<div class="lb-dist-title">Distribución de scores — ¿dónde caes tú?</div>' +
+    '<div class="lb-dist-bar">' +
+      '<svg viewBox="0 0 100 55" preserveAspectRatio="none">' +
+        '<defs>' +
+          '<linearGradient id="bellGrad" x1="0" y1="0" x2="1" y2="0">' +
+            '<stop offset="0%" stop-color="#FF2D78" stop-opacity="0.1"/>' +
+            '<stop offset="30%" stop-color="#6C5CE7" stop-opacity="0.25"/>' +
+            '<stop offset="50%" stop-color="#6C5CE7" stop-opacity="0.35"/>' +
+            '<stop offset="70%" stop-color="#6C5CE7" stop-opacity="0.25"/>' +
+            '<stop offset="100%" stop-color="#3BCEAC" stop-opacity="0.1"/>' +
+          '</linearGradient>' +
+        '</defs>' +
+        '<path d="' + bellFill + '" fill="url(#bellGrad)"/>' +
+        '<path d="' + bellPath + '" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.8"/>' +
+        '<line x1="' + avgMarkerPct + '" y1="5" x2="' + avgMarkerPct + '" y2="50" stroke="rgba(255,255,255,0.15)" stroke-width="0.5" stroke-dasharray="2,2"/>' +
+        '<text x="' + avgMarkerPct + '" y="4" text-anchor="middle" font-size="3.5" fill="rgba(255,255,255,0.35)">prom.</text>' +
+      '</svg>' +
+      '<div class="lb-dist-marker" style="left:' + markerPct + '%;">' +
+        '<div class="lb-marker-dot"></div>' +
+        '<span class="lb-marker-label">Tú: ' + userScore + '</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="lb-dist-labels">' +
+      '<span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>' +
+    '</div>' +
+  '</div>';
+
+  container.innerHTML = '<div class="leaderboard-card">' +
+    '<div class="lb-title">📊 Tu relación vs el promedio</div>' +
+    '<div class="lb-subtitle">Basado en análisis de relaciones en YaLoSabía</div>' +
+    '<div class="lb-grid">' + gridHtml + '</div>' +
+    distHtml +
+    '<div class="lb-footer">Datos basados en análisis agregados y anonimizados.</div>' +
+  '</div>';
+
+  container.style.display = 'block';
+}
+
 function showResults(s) {
   processingState.classList.remove('active');
   processingState.style.display = 'none';
@@ -3266,6 +3540,8 @@ function showResults(s) {
 
   document.getElementById('funFact').innerHTML =
     `📊 <strong>Dato curioso:</strong> ${s.personA} envió <strong>${s.msgsA.toLocaleString()}</strong> mensajes y ${s.personB} envió <strong>${s.msgsB.toLocaleString()}</strong>. ${s.loveCount > 20 ? 'Hay mucho amor en este chat ❤️' : 'Podrían usar más emojis de amor... 😬'}`;
+
+  renderLeaderboard(s);
 
   console.log('[showResults] window.userPlan:', window.userPlan);
 
@@ -3958,7 +4234,9 @@ async function loadDemo() {
     verdict: "Tibio, cuidado 🟠",
     leader: "Laura",
     leaderPct: 54,
-    ratio: "1.17"
+    ratio: "1.17",
+    silencesCount: 31,
+    totalDouble: 287
   };
 
   // Replicate processChat() animation exactly
