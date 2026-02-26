@@ -3145,10 +3145,7 @@ async function processChat(text) {
     showDifferentChatWarning();
   }
 
-  // Re-evaluate blur overlays now that fingerprint changed
-  applyBlurOverlays();
-
-  // Populate results
+  // Populate results (showResults calls applyBlurOverlays AFTER rendering features)
   showResults(stats);
   // ========== NUEVO: Llamar a Gemini para análisis IA ==========
   try {
@@ -3229,6 +3226,10 @@ function showResults(s) {
   }
 
   // Step 3: Apply blur overlays AFTER all content is rendered
+  console.log('[showResults] Before applyBlurOverlays — _internalUserPlan:', _internalUserPlan,
+    '| window.userPlan (getter):', window.userPlan,
+    '| currentChatFingerprint:', window.currentChatFingerprint,
+    '| storedFingerprint:', JSON.parse(localStorage.getItem('losabia_plan') || '{}').chatFingerprint);
   applyBlurOverlays();
 
   resultsSection.classList.add('active');
@@ -6156,10 +6157,10 @@ function showDifferentChatWarning() {
       </p>
     </div>`;
   document.body.appendChild(overlay);
-  // Unlock button → abre checkout para detective
+  // Unlock button → abre checkout para detective (bypass fingerprint check para evitar loop)
   overlay.querySelector('#fpWarningUnlockBtn').onclick = function() {
     overlay.remove();
-    openPayModal('detective');
+    openPayModal('detective', true);
   };
   // Close button → cierra y deja en plan gratuito
   overlay.querySelector('#fpWarningCloseBtn').onclick = function() {
@@ -6286,7 +6287,7 @@ function switchOsTab(os, btn) {
 }
 
 // ── Payment modal ──
-function openPayModal(plan) {
+function openPayModal(plan, bypassFingerprintCheck) {
   // If already has access, just unlock
   if (hasPlanAccess(plan)) {
     unlockPlan(plan);
@@ -6294,7 +6295,8 @@ function openPayModal(plan) {
   }
 
   // Detective paid but different chat — show warning instead of pay modal
-  if (isFingerprintMismatch()) {
+  // bypassFingerprintCheck=true cuando el usuario ya vio el warning y quiere pagar
+  if (!bypassFingerprintCheck && isFingerprintMismatch()) {
     showDifferentChatWarning();
     return;
   }
