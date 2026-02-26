@@ -657,7 +657,7 @@ body {
       <button class="toolbar-btn" onclick="captureSection()">📷 Capturar sección</button>
       <button class="toolbar-btn" onclick="captureAll()">📸 Capturar todo</button>
       <button class="toolbar-btn" onclick="captureClipboard()">📋 Copiar</button>
-      <button class="toolbar-btn primary" onclick="downloadPng()">⬇ Descargar PNG</button>
+      <button class="toolbar-btn primary" onclick="downloadPng()">⬇ Descargar JPG</button>
     </div>
 
     <!-- Preview -->
@@ -1088,36 +1088,39 @@ async function doCapture(element) {
   return canvas;
 }
 
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function canvasToJpgBlob(canvas) {
+  return new Promise(resolve => {
+    canvas.toBlob(resolve, 'image/jpeg', 0.95);
+  });
+}
+
 async function captureSection() {
   const sectionName = getVisibleSectionName();
   const el = document.getElementById('sec-' + sectionName);
   if (!el) { showToast('No se encontró la sección'); return; }
   showToast('Capturando sección...');
   const canvas = await doCapture(el);
-  canvas.toBlob(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `yalosabia-mockup-${sectionName}-${getDateStr()}.png`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('Sección descargada');
-  });
+  const blob = await canvasToJpgBlob(canvas);
+  downloadBlob(blob, `yalosabia-mockup-${sectionName}-${getDateStr()}.jpg`);
+  showToast('Sección descargada');
 }
 
 async function captureAll() {
   showToast('Capturando reporte completo...');
   const el = document.getElementById('previewContent');
   const canvas = await doCapture(el);
-  canvas.toBlob(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `yalosabia-mockup-completo-${getDateStr()}.png`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('Reporte completo descargado');
-  });
+  const blob = await canvasToJpgBlob(canvas);
+  downloadBlob(blob, `yalosabia-mockup-completo-${getDateStr()}.jpg`);
+  showToast('Reporte completo descargado');
 }
 
 async function captureClipboard() {
@@ -1125,6 +1128,7 @@ async function captureClipboard() {
   const el = document.getElementById('previewContent');
   const canvas = await doCapture(el);
   try {
+    // Clipboard API requires PNG
     canvas.toBlob(async blob => {
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
       showToast('Copiado al portapapeles');
@@ -1139,15 +1143,9 @@ async function downloadPng() {
   const el = document.getElementById('sec-' + sectionName) || document.getElementById('previewContent');
   showToast('Descargando...');
   const canvas = await doCapture(el);
-  canvas.toBlob(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `yalosabia-mockup-${sectionName}-${getDateStr()}.png`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('PNG descargado');
-  });
+  const blob = await canvasToJpgBlob(canvas);
+  downloadBlob(blob, `yalosabia-mockup-${sectionName}-${getDateStr()}.jpg`);
+  showToast('JPG descargado');
 }
 
 // ══════ LIVE UPDATES ══════
