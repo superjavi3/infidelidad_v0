@@ -2705,11 +2705,12 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       </div>
 
       <!-- Percentile bar -->
-      <div style="position: absolute; bottom: 250px; width: 100%; text-align: center; z-index: 1;">
+      <div style="position: absolute; bottom: 270px; width: 100%; text-align: center; z-index: 1;">
         <div style="width: 80%; margin: 0 auto; border-top: 1px solid rgba(255,255,255,0.25); padding-top: 20px;"></div>
         <div id="storiesPercentile" style="font-size: 28px; opacity: 0.85; letter-spacing: 0.5px;">Mejor que el 66% de relaciones analizadas</div>
-        <div style="position: relative; width: 80%; height: 8px; margin: 18px auto 0; border-radius: 999px; background: linear-gradient(to right, #ff4444, #ffaa00, #44cc44);">
-          <div id="storiesPercentileDot" style="position: absolute; top: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 0 6px rgba(0,0,0,0.3); left: 66%;">
+        <div style="position: relative; width: 80%; height: 8px; margin: 16px auto 0; padding-top: 24px; border-radius: 999px;">
+          <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; border-radius: 999px; background: linear-gradient(to right, #ff4444, #ffaa00, #44cc44);"></div>
+          <div id="storiesPercentileDot" style="position: absolute; bottom: 0; transform: translate(-50%, 50%); width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 0 6px rgba(0,0,0,0.3); left: 66%;">
             <div id="storiesPercentileLabel" style="position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 22px; font-weight: 700; color: #FF2D78;">Tú: 72</div>
           </div>
         </div>
