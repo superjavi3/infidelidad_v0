@@ -174,6 +174,66 @@ nav a:hover { color: var(--text); }
   animation: fadeInUp .8s ease .25s both;
 }
 
+/* ── MODE TOGGLE ── */
+.mode-toggle-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  animation: fadeInUp .8s ease .3s both;
+}
+.mode-toggle {
+  position: relative;
+  display: inline-flex;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50px;
+  padding: 4px;
+  width: 340px;
+  max-width: 90vw;
+}
+.mode-toggle-slider {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: calc(100% - 8px);
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  border-radius: 50px;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+}
+.mode-toggle.grupo .mode-toggle-slider {
+  transform: translateX(100%);
+}
+.mode-toggle-btn {
+  flex: 1;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  transition: color 0.3s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+.mode-toggle-btn.active {
+  color: #fff;
+}
+.mode-context-tag {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  transition: opacity 0.3s ease;
+  text-align: center;
+}
+
 /* ── UPLOAD ZONE ── */
 .upload-zone {
   width: 100%;
@@ -194,6 +254,11 @@ nav a:hover { color: var(--text); }
   background: rgba(255,45,120,0.05);
   transform: translateY(-2px);
   box-shadow: 0 8px 40px rgba(255,45,120,0.15);
+}
+.upload-zone.grupo-mode:hover, .upload-zone.grupo-mode.drag-over {
+  border-color: var(--purple);
+  background: rgba(108,92,231,0.05);
+  box-shadow: 0 8px 40px rgba(108,92,231,0.15);
 }
 .upload-icon {
   width: 64px; height: 64px;
@@ -2350,15 +2415,23 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   <div class="hero-badge"><span class="dot"></span> +12,000 chats analizados</div>
   <h1>Ya lo sabías,<br>pero ahora <span class="gradient-text">tienes pruebas</span></h1>
   <p>Sube tu chat de WhatsApp y la IA te revela lo que tus conversaciones dicen de tu relación. Gratis.</p>
-  <p style="font-size:0.9rem;color:var(--text-muted);margin-top:-8px;">Funciona con chats de pareja y grupos 👥</p>
+  <!-- Mode Toggle -->
+  <div class="mode-toggle-wrapper">
+    <div class="mode-toggle" id="modeToggle">
+      <div class="mode-toggle-slider"></div>
+      <button class="mode-toggle-btn active" data-mode="pareja" onclick="switchMode('pareja')">💑 Pareja</button>
+      <button class="mode-toggle-btn" data-mode="grupo" onclick="switchMode('grupo')">👥 Grupo</button>
+    </div>
+    <div class="mode-context-tag" id="modeContextTag">Analiza el chat entre tú y tu pareja</div>
+  </div>
 
   <!-- Upload Zone -->
   <div class="upload-zone" id="uploadZone">
-    <div class="upload-icon">📱</div>
-    <h3>Arrastra tu archivo de WhatsApp aquí</h3>
+    <div class="upload-icon" id="uploadIcon">📱</div>
+    <h3 id="uploadTitle">Arrastra tu chat de WhatsApp aquí</h3>
     <p>o haz clic para seleccionar el .txt exportado</p>
     <input type="file" id="fileInput" accept=".txt,.zip">
-    <div class="upload-formats">
+    <div class="upload-formats" id="uploadFormats">
       <span class="format-tag">WhatsApp .txt o .zip</span>
       <span class="format-tag">Hasta 40,000 mensajes</span>
     </div>
@@ -3193,7 +3266,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       </div>
       <div class="faq-item">
         <button class="faq-q">¿Puedo analizar chats grupales?</button>
-        <div class="faq-a"><p>Por ahora solo analizamos chats individuales (entre 2 personas). El análisis de grupos llegará pronto en una actualización futura.</p></div>
+        <div class="faq-a"><p>¡Sí! Sube cualquier chat de WhatsApp — si tiene 2 participantes se analiza como pareja, y si tiene 3 o más se activa el modo grupo con ranking de poder, arquetipos, fantasmas y más.</p></div>
       </div>
     </div>
   </div>
@@ -3246,6 +3319,51 @@ let lastGroupMessages = null;
 let groupSystemEvents = [];
 window.isGroupMode = false;
 window.groupPlan = 'curioso';
+window.selectedMode = 'pareja';
+
+// ── MODE TOGGLE ──
+function switchMode(mode) {
+  window.selectedMode = mode;
+  const toggle = document.getElementById('modeToggle');
+  const btns = toggle.querySelectorAll('.mode-toggle-btn');
+  if (mode === 'grupo') {
+    toggle.classList.add('grupo');
+  } else {
+    toggle.classList.remove('grupo');
+  }
+  btns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  updateContextTag(mode);
+  updateUploadArea(mode);
+}
+
+function updateContextTag(mode) {
+  const tag = document.getElementById('modeContextTag');
+  if (mode === 'pareja') {
+    tag.textContent = 'Analiza el chat entre tú y tu pareja';
+  } else {
+    tag.textContent = 'Analiza cualquier grupo de WhatsApp';
+  }
+}
+
+function updateUploadArea(mode) {
+  const icon = document.getElementById('uploadIcon');
+  const title = document.getElementById('uploadTitle');
+  const formats = document.getElementById('uploadFormats');
+  const zone = document.getElementById('uploadZone');
+  if (mode === 'grupo') {
+    icon.textContent = '👥';
+    title.textContent = 'Arrastra tu chat grupal aquí';
+    formats.innerHTML = '<span class="format-tag">WhatsApp .txt o .zip</span><span class="format-tag">3+ participantes</span>';
+    zone.style.borderColor = 'rgba(108,92,231,0.35)';
+    zone.classList.add('grupo-mode');
+  } else {
+    icon.textContent = '📱';
+    title.textContent = 'Arrastra tu chat de WhatsApp aquí';
+    formats.innerHTML = '<span class="format-tag">WhatsApp .txt o .zip</span><span class="format-tag">Hasta 40,000 mensajes</span>';
+    zone.style.borderColor = '';
+    zone.classList.remove('grupo-mode');
+  }
+}
 
 uploadZone.addEventListener('click', () => fileInput.click());
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
