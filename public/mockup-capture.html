@@ -463,13 +463,16 @@ function renderReport(d) {
 
   // Therapist
   if (showAll || target === 'therapist') {
-    var tMsgA = (d.therapistMsgA || '').trim();
-    var tMsgB = (d.therapistMsgB || '').trim();
+    var tMsgs = [
+      { txt: (d.therapistMsgA || '').trim(), cls: 'person-a', name: p1 },
+      { txt: (d.therapistMsgB || '').trim(), cls: 'person-b', name: p2 },
+      { txt: (d.therapistMsgC || '').trim(), cls: 'person-a', name: p1 },
+      { txt: (d.therapistMsgD || '').trim(), cls: 'person-b', name: p2 },
+    ].filter(function(m) { return m.txt; });
     var tBubbles = '';
-    if (tMsgA || tMsgB) {
+    if (tMsgs.length) {
       tBubbles = '<div class="therapist-messages">';
-      if (tMsgA) tBubbles += '<div class="therapist-bubble person-a"><div class="bubble-name">' + p1 + '</div>' + tMsgA + '</div>';
-      if (tMsgB) tBubbles += '<div class="therapist-bubble person-b"><div class="bubble-name">' + p2 + '</div>' + tMsgB + '</div>';
+      tMsgs.forEach(function(m) { tBubbles += '<div class="therapist-bubble ' + m.cls + '"><div class="bubble-name">' + m.name + '</div>' + m.txt + '</div>'; });
       tBubbles += '</div>';
     }
     html += '<div class="premium-feature-card" id="sec-therapist"><div class="pf-header"><div class="pf-icon">\u{1F9E0}</div><div><div class="pf-title">Terapeuta IA</div><div class="pf-subtitle">Análisis profesional de tu relación</div></div></div><div class="pf-body">' + tBubbles + '<div class="therapist-card"' + (tBubbles ? ' style="margin-top:16px;"' : '') + '><div class="therapist-label">\u{1F9E0} Terapeuta IA — Análisis profesional</div>' + (d.therapist || '') + '</div></div></div>';

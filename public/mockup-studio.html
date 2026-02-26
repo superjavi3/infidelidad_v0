@@ -652,11 +652,17 @@ body {
       <div class="field"><label>Texto del terapeuta</label>
         <textarea id="inTherapist" style="min-height: 100px;">Lo que veo aquí no es una relación que se enfrió de golpe. Es un desgaste lento donde una persona dejó de intentarlo mientras la otra seguía buscando conexión. Los 1,651 episodios de double texting de Ella frente a los 203 de Él hablan de un desbalance profundo. Cuando alguien borra 691 mensajes, no está corrigiendo typos — está editando la narrativa. Mi recomendación: necesitan una conversación honesta sobre si ambos quieren estar aquí.</textarea>
       </div>
-      <div class="field"><label>Mensaje ejemplo Persona 1</label>
+      <div class="field"><label>Mensaje 1 (Persona 1)</label>
         <textarea id="inTherapistMsgA" style="min-height: 40px;">Yo siempre soy la que escribe primero... ya me cansé de ser la única que intenta 😔</textarea>
       </div>
-      <div class="field"><label>Mensaje ejemplo Persona 2</label>
+      <div class="field"><label>Mensaje 2 (Persona 2)</label>
         <textarea id="inTherapistMsgB" style="min-height: 40px;">Es que no me dices las cosas, cómo voy a saber qué sientes si no hablas</textarea>
+      </div>
+      <div class="field"><label>Mensaje 3 (Persona 1)</label>
+        <textarea id="inTherapistMsgC" style="min-height: 40px;">¿Que no te digo? Te mandé 20 mensajes ayer y me dejaste en visto toda la noche 🙃</textarea>
+      </div>
+      <div class="field"><label>Mensaje 4 (Persona 2)</label>
+        <textarea id="inTherapistMsgD" style="min-height: 40px;">Estaba ocupado, no todo gira alrededor de ti</textarea>
       </div>
     </div>
   </div>
@@ -1012,13 +1018,19 @@ function render() {
   </div>`;
 
   // Therapist
-  const msgA = getVal('inTherapistMsgA').trim();
-  const msgB = getVal('inTherapistMsgB').trim();
+  const therapistMsgs = [
+    { id: 'inTherapistMsgA', cls: 'person-a', name: p1 },
+    { id: 'inTherapistMsgB', cls: 'person-b', name: p2 },
+    { id: 'inTherapistMsgC', cls: 'person-a', name: p1 },
+    { id: 'inTherapistMsgD', cls: 'person-b', name: p2 },
+  ];
   let bubblesHtml = '';
-  if (msgA || msgB) {
+  const activeMsgs = therapistMsgs.filter(m => getVal(m.id).trim());
+  if (activeMsgs.length) {
     bubblesHtml = '<div class="therapist-messages">';
-    if (msgA) bubblesHtml += `<div class="therapist-bubble person-a"><div class="bubble-name">${p1}</div>${msgA}</div>`;
-    if (msgB) bubblesHtml += `<div class="therapist-bubble person-b"><div class="bubble-name">${p2}</div>${msgB}</div>`;
+    activeMsgs.forEach(m => {
+      bubblesHtml += `<div class="therapist-bubble ${m.cls}"><div class="bubble-name">${m.name}</div>${getVal(m.id).trim()}</div>`;
+    });
     bubblesHtml += '</div>';
   }
   html += `<div class="premium-feature-card" id="sec-therapist">
@@ -1170,6 +1182,8 @@ function collectMockupData() {
     therapist: getVal('inTherapist'),
     therapistMsgA: getVal('inTherapistMsgA'),
     therapistMsgB: getVal('inTherapistMsgB'),
+    therapistMsgC: getVal('inTherapistMsgC'),
+    therapistMsgD: getVal('inTherapistMsgD'),
     viewMode: document.getElementById('previewFrame').classList.contains('mobile') ? 'mobile' : 'desktop',
   };
 }
