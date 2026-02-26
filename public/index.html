@@ -3760,7 +3760,38 @@ function analyzeGroupMessages(messages, senderCounts, systemEvents) {
   if (sorted.length < 10) return null;
   sorted.sort((a, b) => a.timestamp - b.timestamp);
 
+  // Group name from system events (detect BEFORE filtering)
+  let groupName = '';
+  const createdEvt = systemEvents.find(e => e.type === 'group_created');
+  if (createdEvt && createdEvt.detail) groupName = createdEvt.detail;
+  const renamedEvts = systemEvents.filter(e => e.type === 'subject_changed');
+  if (renamedEvts.length > 0) groupName = renamedEvts[renamedEvts.length - 1].detail || groupName;
+
+  // ── Filter fake participants (Meta AI, group name, system messages) ──
+  const FAKE_PARTICIPANTS = ['meta ai', 'meta ia'];
+  const SYSTEM_PHRASES = [
+    'cambió el nombre del grupo', 'cambió la descripción del grupo', 'cambió el ícono',
+    'se unió con el enlace', 'creó el grupo', 'cifrado de extremo a extremo',
+    'mensajes y las llamadas', 'changed the group', 'created group', 'joined using',
+    'end-to-end encrypted', 'added', 'removed', 'left', 'cambió el código',
+    'los mensajes y las llamadas', 'cambió la imagen', 'ahora es admin',
+    'ya no es admin', 'activó los mensajes temporales', 'desactivó los mensajes temporales'
+  ];
+  function isFakeParticipant(name) {
+    const nl = (name || '').toLowerCase().trim();
+    if (FAKE_PARTICIPANTS.includes(nl)) return true;
+    if (groupName && nl === groupName.toLowerCase().trim()) return true;
+    if (SYSTEM_PHRASES.some(p => nl.includes(p))) return true;
+    return false;
+  }
+  // Remove messages from fake participants
+  const filteredSorted = sorted.filter(m => !m.sender || !isFakeParticipant(m.sender));
+  // Replace sorted reference for all downstream code
+  sorted.length = 0;
+  filteredSorted.forEach(m => sorted.push(m));
+
   const totalMessages = sorted.length;
+  if (totalMessages < 10) return null;
   const firstDate = sorted[0].timestamp;
   const lastDate = sorted[sorted.length - 1].timestamp;
   const totalDays = Math.max(1, Math.round((lastDate - firstDate) / (1000 * 60 * 60 * 24)));
@@ -3769,13 +3800,6 @@ function analyzeGroupMessages(messages, senderCounts, systemEvents) {
   const daySet = new Set();
   sorted.forEach(m => daySet.add(m.date));
   const uniqueDays = daySet.size;
-
-  // Group name from system events
-  let groupName = '';
-  const createdEvt = systemEvents.find(e => e.type === 'group_created');
-  if (createdEvt && createdEvt.detail) groupName = createdEvt.detail;
-  const renamedEvts = systemEvents.filter(e => e.type === 'subject_changed');
-  if (renamedEvts.length > 0) groupName = renamedEvts[renamedEvts.length - 1].detail || groupName;
 
   // Media detection patterns (reuse from existing analyzeMultimedia)
   const mediaPatterns = {
@@ -3947,6 +3971,23 @@ function analyzeGroupMessages(messages, senderCounts, systemEvents) {
     delete mem._responseTimes; delete mem._interactSet; delete mem._totalResponsesGen; delete mem._msgCountForResp;
   });
 
+  // Longest silence per member (max gap between consecutive messages from that person)
+  const memberMsgTimestamps = {};
+  sorted.forEach(m => {
+    if (!m.sender) return;
+    if (!memberMsgTimestamps[m.sender]) memberMsgTimestamps[m.sender] = [];
+    memberMsgTimestamps[m.sender].push(m.timestamp);
+  });
+  Object.entries(memberMsgTimestamps).forEach(([name, timestamps]) => {
+    if (!memberMap[name]) return;
+    let maxGap = 0;
+    for (let i = 1; i < timestamps.length; i++) {
+      const gap = (timestamps[i] - timestamps[i - 1]) / (1000 * 60 * 60 * 24);
+      if (gap > maxGap) maxGap = gap;
+    }
+    memberMap[name].longestSilence = Math.round(maxGap);
+  });
+
   // Build members array sorted by msgCount desc
   const members = Object.values(memberMap).sort((a, b) => b.msgCount - a.msgCount);
   members.forEach(m => {
@@ -3954,6 +3995,7 @@ function analyzeGroupMessages(messages, senderCounts, systemEvents) {
     m.avgLength = m.msgCount > 0 ? Math.round(m.totalChars / m.msgCount) : 0;
     m.nightPct = m.msgCount > 0 ? Math.round(m.nightMessages / m.msgCount * 100) : 0;
     m.daysSinceLastMessage = Math.round((lastDate - m.lastMessage) / (1000 * 60 * 60 * 24));
+    if (!m.longestSilence) m.longestSilence = 0;
   });
 
   // Categorize members
@@ -4297,9 +4339,11 @@ async function processChat(text) {
   }
 
   // Check for group chats (>2 participants)
+  const _quickFake = ['meta ai', 'meta ia'];
   const _senderCounts = {};
   messages.forEach(m => {
-    if (m.sender && !m.text.includes('cifrado de extremo a extremo') && !m.text.includes('end-to-end encrypted')) {
+    if (m.sender && !m.text.includes('cifrado de extremo a extremo') && !m.text.includes('end-to-end encrypted')
+        && !_quickFake.includes(m.sender.toLowerCase().trim())) {
       _senderCounts[m.sender] = (_senderCounts[m.sender] || 0) + 1;
     }
   });
@@ -4664,13 +4708,6 @@ function showGroupResults(gs) {
   whoLeadsEl.innerHTML = `<strong style="font-size:1.1em;">${leader.name.split(' ')[0]} es el alma del grupo</strong><br>` +
     `<span style="color:var(--text-muted);font-size:0.9em;">${leader.msgCount.toLocaleString()} mensajes (${leader.pct}%) — ${gs.categoryLabels[leader.category]}</span>`;
 
-  // Ghost mayor
-  if (gs.ghostMayor && gs.ghostMayor.daysSinceLastMessage > 0) {
-    const gm = gs.ghostMayor;
-    whoLeadsEl.innerHTML += `<br><br><strong style="font-size:1.1em;">👻 Fantasma mayor: ${gm.name.split(' ')[0]}</strong><br>` +
-      `<span style="color:var(--text-muted);font-size:0.9em;">Último mensaje hace ${gm.daysSinceLastMessage} días</span>`;
-  }
-
   // Fun fact placeholder (will be filled by AI)
   document.getElementById('group-funFact').innerHTML = '📊 <strong>Dato curioso:</strong> Analizando el grupo con IA...';
 
@@ -4797,26 +4834,43 @@ function renderGroupTimeline(gs) {
 }
 
 // ── 3. MAPA DE FANTASMAS ──
+function formatDaysLabel(d) {
+  if (d <= 0) return 'hoy';
+  if (d === 1) return 'hace 1 día';
+  if (d < 31) return 'hace ' + d + ' días';
+  if (d < 365) return 'hace ' + Math.round(d / 30) + ' meses';
+  const y = (d / 365).toFixed(1);
+  return 'hace ' + (y.endsWith('.0') ? Math.round(d / 365) : y) + ' años';
+}
+function formatSilenceLabel(d) {
+  if (d <= 0) return '< 1 día';
+  if (d < 31) return d + ' días';
+  if (d < 365) return Math.round(d / 30) + ' meses';
+  const y = (d / 365).toFixed(1);
+  return (y.endsWith('.0') ? Math.round(d / 365) : y) + ' años';
+}
 function renderGroupGhosts(gs) {
   const body = document.getElementById('group-ghostsBody');
   const ghosts = [...gs.members].sort((a, b) => b.daysSinceLastMessage - a.daysSinceLastMessage);
   const longAbsent = ghosts.filter(m => m.daysSinceLastMessage > 90);
+  const maxSilence = Math.max(1, ...gs.members.map(m => m.longestSilence || 0));
 
   let html = '';
   if (longAbsent.length > 0) {
     html += `<div style="background:rgba(255,45,120,0.08);border:1px solid rgba(255,45,120,0.2);border-radius:10px;padding:14px;margin-bottom:16px;font-size:0.9rem;">
       👻 <strong>${longAbsent.length} de ${gs.members.length} miembros</strong> no han hablado en más de 90 días</div>`;
   }
-  html += '<div style="display:flex;flex-direction:column;gap:8px;">';
+  html += '<div style="display:flex;flex-direction:column;gap:10px;">';
   ghosts.slice(0, 20).forEach(m => {
-    const bar = Math.min(100, m.daysSinceLastMessage / Math.max(1, gs.totalDays) * 100);
-    const color = m.daysSinceLastMessage > 90 ? '#FF2D78' : m.daysSinceLastMessage > 30 ? '#FFD23F' : '#3BCEAC';
-    html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;">
-      <span style="width:120px;font-weight:600;font-size:0.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.name}</span>
-      <div style="flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">
-        <div style="width:${bar}%;height:100%;background:${color};border-radius:3px;"></div>
+    const silence = m.longestSilence || 0;
+    const barPct = Math.min(100, silence / maxSilence * 100);
+    const color = m.daysSinceLastMessage > 365 ? '#FF2D78' : m.daysSinceLastMessage > 90 ? '#FF6B35' : '#6BCB77';
+    html += `<div style="padding:10px 14px;background:rgba(255,255,255,0.03);border-radius:10px;">
+      <div style="font-weight:600;font-size:0.9rem;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.name}</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:6px;">Mayor silencio: <strong>${formatSilenceLabel(silence)}</strong> · Último mensaje: <strong>${formatDaysLabel(m.daysSinceLastMessage)}</strong></div>
+      <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">
+        <div style="width:${barPct}%;height:100%;background:${color};border-radius:3px;transition:width 0.5s ease;"></div>
       </div>
-      <span style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;">${m.daysSinceLastMessage}d · ${m.msgCount} msgs</span>
     </div>`;
   });
   html += '</div>';

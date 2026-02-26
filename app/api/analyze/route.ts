@@ -238,25 +238,28 @@ Basándome en el análisis de ${stats?.total || 0} mensajes entre ${stats?.perso
 
     // ===== MODO GROUP-ANALYSIS — Fun fact del grupo =====
     if (mode === 'group-analysis') {
-      const memberList = (stats?.members || []).map((m: any) => `${m.name} (${m.msgCount} msgs, ${m.pct}%, ${m.category})`).join(', ');
-      const sampleMsgs = (messages || []).slice(-50).map((m: any) => `${m.sender}: ${(m.text || '').substring(0, 60)}`).join('\n');
+      const memberList = (stats?.members || []).slice(0, 8).map((m: any) => `${m.name}: ${m.msgCount} msgs (${m.pct}%)`).join(', ');
 
-      const groupPrompt = `Eres un analista de grupos de WhatsApp con humor. Te doy datos de un grupo.
-Genera UN SOLO dato curioso, sorprendente y divertido sobre este grupo.
-Debe ser específico con nombres y números reales del grupo.
-Máximo 2 frases. Tono: divertido, como si se lo contaras a un amigo.
-Ejemplos de estilo:
-- "Si todos los audios de Carlos se pusieran seguidos, durarían más que Titanic"
-- "María ha escrito 'jajaja' 2,847 veces. Eso es un jajaja cada 6 horas"
-- "Pedro solo aparece cuando alguien dice 'tacos'. El 73% de sus mensajes son después de mencionar comida"
+      const groupPrompt = `Genera UN dato curioso corto y divertido sobre este grupo de WhatsApp.
+
+REGLAS ESTRICTAS:
+- MÁXIMO 1-2 frases. Nunca más de 30 palabras.
+- Usa UN dato numérico concreto, no varios.
+- Menciona solo 1-2 nombres de personas, no más.
+- El dato debe hacer reír o sorprender. Tono: como contarle algo gracioso a un amigo.
+- NO hagas comparaciones complicadas con múltiples personas.
+- NO menciones porcentajes ni datos técnicos.
+- NO inventes datos que no estén abajo.
+
+Buenos ejemplos del tono que quiero:
+- "Carlos ha mandado más audios que palabras escritas. Literalmente habla más de lo que escribe."
+- "Si María cobrara $1 por cada 'jajaja', ya habría pagado la renta de un año."
+- "Pedro lleva 1,283 días sin hablar. Ni para felicitar cumpleaños."
+- "El grupo tiene 16 miembros pero solo 4 hablan. Los otros 12 son espectadores."
 
 DATOS DEL GRUPO:
-- ${stats?.totalMessages || 0} mensajes de ${stats?.members?.length || 0} participantes en ${stats?.uniqueDays || 0} días
-- Score de salud: ${stats?.score || 'N/A'}/100
+- ${stats?.totalMessages || 0} mensajes, ${stats?.members?.length || 0} miembros, ${stats?.uniqueDays || 0} días
 - Miembros: ${memberList}
-
-MUESTRA DE MENSAJES:
-${sampleMsgs}
 
 Responde en JSON: { "funInsight": "tu dato curioso aquí" }`;
 
