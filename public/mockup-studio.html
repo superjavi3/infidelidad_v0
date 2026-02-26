@@ -1019,10 +1019,10 @@ function render() {
 
   // Therapist
   const therapistMsgs = [
-    { id: 'inTherapistMsgA', cls: 'person-a', name: 'Tú' },
-    { id: 'inTherapistMsgB', cls: 'person-b', name: 'Terapeuta IA' },
-    { id: 'inTherapistMsgC', cls: 'person-a', name: 'Tú' },
-    { id: 'inTherapistMsgD', cls: 'person-b', name: 'Terapeuta IA' },
+    { id: 'inTherapistMsgA', cls: 'person-b', name: 'Tú' },
+    { id: 'inTherapistMsgB', cls: 'person-a', name: 'Terapeuta IA' },
+    { id: 'inTherapistMsgC', cls: 'person-b', name: 'Tú' },
+    { id: 'inTherapistMsgD', cls: 'person-a', name: 'Terapeuta IA' },
   ];
   let bubblesHtml = '';
   const activeMsgs = therapistMsgs.filter(m => getVal(m.id).trim());
