@@ -4906,34 +4906,106 @@ const ARCHETYPES = {
   'El Normal': { emoji: '😐', color: '#636E72', desc: 'Participa lo justo, ni más ni menos' },
 };
 
-function assignArchetype(member, gs) {
+// Calcula score de afinidad de un miembro con cada arquetipo (mayor = mejor fit)
+function scoreArchetypes(member, gs) {
   const pct = member.msgCount / gs.totalMessages * 100;
   const audioRatio = member.mediaCount.audios / Math.max(1, member.msgCount);
   const mediaRatio = member.mediaCount.total / Math.max(1, member.msgCount);
   const nightRatio = member.nightPct / 100;
   const jajaRatio = member.jajaCount / Math.max(1, member.msgCount);
   const urlRatio = member.urlCount / Math.max(1, member.msgCount);
+  const fwdRatio = member.forwardedCount / Math.max(1, member.msgCount);
 
-  if (member.daysSinceLastMessage > 30 || member.msgCount <= 5) return 'El Fantasma';
-  if (audioRatio > 0.15) return 'El Audiero';
-  if ((mediaRatio > 0.3 && jajaRatio > 0.1) || jajaRatio > 0.25) return 'El Payaso';
-  if (nightRatio > 0.4) return 'El Nocturno';
-  if (urlRatio > 0.08 || member.forwardedCount > member.msgCount * 0.05) return 'El Periodista';
-  if (pct >= 15) return 'El Líder';
-  // Check for "El Polémico" — messages that trigger many rapid replies
-  // Simplified: high engagement rate
-  if (pct >= 8 && member.avgLength > 50) return 'El Polémico';
-  if (pct >= 3 && member.mediaCount.total < member.msgCount * 0.1) return 'El Corazón';
-  return 'El Normal';
+  // Varianza de actividad mensual (para "El Que Va y Viene")
+  let activityVariance = 0;
+  if (gs.monthlyActivity && gs.monthlyActivity.length > 2) {
+    const monthlyCounts = gs.monthlyActivity.map(ma => ma.byPerson[member.name] || 0);
+    const avg = monthlyCounts.reduce((a, b) => a + b, 0) / monthlyCounts.length;
+    if (avg > 0) {
+      const variance = monthlyCounts.reduce((s, c) => s + Math.pow(c - avg, 2), 0) / monthlyCounts.length;
+      activityVariance = Math.sqrt(variance) / avg; // coeficiente de variación
+    }
+  }
+
+  // Interacción con distintos miembros (para "El Corazón")
+  let interactsWith = 0;
+  if (gs.sorted) {
+    const replied = new Set();
+    for (let i = 1; i < gs.sorted.length; i++) {
+      if (gs.sorted[i].sender === member.name && gs.sorted[i-1].sender !== member.name) {
+        const gap = (gs.sorted[i].timestamp - gs.sorted[i-1].timestamp) / 60000;
+        if (gap > 0 && gap <= 30) replied.add(gs.sorted[i-1].sender);
+      }
+      if (gs.sorted[i-1].sender === member.name && gs.sorted[i].sender !== member.name) {
+        const gap = (gs.sorted[i].timestamp - gs.sorted[i-1].timestamp) / 60000;
+        if (gap > 0 && gap <= 30) replied.add(gs.sorted[i].sender);
+      }
+    }
+    interactsWith = replied.size / Math.max(1, gs.members.length - 1);
+  }
+
+  const scores = {};
+  scores['El Fantasma'] = (member.daysSinceLastMessage > 30 ? 90 : 0) + (member.msgCount <= 5 ? 90 : 0) + Math.min(50, member.daysSinceLastMessage);
+  scores['El Audiero'] = Math.round(audioRatio * 400);
+  scores['El Payaso'] = Math.round((jajaRatio * 200) + (mediaRatio * 100));
+  scores['El Nocturno'] = Math.round(nightRatio * 250);
+  scores['El Periodista'] = Math.round((urlRatio * 300) + (fwdRatio * 200));
+  scores['El Líder'] = Math.round(pct * 5);
+  scores['El Polémico'] = Math.round(Math.min(1, pct / 10) * member.avgLength / 2);
+  scores['El Corazón'] = Math.round(interactsWith * 100);
+  scores['El Que Va y Viene'] = Math.round(activityVariance * 80);
+  scores['El Normal'] = 10; // Fallback bajo, siempre disponible
+  return scores;
+}
+
+// Asignación única: cada miembro recibe un arquetipo distinto
+function assignUniqueArchetypes(members, gs) {
+  const assignments = {}; // memberName → archetypeName
+  const usedArchetypes = new Set();
+  const archetypeNames = Object.keys(ARCHETYPES);
+
+  // Generar scores para todos los miembros
+  const allScores = members.map(m => ({
+    member: m,
+    scores: scoreArchetypes(m, gs)
+  }));
+
+  // Crear lista de (miembro, arquetipo, score) y ordenar de mayor a menor score
+  const candidates = [];
+  allScores.forEach(({ member, scores }) => {
+    archetypeNames.forEach(arch => {
+      candidates.push({ name: member.name, archetype: arch, score: scores[arch] });
+    });
+  });
+  candidates.sort((a, b) => b.score - a.score);
+
+  // Asignación greedy: el par con mayor score que no tenga conflicto
+  const assignedMembers = new Set();
+  candidates.forEach(({ name, archetype, score }) => {
+    if (assignedMembers.has(name) || usedArchetypes.has(archetype)) return;
+    assignments[name] = archetype;
+    assignedMembers.add(name);
+    usedArchetypes.add(archetype);
+  });
+
+  // Miembros sin arquetipo (más miembros que arquetipos): asignar "El Normal" con sufijo
+  members.forEach(m => {
+    if (!assignments[m.name]) {
+      assignments[m.name] = 'El Normal';
+    }
+  });
+
+  return assignments;
 }
 
 function renderGroupArchetypes(gs) {
   const body = document.getElementById('group-archetypesBody');
   const activeMembers = gs.members.filter(m => m.msgCount > 5);
+  const assignments = assignUniqueArchetypes(activeMembers, gs);
 
   let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;">';
   activeMembers.forEach(member => {
-    const archName = assignArchetype(member, gs);
+    const archName = assignments[member.name] || 'El Normal';
     const arch = ARCHETYPES[archName] || ARCHETYPES['El Normal'];
     html += `<div class="group-archetype-card" style="border-left:3px solid ${arch.color};">
       <div style="font-size:2.2rem;margin-bottom:8px;">${arch.emoji}</div>
