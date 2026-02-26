@@ -7,8 +7,8 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
@@ -1157,13 +1157,27 @@ function scheduleRender() {
   renderTimeout = setTimeout(render, 150);
 }
 
-// Bind all inputs
-document.querySelectorAll('.sidebar input, .sidebar textarea, .sidebar select').forEach(el => {
-  el.addEventListener('input', scheduleRender);
-});
+// Init after DOM ready
+function init() {
+  try {
+    // Bind all inputs
+    document.querySelectorAll('.sidebar input, .sidebar textarea, .sidebar select').forEach(el => {
+      el.addEventListener('input', scheduleRender);
+    });
+    // Initial render
+    render();
+    console.log('[Studio] Init OK');
+  } catch(e) {
+    console.error('[Studio] Init error:', e);
+    document.getElementById('previewContent').innerHTML = '<div style="padding:40px;color:#FF2D78;font-size:1.2rem;">Error: ' + e.message + '</div>';
+  }
+}
 
-// Initial render
-render();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 </script>
 </body>
 </html>
