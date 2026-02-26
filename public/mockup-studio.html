@@ -7,7 +7,6 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -489,13 +488,6 @@ body {
   margin-bottom: 12px;
 }
 
-/* Capture flash */
-.capture-flash {
-  position: fixed; inset: 0; background: #fff; z-index: 99999;
-  opacity: 0; pointer-events: none; transition: opacity 0.15s;
-}
-.capture-flash.active { opacity: 0.3; pointer-events: auto; }
-
 /* Status toast */
 .toast {
   position: fixed; bottom: 24px; right: 24px; background: var(--bg-card);
@@ -655,10 +647,10 @@ body {
         <option value="sec-therapist">Terapeuta IA</option>
       </select>
       <div class="toolbar-sep"></div>
-      <button class="toolbar-btn" id="btnSection" onclick="captureSection(this)">📷 Capturar sección</button>
-      <button class="toolbar-btn" id="btnAll" onclick="captureAll(this)">📸 Capturar todo</button>
-      <button class="toolbar-btn" id="btnCopy" onclick="captureClipboard(this)">📋 Copiar</button>
-      <button class="toolbar-btn primary" id="btnDownload" onclick="downloadCapture(this)">⬇ Descargar PNG</button>
+      <button class="toolbar-btn" id="btnSection" onclick="captureSection()">📷 Capturar sección</button>
+      <button class="toolbar-btn" id="btnAll" onclick="captureAll()">📸 Capturar todo</button>
+      <button class="toolbar-btn" id="btnCopy" onclick="captureClipboard()">📋 Copiar</button>
+      <button class="toolbar-btn primary" id="btnDownload" onclick="downloadCapture()">⬇ Descargar PNG</button>
     </div>
 
     <!-- Preview -->
@@ -672,7 +664,6 @@ body {
   </div>
 </div>
 
-<div class="capture-flash" id="captureFlash"></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1035,7 +1026,6 @@ function renderChart(points) {
   });
 }
 
-// ══════ CAPTURE UTILITIES ══════
 // ══════ TOAST ══════
 function showToast(msg, isError) {
   const t = document.getElementById('toast');
@@ -1046,40 +1036,6 @@ function showToast(msg, isError) {
   setTimeout(() => t.classList.remove('show', 'error'), 2500);
 }
 
-// ══════ BUTTON FEEDBACK ══════
-function btnBusy(btn, text) {
-  if (!btn) return;
-  btn._origText = btn.textContent;
-  btn.textContent = text || 'Capturando...';
-  btn.disabled = true;
-  btn.style.opacity = '0.6';
-}
-function btnDone(btn) {
-  if (!btn) return;
-  btn.textContent = '✓ Listo';
-  btn.disabled = false;
-  btn.style.opacity = '1';
-  setTimeout(() => { btn.textContent = btn._origText; }, 2000);
-}
-function btnError(btn, msg) {
-  if (!btn) return;
-  btn.textContent = btn._origText;
-  btn.disabled = false;
-  btn.style.opacity = '1';
-  showToast(msg, true);
-}
-
-function flash() {
-  const f = document.getElementById('captureFlash');
-  f.classList.add('active');
-  setTimeout(() => f.classList.remove('active'), 200);
-}
-
-function getDateStr() {
-  const d = new Date();
-  return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-}
-
 // ══════ SECTION DETECTION ══════
 const SECTIONS = ['sec-score','sec-stats','sec-timeline','sec-silences','sec-doubletext','sec-deleted','sec-multimedia','sec-forensic','sec-bvn','sec-therapist'];
 
@@ -1087,7 +1043,7 @@ function getVisibleSectionName() {
   const wrap = document.getElementById('previewWrap');
   const wrapRect = wrap.getBoundingClientRect();
   const center = wrapRect.top + wrapRect.height / 2;
-  let closest = 'completo';
+  let closest = null;
   let closestDist = Infinity;
   SECTIONS.forEach(id => {
     const el = document.getElementById(id);
@@ -1099,169 +1055,59 @@ function getVisibleSectionName() {
   return closest;
 }
 
-function getVisibleSectionElement() {
-  const name = getVisibleSectionName();
-  return document.getElementById('sec-' + name);
+// ══════ COLLECT ALL FORM DATA ══════
+function collectMockupData() {
+  return {
+    p1: getVal('inP1'), p2: getVal('inP2'),
+    score: getNum('inScore'), totalMsgs: getNum('inTotalMsgs'), days: getNum('inDays'),
+    msgsA: getNum('inMsgsA'), msgsB: getNum('inMsgsB'),
+    avgReply: getVal('inAvgReply'), nightPct: getVal('inNightPct'),
+    loveCount: getNum('inLoveCount'), leaderPct: getNum('inLeaderPct'),
+    verdict: getVal('inVerdict'),
+    timelineData: getVal('inTimelineData'), timelineInsight: getVal('inTimelineInsight'),
+    silTotal: getVal('inSilTotal'), silLongest: getVal('inSilLongest'),
+    silBreaker: getVal('inSilBreaker'), silInsight: getVal('inSilInsight'),
+    dtA: getNum('inDtA'), dtB: getNum('inDtB'), dtInsight: getVal('inDtInsight'),
+    delTotal: getNum('inDelTotal'), delA: getNum('inDelA'), delB: getNum('inDelB'), delInsight: getVal('inDelInsight'),
+    mmAudA: getNum('inMmAudA'), mmAudB: getNum('inMmAudB'),
+    mmImgA: getNum('inMmImgA'), mmImgB: getNum('inMmImgB'),
+    mmVidA: getNum('inMmVidA'), mmVidB: getNum('inMmVidB'),
+    mmInsight: getVal('inMmInsight'),
+    forensic1: getVal('inForensic1'), forensic2: getVal('inForensic2'), forensic3: getVal('inForensic3'),
+    forensicNarrative: getVal('inForensicNarrative'),
+    bvn1: getVal('inBvn1'), bvn2: getVal('inBvn2'), bvn3: getVal('inBvn3'),
+    bvnInsight: getVal('inBvnInsight'),
+    therapist: getVal('inTherapist'),
+    viewMode: document.getElementById('previewFrame').classList.contains('mobile') ? 'mobile' : 'desktop',
+  };
 }
 
-// ══════ IS MOBILE VIEW ══════
-function isMobileView() {
-  return document.getElementById('previewFrame').classList.contains('mobile');
+function openCapturePage(targetSection) {
+  const data = collectMockupData();
+  data.targetSection = targetSection || 'all';
+  sessionStorage.setItem('mockupData', JSON.stringify(data));
+  window.open('/mockup-capture.html', '_blank');
 }
 
-// ══════ CORE CAPTURE ══════
-async function doCapture(element) {
-  const frame = document.getElementById('previewFrame');
-  const wrap  = document.getElementById('previewWrap');
-  const mobile = isMobileView();
-
-  // Save original styles
-  const origFrameOverflow = frame.style.overflow;
-  const origFrameMaxH     = frame.style.maxHeight;
-  const origFrameH        = frame.style.height;
-  const origFrameBR       = frame.style.borderRadius;
-  const origFrameClip     = frame.style.clipPath;
-  const origWrapOverflow  = wrap.style.overflow;
-  const origWrapH         = wrap.style.height;
-
-  // Remove clipping from parents so html2canvas sees full content
-  if (mobile) {
-    frame.style.overflow     = 'visible';
-    frame.style.maxHeight    = 'none';
-    frame.style.height       = 'auto';
-    frame.style.borderRadius = '0';
-    frame.style.clipPath     = 'none';
-  }
-  wrap.style.overflow = 'visible';
-  wrap.style.height   = 'auto';
-
-  // Scroll to top
-  wrap.scrollTop = 0;
-
-  // Wait for layout + Chart.js animations
-  await new Promise(r => setTimeout(r, 800));
-
-  const w = element.scrollWidth;
-  const h = element.scrollHeight;
-  console.log('[Capture] target:', element.id || element.className,
-    'scrollWidth:', w, 'scrollHeight:', h,
-    'offsetWidth:', element.offsetWidth, 'offsetHeight:', element.offsetHeight);
-
-  flash();
-
-  const canvas = await html2canvas(element, {
-    scale: 3,
-    useCORS: true,
-    allowTaint: true,
-    backgroundColor: '#0A0A14',
-    logging: false,
-    width: w,
-    height: h,
-    windowWidth: w,
-    windowHeight: h,
-    scrollX: 0,
-    scrollY: 0,
-    x: 0,
-    y: 0,
-  });
-
-  // Restore original styles
-  if (mobile) {
-    frame.style.overflow     = origFrameOverflow;
-    frame.style.maxHeight    = origFrameMaxH;
-    frame.style.height       = origFrameH;
-    frame.style.borderRadius = origFrameBR;
-    frame.style.clipPath     = origFrameClip;
-  }
-  wrap.style.overflow = origWrapOverflow;
-  wrap.style.height   = origWrapH;
-
-  return canvas;
+// ══════ CAPTURE BUTTONS ══════
+function captureSection() {
+  const sec = getVisibleSectionName();
+  if (!sec) { showToast('No se encontró la sección', true); return; }
+  openCapturePage(sec);
 }
 
-function downloadBlob(blob, filename) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+function captureAll() {
+  openCapturePage('all');
 }
 
-function canvasToPngBlob(canvas) {
-  return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+function captureClipboard() {
+  showToast('Usa la página de captura y copia desde ahí');
+  openCapturePage(getVisibleSectionName() || 'all');
 }
 
-// ══════ CAPTURE: SECTION (visible card) ══════
-async function captureSection(btn) {
-  const sectionName = getVisibleSectionName();
-  const el = getVisibleSectionElement();
-  if (!el) { showToast('No se encontró la sección', true); return; }
-
-  btnBusy(btn, '📷 Capturando...');
-  try {
-    console.log('[captureSection] target:', sectionName, el.id);
-    const canvas = await doCapture(el);
-    const blob = await canvasToPngBlob(canvas);
-    downloadBlob(blob, `yalosabia-${sectionName}-${getDateStr()}.png`);
-    btnDone(btn);
-  } catch (e) {
-    console.error('[Capture section]', e);
-    btnError(btn, 'Error: ' + e.message);
-  }
-}
-
-// ══════ CAPTURE: ALL (full previewContent) ══════
-async function captureAll(btn) {
-  btnBusy(btn, '📸 Capturando...');
-  try {
-    const el = document.getElementById('previewContent');
-    console.log('[captureAll] target: #previewContent');
-    const canvas = await doCapture(el);
-    const blob = await canvasToPngBlob(canvas);
-    downloadBlob(blob, `yalosabia-completo-${getDateStr()}.png`);
-    btnDone(btn);
-  } catch (e) {
-    console.error('[Capture all]', e);
-    btnError(btn, 'Error: ' + e.message);
-  }
-}
-
-// ══════ CAPTURE: CLIPBOARD ══════
-async function captureClipboard(btn) {
-  btnBusy(btn, '📋 Copiando...');
-  try {
-    const el = getVisibleSectionElement() || document.getElementById('previewContent');
-    console.log('[captureClipboard] target:', el.id || el.className);
-    const canvas = await doCapture(el);
-    const blob = await canvasToPngBlob(canvas);
-    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-    btnDone(btn);
-    showToast('Copiado al portapapeles');
-  } catch (e) {
-    console.error('[Clipboard]', e);
-    btnError(btn, 'Error: ' + e.message);
-  }
-}
-
-// ══════ DOWNLOAD PNG (visible section) ══════
-async function downloadCapture(btn) {
-  const sectionName = getVisibleSectionName();
-  const el = getVisibleSectionElement() || document.getElementById('previewContent');
-
-  btnBusy(btn, '⬇ Descargando...');
-  try {
-    console.log('[downloadCapture] target:', sectionName, el.id);
-    const canvas = await doCapture(el);
-    const blob = await canvasToPngBlob(canvas);
-    downloadBlob(blob, `yalosabia-${sectionName}-${getDateStr()}.png`);
-    btnDone(btn);
-  } catch (e) {
-    console.error('[Download]', e);
-    btnError(btn, 'Error: ' + e.message);
-  }
+function downloadCapture() {
+  const sec = getVisibleSectionName();
+  openCapturePage(sec || 'all');
 }
 
 // ══════ LIVE UPDATES ══════

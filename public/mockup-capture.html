@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YaLoSabía — Captura</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg-deep: #0d0d0d;
+  --bg-card: #1a1a2e;
+  --pink: #FF2D78;
+  --orange: #FF6B35;
+  --yellow: #FFD23F;
+  --green: #3BCEAC;
+  --purple: #6C5CE7;
+  --blue: #0984E3;
+  --text: #FAFAFA;
+  --text-muted: #a0a0b8;
+  --radius: 20px;
+  --font-display: 'Dela Gothic One', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+html, body {
+  font-family: var(--font-body);
+  background: #0A0A14;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Floating toolbar ── */
+.capture-toolbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: rgba(15,15,26,0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.capture-toolbar .label {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  margin-right: auto;
+}
+.capture-toolbar .label span { color: var(--pink); }
+.capture-toolbar button {
+  padding: 8px 16px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.capture-toolbar button:hover { background: rgba(255,255,255,0.1); border-color: var(--pink); }
+.capture-toolbar button.primary {
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  border: none; color: #fff;
+}
+.capture-toolbar button:disabled { opacity: 0.5; cursor: wait; }
+.capture-toolbar .status {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ── Report content ── */
+#report {
+  background: #0A0A14;
+  padding: 40px 24px 80px;
+  max-width: 390px;
+  margin: 60px auto 0;
+}
+#report.mode-desktop {
+  max-width: 1100px;
+}
+.gradient-text {
+  background: linear-gradient(135deg, var(--pink), var(--orange), var(--yellow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.results-header { text-align: center; margin-bottom: 48px; }
+.results-header h2 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); margin-bottom: 8px; }
+.score-card {
+  max-width: 400px; margin: 0 auto 48px;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  border-radius: var(--radius); padding: 40px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.score-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.15), transparent 50%);
+}
+.score-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 3px; opacity: 0.8; margin-bottom: 12px; }
+.score-number { font-family: var(--font-display); font-size: 5rem; line-height: 1; margin-bottom: 4px; }
+.score-max { font-size: 1.1rem; opacity: 0.7; }
+.score-verdict { margin-top: 16px; font-size: 1.1rem; font-weight: 600; }
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px; margin-bottom: 48px;
+}
+.stat-card {
+  background: var(--bg-card); border-radius: var(--radius); padding: 28px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.stat-emoji { font-size: 1.8rem; margin-bottom: 12px; }
+.stat-value { font-family: var(--font-display); font-size: 1.8rem; margin-bottom: 4px; }
+.stat-label { color: var(--text-muted); font-size: 0.88rem; }
+.fun-fact {
+  background: linear-gradient(135deg, rgba(255,210,63,0.1), rgba(255,107,53,0.1));
+  border: 1px solid rgba(255,210,63,0.2); border-radius: var(--radius);
+  padding: 28px 32px; margin-bottom: 48px; font-size: 1.05rem; line-height: 1.6; text-align: center;
+}
+.fun-fact strong { color: var(--yellow); }
+.example-card {
+  background: var(--bg-card); border-radius: var(--radius); padding: 28px 32px;
+  border: 1px solid rgba(255,255,255,0.06); margin-bottom: 48px; text-align: center; line-height: 1.7;
+}
+.premium-feature-card {
+  background: var(--bg-card); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius); margin-bottom: 20px; position: relative;
+}
+.pf-header { display: flex; align-items: center; gap: 16px; padding: 24px 28px 0; }
+.pf-icon { font-size: 2rem; flex-shrink: 0; }
+.pf-title { font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 2px; }
+.pf-subtitle { color: var(--text-muted); font-size: 0.85rem; }
+.pf-body { padding: 20px 28px 28px; position: relative; }
+.pf-insight {
+  background: rgba(108,92,231,0.1); border: 1px solid rgba(108,92,231,0.2);
+  border-radius: 12px; padding: 16px 20px; margin-top: 16px;
+  font-size: 0.95rem; line-height: 1.6; color: var(--text);
+}
+.pf-insight strong { color: var(--purple); }
+.plan-header { text-align: center; padding: 32px 0 28px; }
+.plan-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; padding: 6px 18px; border-radius: 50px; margin-bottom: 14px;
+}
+.plan-badge.free { background: rgba(16,185,129,0.12); color: #10B981; border: 1px solid rgba(16,185,129,0.25); }
+.plan-badge.detective { background: rgba(59,130,246,0.12); color: #3B82F6; border: 1px solid rgba(59,130,246,0.25); }
+.plan-badge.obsessive {
+  background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(168,85,247,0.15));
+  color: #EC4899; border: 1px solid rgba(236,72,153,0.3);
+}
+.plan-title { font-family: var(--font-display); margin-bottom: 6px; }
+.plan-title.free { font-size: 1.3rem; color: var(--text); }
+.plan-title.detective { font-size: 1.5rem; color: #3B82F6; }
+.plan-title.obsessive {
+  font-size: 1.7rem;
+  background: linear-gradient(135deg, #EC4899, #A855F7);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.plan-subtitle { color: var(--text-muted); font-size: 0.92rem; }
+.plan-detective-wrap {
+  border-top: 4px solid #3B82F6;
+  background: linear-gradient(180deg, rgba(59,130,246,0.04) 0%, transparent 40%);
+  border-radius: var(--radius) var(--radius) 0 0; padding: 0 4px 4px; margin-top: 60px;
+}
+.plan-detective-wrap .premium-feature-card { border-color: rgba(59,130,246,0.12); }
+.plan-obsessive-wrap {
+  border-top: 6px solid; border-image: linear-gradient(90deg, #EC4899, #A855F7) 1;
+  background: linear-gradient(180deg, rgba(236,72,153,0.06) 0%, rgba(168,85,247,0.03) 20%, transparent 50%);
+  padding: 0 4px 4px; margin-top: 80px; position: relative;
+}
+.plan-obsessive-wrap::before {
+  content: ''; position: absolute; top: -2px; left: 10%; right: 10%; height: 40px;
+  background: radial-gradient(ellipse at center, rgba(236,72,153,0.15), transparent 70%);
+  pointer-events: none;
+}
+.plan-obsessive-wrap .premium-feature-card { border-color: rgba(236,72,153,0.12); }
+.silence-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+.silence-stat { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 16px; text-align: center; }
+.silence-stat-value { font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 4px; }
+.silence-stat-label { color: var(--text-muted); font-size: 0.8rem; }
+.dt-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px; }
+.dt-person { text-align: center; }
+.dt-person-name { font-family: var(--font-display); font-size: 0.95rem; margin-bottom: 8px; }
+.dt-person-count { font-family: var(--font-display); font-size: 2.5rem; margin-bottom: 4px; }
+.dt-person-label { color: var(--text-muted); font-size: 0.8rem; }
+.dt-bar-track { height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; margin-top: 8px; overflow: hidden; }
+.dt-bar-fill { height: 100%; border-radius: 4px; }
+.dt-bar-fill.pink { background: var(--pink); }
+.dt-bar-fill.purple { background: var(--purple); }
+.mm-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.mm-row:last-of-type { border-bottom: none; }
+.mm-icon { font-size: 1.3rem; flex-shrink: 0; width: 28px; text-align: center; }
+.mm-label { font-size: 0.85rem; min-width: 110px; flex-shrink: 0; }
+.mm-label span { color: var(--text-muted); font-size: 0.78rem; }
+.mm-bar-wrap { flex: 1; display: flex; height: 22px; border-radius: 6px; overflow: hidden; background: rgba(255,255,255,0.04); }
+.mm-bar-a { background: var(--pink); height: 100%; min-width: 0; }
+.mm-bar-b { background: var(--purple); height: 100%; min-width: 0; }
+.mm-counts { font-size: 0.72rem; color: rgba(255,255,255,0.6); white-space: nowrap; flex-shrink: 0; }
+.mm-king { font-family: var(--font-display); font-size: 0.78rem; min-width: 70px; text-align: right; flex-shrink: 0; }
+.deleted-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.deleted-stat-card { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 20px; text-align: center; }
+.deleted-stat-value { font-family: var(--font-display); font-size: 2rem; margin-bottom: 4px; color: var(--pink); }
+.deleted-stat-label { color: var(--text-muted); font-size: 0.82rem; }
+.forensic-point {
+  background: rgba(255,45,120,0.06); border-left: 3px solid var(--pink);
+  border-radius: 0 12px 12px 0; padding: 16px 20px; margin-bottom: 12px;
+}
+.forensic-date { font-family: var(--font-display); font-size: 1rem; color: var(--pink); margin-bottom: 6px; }
+.forensic-detail { color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin-bottom: 4px; }
+.forensic-detail strong { color: var(--text); }
+.bvn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.bvn-person { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px; border: 1px solid rgba(255,255,255,0.06); }
+.bvn-person-header {
+  font-family: var(--font-display); font-size: 0.95rem; font-weight: 700;
+  margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; gap: 8px;
+}
+.bvn-person-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.bvn-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.bvn-table th {
+  font-family: var(--font-display); font-size: 0.78rem; text-transform: uppercase;
+  letter-spacing: 1px; padding: 10px 12px; border-bottom: 2px solid rgba(255,255,255,0.08);
+}
+.bvn-table th:first-child { text-align: left; color: var(--text-muted); }
+.bvn-table th:nth-child(2) { text-align: center; color: var(--green); }
+.bvn-table th:nth-child(3) { text-align: center; color: var(--pink); }
+.bvn-table td { padding: 8px 12px; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.bvn-table td:first-child { color: var(--text-muted); font-weight: 500; }
+.bvn-table td:nth-child(2), .bvn-table td:nth-child(3) { text-align: center; font-family: var(--font-display); font-size: 1rem; }
+.therapist-card {
+  background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(236,72,153,0.08));
+  border: 1px solid rgba(108,92,231,0.2); border-radius: var(--radius);
+  padding: 28px; line-height: 1.7; font-size: 0.95rem;
+}
+.therapist-card .therapist-label {
+  font-family: var(--font-display); font-size: 0.85rem; color: var(--purple); margin-bottom: 12px;
+}
+
+/* Flash */
+.capture-flash {
+  position: fixed; inset: 0; background: #fff; z-index: 99999;
+  opacity: 0; pointer-events: none; transition: opacity 0.15s;
+}
+.capture-flash.active { opacity: 0.3; pointer-events: auto; }
+</style>
+</head>
+<body>
+
+<div class="capture-toolbar" id="toolbar">
+  <div class="label">Ya<span>Lo</span>Sabía Captura</div>
+  <span class="status" id="status">Cargando...</span>
+  <button onclick="captureSection()">📷 Sección</button>
+  <button onclick="captureAll()">📸 Todo</button>
+  <button onclick="copyToClipboard()">📋 Copiar</button>
+  <button class="primary" onclick="downloadPng()">⬇ Descargar PNG</button>
+  <button onclick="window.close()">✕ Cerrar</button>
+</div>
+
+<div id="report"></div>
+<div class="capture-flash" id="captureFlash"></div>
+
+<script>
+// ══════ STATE ══════
+let chartsReady = false;
+let timelineChart = null;
+let mockupData = null;
+
+// ══════ INIT ══════
+(function init() {
+  const raw = sessionStorage.getItem('mockupData');
+  if (!raw) {
+    document.getElementById('report').innerHTML = '<div style="padding:80px 40px;text-align:center;color:var(--pink);font-size:1.2rem;">No hay datos. Abre esta página desde el Studio.</div>';
+    document.getElementById('status').textContent = 'Sin datos';
+    return;
+  }
+  try {
+    mockupData = JSON.parse(raw);
+  } catch(e) {
+    document.getElementById('report').innerHTML = '<div style="padding:80px 40px;text-align:center;color:var(--pink);">Error parsing datos: ' + e.message + '</div>';
+    return;
+  }
+
+  // Set width mode
+  const report = document.getElementById('report');
+  if (mockupData.viewMode === 'desktop') {
+    report.classList.add('mode-desktop');
+  }
+
+  renderReport(mockupData);
+})();
+
+// ══════ RENDER ══════
+function renderReport(d) {
+  const p1 = d.p1, p2 = d.p2;
+  const score = d.score, totalMsgs = d.totalMsgs, days = d.days;
+  const msgsA = d.msgsA, msgsB = d.msgsB;
+  const avgReply = d.avgReply, nightPct = d.nightPct;
+  const loveCount = d.loveCount, leaderPct = d.leaderPct;
+  const verdict = d.verdict;
+  const followerPct = 100 - leaderPct;
+  const leader = leaderPct >= 50 ? p1 : p2;
+  const follower = leader === p1 ? p2 : p1;
+
+  // Timeline
+  const timelinePoints = (d.timelineData || '').split(',').map(p => {
+    const [label, val] = p.trim().split(':');
+    return { label: (label || '').trim(), value: parseInt(val) || 0 };
+  }).filter(p => p.label);
+
+  // Forensic
+  const forensic = [d.forensic1, d.forensic2, d.forensic3]
+    .filter(v => v && v.trim())
+    .map(v => {
+      const [date, ...desc] = v.split('|');
+      return { date: (date || '').trim(), detail: (desc.join('|') || '').trim() };
+    });
+
+  // BVN
+  const bvnRows = [d.bvn1, d.bvn2, d.bvn3]
+    .filter(v => v && v.trim())
+    .map(v => {
+      const parts = v.split('|').map(s => s.trim());
+      return { label: parts[0] || '', before: parts[1] || '', after: parts[2] || '' };
+    });
+
+  // Multimedia
+  const mmTypes = [
+    { icon: '\u{1F3A4}', label: 'Audios', a: d.mmAudA || 0, b: d.mmAudB || 0 },
+    { icon: '\u{1F4F7}', label: 'Imágenes', a: d.mmImgA || 0, b: d.mmImgB || 0 },
+    { icon: '\u{1F3AC}', label: 'Videos', a: d.mmVidA || 0, b: d.mmVidB || 0 },
+  ];
+
+  const dtA = d.dtA || 0, dtB = d.dtB || 0, dtMax = Math.max(dtA, dtB, 1);
+  const delTotal = d.delTotal || 0, delA = d.delA || 0, delB = d.delB || 0;
+
+  let html = '';
+
+  // ── Only render target section, or full report ──
+  const target = d.targetSection || 'all';
+  const showAll = target === 'all';
+
+  // Results header
+  if (showAll || target === 'score' || target === 'stats') {
+    html += '<div class="results-header"><h2>Tu relación al <span class="gradient-text">descubierto</span></h2><p style="color:var(--text-muted);">Análisis basado en <strong>' + totalMsgs.toLocaleString() + '</strong> mensajes</p></div>';
+  }
+
+  // Score
+  if (showAll || target === 'score') {
+    html += '<div id="sec-score" class="score-card"><div class="score-label">Score de la relación</div><div class="score-number">' + score + '</div><div class="score-max">de 100</div><div class="score-verdict">' + verdict + '</div></div>';
+  }
+
+  // Stats
+  if (showAll || target === 'stats') {
+    const ctx = leaderPct >= 65 ? leader + ' inicia más, pregunta más, lleva el peso.' : 'Ligeramente desequilibrado pero dentro de lo normal.';
+    html += '<div id="sec-stats"><div class="plan-header"><div class="plan-badge free">\u2728 GRATIS</div><div class="plan-title free">Análisis Básico</div><div class="plan-subtitle">Estadísticas generales de tu conversación</div></div>';
+    html += '<div class="stats-grid"><div class="stat-card"><div class="stat-emoji">\u{1F4AC}</div><div class="stat-value">' + msgsA.toLocaleString() + '</div><div class="stat-label">Mensajes de ' + p1 + '</div></div><div class="stat-card"><div class="stat-emoji">\u{1F4AC}</div><div class="stat-value">' + msgsB.toLocaleString() + '</div><div class="stat-label">Mensajes de ' + p2 + '</div></div><div class="stat-card"><div class="stat-emoji">\u{23F1}\u{FE0F}</div><div class="stat-value">' + avgReply + '</div><div class="stat-label">Tiempo promedio de respuesta</div></div><div class="stat-card"><div class="stat-emoji">\u{1F319}</div><div class="stat-value">' + nightPct + '</div><div class="stat-label">Mensajes nocturnos (12am-5am)</div></div><div class="stat-card"><div class="stat-emoji">\u{2764}\u{FE0F}</div><div class="stat-value">' + loveCount.toLocaleString() + '</div><div class="stat-label">Emojis de amor enviados</div></div><div class="stat-card"><div class="stat-emoji">\u{1F4C5}</div><div class="stat-value">' + days.toLocaleString() + '</div><div class="stat-label">Días de conversación</div></div></div>';
+    html += '<div class="fun-fact">\u{1F4CA} <strong>Dato curioso:</strong> ' + p1 + ' envió <strong>' + msgsA.toLocaleString() + '</strong> mensajes y ' + p2 + ' envió <strong>' + msgsB.toLocaleString() + '</strong>. ' + (loveCount > 20 ? 'Hay mucho amor en este chat \u{2764}\u{FE0F}' : 'Podrían usar más emojis de amor... \u{1F62C}') + '</div>';
+    html += '<div class="example-card"><strong style="font-size:1.1em;">' + leader + ' lleva la relación</strong><br>' + leader + ': <strong>' + leaderPct + '%</strong> · ' + follower + ': <strong>' + followerPct + '%</strong><br><span style="color:var(--text-muted);font-size:0.9em;">' + ctx + '</span></div></div>';
+  }
+
+  // ── DETECTIVE ──
+  const showDetective = showAll || ['timeline','silences','doubletext','deleted','multimedia'].includes(target);
+  if (showDetective) {
+    html += '<div class="plan-detective-wrap"><div class="plan-header"><div class="plan-badge detective">\u{1F50D} DETECTIVE</div><div class="plan-title detective">Análisis Profundo</div><div class="plan-subtitle">Patrones ocultos de tu conversación</div></div>';
+  }
+
+  // Timeline
+  if (showAll || target === 'timeline') {
+    html += '<div class="premium-feature-card" id="sec-timeline"><div class="pf-header"><div class="pf-icon">\u{1F4C8}</div><div><div class="pf-title">Línea de Vida de la Relación</div><div class="pf-subtitle">Evolución mensual de la comunicación</div></div></div><div class="pf-body"><div style="height:320px;"><canvas id="timelineChart"></canvas></div><div class="pf-insight"><strong>\u{1F4CA} Análisis:</strong> ' + (d.timelineInsight || '') + '</div></div></div>';
+  }
+
+  // Silences
+  if (showAll || target === 'silences') {
+    html += '<div class="premium-feature-card" id="sec-silences"><div class="pf-header"><div class="pf-icon">\u{1F507}</div><div><div class="pf-title">Mapa de Silencios</div><div class="pf-subtitle">Momentos donde la comunicación se detuvo</div></div></div><div class="pf-body"><div class="silence-stats"><div class="silence-stat"><div class="silence-stat-value">' + (d.silTotal || '') + '</div><div class="silence-stat-label">Silencios de 48h+</div></div><div class="silence-stat"><div class="silence-stat-value">' + (d.silLongest || '') + '</div><div class="silence-stat-label">Silencio más largo</div></div><div class="silence-stat"><div class="silence-stat-value">' + (d.silBreaker || '') + '</div><div class="silence-stat-label">Rompe el silencio más</div></div></div><div class="pf-insight"><strong>\u{1F507} Análisis:</strong> ' + (d.silInsight || '') + '</div></div></div>';
+  }
+
+  // Double texting
+  if (showAll || target === 'doubletext') {
+    html += '<div class="premium-feature-card" id="sec-doubletext"><div class="pf-header"><div class="pf-icon">\u{1F4AC}\u{1F4AC}</div><div><div class="pf-title">Double Texting</div><div class="pf-subtitle">Quién persiste más sin recibir respuesta</div></div></div><div class="pf-body"><div class="dt-comparison"><div class="dt-person"><div class="dt-person-name">' + p1 + '</div><div class="dt-person-count" style="color:var(--pink);">' + dtA.toLocaleString() + '</div><div class="dt-person-label">veces hizo double text</div><div class="dt-bar-track"><div class="dt-bar-fill pink" style="width:' + (dtA/dtMax*100) + '%"></div></div></div><div class="dt-person"><div class="dt-person-name">' + p2 + '</div><div class="dt-person-count" style="color:var(--purple);">' + dtB.toLocaleString() + '</div><div class="dt-person-label">veces hizo double text</div><div class="dt-bar-track"><div class="dt-bar-fill purple" style="width:' + (dtB/dtMax*100) + '%"></div></div></div></div><div class="pf-insight"><strong>\u{1F624} Patrón:</strong> ' + (d.dtInsight || '') + '</div></div></div>';
+  }
+
+  // Multimedia
+  if (showAll || target === 'multimedia') {
+    let mmHtml = '';
+    mmTypes.forEach(t => {
+      const tot = t.a + t.b;
+      const pctA = tot > 0 ? Math.round(t.a / tot * 100) : 0;
+      const pctB = 100 - pctA;
+      const king = t.a >= t.b ? p1 : p2;
+      mmHtml += '<div class="mm-row"><span class="mm-icon">' + t.icon + '</span><div class="mm-label">' + t.label + ' <span>(' + tot + ')</span></div>';
+      if (tot > 0) {
+        mmHtml += '<div class="mm-bar-wrap"><div class="mm-bar-a" style="width:' + pctA + '%"></div><div class="mm-bar-b" style="width:' + pctB + '%"></div></div><span class="mm-counts">' + p1 + ': ' + t.a + ' · ' + p2 + ': ' + t.b + '</span><div class="mm-king">\u{1F451} <strong>' + king + '</strong></div>';
+      }
+      mmHtml += '</div>';
+    });
+    html += '<div class="premium-feature-card" id="sec-multimedia"><div class="pf-header"><div class="pf-icon">\u{1F4F1}</div><div><div class="pf-title">Reyes del Multimedia</div><div class="pf-subtitle">Quién manda más audios, fotos y videos</div></div></div><div class="pf-body">' + mmHtml + '<div class="pf-insight" style="margin-top:16px;"><strong>\u{1F4F1} Insight:</strong> ' + (d.mmInsight || '') + '</div></div></div>';
+  }
+
+  // Deleted
+  if (showAll || target === 'deleted') {
+    html += '<div class="premium-feature-card" id="sec-deleted"><div class="pf-header"><div class="pf-icon">\u{1F5D1}\u{FE0F}</div><div><div class="pf-title">Mensajes Eliminados</div><div class="pf-subtitle">Lo que alguien no quería que vieras</div></div></div><div class="pf-body"><div class="deleted-stats"><div class="deleted-stat-card"><div class="deleted-stat-value">' + delTotal + '</div><div class="deleted-stat-label">Total eliminados</div></div><div class="deleted-stat-card"><div class="deleted-stat-value">' + delA + '</div><div class="deleted-stat-label">' + p1 + ' eliminó</div></div><div class="deleted-stat-card"><div class="deleted-stat-value">' + delB + '</div><div class="deleted-stat-label">' + p2 + ' eliminó</div></div></div><div class="pf-insight" style="margin-top:16px;"><strong>\u{1F5D1}\u{FE0F} Análisis:</strong> ' + (d.delInsight || '') + '</div></div></div>';
+  }
+
+  if (showDetective) html += '</div>'; // close detective wrap
+
+  // ── OBSESSIVE ──
+  const showObsessive = showAll || ['forensic','bvn','therapist'].includes(target);
+  if (showObsessive) {
+    html += '<div class="plan-obsessive-wrap"><div class="plan-header"><div class="plan-badge obsessive">\u{1F525} OBSESIVO</div><div class="plan-title obsessive">Análisis Total</div><div class="plan-subtitle">El análisis más profundo que existe</div></div>';
+  }
+
+  // Forensic
+  if (showAll || target === 'forensic') {
+    let fHtml = '<div style="margin-bottom:20px;"><div style="font-family:var(--font-display);font-size:0.9rem;margin-bottom:12px;color:var(--yellow);">\u{1F4CC} Momentos Clave</div>';
+    forensic.forEach(f => {
+      fHtml += '<div class="forensic-point"><div class="forensic-date">' + f.date + '</div><div class="forensic-detail">' + f.detail + '</div></div>';
+    });
+    fHtml += '</div><div class="pf-insight" style="margin-top:16px;"><strong>\u{1F575}\u{FE0F} Reconstrucción:</strong> ' + (d.forensicNarrative || '') + '</div>';
+    html += '<div class="premium-feature-card" id="sec-forensic"><div class="pf-header"><div class="pf-icon">\u{1F575}\u{FE0F}</div><div><div class="pf-title">Reconstrucción Forense</div><div class="pf-subtitle">La cronología completa de tu relación</div></div></div><div class="pf-body">' + fHtml + '</div></div>';
+  }
+
+  // Before vs Now
+  if (showAll || target === 'bvn') {
+    let bHtml = '<div style="font-size:0.82rem;color:var(--text-muted);text-align:center;margin-bottom:16px;">Comparando primeros meses vs últimos meses</div><div class="bvn-grid">';
+    [p1, p2].forEach((name, idx) => {
+      const color = idx === 0 ? 'var(--pink)' : 'var(--purple)';
+      bHtml += '<div class="bvn-person"><div class="bvn-person-header"><span class="bvn-person-dot" style="background:' + color + ';"></span> ' + name + '</div>';
+      bHtml += '<table class="bvn-table"><thead><tr><th>Métrica</th><th>Antes</th><th>Ahora</th></tr></thead><tbody>';
+      bvnRows.forEach(r => {
+        bHtml += '<tr><td>' + r.label + '</td><td>' + r.before + '</td><td style="color:#FF4757;">' + r.after + '</td></tr>';
+      });
+      bHtml += '</tbody></table></div>';
+    });
+    bHtml += '</div><div class="pf-insight" style="margin-top:16px;"><strong>\u{1F494} Conclusión devastadora:</strong> ' + (d.bvnInsight || '') + '</div>';
+    html += '<div class="premium-feature-card" id="sec-bvn"><div class="pf-header"><div class="pf-icon">\u{1F4CA}</div><div><div class="pf-title">Antes vs Ahora</div><div class="pf-subtitle">Cómo ha cambiado la comunicación</div></div></div><div class="pf-body">' + bHtml + '</div></div>';
+  }
+
+  // Therapist
+  if (showAll || target === 'therapist') {
+    html += '<div class="premium-feature-card" id="sec-therapist"><div class="pf-header"><div class="pf-icon">\u{1F9E0}</div><div><div class="pf-title">Terapeuta IA</div><div class="pf-subtitle">Análisis profesional de tu relación</div></div></div><div class="pf-body"><div class="therapist-card"><div class="therapist-label">\u{1F9E0} Terapeuta IA — Análisis profesional</div>' + (d.therapist || '') + '</div></div></div>';
+  }
+
+  if (showObsessive) html += '</div>'; // close obsessive wrap
+
+  document.getElementById('report').innerHTML = html;
+  document.getElementById('status').textContent = 'Renderizando gráfico...';
+
+  // Render chart
+  requestAnimationFrame(() => {
+    renderChart(timelinePoints);
+    if (!document.getElementById('timelineChart')) {
+      chartsReady = true;
+      document.getElementById('status').textContent = 'Listo para capturar';
+    }
+  });
+}
+
+// ══════ CHART ══════
+function renderChart(points) {
+  const canvas = document.getElementById('timelineChart');
+  if (!canvas || points.length < 2) {
+    chartsReady = true;
+    document.getElementById('status').textContent = 'Listo para capturar';
+    return;
+  }
+
+  const labels = points.map(p => p.label);
+  const data = points.map(p => p.value);
+  const peakIndex = data.indexOf(Math.max(...data));
+
+  timelineChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Mensajes',
+        data,
+        borderColor: '#FF2D78',
+        backgroundColor: (ctx) => {
+          const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 280);
+          gradient.addColorStop(0, 'rgba(255,45,120,0.25)');
+          gradient.addColorStop(1, 'rgba(255,45,120,0)');
+          return gradient;
+        },
+        fill: true,
+        tension: 0.4,
+        borderWidth: 2.5,
+        pointBackgroundColor: data.map((v, i) => i === peakIndex ? '#FFD23F' : '#FF2D78'),
+        pointRadius: data.map((v, i) => i === peakIndex ? 8 : 3),
+        pointBorderWidth: data.map((v, i) => i === peakIndex ? 3 : 0),
+        pointBorderColor: data.map((v, i) => i === peakIndex ? '#fff' : 'transparent'),
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 600,
+        onComplete: function() {
+          chartsReady = true;
+          console.log('[Capture page] Chart animation complete');
+          document.getElementById('status').textContent = 'Listo para capturar';
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1a2e', titleColor: '#FAFAFA', bodyColor: '#a0a0b8',
+          borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, cornerRadius: 12, padding: 12,
+          callbacks: { label: (ctx) => ctx.parsed.y.toLocaleString() + ' mensajes' }
+        }
+      },
+      layout: { padding: { bottom: 20, top: 30, right: 20 } },
+      scales: {
+        x: {
+          ticks: {
+            color: '#a0a0b8', font: { size: 11 },
+            maxRotation: 45, minRotation: 45,
+            callback: function(val, index) {
+              const total = this.chart.data.labels.length;
+              const step = total > 24 ? 3 : total > 12 ? 2 : 1;
+              return index % step === 0 ? this.getLabelForValue(val) : '';
+            }
+          },
+          grid: { display: false }
+        },
+        y: {
+          ticks: { color: '#a0a0b8', font: { size: 10 } },
+          grid: { color: 'rgba(255,255,255,0.04)' }
+        }
+      }
+    }
+  });
+}
+
+// ══════ CAPTURE HELPERS ══════
+function flash() {
+  const f = document.getElementById('captureFlash');
+  f.classList.add('active');
+  setTimeout(() => f.classList.remove('active'), 200);
+}
+
+function getDateStr() {
+  const d = new Date();
+  return d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+}
+
+function setStatus(msg) { document.getElementById('status').textContent = msg; }
+function disableButtons(v) { document.querySelectorAll('.capture-toolbar button').forEach(b => b.disabled = v); }
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+async function doCapture(element) {
+  if (!chartsReady) {
+    setStatus('Esperando que el gráfico termine...');
+    await new Promise(resolve => {
+      const check = setInterval(() => { if (chartsReady) { clearInterval(check); resolve(); } }, 200);
+    });
+  }
+
+  // Hide toolbar before capture
+  document.getElementById('toolbar').style.display = 'none';
+
+  // Kill all transitions/animations on target + children
+  const killed = [element, ...element.querySelectorAll('*')];
+  killed.forEach(el => {
+    el.style.transition = 'none';
+    el.style.animation = 'none';
+  });
+
+  await new Promise(r => setTimeout(r, 1500));
+
+  const w = element.scrollWidth;
+  const h = element.scrollHeight;
+  console.log('[doCapture] target:', element.id || element.className,
+    'scrollWidth:', w, 'scrollHeight:', h,
+    'offsetWidth:', element.offsetWidth, 'offsetHeight:', element.offsetHeight);
+
+  flash();
+
+  const canvas = await html2canvas(element, {
+    scale: 3,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#0A0A14',
+    logging: false,
+    scrollX: 0,
+    scrollY: 0,
+    x: 0,
+    y: 0,
+    width: w,
+    height: h,
+    windowWidth: w,
+    windowHeight: h,
+  });
+
+  // Restore transitions
+  killed.forEach(el => {
+    el.style.transition = '';
+    el.style.animation = '';
+  });
+
+  // Show toolbar again
+  document.getElementById('toolbar').style.display = '';
+
+  return canvas;
+}
+
+// ══════ CAPTURE ACTIONS ══════
+async function captureAll() {
+  disableButtons(true);
+  setStatus('Capturando reporte completo...');
+  try {
+    const el = document.getElementById('report');
+    const canvas = await doCapture(el);
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    downloadBlob(blob, 'yalosabia-completo-' + getDateStr() + '.png');
+    setStatus('Descarga completa');
+  } catch(e) {
+    console.error('[captureAll]', e);
+    setStatus('Error: ' + e.message);
+  }
+  disableButtons(false);
+}
+
+async function captureSection() {
+  const target = (mockupData && mockupData.targetSection) || null;
+  const el = target ? document.getElementById('sec-' + target) : document.getElementById('report');
+  if (!el) { setStatus('Sección no encontrada'); return; }
+
+  disableButtons(true);
+  setStatus('Capturando sección...');
+  try {
+    const canvas = await doCapture(el);
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    downloadBlob(blob, 'yalosabia-' + (target || 'completo') + '-' + getDateStr() + '.png');
+    setStatus('Descarga completa');
+  } catch(e) {
+    console.error('[captureSection]', e);
+    setStatus('Error: ' + e.message);
+  }
+  disableButtons(false);
+}
+
+async function copyToClipboard() {
+  disableButtons(true);
+  setStatus('Copiando...');
+  try {
+    const el = document.getElementById('report');
+    const canvas = await doCapture(el);
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    setStatus('Copiado al portapapeles');
+  } catch(e) {
+    console.error('[clipboard]', e);
+    setStatus('Error: ' + e.message);
+  }
+  disableButtons(false);
+}
+
+async function downloadPng() {
+  disableButtons(true);
+  setStatus('Generando PNG...');
+  try {
+    const el = document.getElementById('report');
+    const canvas = await doCapture(el);
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    downloadBlob(blob, 'yalosabia-completo-' + getDateStr() + '.png');
+    setStatus('Descarga completa');
+  } catch(e) {
+    console.error('[downloadPng]', e);
+    setStatus('Error: ' + e.message);
+  }
+  disableButtons(false);
+}
+</script>
+</body>
+</html>
