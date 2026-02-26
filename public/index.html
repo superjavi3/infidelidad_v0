@@ -2181,38 +2181,14 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 }
 .lb-dist-bar {
   position: relative;
-  height: 60px;
+  height: 120px;
   margin: 0 auto;
   max-width: 100%;
 }
 .lb-dist-bar svg {
   width: 100%;
-  height: 60px;
+  height: 120px;
   display: block;
-}
-.lb-dist-marker {
-  position: absolute;
-  top: -2px;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  pointer-events: none;
-}
-.lb-dist-marker .lb-marker-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--pink);
-  border: 2px solid #fff;
-  box-shadow: 0 0 10px rgba(255,45,120,0.5);
-}
-.lb-dist-marker .lb-marker-label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--pink);
-  margin-top: 2px;
-  white-space: nowrap;
 }
 .lb-dist-labels {
   display: flex;
@@ -2339,9 +2315,6 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <button class="btn-secondary" onclick="hasPlanAccess('detective') ? generatePDF() : openPayModal('detective')" style="width: 100%; max-width: 480px; padding: 14px 32px; font-size: 1rem; background: linear-gradient(135deg, #1a1a2e, #16213e); border: 1px solid rgba(255,255,255,0.1);">📄 Descargar Reporte PDF Completo</button>
   </div>
 
-  <!-- Leaderboard: Tu relación vs el promedio -->
-  <div id="leaderboardSection" style="display:none;"></div>
-
   <!-- ══════ SECCIÓN 1: PLAN GRATIS ══════ -->
   <div class="plan-header">
     <div class="plan-badge free">✨ GRATIS</div>
@@ -2394,6 +2367,9 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <h4>Quién lleva la relación</h4>
     <p id="whoLeads">Persona 1 inicia el 68% de las conversaciones y envía mensajes 2.3x más largos en promedio.</p>
   </div>
+
+  <!-- Leaderboard: Tu relación vs el promedio -->
+  <div id="leaderboardSection" style="display:none;"></div>
 
   <!-- ══════ SECCIÓN 2: PLAN DETECTIVE ══════ -->
   <div id="premiumSection" class="plan-section plan-detective-wrap" style="display:none;">
@@ -3465,22 +3441,29 @@ function renderLeaderboard(s) {
   const markerPct = Math.max(3, Math.min(97, (userScore / 100) * 100));
   const avgMarkerPct = (AVG_SCORE / 100) * 100;
 
+  // Bell curve with padding: viewBox 0 0 100 100, baseline at y=80, peak ~45px tall, top padding 40px
+  const baseline = 80;
   const bellPoints = [];
   for (let i = 0; i <= 100; i += 2) {
     const x = i;
     const z = (i - 50) / 18;
     const y = Math.exp(-0.5 * z * z) * 45;
-    bellPoints.push(x + ',' + (50 - y));
+    bellPoints.push(x + ',' + (baseline - y));
   }
-  const bellPath = 'M0,50 ' + bellPoints.map(function(p) { return 'L' + p; }).join(' ') + ' L100,50';
+  const bellPath = 'M0,' + baseline + ' ' + bellPoints.map(function(p) { return 'L' + p; }).join(' ') + ' L100,' + baseline;
+  const bellFill = bellPath + ' Z';
 
-  const fillPoints = bellPoints.slice();
-  const bellFill = 'M0,50 ' + fillPoints.map(function(p) { return 'L' + p; }).join(' ') + ' L100,50 Z';
+  // User marker: compute Y position on the curve for the dot
+  const userZ = (markerPct - 50) / 18;
+  const userCurveY = baseline - Math.exp(-0.5 * userZ * userZ) * 45;
+  // Label positioning: if score > 85, anchor to the left so it doesn't clip
+  const labelAnchor = userScore > 85 ? 'end' : (userScore < 15 ? 'start' : 'middle');
+  const labelOffsetX = userScore > 85 ? -2 : (userScore < 15 ? 2 : 0);
 
   const distHtml = '<div class="lb-distribution">' +
     '<div class="lb-dist-title">Distribución de scores — ¿dónde caes tú?</div>' +
     '<div class="lb-dist-bar">' +
-      '<svg viewBox="0 0 100 55" preserveAspectRatio="none">' +
+      '<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">' +
         '<defs>' +
           '<linearGradient id="bellGrad" x1="0" y1="0" x2="1" y2="0">' +
             '<stop offset="0%" stop-color="#FF2D78" stop-opacity="0.1"/>' +
@@ -3492,13 +3475,12 @@ function renderLeaderboard(s) {
         '</defs>' +
         '<path d="' + bellFill + '" fill="url(#bellGrad)"/>' +
         '<path d="' + bellPath + '" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.8"/>' +
-        '<line x1="' + avgMarkerPct + '" y1="5" x2="' + avgMarkerPct + '" y2="50" stroke="rgba(255,255,255,0.15)" stroke-width="0.5" stroke-dasharray="2,2"/>' +
-        '<text x="' + avgMarkerPct + '" y="4" text-anchor="middle" font-size="3.5" fill="rgba(255,255,255,0.35)">prom.</text>' +
+        '<line x1="' + avgMarkerPct + '" y1="35" x2="' + avgMarkerPct + '" y2="' + baseline + '" stroke="rgba(255,255,255,0.15)" stroke-width="0.5" stroke-dasharray="2,2"/>' +
+        '<text x="' + avgMarkerPct + '" y="' + (baseline + 8) + '" text-anchor="middle" font-size="3.5" fill="rgba(255,255,255,0.4)">Prom.</text>' +
+        '<circle cx="' + markerPct + '" cy="' + userCurveY + '" r="2.5" fill="#FF2D78" stroke="#fff" stroke-width="0.8"/>' +
+        '<line x1="' + markerPct + '" y1="' + userCurveY + '" x2="' + markerPct + '" y2="' + baseline + '" stroke="#FF2D78" stroke-width="0.4" stroke-opacity="0.4"/>' +
+        '<text x="' + (markerPct + labelOffsetX) + '" y="' + (userCurveY - 5) + '" text-anchor="' + labelAnchor + '" font-size="3.8" font-weight="700" fill="#FF2D78">Tú: ' + userScore + '</text>' +
       '</svg>' +
-      '<div class="lb-dist-marker" style="left:' + markerPct + '%;">' +
-        '<div class="lb-marker-dot"></div>' +
-        '<span class="lb-marker-label">Tú: ' + userScore + '</span>' +
-      '</div>' +
     '</div>' +
     '<div class="lb-dist-labels">' +
       '<span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>' +
