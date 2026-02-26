@@ -2435,7 +2435,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <span class="format-tag">WhatsApp .txt o .zip</span>
       <span class="format-tag">Hasta 40,000 mensajes</span>
     </div>
-    <button class="demo-btn" onclick="event.stopPropagation();loadDemo()">👀 Ver ejemplo — sin subir nada</button>
+    <button class="demo-btn" id="demoBtn" onclick="event.stopPropagation(); window.selectedMode === 'grupo' ? loadGroupDemo() : loadDemo()">👀 Ver ejemplo — sin subir nada</button>
   </div>
 
   <!-- Processing State -->
@@ -4177,6 +4177,7 @@ async function processChat(text) {
   const chatbotBtn = document.querySelector('[onclick*="openChatbot"]');
   if (chatbotBtn) { chatbotBtn.style.opacity = ''; chatbotBtn.style.cursor = ''; chatbotBtn.title = ''; }
   uploadZone.style.display = 'none';
+  document.querySelector('.mode-toggle-wrapper').style.display = 'none';
   processingState.classList.add('active');
 
   const steps = processingState.querySelectorAll('.step');
@@ -4437,6 +4438,10 @@ function renderLeaderboard(s) {
 function showResults(s) {
   processingState.classList.remove('active');
   processingState.style.display = 'none';
+
+  // Hide group results if previously shown
+  const groupSection = document.getElementById('groupResultsSection');
+  if (groupSection) groupSection.style.display = 'none';
 
   document.getElementById('totalMsgs').textContent = s.total.toLocaleString();
   document.getElementById('scoreNumber').textContent = s.score;
@@ -5129,6 +5134,7 @@ async function groupShareToStories() {
 
 // ── GROUP CHATBOT ──
 function openGroupChatbot() {
+  if (window.isDemoMode) { showDemoUpgradePrompt('group-chatbot'); return; }
   if (!hasPlanAccess('group-completo')) { openPayModal('group-completo'); return; }
 
   // Reuse the existing chatbot modal but adapted for groups
@@ -5685,6 +5691,8 @@ function resetUpload() {
   processingState.querySelectorAll('.step').forEach(s => { s.classList.remove('active','done'); });
   processingState.querySelector('.step').classList.add('active');
   uploadZone.style.display = '';
+  const toggleWrapper = document.querySelector('.mode-toggle-wrapper');
+  if (toggleWrapper) toggleWrapper.style.display = '';
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -5833,6 +5841,7 @@ function simulateDemoAIResponse(stats) {
 
 async function loadDemo() {
   window.isDemoMode = true;
+  window.isGroupMode = false;
 
   // Generate demo messages
   const demoMessages = generateDemoMessages();
@@ -5860,6 +5869,7 @@ async function loadDemo() {
 
   // Replicate processChat() animation exactly
   uploadZone.style.display = 'none';
+  document.querySelector('.mode-toggle-wrapper').style.display = 'none';
   processingState.classList.add('active');
 
   const steps = processingState.querySelectorAll('.step');
@@ -5908,6 +5918,236 @@ async function loadDemo() {
 
   // Simulate AI response instead of calling Gemini
   simulateDemoAIResponse(demoStats);
+}
+
+// ══════════════════════════════════════════════
+// ── GROUP DEMO MODE ──
+// ══════════════════════════════════════════════
+
+function generateGroupDemoMessages() {
+  const messages = [];
+  const startDate = new Date('2023-06-01');
+  const names = ['Daniela', 'Rodrigo', 'Ana', 'Fer', 'Pato', 'Karla', 'Javi', 'Luisa'];
+
+  const casualMsgs = [
+    "Hola!", "¿Qué onda?", "Aquí en la chamba", "Jaja sí", "¿A qué hora?",
+    "Va perfecto", "Ok", "Luego les digo", "😂", "Exacto", "Yo digo que sí",
+    "Quién se apunta?", "Yo voy", "Yo no puedo", "¿Dónde nos vemos?",
+    "Voy saliendo", "Ya llegué", "Alguien más viene?", "Qué flojera",
+    "Jajajaja", "Neta?", "No manches 😂", "Qué pedo", "A huevo",
+    "Sin duda", "Yo paso", "Mañana les confirmo", "Ando ocupado",
+    "Ya vi tu mensaje perdón", "Se me olvidó contestar jaja",
+    "Alguien tiene el número de...?", "Pasen la ubicación", "Listo!",
+    "Buenas noches gente", "Buenos días 🌞", "Feliz viernes!",
+    "¿Alguien sabe de un buen restaurante?", "Me recomiendan algo para ver?",
+    "Sale y vale", "Suena bien", "No pos ta cabrón", "F"
+  ];
+
+  const funMsgs = [
+    "JAJAJAJAJA no puedo 😂😂", "Los quiero mucho ❤️", "Extraño los tiempos de la uni",
+    "Mejor grupo del mundo", "Son los mejores", "Este grupo es lo máximo",
+    "Alguien para echarse unas chelas?", "Carnita asada este fin?",
+    "¿Quién trae el six?", "Yo pongo la casa", "Ya me antojaron",
+    "🎉🎉🎉", "Felicidades!!!!", "Échale ganas!", "Te pasas 😂",
+    "No pos wow", "Qué buen pedo", "Ya extrañaba este grupo"
+  ];
+
+  const planMsgs = [
+    "¿Qué hacemos el fin?", "Vamos al cine?", "Propongo ir a cenar",
+    "¿Karaoke el viernes?", "Quién se apunta al concierto?",
+    "Hay que planear algo para el puente", "Reunión en mi depa?",
+    "¿Hacemos posada?", "Vamos a la playa en semana santa"
+  ];
+
+  const dramaMsgs = [
+    "Ya ni le escriban a ese wey", "¿Por qué nadie contesta?",
+    "Este grupo está más muerto", "Revivan el grupo!", "Ya nadie habla aquí",
+    "¿Ya se pelearon o qué?", "Se siente la tensión jaja"
+  ];
+
+  const deletedMsg = "Se eliminó este mensaje.";
+  const multimediaMsgs = ["<Multimedia omitido>", "imagen omitida", "sticker omitido", "audio omitido", "video omitido"];
+
+  // Personality weights: who speaks how much (total ~30000 msgs over 20 months)
+  // Daniela: líder (28%), Rodrigo: activo (18%), Ana: activa (15%), Fer: participant (11%)
+  // Pato: participant (9%), Karla: intermitente (8%), Javi: fantasma (7%), Luisa: ghost (4%)
+  const weights = [0.28, 0.18, 0.15, 0.11, 0.09, 0.08, 0.07, 0.04];
+
+  // Phases: formation → peak → some leave → revival → cooling
+  const phases = [
+    { days: 90,  msgsPerDay: 60,  funFreq: 0.15, planFreq: 0.08, dramaFreq: 0.01, delFreq: 0.005, mediaFreq: 0.08 },
+    { days: 120, msgsPerDay: 80,  funFreq: 0.20, planFreq: 0.10, dramaFreq: 0.02, delFreq: 0.008, mediaFreq: 0.12 },
+    { days: 60,  msgsPerDay: 25,  funFreq: 0.05, planFreq: 0.03, dramaFreq: 0.08, delFreq: 0.02,  mediaFreq: 0.04 },
+    { days: 90,  msgsPerDay: 50,  funFreq: 0.12, planFreq: 0.07, dramaFreq: 0.03, delFreq: 0.01,  mediaFreq: 0.09 },
+    { days: 240, msgsPerDay: 30,  funFreq: 0.08, planFreq: 0.04, dramaFreq: 0.04, delFreq: 0.015, mediaFreq: 0.06 }
+  ];
+
+  let currentDay = 0;
+
+  phases.forEach((phase, phaseIdx) => {
+    for (let d = 0; d < phase.days; d++) {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() + currentDay + d);
+
+      const variance = Math.floor((Math.random() - 0.5) * phase.msgsPerDay * 0.5);
+      const msgsToday = Math.max(3, phase.msgsPerDay + variance);
+
+      for (let m = 0; m < msgsToday; m++) {
+        // Pick sender based on weights, but ghosts reduce in later phases
+        let senderIdx;
+        const r0 = Math.random();
+        let cumulative = 0;
+        for (let i = 0; i < weights.length; i++) {
+          let w = weights[i];
+          // Javi and Luisa fade in later phases
+          if (i === 6 && phaseIdx >= 3) w *= 0.2;
+          if (i === 7 && phaseIdx >= 2) w *= 0.1;
+          cumulative += w;
+          if (r0 < cumulative) { senderIdx = i; break; }
+        }
+        if (senderIdx === undefined) senderIdx = 0;
+        const sender = names[senderIdx];
+
+        const r = Math.random();
+        let text;
+        if (r < phase.delFreq) {
+          text = deletedMsg;
+        } else if (r < phase.delFreq + phase.mediaFreq) {
+          text = multimediaMsgs[Math.floor(Math.random() * multimediaMsgs.length)];
+        } else if (r < phase.delFreq + phase.mediaFreq + phase.dramaFreq) {
+          text = dramaMsgs[Math.floor(Math.random() * dramaMsgs.length)];
+        } else if (r < phase.delFreq + phase.mediaFreq + phase.dramaFreq + phase.planFreq) {
+          text = planMsgs[Math.floor(Math.random() * planMsgs.length)];
+        } else if (r < phase.delFreq + phase.mediaFreq + phase.dramaFreq + phase.planFreq + phase.funFreq) {
+          text = funMsgs[Math.floor(Math.random() * funMsgs.length)];
+        } else {
+          text = casualMsgs[Math.floor(Math.random() * casualMsgs.length)];
+        }
+
+        // Luisa sends lots of audios
+        if (senderIdx === 7 && Math.random() < 0.4) text = 'audio omitido';
+        // Fer sends lots of stickers/memes
+        if (senderIdx === 3 && Math.random() < 0.25) text = multimediaMsgs[Math.floor(Math.random() * multimediaMsgs.length)];
+
+        const hour = Math.floor(Math.random() * 18) + 6;
+        const minute = Math.floor(Math.random() * 60);
+        const second = Math.floor(Math.random() * 60);
+
+        const dd = String(date.getDate()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const yy = String(date.getFullYear()).slice(2);
+        const hh = String(hour).padStart(2, '0');
+        const mn = String(minute).padStart(2, '0');
+        const sc = String(second).padStart(2, '0');
+
+        messages.push({
+          date: `${dd}/${mm}/${yy}`,
+          time: `${hh}:${mn}:${sc}`,
+          sender: sender,
+          text: text
+        });
+      }
+    }
+    currentDay += phase.days;
+  });
+
+  return messages.sort((a, b) => {
+    const da = new Date(`20${a.date.split('/')[2]}-${a.date.split('/')[1]}-${a.date.split('/')[0]}T${a.time}`);
+    const db = new Date(`20${b.date.split('/')[2]}-${b.date.split('/')[1]}-${b.date.split('/')[0]}T${b.time}`);
+    return da - db;
+  });
+}
+
+async function loadGroupDemo() {
+  window.isDemoMode = true;
+  window.isGroupMode = true;
+  window.chatMode = 'group';
+
+  const demoMessages = generateGroupDemoMessages();
+
+  // Build sender counts
+  const senderCounts = {};
+  demoMessages.forEach(m => { senderCounts[m.sender] = (senderCounts[m.sender] || 0) + 1; });
+
+  // Replicate processChat() animation
+  uploadZone.style.display = 'none';
+  document.querySelector('.mode-toggle-wrapper').style.display = 'none';
+  processingState.classList.add('active');
+
+  const steps = processingState.querySelectorAll('.step');
+  for (let i = 0; i < steps.length; i++) {
+    await sleep(800 + Math.random() * 600);
+    if (i > 0) { steps[i-1].classList.remove('active'); steps[i-1].classList.add('done'); }
+    steps[i].classList.add('active');
+  }
+  await sleep(1000);
+  steps[steps.length-1].classList.remove('active');
+  steps[steps.length-1].classList.add('done');
+
+  // Analyze group
+  const groupStats = analyzeGroupMessages(demoMessages, senderCounts, []);
+  if (!groupStats) { resetUpload(); return; }
+  groupStats.groupName = 'Los Inseparables 🔥';
+
+  lastGroupMessages = demoMessages;
+  lastGroupStats = groupStats;
+
+  // Unlock all group features for demo
+  window.groupPlan = 'completo';
+
+  // Show group results
+  showGroupResults(groupStats);
+  renderGroupPremiumFeatures(demoMessages, groupStats);
+  applyBlurOverlays();
+
+  // Re-lock the group chatbot card — needs real chat
+  const chatbotCard = document.getElementById('group-featureChatbot');
+  if (chatbotCard) {
+    chatbotCard.classList.remove('plan-unlocked');
+    chatbotCard.classList.add('plan-locked');
+    const body = chatbotCard.querySelector('.pf-body');
+    if (body) {
+      body.style.filter = 'blur(8px)';
+      body.style.pointerEvents = 'none';
+      body.style.opacity = '0.3';
+      body.style.userSelect = 'none';
+    }
+    const oldOverlay = chatbotCard.querySelector('.body-unlock-overlay');
+    if (oldOverlay) oldOverlay.remove();
+    const overlay = document.createElement('div');
+    overlay.className = 'body-unlock-overlay';
+    overlay.innerHTML = '<button class="unlock-overlay-btn detective-btn" onclick="showDemoUpgradePrompt(\'group-chatbot\')">🔒 Sube tu grupo real para usar la IA</button>';
+    chatbotCard.appendChild(overlay);
+  }
+
+  // Re-lock autopsy card — needs real AI call
+  const autopsyCard = document.getElementById('group-featureAutopsy');
+  if (autopsyCard) {
+    autopsyCard.classList.remove('plan-unlocked');
+    autopsyCard.classList.add('plan-locked');
+    const body = autopsyCard.querySelector('.pf-body');
+    if (body) {
+      body.style.filter = 'blur(8px)';
+      body.style.pointerEvents = 'none';
+      body.style.opacity = '0.3';
+      body.style.userSelect = 'none';
+    }
+    const oldOverlay = autopsyCard.querySelector('.body-unlock-overlay');
+    if (oldOverlay) oldOverlay.remove();
+    const overlay = document.createElement('div');
+    overlay.className = 'body-unlock-overlay';
+    overlay.innerHTML = '<button class="unlock-overlay-btn detective-btn" onclick="showDemoUpgradePrompt(\'group-chatbot\')">🔒 Sube tu grupo real para la autopsia IA</button>';
+    autopsyCard.appendChild(overlay);
+  }
+
+  // Show demo banner
+  document.getElementById('demoBanner').style.display = 'block';
+
+  // Simulated AI fun fact
+  const funFactEl = document.getElementById('group-funFact');
+  if (funFactEl) {
+    funFactEl.innerHTML = '📊 <strong>Dato curioso:</strong> Daniela envía más mensajes que Javi y Luisa combinados. Si el grupo fuera un negocio, ella sería la CEO y ellos los becarios que no llegan los lunes.';
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -7652,7 +7892,8 @@ function showDemoUpgradePrompt(feature) {
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;';
   overlay.onclick = () => overlay.remove();
   const msgs = {
-    chatbot: 'El chatbot analiza TU relación real — sube tu chat para activarlo 💬'
+    chatbot: 'El chatbot analiza TU relación real — sube tu chat para activarlo 💬',
+    'group-chatbot': 'La IA necesita TU grupo real para analizarlo — sube tu chat grupal 👥'
   };
   overlay.innerHTML = `<div style="background:var(--bg-card);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px;max-width:400px;text-align:center;" onclick="event.stopPropagation()">
     <div style="font-size:2rem;margin-bottom:12px;">👀</div>
