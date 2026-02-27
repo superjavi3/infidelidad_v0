@@ -1,0 +1,110 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { nanoid } from 'nanoid';
+import { supabaseAdmin } from '@/lib/supabase';
+
+// POST: create a new shared analysis
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { alias, score, stats, aiInsight, participantNames, dateRange, totalMessages } = body;
+
+    if (score == null || !stats || !participantNames || !totalMessages) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Sanitize: only keep computed stats, never raw messages
+    const safeStats = {
+      personA: stats.personA,
+      personB: stats.personB,
+      msgsA: stats.msgsA,
+      msgsB: stats.msgsB,
+      total: stats.total,
+      score: stats.score,
+      verdict: stats.verdict,
+      loveCount: stats.loveCount,
+      nightPct: stats.nightPct,
+      uniqueDays: stats.uniqueDays,
+      avgReplyFormatted: stats.avgReplyFormatted,
+      leader: stats.leader,
+      leaderPct: stats.leaderPct,
+      ratio: stats.ratio,
+      silencesCount: stats.silencesCount,
+      totalDouble: stats.totalDouble,
+    };
+
+    const id = nanoid(10);
+
+    const { error } = await supabaseAdmin
+      .from('shared_analyses')
+      .insert({
+        id,
+        alias: alias?.trim()?.substring(0, 50) || null,
+        score,
+        stats: safeStats,
+        ai_insight: aiInsight?.substring(0, 500) || null,
+        participant_names: participantNames.map((n: string) => n.substring(0, 50)),
+        date_range: dateRange?.substring(0, 100) || null,
+        total_messages: totalMessages,
+        views: 0,
+      });
+
+    if (error) {
+      console.error('Supabase insert error:', error);
+      return NextResponse.json(
+        { error: 'Error saving analysis', details: error.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true, id });
+  } catch (error: unknown) {
+    console.error('Share API error:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json(
+      { error: 'Error creating shared link', details: message },
+      { status: 500 }
+    );
+  }
+}
+
+// GET: fetch a shared analysis by id
+export async function GET(req: NextRequest) {
+  try {
+    const id = req.nextUrl.searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'id parameter is required' },
+        { status: 400 }
+      );
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('shared_analyses')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error || !data) {
+      return NextResponse.json(
+        { error: 'Analysis not found' },
+        { status: 404 }
+      );
+    }
+
+    // Increment views (fire and forget)
+    supabaseAdmin.rpc('increment_views', { analysis_id: id }).then();
+
+    return NextResponse.json({ success: true, analysis: data });
+  } catch (error: unknown) {
+    console.error('Share GET error:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json(
+      { error: 'Error fetching analysis', details: message },
+      { status: 500 }
+    );
+  }
+}

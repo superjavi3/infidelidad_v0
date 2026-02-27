@@ -2478,6 +2478,10 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <button class="btn-secondary" onclick="shareToStories()" style="width: 100%; max-width: 480px; padding: 16px 32px; font-size: 1.1rem;">📸 Comparte tu score en Stories</button>
     <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px;">Descarga tu resultado y compártelo</p>
   </div>
+  <!-- Share Link CTA -->
+  <div style="text-align: center; margin-top: 12px;">
+    <button class="btn-secondary" onclick="openShareLinkModal()" style="width: 100%; max-width: 480px; padding: 14px 32px; font-size: 1rem; background: rgba(108,92,231,0.1); border: 1px solid rgba(108,92,231,0.3);">🔗 Compartir mi análisis por link</button>
+  </div>
   <!-- PDF Report CTA (hidden temporarily) -->
   <div style="display:none; text-align: center; margin-top: 12px;">
     <button class="btn-secondary" onclick="isPremiumUser() ? generatePDF() : openPayModal()" style="width: 100%; max-width: 480px; padding: 14px 32px; font-size: 1rem; background: linear-gradient(135deg, #1a1a2e, #16213e); border: 1px solid rgba(255,255,255,0.1);">📄 Descargar Reporte PDF Completo</button>
@@ -8434,6 +8438,127 @@ function updateWithAIInsights(analysis, stats) {
   }
 }
 // ══════════════════════════════════════════
+// ── SHARE ANALYSIS BY LINK ──
+// ══════════════════════════════════════════
+
+function openShareLinkModal() {
+  if (!lastStats) {
+    alert('Primero sube un chat para analizar.');
+    return;
+  }
+  if (window.isDemoMode) {
+    showDemoUpgradePrompt('share');
+    return;
+  }
+  document.getElementById('shareLinkStep1').style.display = 'block';
+  document.getElementById('shareLinkStep2').style.display = 'none';
+  document.getElementById('shareLinkLoading').style.display = 'none';
+  document.getElementById('shareLinkError').style.display = 'none';
+  document.getElementById('shareAlias').value = '';
+  document.getElementById('shareLinkModal').style.display = 'flex';
+}
+
+function closeShareLinkModal() {
+  document.getElementById('shareLinkModal').style.display = 'none';
+}
+
+async function generateShareLink() {
+  if (!lastStats) return;
+
+  const alias = document.getElementById('shareAlias').value.trim();
+
+  // Show loading
+  document.getElementById('shareLinkStep1').style.display = 'none';
+  document.getElementById('shareLinkLoading').style.display = 'block';
+
+  // Get AI insight text if available
+  const funFactEl = document.getElementById('funFact');
+  let aiInsight = null;
+  if (funFactEl) {
+    const text = funFactEl.textContent || '';
+    if (text.includes('Insight con IA:')) {
+      aiInsight = text.replace('🤖', '').replace('Insight con IA:', '').trim();
+    }
+  }
+
+  // Build date range from first/last message
+  let dateRange = null;
+  if (lastMessages && lastMessages.length > 0) {
+    const first = lastMessages[0].date || '';
+    const last = lastMessages[lastMessages.length - 1].date || '';
+    if (first && last) dateRange = first + ' — ' + last;
+  }
+
+  try {
+    const res = await fetch('/api/share', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        alias: alias || null,
+        score: lastStats.score,
+        stats: lastStats,
+        aiInsight: aiInsight,
+        participantNames: [lastStats.personA, lastStats.personB],
+        dateRange: dateRange,
+        totalMessages: lastStats.total,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Error desconocido');
+
+    const shareUrl = window.location.origin + '/a/' + data.id;
+    document.getElementById('shareLinkUrl').value = shareUrl;
+    document.getElementById('shareLinkLoading').style.display = 'none';
+    document.getElementById('shareLinkStep2').style.display = 'block';
+    window._shareAnalysisUrl = shareUrl;
+
+    // Track event
+    try {
+      fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'share_link_created',
+          score: lastStats.score,
+          personA: lastStats.personA,
+          personB: lastStats.personB,
+          totalMessages: lastStats.total,
+        }),
+      });
+    } catch(e) {}
+
+  } catch (err) {
+    console.error('Share link error:', err);
+    document.getElementById('shareLinkLoading').style.display = 'none';
+    document.getElementById('shareLinkErrorMsg').textContent = err.message || 'Error al generar el enlace';
+    document.getElementById('shareLinkError').style.display = 'block';
+  }
+}
+
+function copyShareLink() {
+  const input = document.getElementById('shareLinkUrl');
+  input.select();
+  navigator.clipboard.writeText(input.value).then(() => {
+    const btn = document.getElementById('copyShareBtn');
+    btn.textContent = '✅ Copiado';
+    setTimeout(() => { btn.textContent = '📋 Copiar'; }, 2000);
+  }).catch(() => {
+    document.execCommand('copy');
+    const btn = document.getElementById('copyShareBtn');
+    btn.textContent = '✅ Copiado';
+    setTimeout(() => { btn.textContent = '📋 Copiar'; }, 2000);
+  });
+}
+
+function shareViaWhatsApp() {
+  const url = window._shareAnalysisUrl;
+  if (!url) return;
+  const text = '¡Mira el análisis de nuestro chat! 🔍 ' + url;
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+
+// ══════════════════════════════════════════
 // ── CHATBOT TERAPEUTA IA ──
 // ══════════════════════════════════════════
 let chatbotHistory = [];
@@ -8443,7 +8568,8 @@ function showDemoUpgradePrompt(feature) {
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;';
   overlay.onclick = () => overlay.remove();
   const msgs = {
-    chatbot: 'El chatbot analiza TU relación real — sube tu chat para activarlo 💬'
+    chatbot: 'El chatbot analiza TU relación real — sube tu chat para activarlo 💬',
+    share: 'Sube tu chat real para compartir un enlace con tus resultados 🔗'
   };
   overlay.innerHTML = `<div style="background:var(--bg-card);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px;max-width:400px;text-align:center;" onclick="event.stopPropagation()">
     <div style="font-size:2rem;margin-bottom:12px;">👀</div>
@@ -8727,6 +8853,52 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot
     </button>
     <p id="payError" style="color:#FF2D78;font-size:0.85rem;margin-top:12px;display:none;"></p>
     <p style="color:#6B7280;font-size:0.75rem;margin-top:16px;">Pago seguro con Stripe. Aceptamos tarjetas de crédito y débito.</p>
+  </div>
+</div>
+
+<!-- Share Link Modal -->
+<div id="shareLinkModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#1A1A2E;border-radius:20px;padding:40px;max-width:440px;width:90%;text-align:center;position:relative;">
+    <button onclick="closeShareLinkModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#9CA3AF;font-size:1.5rem;cursor:pointer;">&times;</button>
+
+    <!-- Step 1: Input alias -->
+    <div id="shareLinkStep1">
+      <div style="font-size:2rem;margin-bottom:8px;">🔗</div>
+      <h3 style="color:white;margin-bottom:8px;font-size:1.3rem;">Compartir análisis</h3>
+      <p style="color:#9CA3AF;margin-bottom:20px;font-size:0.9rem;">Genera un link único para compartir tu resultado</p>
+      <input id="shareAlias" type="text" maxlength="50" placeholder="Alias opcional (ej: 'Ana y Luis')" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0A0A14;color:white;margin-bottom:16px;box-sizing:border-box;font-size:1rem;">
+      <button onclick="generateShareLink()" style="width:100%;padding:14px;background:linear-gradient(135deg,#6C5CE7,#FF2D78);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:1rem;">
+        Generar enlace →
+      </button>
+      <p style="color:#6B7280;font-size:0.75rem;margin-top:16px;">⚠️ Solo se comparten estadísticas generales. Nunca tus mensajes.</p>
+    </div>
+
+    <!-- Step 2: Show link -->
+    <div id="shareLinkStep2" style="display:none;">
+      <div style="font-size:2rem;margin-bottom:8px;">✅</div>
+      <h3 style="color:white;margin-bottom:16px;font-size:1.2rem;">¡Listo! Tu enlace:</h3>
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <input id="shareLinkUrl" type="text" readonly style="flex:1;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0A0A14;color:white;font-size:0.9rem;box-sizing:border-box;">
+        <button onclick="copyShareLink()" id="copyShareBtn" style="padding:12px 16px;border-radius:10px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;cursor:pointer;font-weight:600;white-space:nowrap;">📋 Copiar</button>
+      </div>
+      <button onclick="shareViaWhatsApp()" style="width:100%;padding:14px;background:#25D366;border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:1rem;margin-bottom:12px;">
+        📱 Compartir por WhatsApp
+      </button>
+      <p style="color:#6B7280;font-size:0.8rem;margin-top:8px;">Cualquier persona con el link puede ver tu score y stats básicas</p>
+    </div>
+
+    <!-- Loading state -->
+    <div id="shareLinkLoading" style="display:none;">
+      <div style="font-size:2rem;margin-bottom:12px;">⏳</div>
+      <p style="color:#9CA3AF;">Generando enlace...</p>
+    </div>
+
+    <!-- Error state -->
+    <div id="shareLinkError" style="display:none;">
+      <div style="font-size:2rem;margin-bottom:12px;">❌</div>
+      <p style="color:#FF2D78;margin-bottom:16px;" id="shareLinkErrorMsg">Error al generar el enlace</p>
+      <button onclick="document.getElementById('shareLinkStep1').style.display='block';document.getElementById('shareLinkError').style.display='none';" style="padding:10px 24px;border-radius:10px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;cursor:pointer;">Intentar de nuevo</button>
+    </div>
   </div>
 </div>
 
