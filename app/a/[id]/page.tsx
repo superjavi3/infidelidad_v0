@@ -276,7 +276,7 @@ const CSS = `
 /* ══════════════════════════════════════════
    BEFORE VS NOW — from index.html
    ══════════════════════════════════════════ */
-.bvn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.bvn-grid { display: flex; flex-direction: column; gap: 16px; }
 .bvn-person {
   background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px;
   border: 1px solid rgba(255,255,255,0.06);
@@ -419,7 +419,7 @@ const CSS = `
   .bvn-table { font-size: 0.8rem; }
   .bvn-table th, .bvn-table td { padding: 8px 6px; }
   .bvn-table td:nth-child(2), .bvn-table td:nth-child(3) { font-size: 0.9rem; }
-  .bvn-grid { grid-template-columns: 1fr; }
+  .bvn-grid { gap: 12px; }
   .language-comparison { grid-template-columns: 1fr; }
 }
 `;
