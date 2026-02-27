@@ -35,9 +35,9 @@ export async function POST(req: NextRequest) {
       totalDouble: stats.totalDouble,
     };
 
-    // Include premium section text content (Detective + Obsesivo)
+    // Include premium section HTML content (Detective + Obsesivo)
     if (premiumSections && typeof premiumSections === 'object') {
-      const truncate = (val: unknown) => typeof val === 'string' ? val.substring(0, 2000) : null;
+      const truncate = (val: unknown) => typeof val === 'string' ? val.substring(0, 15000) : null;
       safeStats.premium = {
         timeline: truncate(premiumSections.timeline),
         silences: truncate(premiumSections.silences),

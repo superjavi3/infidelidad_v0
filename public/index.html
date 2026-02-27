@@ -8489,12 +8489,12 @@ async function generateShareLink() {
     if (first && last) dateRange = first + ' — ' + last;
   }
 
-  // Capture rendered text from Detective + Obsesivo premium sections
+  // Capture rendered HTML from Detective + Obsesivo premium sections
   function grabSection(id) {
     const el = document.getElementById(id);
     if (!el) return null;
-    const text = el.innerText?.trim();
-    return (text && text.length > 5) ? text : null;
+    const html = el.innerHTML?.trim();
+    return (html && html.length > 10) ? html : null;
   }
   const premiumSections = {
     timeline: grabSection('timelineInsight'),
