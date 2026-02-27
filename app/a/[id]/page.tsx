@@ -27,9 +27,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       .eq('id', id)
       .single();
     if (!data) return { title: 'Análisis compartido — YaLoSabía' };
-    const names = data.alias || data.participant_names?.join(' y ') || 'Análisis';
-    const title = `${names}: Score ${data.score}/100 — YaLoSabía`;
-    const desc = `${(data.stats as Stats)?.verdict || ''} | ${(data.total_messages || 0).toLocaleString()} mensajes analizados.`;
+    const st = data.stats as Stats;
+    const isGroup = st?.type === 'group';
+    const names = data.alias || (isGroup ? String(st.groupName || 'Grupo') : data.participant_names?.join(' y ')) || 'Análisis';
+    const title = isGroup
+      ? `${names}: Salud ${data.score}/100 — YaLoSabía`
+      : `${names}: Score ${data.score}/100 — YaLoSabía`;
+    const desc = isGroup
+      ? `👥 ${Number(st.memberCount) || '?'} miembros | ${(data.total_messages || 0).toLocaleString()} mensajes analizados.`
+      : `${st?.verdict || ''} | ${(data.total_messages || 0).toLocaleString()} mensajes analizados.`;
     return {
       title, description: desc,
       robots: { index: false, follow: false },
@@ -373,6 +379,28 @@ const CSS = `
 .language-word.normal { background: rgba(108,92,231,0.15); color: var(--purple) !important; }
 .language-word.distancing { background: rgba(255,107,53,0.15); color: #FF6B35 !important; }
 
+/* ══════════════════════════════════════════
+   GROUP MODE — from index.html
+   ══════════════════════════════════════════ */
+.group-archetype-card { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; text-align: center; }
+.group-heatmap-grid { display: grid; grid-template-columns: 40px repeat(24, 1fr); gap: 2px; }
+.group-heatmap-cell { aspect-ratio: 1; border-radius: 3px; min-width: 0; }
+.group-matrix-cell { font-size: 0.7rem; padding: 4px; text-align: center; border: 1px solid rgba(255,255,255,0.04); }
+.group-death-meter { height: 20px; border-radius: 10px; background: linear-gradient(to right, #3BCEAC, #FFD23F, #FF2D78); position: relative; overflow: hidden; }
+.group-ranking-bar { height: 8px; border-radius: 4px; transition: width 0.5s ease; }
+.group-era-card { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 16px; flex: 1; }
+.group-score-card {
+  max-width: 400px; margin: 0 auto 48px;
+  background: linear-gradient(135deg, var(--purple), var(--green)) !important;
+  border-radius: var(--radius); padding: 40px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.group-score-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.15), transparent 50%);
+}
+.group-score-card > * { position: relative; z-index: 1; }
+
 /* ── Views / CTA / Footer ── */
 .sa-views { text-align: center; color: var(--text-muted) !important; font-size: 0.82rem; margin-bottom: 40px; }
 .sa-cta {
@@ -421,6 +449,8 @@ const CSS = `
   .bvn-table td:nth-child(2), .bvn-table td:nth-child(3) { font-size: 0.9rem; }
   .bvn-grid { gap: 12px; }
   .language-comparison { grid-template-columns: 1fr; }
+  .group-heatmap-grid { overflow-x: auto; }
+  .group-archetype-card { padding: 16px; }
 }
 `;
 
@@ -437,6 +467,19 @@ const OBSESIVO_SECTIONS: { key: string; icon: string; title: string; sub: string
   { key: 'beforeNow', icon: '💔', title: 'Devastador: Antes vs Ahora', sub: 'Comparación brutal de los primeros meses vs los últimos' },
   { key: 'ghosting', icon: '📱', title: 'Ghosting Selectivo', sub: '¿Te ignora cuando más lo necesitas?' },
   { key: 'language', icon: '🎯', title: 'Cómo ha cambiado su forma de hablarte', sub: 'El lenguaje dice lo que las palabras callan' },
+];
+const GROUP_SECTIONS: { key: string; icon: string; title: string; sub: string }[] = [
+  { key: 'powerRanking', icon: '🏆', title: 'Power Ranking', sub: 'Ranking completo de todos los miembros' },
+  { key: 'timeline', icon: '📈', title: 'Línea del Tiempo', sub: 'Actividad del grupo mes a mes' },
+  { key: 'ghosts', icon: '👻', title: 'Fantasmas del Grupo', sub: 'Quién desapareció sin avisar' },
+  { key: 'ignore', icon: '🙈', title: 'Matriz de Ignorados', sub: 'Quién ignora a quién en el grupo' },
+  { key: 'schedule', icon: '🕐', title: 'Horarios del Grupo', sub: 'Heatmap de actividad por hora y día' },
+  { key: 'deleted', icon: '🗑️', title: 'Mensajes Eliminados', sub: 'Lo que no quisieron que vieras' },
+  { key: 'autopsy', icon: '🔬', title: 'Autopsia del Grupo', sub: 'Análisis clínico de la salud del grupo' },
+  { key: 'eras', icon: '📅', title: 'Eras del Grupo', sub: 'Las épocas doradas y los momentos oscuros' },
+  { key: 'archetypes', icon: '🎭', title: 'Arquetipos', sub: 'El rol de cada miembro en el grupo' },
+  { key: 'subgroups', icon: '🔗', title: 'Subgrupos', sub: 'Las alianzas secretas dentro del grupo' },
+  { key: 'death', icon: '💀', title: 'Probabilidad de Muerte', sub: '¿Cuánto le queda de vida al grupo?' },
 ];
 
 export default async function SharedAnalysisPage({ params }: PageProps) {
@@ -478,14 +521,17 @@ export default async function SharedAnalysisPage({ params }: PageProps) {
   const s = a.stats || {};
   const premium = (s.premium as Premium) || {};
   const chartImages = (s.chartImages as ChartImages) || {};
+  const isGroup = s.type === 'group';
   const n = (key: string): number => Number(s[key]) || 0;
   const v = (key: string): string => String(s[key] ?? '');
   const firstName = (key: string): string => String(s[key] || '?').split(' ')[0];
+  const topMembers = (Array.isArray(s.topMembers) ? s.topMembers : []) as { name: string; msgCount: number; pct: number; category: string }[];
 
   supabaseAdmin.rpc('increment_views', { analysis_id: id }).then();
 
   const hasDetective = DETECTIVE_SECTIONS.some(sec => premium[sec.key]);
   const hasObsesivo = OBSESIVO_SECTIONS.some(sec => premium[sec.key]);
+  const hasGroupPremium = GROUP_SECTIONS.some(sec => premium[sec.key]);
 
   return (
     <>
@@ -499,91 +545,199 @@ export default async function SharedAnalysisPage({ params }: PageProps) {
         {/* ── Header ── */}
         <div className="sa-header">
           <a href="https://www.yalosabia.com" className="sa-logo">YaLo<span className="pk">Sabía</span></a>
-          <div className="sa-sub">Análisis de chat compartido</div>
+          <div className="sa-sub">{isGroup ? 'Análisis de grupo compartido' : 'Análisis de chat compartido'}</div>
         </div>
 
         {a.alias && <div className="sa-alias">&quot;{a.alias}&quot;</div>}
 
         {/* ── Meta ── */}
         <div className="sa-meta">
-          {a.participant_names?.length >= 2 && (
-            <div><span>{a.participant_names[0]}</span> y <span>{a.participant_names[1]}</span></div>
+          {isGroup ? (
+            <div>👥 {n('memberCount')} miembros</div>
+          ) : (
+            a.participant_names?.length >= 2 && (
+              <div><span>{a.participant_names[0]}</span> y <span>{a.participant_names[1]}</span></div>
+            )
           )}
           {a.date_range && <div>{a.date_range}</div>}
           <div>{(a.total_messages || 0).toLocaleString()} mensajes analizados</div>
         </div>
 
         {/* ── Score Card ── */}
-        <div className="score-card">
-          <div className="score-label">Score de la relación</div>
-          <div className="score-number">{a.score}</div>
-          <div className="score-max">de 100</div>
-          <div className="score-verdict">{v('verdict')}</div>
-        </div>
+        {isGroup ? (
+          <div className="group-score-card">
+            <div className="score-label">Salud del Grupo</div>
+            <div className="score-number">{a.score}</div>
+            <div className="score-max">de 100</div>
+            <div className="score-verdict">{v('verdict')}</div>
+          </div>
+        ) : (
+          <div className="score-card">
+            <div className="score-label">Score de la relación</div>
+            <div className="score-number">{a.score}</div>
+            <div className="score-max">de 100</div>
+            <div className="score-verdict">{v('verdict')}</div>
+          </div>
+        )}
 
         {/* ══════ SECCIÓN 1: PLAN GRATIS ══════ */}
         <div className="plan-divider free" />
         <div className="plan-header">
           <div className="plan-badge free">✨ GRATIS</div>
           <div className="plan-title free">Análisis Básico</div>
-          <div className="plan-subtitle">Estadísticas generales de tu conversación</div>
+          <div className="plan-subtitle">{isGroup ? 'Estadísticas generales del grupo' : 'Estadísticas generales de tu conversación'}</div>
         </div>
 
         {/* Stats Grid */}
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-emoji">💬</div>
-            <div className="stat-value">{n('msgsA').toLocaleString()}</div>
-            <div className="stat-label">Mensajes de {firstName('personA')}</div>
+        {isGroup ? (
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-emoji">💬</div>
+              <div className="stat-value">{n('totalMessages').toLocaleString()}</div>
+              <div className="stat-label">Mensajes totales</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-emoji">👥</div>
+              <div className="stat-value">{n('activeCount')} de {n('memberCount')}</div>
+              <div className="stat-label">Miembros activos</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-emoji">📅</div>
+              <div className="stat-value">{n('uniqueDays')}</div>
+              <div className="stat-label">Días de actividad</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-emoji">⏱️</div>
+              <div className="stat-value">{v('avgReplyFormatted') || '—'}</div>
+              <div className="stat-label">Tiempo promedio de respuesta</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-emoji">🌙</div>
+              <div className="stat-value">{n('nightPct')}%</div>
+              <div className="stat-label">Mensajes nocturnos</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-emoji">📎</div>
+              <div className="stat-value">{n('totalMedia').toLocaleString()}</div>
+              <div className="stat-label">Multimedia enviado</div>
+            </div>
           </div>
-          <div className="stat-card">
-            <div className="stat-emoji">💬</div>
-            <div className="stat-value">{n('msgsB').toLocaleString()}</div>
-            <div className="stat-label">Mensajes de {firstName('personB')}</div>
+        ) : (
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-emoji">💬</div>
+              <div className="stat-value">{n('msgsA').toLocaleString()}</div>
+              <div className="stat-label">Mensajes de {firstName('personA')}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-emoji">💬</div>
+              <div className="stat-value">{n('msgsB').toLocaleString()}</div>
+              <div className="stat-label">Mensajes de {firstName('personB')}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-emoji">⏱️</div>
+              <div className="stat-value">{v('avgReplyFormatted') || '—'}</div>
+              <div className="stat-label">Tiempo promedio de respuesta</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-emoji">🌙</div>
+              <div className="stat-value">{n('nightPct')}%</div>
+              <div className="stat-label">Mensajes nocturnos (12am-5am)</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-emoji">❤️</div>
+              <div className="stat-value">{n('loveCount').toLocaleString()}</div>
+              <div className="stat-label">Emojis de amor enviados</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-emoji">📅</div>
+              <div className="stat-value">{n('uniqueDays')}</div>
+              <div className="stat-label">Días de conversación</div>
+            </div>
           </div>
-          <div className="stat-card">
-            <div className="stat-emoji">⏱️</div>
-            <div className="stat-value">{v('avgReplyFormatted') || '—'}</div>
-            <div className="stat-label">Tiempo promedio de respuesta</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-emoji">🌙</div>
-            <div className="stat-value">{n('nightPct')}%</div>
-            <div className="stat-label">Mensajes nocturnos (12am-5am)</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-emoji">❤️</div>
-            <div className="stat-value">{n('loveCount').toLocaleString()}</div>
-            <div className="stat-label">Emojis de amor enviados</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-emoji">📅</div>
-            <div className="stat-value">{n('uniqueDays')}</div>
-            <div className="stat-label">Días de conversación</div>
-          </div>
-        </div>
+        )}
 
         {/* AI Insight */}
         {a.ai_insight && (
           <div className="fun-fact">
-            🤖 <strong>Insight con IA:</strong> {a.ai_insight}
+            {isGroup ? '📊' : '🤖'} <strong>{isGroup ? 'Dato curioso:' : 'Insight con IA:'}</strong> {a.ai_insight}
           </div>
         )}
 
         {/* Dynamics Card */}
-        <div className="example-card">
-          <div className="example-label">⚡ Dinámica</div>
-          <h4>Quién lleva la relación</h4>
-          <p>
-            {n('leaderPct') >= 55
-              ? `${firstName('leader')} lleva la relación con ${n('leaderPct')}% de los mensajes. Ratio: ${v('ratio') || '?'}.`
-              : `Relación equilibrada: ${firstName('personA')} (${n('leaderPct')}%) y ${firstName('personB')} (${100 - n('leaderPct')}%). Ratio: ${v('ratio') || '?'}.`
-            }
-          </p>
-        </div>
+        {isGroup ? (
+          <div className="example-card">
+            <div className="example-label">🏆 Top Miembros</div>
+            <h4>Ranking del grupo</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {topMembers.slice(0, 3).map((m, i) => {
+                const medals = ['🏆', '🥈', '🥉'];
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 8 }}>
+                    <span style={{ fontSize: '1.3rem' }}>{medals[i]}</span>
+                    <span style={{ flex: 1, fontWeight: 600 }}>{m.name}</span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{m.msgCount.toLocaleString()} msgs ({m.pct}%)</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div className="example-card">
+            <div className="example-label">⚡ Dinámica</div>
+            <h4>Quién lleva la relación</h4>
+            <p>
+              {n('leaderPct') >= 55
+                ? `${firstName('leader')} lleva la relación con ${n('leaderPct')}% de los mensajes. Ratio: ${v('ratio') || '?'}.`
+                : `Relación equilibrada: ${firstName('personA')} (${n('leaderPct')}%) y ${firstName('personB')} (${100 - n('leaderPct')}%). Ratio: ${v('ratio') || '?'}.`
+              }
+            </p>
+          </div>
+        )}
 
-        {/* ══════ SECCIÓN 2: PLAN DETECTIVE ══════ */}
-        {hasDetective && (
+        {/* ══════ GROUP PREMIUM SECTIONS ══════ */}
+        {isGroup && hasGroupPremium && (
+          <>
+            <div className="plan-divider obsessive" />
+            <div className="plan-header">
+              <div className="plan-badge obsessive">👥 PREMIUM</div>
+              <div className="plan-title obsessive">Análisis Premium Grupal</div>
+              <div className="plan-subtitle">11 análisis profundos de la dinámica del grupo</div>
+            </div>
+
+            {GROUP_SECTIONS.map(sec => {
+              const body = premium[sec.key];
+              if (!body) return null;
+              return (
+                <div key={sec.key} className="premium-feature-card">
+                  <div className="pf-header">
+                    <span className="pf-icon">{sec.icon}</span>
+                    <div>
+                      <div className="pf-title">{sec.title}</div>
+                      <div className="pf-subtitle">{sec.sub}</div>
+                    </div>
+                  </div>
+                  <div className="pf-body">
+                    {sec.key === 'timeline' && (
+                      <>
+                        {chartImages.groupTimelineTotal && (
+                          <img className="chart-img" src={chartImages.groupTimelineTotal} alt="Actividad total del grupo" />
+                        )}
+                        {chartImages.groupTimelineTop10 && (
+                          <img className="chart-img" src={chartImages.groupTimelineTop10} alt="Top 10 miembros por mes" />
+                        )}
+                      </>
+                    )}
+                    <div dangerouslySetInnerHTML={{ __html: body }} />
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {/* ══════ SECCIÓN 2: PLAN DETECTIVE (individual only) ══════ */}
+        {!isGroup && hasDetective && (
           <>
             <div className="plan-divider detective" />
             <div className="plan-header">
@@ -616,8 +770,8 @@ export default async function SharedAnalysisPage({ params }: PageProps) {
           </>
         )}
 
-        {/* ══════ SECCIÓN 3: PLAN OBSESIVO ══════ */}
-        {hasObsesivo && (
+        {/* ══════ SECCIÓN 3: PLAN OBSESIVO (individual only) ══════ */}
+        {!isGroup && hasObsesivo && (
           <>
             <div className="plan-divider obsessive" />
             <div className="plan-header">
@@ -652,9 +806,9 @@ export default async function SharedAnalysisPage({ params }: PageProps) {
 
         {/* ── CTA ── */}
         <div className="sa-cta">
-          <div className="sa-cta-icon">💬</div>
-          <h3>¿Quieres analizar tu propio chat?</h3>
-          <p>Sube tu chat de WhatsApp y descubre qué dicen tus mensajes sobre tu relación</p>
+          <div className="sa-cta-icon">{isGroup ? '👥' : '💬'}</div>
+          <h3>¿Quieres analizar {isGroup ? 'tu grupo' : 'tu propio chat'}?</h3>
+          <p>Sube tu chat de WhatsApp y descubre qué dicen tus mensajes sobre {isGroup ? 'tu grupo' : 'tu relación'}</p>
           <a href="https://www.yalosabia.com" className="btn-main">Analizar mi chat →</a>
         </div>
 

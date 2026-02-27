@@ -2813,9 +2813,15 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   </div>
 
   <!-- Share Stories CTA -->
-  <div style="text-align:center;margin-bottom:32px;">
+  <div style="text-align:center;margin-bottom:12px;">
     <button class="btn-secondary" onclick="groupShareToStories()" style="width:100%;max-width:480px;padding:14px 28px;font-size:1rem;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;cursor:pointer;font-weight:600;">
       📸 Comparte tu score grupal en Stories
+    </button>
+  </div>
+  <!-- Share Link CTA (group) -->
+  <div style="text-align:center;margin-bottom:32px;">
+    <button class="btn-secondary" onclick="openGroupShareLinkModal()" style="width:100%;max-width:480px;padding:14px 28px;font-size:1rem;border-radius:12px;background:rgba(108,92,231,0.1);border:1px solid rgba(108,92,231,0.3);color:#fff;cursor:pointer;font-weight:600;">
+      🔗 Compartir análisis grupal por link
     </button>
   </div>
 
@@ -8450,6 +8456,7 @@ function openShareLinkModal() {
     showDemoUpgradePrompt('share');
     return;
   }
+  window._shareMode = 'individual';
   document.getElementById('shareLinkStep1').style.display = 'block';
   document.getElementById('shareLinkStep2').style.display = 'none';
   document.getElementById('shareLinkLoading').style.display = 'none';
@@ -8458,12 +8465,32 @@ function openShareLinkModal() {
   document.getElementById('shareLinkModal').style.display = 'flex';
 }
 
+function openGroupShareLinkModal() {
+  if (!lastGroupStats) {
+    alert('Primero analiza un grupo.');
+    return;
+  }
+  if (window.isDemoMode) {
+    showDemoUpgradePrompt('share');
+    return;
+  }
+  window._shareMode = 'group';
+  document.getElementById('shareLinkStep1').style.display = 'block';
+  document.getElementById('shareLinkStep2').style.display = 'none';
+  document.getElementById('shareLinkLoading').style.display = 'none';
+  document.getElementById('shareLinkError').style.display = 'none';
+  document.getElementById('shareAlias').value = lastGroupStats.groupName || '';
+  document.getElementById('shareLinkModal').style.display = 'flex';
+}
+
 function closeShareLinkModal() {
   document.getElementById('shareLinkModal').style.display = 'none';
 }
 
 async function generateShareLink() {
-  if (!lastStats) return;
+  const isGroup = window._shareMode === 'group';
+  if (!isGroup && !lastStats) return;
+  if (isGroup && !lastGroupStats) return;
 
   const alias = document.getElementById('shareAlias').value.trim();
 
@@ -8471,67 +8498,35 @@ async function generateShareLink() {
   document.getElementById('shareLinkStep1').style.display = 'none';
   document.getElementById('shareLinkLoading').style.display = 'block';
 
-  // Get AI insight text if available
-  const funFactEl = document.getElementById('funFact');
-  let aiInsight = null;
-  if (funFactEl) {
-    const text = funFactEl.textContent || '';
-    if (text.includes('Insight con IA:')) {
-      aiInsight = text.replace('🤖', '').replace('Insight con IA:', '').trim();
-    }
-  }
-
-  // Build date range from first/last message
-  let dateRange = null;
-  if (lastMessages && lastMessages.length > 0) {
-    const first = lastMessages[0].date || '';
-    const last = lastMessages[lastMessages.length - 1].date || '';
-    if (first && last) dateRange = first + ' — ' + last;
-  }
-
-  // Capture rendered HTML from Detective + Obsesivo premium sections
+  // Helper: grab rendered HTML from a section by ID
   function grabSection(id) {
     const el = document.getElementById(id);
     if (!el) return null;
     const html = el.innerHTML?.trim();
     return (html && html.length > 10) ? html : null;
   }
-  const premiumSections = {
-    timeline: grabSection('timelineInsight'),
-    silences: grabSection('silencesBody'),
-    doubleText: grabSection('doubleTextBody'),
-    multimedia: grabSection('multimediaBody'),
-    deleted: grabSection('deletedBody'),
-    forensic: grabSection('forensicBody'),
-    beforeNow: grabSection('beforeNowBody'),
-    ghosting: grabSection('ghostingBody'),
-    language: grabSection('languageBody'),
-  };
 
-  // Capture chart images as base64 PNG
-  const chartImages = {};
-  try {
-    const tlCanvas = document.getElementById('timelineChart');
-    if (tlCanvas && tlCanvas.getContext) {
-      chartImages.timeline = tlCanvas.toDataURL('image/png', 0.8);
-    }
-  } catch(e) { console.warn('Chart capture failed:', e); }
+  // Helper: capture canvas as base64 PNG
+  function grabChart(canvasId) {
+    try {
+      const c = document.getElementById(canvasId);
+      if (c && c.getContext) return c.toDataURL('image/png', 0.8);
+    } catch(e) { console.warn('Chart capture failed:', canvasId, e); }
+    return null;
+  }
+
+  let payload;
+  if (isGroup) {
+    payload = buildGroupSharePayload(alias, grabSection, grabChart);
+  } else {
+    payload = buildIndividualSharePayload(alias, grabSection, grabChart);
+  }
 
   try {
     const res = await fetch('/api/share', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        alias: alias || null,
-        score: lastStats.score,
-        stats: lastStats,
-        aiInsight: aiInsight,
-        participantNames: [lastStats.personA, lastStats.personB],
-        dateRange: dateRange,
-        totalMessages: lastStats.total,
-        premiumSections: premiumSections,
-        chartImages: Object.keys(chartImages).length > 0 ? chartImages : null,
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
@@ -8545,16 +8540,13 @@ async function generateShareLink() {
 
     // Track event
     try {
+      const trackData = isGroup
+        ? { event: 'share_link_created_group', score: lastGroupStats.score, groupName: lastGroupStats.groupName, totalMessages: lastGroupStats.totalMessages }
+        : { event: 'share_link_created', score: lastStats.score, personA: lastStats.personA, personB: lastStats.personB, totalMessages: lastStats.total };
       fetch('/api/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'share_link_created',
-          score: lastStats.score,
-          personA: lastStats.personA,
-          personB: lastStats.personB,
-          totalMessages: lastStats.total,
-        }),
+        body: JSON.stringify(trackData),
       });
     } catch(e) {}
 
@@ -8564,6 +8556,135 @@ async function generateShareLink() {
     document.getElementById('shareLinkErrorMsg').textContent = err.message || 'Error al generar el enlace';
     document.getElementById('shareLinkError').style.display = 'block';
   }
+}
+
+function buildIndividualSharePayload(alias, grabSection, grabChart) {
+  // Get AI insight
+  const funFactEl = document.getElementById('funFact');
+  let aiInsight = null;
+  if (funFactEl) {
+    const text = funFactEl.textContent || '';
+    if (text.includes('Insight con IA:')) {
+      aiInsight = text.replace('🤖', '').replace('Insight con IA:', '').trim();
+    }
+  }
+
+  // Date range
+  let dateRange = null;
+  if (lastMessages && lastMessages.length > 0) {
+    const first = lastMessages[0].date || '';
+    const last = lastMessages[lastMessages.length - 1].date || '';
+    if (first && last) dateRange = first + ' — ' + last;
+  }
+
+  const premiumSections = {
+    timeline: grabSection('timelineInsight'),
+    silences: grabSection('silencesBody'),
+    doubleText: grabSection('doubleTextBody'),
+    multimedia: grabSection('multimediaBody'),
+    deleted: grabSection('deletedBody'),
+    forensic: grabSection('forensicBody'),
+    beforeNow: grabSection('beforeNowBody'),
+    ghosting: grabSection('ghostingBody'),
+    language: grabSection('languageBody'),
+  };
+
+  const chartImages = {};
+  const tl = grabChart('timelineChart');
+  if (tl) chartImages.timeline = tl;
+
+  return {
+    alias: alias || null,
+    score: lastStats.score,
+    stats: lastStats,
+    aiInsight,
+    participantNames: [lastStats.personA, lastStats.personB],
+    dateRange,
+    totalMessages: lastStats.total,
+    premiumSections,
+    chartImages: Object.keys(chartImages).length > 0 ? chartImages : null,
+  };
+}
+
+function buildGroupSharePayload(alias, grabSection, grabChart) {
+  const gs = lastGroupStats;
+
+  // Get AI insight for group
+  const funFactEl = document.getElementById('group-funFact');
+  let aiInsight = null;
+  if (funFactEl) {
+    const text = funFactEl.textContent || '';
+    if (text.includes('Dato curioso:')) {
+      aiInsight = text.replace('📊', '').replace('Dato curioso:', '').trim();
+    }
+  }
+
+  // Date range
+  let dateRange = null;
+  if (gs.firstDate && gs.lastDate) {
+    const fmt = (d) => d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+    dateRange = fmt(gs.firstDate) + ' — ' + fmt(gs.lastDate);
+  }
+
+  // Build group stats with type discriminator
+  const groupStatsForShare = {
+    type: 'group',
+    groupName: gs.groupName || '',
+    totalMessages: gs.totalMessages,
+    totalDays: gs.totalDays,
+    uniqueDays: gs.uniqueDays,
+    score: gs.score,
+    verdict: gs.verdict,
+    nightPct: gs.nightPct,
+    totalMedia: gs.totalMedia,
+    avgReplyFormatted: gs.avgReplyFormatted,
+    activeCount: gs.activeCount,
+    ghostCount: gs.ghostCount,
+    memberCount: gs.members.length,
+    topMembers: gs.members.slice(0, 15).map(m => ({
+      name: m.name,
+      msgCount: m.msgCount,
+      pct: m.pct,
+      category: m.category,
+    })),
+  };
+
+  // 11 premium sections
+  const premiumSections = {
+    powerRanking: grabSection('group-powerRankingBody'),
+    timeline: grabSection('group-timelineInsight'),
+    ghosts: grabSection('group-ghostsBody'),
+    ignore: grabSection('group-ignoreBody'),
+    schedule: grabSection('group-scheduleBody'),
+    deleted: grabSection('group-deletedBody'),
+    autopsy: grabSection('group-autopsyBody'),
+    eras: grabSection('group-erasBody'),
+    archetypes: grabSection('group-archetypesBody'),
+    subgroups: grabSection('group-subgroupsBody'),
+    death: grabSection('group-deathBody'),
+  };
+
+  // 2 chart images
+  const chartImages = {};
+  const totalChart = grabChart('group-timelineTotalChart');
+  if (totalChart) chartImages.groupTimelineTotal = totalChart;
+  const top10Chart = grabChart('group-timelineTop10Chart');
+  if (top10Chart) chartImages.groupTimelineTop10 = top10Chart;
+
+  // Participant names (first 50 members)
+  const participantNames = gs.members.slice(0, 50).map(m => m.name);
+
+  return {
+    alias: alias || null,
+    score: gs.score,
+    stats: groupStatsForShare,
+    aiInsight,
+    participantNames,
+    dateRange,
+    totalMessages: gs.totalMessages,
+    premiumSections,
+    chartImages: Object.keys(chartImages).length > 0 ? chartImages : null,
+  };
 }
 
 function copyShareLink() {
@@ -8584,7 +8705,9 @@ function copyShareLink() {
 function shareViaWhatsApp() {
   const url = window._shareAnalysisUrl;
   if (!url) return;
-  const text = '¡Mira el análisis de nuestro chat! 🔍 ' + url;
+  const text = window._shareMode === 'group'
+    ? '¡Mira el análisis de nuestro grupo! 👥🔍 ' + url
+    : '¡Mira el análisis de nuestro chat! 🔍 ' + url;
   window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
 }
 

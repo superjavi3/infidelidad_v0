@@ -16,39 +16,80 @@ export async function POST(req: NextRequest) {
     }
 
     // Sanitize: only keep computed stats, never raw messages
-    const safeStats: Record<string, unknown> = {
-      personA: stats.personA,
-      personB: stats.personB,
-      msgsA: stats.msgsA,
-      msgsB: stats.msgsB,
-      total: stats.total,
-      score: stats.score,
-      verdict: stats.verdict,
-      loveCount: stats.loveCount,
-      nightPct: stats.nightPct,
-      uniqueDays: stats.uniqueDays,
-      avgReplyFormatted: stats.avgReplyFormatted,
-      leader: stats.leader,
-      leaderPct: stats.leaderPct,
-      ratio: stats.ratio,
-      silencesCount: stats.silencesCount,
-      totalDouble: stats.totalDouble,
-    };
+    const isGroup = stats.type === 'group';
+    const safeStats: Record<string, unknown> = isGroup
+      ? {
+          type: 'group',
+          groupName: String(stats.groupName || '').substring(0, 100),
+          totalMessages: Number(stats.totalMessages) || 0,
+          totalDays: Number(stats.totalDays) || 0,
+          uniqueDays: Number(stats.uniqueDays) || 0,
+          score: Number(stats.score) || 0,
+          verdict: String(stats.verdict || ''),
+          nightPct: Number(stats.nightPct) || 0,
+          totalMedia: Number(stats.totalMedia) || 0,
+          avgReplyFormatted: String(stats.avgReplyFormatted || ''),
+          activeCount: Number(stats.activeCount) || 0,
+          ghostCount: Number(stats.ghostCount) || 0,
+          memberCount: Number(stats.memberCount) || 0,
+          topMembers: Array.isArray(stats.topMembers)
+            ? stats.topMembers.slice(0, 15).map((m: Record<string, unknown>) => ({
+                name: String(m.name || '').substring(0, 50),
+                msgCount: Number(m.msgCount) || 0,
+                pct: Number(m.pct) || 0,
+                category: String(m.category || ''),
+              }))
+            : [],
+        }
+      : {
+          personA: stats.personA,
+          personB: stats.personB,
+          msgsA: stats.msgsA,
+          msgsB: stats.msgsB,
+          total: stats.total,
+          score: stats.score,
+          verdict: stats.verdict,
+          loveCount: stats.loveCount,
+          nightPct: stats.nightPct,
+          uniqueDays: stats.uniqueDays,
+          avgReplyFormatted: stats.avgReplyFormatted,
+          leader: stats.leader,
+          leaderPct: stats.leaderPct,
+          ratio: stats.ratio,
+          silencesCount: stats.silencesCount,
+          totalDouble: stats.totalDouble,
+        };
 
-    // Include premium section HTML content (Detective + Obsesivo)
+    // Include premium section HTML content
     if (premiumSections && typeof premiumSections === 'object') {
       const truncate = (val: unknown) => typeof val === 'string' ? val.substring(0, 15000) : null;
-      safeStats.premium = {
-        timeline: truncate(premiumSections.timeline),
-        silences: truncate(premiumSections.silences),
-        doubleText: truncate(premiumSections.doubleText),
-        multimedia: truncate(premiumSections.multimedia),
-        deleted: truncate(premiumSections.deleted),
-        forensic: truncate(premiumSections.forensic),
-        beforeNow: truncate(premiumSections.beforeNow),
-        ghosting: truncate(premiumSections.ghosting),
-        language: truncate(premiumSections.language),
-      };
+      if (isGroup) {
+        safeStats.premium = {
+          powerRanking: truncate(premiumSections.powerRanking),
+          timeline: truncate(premiumSections.timeline),
+          ghosts: truncate(premiumSections.ghosts),
+          ignore: truncate(premiumSections.ignore),
+          schedule: truncate(premiumSections.schedule),
+          deleted: truncate(premiumSections.deleted),
+          autopsy: truncate(premiumSections.autopsy),
+          eras: truncate(premiumSections.eras),
+          archetypes: truncate(premiumSections.archetypes),
+          subgroups: truncate(premiumSections.subgroups),
+          death: truncate(premiumSections.death),
+        };
+      } else {
+        safeStats.premium = {
+          timeline: truncate(premiumSections.timeline),
+          silences: truncate(premiumSections.silences),
+          doubleText: truncate(premiumSections.doubleText),
+          multimedia: truncate(premiumSections.multimedia),
+          deleted: truncate(premiumSections.deleted),
+          forensic: truncate(premiumSections.forensic),
+          beforeNow: truncate(premiumSections.beforeNow),
+          ghosting: truncate(premiumSections.ghosting),
+          language: truncate(premiumSections.language),
+        };
+      }
     }
 
     // Include chart images (base64 PNG, max ~500KB each)
