@@ -2879,10 +2879,24 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <div class="pf-body" id="group-powerRankingBody"></div>
     </div>
 
-    <!-- Feature 2: Línea de Vida -->
+    <!-- Feature 2: Línea de Vida (2 gráficas) -->
     <div class="premium-feature-card" id="group-featureTimeline" data-plan-required="premium">
       <div class="pf-header"><span class="pf-icon">📈</span><div><h4 class="pf-title">Línea de Vida del Grupo</h4><p class="pf-subtitle">Actividad mes a mes con líneas por persona</p></div></div>
-      <div class="pf-body" id="group-timelineBody"><div style="position:relative;height:320px;"><canvas id="group-timelineChart"></canvas></div><div id="group-timelineInsight" style="margin-top:12px;font-size:0.9rem;color:var(--text-muted);"></div></div>
+      <div class="pf-body" id="group-timelineBody">
+        <!-- Gráfica 1: Total -->
+        <div style="margin-bottom:8px;">
+          <p style="margin:0 0 2px;font-size:1rem;font-weight:700;color:#fff;">📈 Actividad Total del Grupo</p>
+          <p style="margin:0 0 10px;font-size:0.82rem;color:var(--text-muted);">Mensajes por mes — visión global</p>
+        </div>
+        <div style="position:relative;height:220px;"><canvas id="group-timelineTotalChart"></canvas></div>
+        <div id="group-timelineInsight" style="margin-top:12px;font-size:0.9rem;color:var(--text-muted);"></div>
+        <!-- Gráfica 2: Top 10 por persona -->
+        <div style="margin-top:24px;margin-bottom:8px;">
+          <p style="margin:0 0 2px;font-size:1rem;font-weight:700;color:#fff;">👥 Actividad por Persona — Top 10</p>
+          <p style="margin:0 0 10px;font-size:0.82rem;color:var(--text-muted);">Top 5 sólidas · siguientes 5 punteadas</p>
+        </div>
+        <div style="position:relative;height:280px;"><canvas id="group-timelineTop10Chart"></canvas></div>
+      </div>
     </div>
 
     <!-- Feature 3: Mapa de Fantasmas -->
@@ -4687,10 +4701,9 @@ function renderGroupPowerRanking(gs) {
   body.innerHTML = html;
 }
 
-// ── 2. LÍNEA DE VIDA ──
+// ── 2. LÍNEA DE VIDA (2 gráficas) ──
 function renderGroupTimeline(gs) {
-  const canvas = document.getElementById('group-timelineChart');
-  if (!canvas || !gs.monthlyActivity || gs.monthlyActivity.length < 2) return;
+  if (!gs.monthlyActivity || gs.monthlyActivity.length < 2) return;
 
   const labels = gs.monthlyActivity.map(m => {
     const [y, mo] = m.month.split('-');
@@ -4699,40 +4712,77 @@ function renderGroupTimeline(gs) {
   });
   const totalData = gs.monthlyActivity.map(m => m.total);
 
-  const colors = ['#FF2D78', '#6C5CE7', '#3BCEAC', '#FFD23F', '#FF6B35', '#0984E3', '#E84393', '#00CEC9'];
-  const top5 = gs.members.slice(0, 5);
-  const datasets = [{
-    label: 'Total', data: totalData, borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.05)',
-    borderWidth: 3, fill: true, tension: 0.4, pointRadius: 2
-  }];
-  top5.forEach((member, i) => {
-    datasets.push({
-      label: member.name.split(' ')[0],
-      data: gs.monthlyActivity.map(m => m.byPerson[member.name] || 0),
-      borderColor: colors[i], backgroundColor: 'transparent',
-      borderWidth: 1.5, fill: false, tension: 0.4, pointRadius: 0, borderDash: [4, 2]
+  // ── GRÁFICA 1: Actividad Total ──
+  const canvasTotal = document.getElementById('group-timelineTotalChart');
+  if (canvasTotal) {
+    const ex1 = Chart.getChart(canvasTotal);
+    if (ex1) ex1.destroy();
+
+    new Chart(canvasTotal, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Total', data: totalData, borderColor: '#fff',
+          backgroundColor: 'rgba(255,255,255,0.07)',
+          borderWidth: 2.5, fill: true, tension: 0.4, pointRadius: 2
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+          x: { grid: { display: false }, ticks: { color: '#64748b', maxRotation: 45 } }
+        },
+        plugins: { legend: { display: false } }
+      }
     });
-  });
-
-  // Destroy previous if exists
-  const existing = Chart.getChart(canvas);
-  if (existing) existing.destroy();
-
-  new Chart(canvas, {
-    type: 'line',
-    data: { labels, datasets },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888' } },
-               x: { grid: { display: false }, ticks: { color: '#888', maxRotation: 45 } } },
-      plugins: { legend: { display: true, labels: { color: '#ccc', boxWidth: 12, font: { size: 11 } } } }
-    }
-  });
+  }
 
   // Peak insight
   const peakIdx = totalData.indexOf(Math.max(...totalData));
-  document.getElementById('group-timelineInsight').innerHTML =
-    `📈 <strong>Pico de actividad:</strong> ${labels[peakIdx]} con ${totalData[peakIdx].toLocaleString()} mensajes`;
+  const insightEl = document.getElementById('group-timelineInsight');
+  if (insightEl) {
+    insightEl.innerHTML = `📈 <strong>Pico de actividad:</strong> ${labels[peakIdx]} con ${totalData[peakIdx].toLocaleString()} mensajes`;
+  }
+
+  // ── GRÁFICA 2: Top 10 por persona ──
+  const canvasTop = document.getElementById('group-timelineTop10Chart');
+  if (!canvasTop) return;
+
+  const palette = ['#FF2D78','#6C5CE7','#3BCEAC','#FFD23F','#EF4444','#0984E3','#8B5CF6','#F97316','#84CC16','#D946EF'];
+  const top10 = gs.members.slice(0, 10);
+  const datasets2 = top10.map((member, i) => ({
+    label: member.name.split(' ')[0],
+    data: gs.monthlyActivity.map(m => m.byPerson[member.name] || 0),
+    borderColor: palette[i], backgroundColor: 'transparent',
+    borderWidth: i < 5 ? 2 : 1.5,
+    fill: false, tension: 0.4,
+    pointRadius: i < 5 ? 2 : 0,
+    borderDash: i < 5 ? [] : [4, 3]
+  }));
+
+  const ex2 = Chart.getChart(canvasTop);
+  if (ex2) ex2.destroy();
+
+  new Chart(canvasTop, {
+    type: 'line',
+    data: { labels, datasets: datasets2 },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+        x: { grid: { display: false }, ticks: { color: '#64748b', maxRotation: 45 } }
+      },
+      plugins: {
+        legend: { display: true, position: 'top', labels: { color: '#ccc', boxWidth: 12, font: { size: 11 } } },
+        tooltip: {
+          mode: 'index', intersect: false,
+          itemSort: function(a, b) { return b.raw - a.raw; }
+        }
+      }
+    }
+  });
 }
 
 // ── 3. MAPA DE FANTASMAS ──
