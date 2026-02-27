@@ -475,6 +475,7 @@ const GROUP_SECTIONS: { key: string; icon: string; title: string; sub: string }[
   { key: 'ignore', icon: '🙈', title: 'Matriz de Ignorados', sub: 'Quién ignora a quién en el grupo' },
   { key: 'schedule', icon: '🕐', title: 'Horarios del Grupo', sub: 'Heatmap de actividad por hora y día' },
   { key: 'deleted', icon: '🗑️', title: 'Mensajes Eliminados', sub: 'Lo que no quisieron que vieras' },
+  { key: 'multimedia', icon: '📱', title: 'Reyes del Multimedia', sub: 'Quién manda audios, fotos, stickers y más' },
   { key: 'autopsy', icon: '🔬', title: 'Autopsia del Grupo', sub: 'Análisis clínico de la salud del grupo' },
   { key: 'eras', icon: '📅', title: 'Eras del Grupo', sub: 'Las épocas doradas y los momentos oscuros' },
   { key: 'archetypes', icon: '🎭', title: 'Arquetipos', sub: 'El rol de cada miembro en el grupo' },
@@ -702,7 +703,7 @@ export default async function SharedAnalysisPage({ params }: PageProps) {
             <div className="plan-header">
               <div className="plan-badge obsessive">👥 PREMIUM</div>
               <div className="plan-title obsessive">Análisis Premium Grupal</div>
-              <div className="plan-subtitle">11 análisis profundos de la dinámica del grupo</div>
+              <div className="plan-subtitle">12 análisis profundos de la dinámica del grupo</div>
             </div>
 
             {GROUP_SECTIONS.map(sec => {

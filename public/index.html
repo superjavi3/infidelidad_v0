@@ -2880,7 +2880,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <div style="text-align:center;margin-bottom:32px;">
       <div style="display:inline-block;padding:6px 16px;border-radius:999px;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;background:linear-gradient(135deg,rgba(108,92,231,0.2),rgba(255,45,120,0.2));color:var(--pink);">🔓 PREMIUM — <span class="precio-premium">$99 MXN</span></div>
       <h3 style="font-family:var(--font-display);font-size:1.3rem;margin-top:12px;">Análisis Completo del Grupo</h3>
-      <p style="color:var(--text-muted);font-size:0.9rem;margin-top:4px;">13 herramientas para entender tu grupo al 100%</p>
+      <p style="color:var(--text-muted);font-size:0.9rem;margin-top:4px;">14 herramientas para entender tu grupo al 100%</p>
     </div>
 
     <!-- Feature 1: Ranking de Poder -->
@@ -2931,6 +2931,12 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <div class="premium-feature-card" id="group-featureDeleted" data-plan-required="premium">
       <div class="pf-header"><span class="pf-icon">🗑️</span><div><h4 class="pf-title">Mensajes Eliminados</h4><p class="pf-subtitle">Ranking de quién borra más</p></div></div>
       <div class="pf-body" id="group-deletedBody"></div>
+    </div>
+
+    <!-- Feature 7: Reyes del Multimedia -->
+    <div class="premium-feature-card" id="group-featureMultimedia" data-plan-required="premium">
+      <div class="pf-header"><span class="pf-icon">📱</span><div><h4 class="pf-title">Reyes del Multimedia</h4><p class="pf-subtitle">Quién manda audios, fotos, stickers y más</p></div></div>
+      <div class="pf-body" id="group-multimediaBody"></div>
     </div>
 
     <!-- Feature 8: Autopsia del Grupo -->
@@ -4671,6 +4677,7 @@ function renderGroupPremiumFeatures(messages, gs) {
   renderGroupIgnoreMatrix(gs);
   renderGroupScheduleHeatmap(gs);
   renderGroupDeletedMessages(gs);
+  renderGroupMultimedia(gs);
   renderGroupEras(gs);
   renderGroupArchetypes(gs);
   renderGroupSubgroups(gs);
@@ -4956,6 +4963,103 @@ function renderGroupDeletedMessages(gs) {
     </div>`;
   });
   html += '</div>';
+  body.innerHTML = html;
+}
+
+// ── 7. REYES DEL MULTIMEDIA (GRUPO) ──
+function renderGroupMultimedia(gs) {
+  const body = document.getElementById('group-multimediaBody');
+  const members = gs.members;
+  const typeKeys = [
+    { key: 'audios', icon: '🎙️', label: 'Audios' },
+    { key: 'imagenes', icon: '📸', label: 'Imágenes' },
+    { key: 'stickers', icon: '🎭', label: 'Stickers' },
+    { key: 'videos', icon: '🎬', label: 'Videos' },
+    { key: 'documentos', icon: '📄', label: 'Documentos' },
+    { key: 'ubicaciones', icon: '📍', label: 'Ubicaciones' },
+  ];
+
+  // Color palette for members
+  const palette = ['#FF2D78','#6C5CE7','#3BCEAC','#FFD23F','#FF6B35','#0984E3','#E84393','#00B894','#FDCB6E','#E17055','#74B9FF','#A29BFE','#55E6C1','#F8B739','#FC427B'];
+
+  let html = '';
+
+  // Per media type: show top 3 senders + bar
+  typeKeys.forEach(({ key, icon, label }) => {
+    const ranked = members
+      .map(m => ({ name: m.name, count: m.mediaCount[key] || 0 }))
+      .filter(m => m.count > 0)
+      .sort((a, b) => b.count - a.count);
+    const total = ranked.reduce((s, m) => s + m.count, 0);
+
+    html += `<div class="mm-row" style="flex-wrap:wrap;">
+      <span class="mm-icon">${icon}</span>
+      <div class="mm-label">${label} <span>(${total})</span></div>`;
+
+    if (total > 0) {
+      // Stacked bar with top senders
+      html += `<div class="mm-bar-wrap">`;
+      ranked.slice(0, 5).forEach((m, i) => {
+        const pct = (m.count / total * 100).toFixed(1);
+        const color = palette[members.findIndex(x => x.name === m.name) % palette.length];
+        const radius = i === 0 ? 'border-radius:10px 0 0 10px;' : '';
+        const radiusLast = i === Math.min(ranked.length, 5) - 1 ? 'border-radius:0 10px 10px 0;' : '';
+        html += `<div style="width:${pct}%;height:100%;background:${color};${radius}${radiusLast}" title="${m.name}: ${m.count}"></div>`;
+      });
+      html += `</div>`;
+      // Top sender crowned
+      html += `<div class="mm-king">👑 <strong>${ranked[0].name.split(' ')[0]}</strong></div>`;
+    } else {
+      html += `<div class="mm-empty">Sin ${label.toLowerCase()} en este chat</div>`;
+    }
+    html += `</div>`;
+  });
+
+  // Overall multimedia totals per member (top 10)
+  const mmRanking = members
+    .map(m => ({ name: m.name, total: m.mediaCount.total, msgs: m.msgCount }))
+    .filter(m => m.total > 0)
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 10);
+
+  if (mmRanking.length > 0) {
+    const maxMM = mmRanking[0].total;
+    html += `<div style="margin-top:20px;"><div style="font-size:0.9rem;font-weight:700;margin-bottom:10px;">🏅 Ranking Multimedia Total</div>`;
+    html += `<div style="display:flex;flex-direction:column;gap:8px;">`;
+    mmRanking.forEach((m, i) => {
+      const pct = (m.total / maxMM * 100).toFixed(0);
+      const ratio = m.msgs > 0 ? Math.round(m.total / m.msgs * 100) : 0;
+      const color = palette[members.findIndex(x => x.name === m.name) % palette.length];
+      const medal = i === 0 ? '👑' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+      html += `<div>
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:3px;">
+          <span>${medal} ${m.name.split(' ')[0]}</span>
+          <span style="color:var(--text-muted);">${m.total} archivos (${ratio}% de sus msgs)</span>
+        </div>
+        <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">
+          <div style="width:${pct}%;height:100%;background:${color};border-radius:3px;"></div>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Insight
+  const totalMedia = gs.totalMedia || members.reduce((s, m) => s + m.mediaCount.total, 0);
+  const king = mmRanking[0];
+  const audioKing = [...members].sort((a, b) => (b.mediaCount.audios || 0) - (a.mediaCount.audios || 0))[0];
+  let insight = '';
+  if (king && king.msgs > 0 && (king.total / king.msgs) > 0.4) {
+    insight = `${king.name.split(' ')[0]} habla más con archivos que con palabras — ${Math.round(king.total / king.msgs * 100)}% de sus mensajes son multimedia`;
+  } else if (audioKing && audioKing.mediaCount.audios > 20) {
+    insight = `${audioKing.name.split(' ')[0]} es adicto a los audios — mandó ${audioKing.mediaCount.audios} en total`;
+  } else if (totalMedia > 0 && king) {
+    insight = `${king.name.split(' ')[0]} es el rey del multimedia con ${king.total} archivos enviados`;
+  } else {
+    insight = 'Este grupo es 100% texto puro. Ni un audio, ni una foto. Respeto.';
+  }
+  html += `<div class="pf-insight" style="margin-top:16px;"><strong>📱 Insight:</strong> ${insight}</div>`;
+
   body.innerHTML = html;
 }
 
@@ -8657,6 +8761,7 @@ function buildGroupSharePayload(alias, grabSection, grabChart) {
     ignore: grabSection('group-ignoreBody'),
     schedule: grabSection('group-scheduleBody'),
     deleted: grabSection('group-deletedBody'),
+    multimedia: grabSection('group-multimediaBody'),
     autopsy: grabSection('group-autopsyBody'),
     eras: grabSection('group-erasBody'),
     archetypes: grabSection('group-archetypesBody'),

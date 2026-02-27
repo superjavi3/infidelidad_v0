@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
           ignore: truncate(premiumSections.ignore),
           schedule: truncate(premiumSections.schedule),
           deleted: truncate(premiumSections.deleted),
+          multimedia: truncate(premiumSections.multimedia),
           autopsy: truncate(premiumSections.autopsy),
           eras: truncate(premiumSections.eras),
           archetypes: truncate(premiumSections.archetypes),
