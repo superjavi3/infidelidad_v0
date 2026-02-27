@@ -8508,6 +8508,15 @@ async function generateShareLink() {
     language: grabSection('languageBody'),
   };
 
+  // Capture chart images as base64 PNG
+  const chartImages = {};
+  try {
+    const tlCanvas = document.getElementById('timelineChart');
+    if (tlCanvas && tlCanvas.getContext) {
+      chartImages.timeline = tlCanvas.toDataURL('image/png', 0.8);
+    }
+  } catch(e) { console.warn('Chart capture failed:', e); }
+
   try {
     const res = await fetch('/api/share', {
       method: 'POST',
@@ -8521,6 +8530,7 @@ async function generateShareLink() {
         dateRange: dateRange,
         totalMessages: lastStats.total,
         premiumSections: premiumSections,
+        chartImages: Object.keys(chartImages).length > 0 ? chartImages : null,
       }),
     });
 

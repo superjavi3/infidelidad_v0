@@ -6,7 +6,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { alias, score, stats, aiInsight, participantNames, dateRange, totalMessages, premiumSections } = body;
+    const { alias, score, stats, aiInsight, participantNames, dateRange, totalMessages, premiumSections, chartImages } = body;
 
     if (score == null || !stats || !participantNames || !totalMessages) {
       return NextResponse.json(
@@ -49,6 +49,19 @@ export async function POST(req: NextRequest) {
         ghosting: truncate(premiumSections.ghosting),
         language: truncate(premiumSections.language),
       };
+    }
+
+    // Include chart images (base64 PNG, max ~500KB each)
+    if (chartImages && typeof chartImages === 'object') {
+      const safeCharts: Record<string, string> = {};
+      for (const [key, val] of Object.entries(chartImages)) {
+        if (typeof val === 'string' && val.startsWith('data:image/') && val.length < 500000) {
+          safeCharts[key] = val;
+        }
+      }
+      if (Object.keys(safeCharts).length > 0) {
+        safeStats.chartImages = safeCharts;
+      }
     }
 
     const id = nanoid(10);
