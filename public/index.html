@@ -5311,10 +5311,416 @@ async function groupShareToStories() {
 }
 
 // ── GROUP CHATBOT ──
-// ── GROUP PDF (placeholder — will implement full) ──
+// ── GROUP PDF (full 7-page export) ──
 async function generateGroupPDF() {
   if (!lastGroupStats || !lastGroupMessages) { alert('Primero analiza un grupo.'); return; }
-  alert('La generación de PDF de grupo estará disponible próximamente.');
+
+  const btn = event.target;
+  const origText = btn.textContent;
+  btn.textContent = 'Generando PDF...';
+  btn.disabled = true;
+
+  try {
+    const gs = lastGroupStats;
+    const today = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+    const clean = (s) => String(s || '');
+
+    // Get AI summary (non-blocking)
+    let aiAnalysis = null;
+    try {
+      const sampled = sampleGroupMessages(lastGroupMessages, gs);
+      const aiRes = await gzipFetch('/api/analyze', {
+        mode: 'group-analysis',
+        messages: sampled,
+        stats: {
+          totalMessages: gs.totalMessages,
+          uniqueDays: gs.uniqueDays,
+          score: gs.score,
+          members: gs.members.slice(0, 15).map(m => ({
+            name: m.name, msgCount: m.msgCount, pct: m.pct, category: m.category
+          }))
+        }
+      });
+      const aiData = await aiRes.json();
+      if (aiData.success && aiData.analysis) aiAnalysis = aiData.analysis;
+    } catch (e) {
+      console.warn('AI group summary failed:', e);
+    }
+
+    // Shared CSS constants
+    const pageCSS = 'width:794px;padding:32px 36px 48px;position:relative;overflow:visible;background:#0A0812;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#EDE9F8;';
+    const cardCSS = 'background:#120F1E;border:1px solid #1E1B2E;border-radius:12px;padding:24px;margin-bottom:18px;overflow:visible;';
+    const separatorHTML = '<div style="height:1px;background:linear-gradient(90deg,rgba(255,45,120,0.3),rgba(108,92,231,0.3));margin:20px 0;"></div>';
+    const footerHTML = '<div style="text-align:center;font-size:10px;color:#4A4660;margin-top:auto;padding-top:24px;">YaLoSabía.com · Análisis de grupos con IA</div>';
+
+    // Horizontal bar SVG helper
+    function hBarSVG(items, maxV) {
+      const max = maxV || Math.max(1, ...items.map(x => x[1]));
+      return items.map((item, i) => {
+        const w = Math.max(30, (item[1] / max) * 400);
+        const y = i * 44 + 8;
+        const color = i === 0 ? '#FF2D78' : '#8B5CF6';
+        return '<rect x="10" y="' + y + '" width="500" height="34" rx="6" fill="#1E1B2E"/>' +
+          '<rect x="10" y="' + y + '" width="' + w + '" height="34" rx="6" fill="' + color + '" opacity="0.85"/>' +
+          '<text x="22" y="' + (y + 22) + '" font-size="13" font-weight="600" fill="#FFF">' + clean(item[0]) + '</text>' +
+          '<text x="' + (w - 2) + '" y="' + (y + 22) + '" text-anchor="end" font-size="13" font-weight="700" fill="#FFF">' + item[1] + '</text>';
+      }).join('');
+    }
+
+    // Score ring SVG
+    const scoreR = 72, scoreCx = 90, scoreCy = 90, scoreCirc = 2 * Math.PI * scoreR;
+    const scoreProg = (gs.score / 100) * scoreCirc;
+    const scoreGap = scoreCirc - scoreProg;
+    const scoreColor = gs.score >= 80 ? '#4ADE80' : gs.score >= 60 ? '#F5C842' : gs.score >= 40 ? '#FB923C' : '#FF2D78';
+    const scoreRingSVG = '<svg width="180" height="180" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="' + scoreCx + '" cy="' + scoreCy + '" r="' + scoreR + '" fill="none" stroke="#1E1B2E" stroke-width="10"/>' +
+      '<circle cx="' + scoreCx + '" cy="' + scoreCy + '" r="' + scoreR + '" fill="none" stroke="' + scoreColor + '" stroke-width="10" stroke-dasharray="' + scoreProg + ' ' + scoreGap + '" stroke-linecap="round" transform="rotate(-90 ' + scoreCx + ' ' + scoreCy + ')"/>' +
+      '<text x="' + scoreCx + '" y="' + (scoreCy - 5) + '" text-anchor="middle" font-size="44" font-weight="700" fill="#FFF">' + gs.score + '</text>' +
+      '<text x="' + scoreCx + '" y="' + (scoreCy + 20) + '" text-anchor="middle" font-size="16" fill="#9B96B0">/100</text></svg>';
+
+    // Top 3 members for cover
+    const top3 = gs.members.slice(0, 3);
+    const medals = ['\u{1F947}', '\u{1F948}', '\u{1F949}'];
+    const top3MaxMsgs = Math.max(1, top3[0] ? top3[0].msgCount : 1);
+    const top3BarsHTML = top3.map((m, i) => {
+      const w = Math.max(40, (m.msgCount / top3MaxMsgs) * 350);
+      const barColor = i === 0 ? '#FFD23F' : i === 1 ? '#C0C0C0' : '#CD7F32';
+      return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">' +
+        '<span style="font-size:1.3rem;">' + medals[i] + '</span>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:12px;color:#EDE9F8;margin-bottom:3px;">' + clean(m.name) + '</div>' +
+          '<div style="height:22px;background:#1E1B2E;border-radius:4px;overflow:hidden;">' +
+            '<div style="height:100%;width:' + w + 'px;max-width:100%;background:' + barColor + ';border-radius:4px;opacity:0.85;"></div>' +
+          '</div>' +
+        '</div>' +
+        '<span style="font-size:13px;font-weight:700;color:#FFF;min-width:50px;text-align:right;">' + m.msgCount.toLocaleString() + '</span>' +
+      '</div>';
+    }).join('');
+
+    const pages = [];
+
+    // ═══ PAGE 1: COVER ═══
+    pages.push('<div style="' + pageCSS + 'min-height:1000px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(165deg,#0A0812 0%,#1A0F2E 40%,#0A0812 100%);">' +
+      '<div style="font-size:28px;font-weight:800;color:#FF2D78;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;">YALOSABIA.COM</div>' +
+      '<div style="font-size:15px;color:#FF2D78;font-weight:600;margin-bottom:28px;">Plan Premium</div>' +
+      '<div style="margin-bottom:20px;display:flex;justify-content:center;">' + scoreRingSVG + '</div>' +
+      '<div style="font-size:28px;font-weight:700;color:#FFF;margin-bottom:6px;">' + clean(gs.groupName) + '</div>' +
+      '<div style="font-size:14px;color:#F5C842;font-weight:700;margin-bottom:32px;">' + clean(gs.verdict) + '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:500px;margin:0 auto 28px auto;">' +
+        '<div style="' + cardCSS + 'text-align:center;"><span style="font-size:1.6rem;display:block;margin-bottom:4px;">\u{1F4AC}</span><div style="font-size:36px;font-weight:700;color:#FFF;">' + gs.totalMessages.toLocaleString() + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Mensajes totales</div></div>' +
+        '<div style="' + cardCSS + 'text-align:center;"><span style="font-size:1.6rem;display:block;margin-bottom:4px;">\u{1F465}</span><div style="font-size:36px;font-weight:700;color:#FFF;">' + gs.members.length + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Miembros</div></div>' +
+        '<div style="' + cardCSS + 'text-align:center;"><span style="font-size:1.6rem;display:block;margin-bottom:4px;">\u{1F4C5}</span><div style="font-size:36px;font-weight:700;color:#FFF;">' + gs.uniqueDays + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Días activos</div></div>' +
+        '<div style="' + cardCSS + 'text-align:center;"><span style="font-size:1.6rem;display:block;margin-bottom:4px;">\u{26A1}</span><div style="font-size:36px;font-weight:700;color:#FFF;">' + gs.avgReplyFormatted + '</div><div style="font-size:11px;color:#9B96B0;text-transform:uppercase;">Respuesta promedio</div></div>' +
+      '</div>' +
+      '<div style="width:100%;max-width:500px;margin:0 auto 20px auto;">' + top3BarsHTML + '</div>' +
+      '<div style="font-size:11px;color:#6B6780;">' + today + '</div>' +
+      footerHTML +
+    '</div>');
+
+    // ═══ PAGE 2: POWER RANKING ═══
+    const rankMembers = gs.members.slice(0, 15);
+    const rankItems = rankMembers.map(m => [m.name, m.msgCount]);
+    const rankSvgH = rankItems.length * 44 + 16;
+    const categoryColors = { leader: '#FFD23F', active: '#8B5CF6', participant: '#6B6780', ghost: '#4A4660', barely_alive: '#2A2740' };
+    const categoryNames = { leader: 'Líder', active: 'Activo', participant: 'Participante', ghost: 'Fantasma', barely_alive: 'Casi muerto' };
+    const categoryCounts = {};
+    gs.members.forEach(m => { categoryCounts[m.category] = (categoryCounts[m.category] || 0) + 1; });
+    const legendHTML = Object.entries(categoryCounts).map(([cat, count]) => {
+      return '<span style="display:inline-flex;align-items:center;gap:4px;margin-right:14px;">' +
+        '<span style="width:10px;height:10px;border-radius:50%;background:' + (categoryColors[cat] || '#6B6780') + ';display:inline-block;"></span>' +
+        '<span style="font-size:11px;color:#9B96B0;">' + (categoryNames[cat] || cat) + ' (' + count + ')</span></span>';
+    }).join('');
+
+    pages.push('<div style="' + pageCSS + '">' +
+      '<div style="font-size:24px;font-weight:700;color:#FFF;margin-bottom:4px;">\u{1F451} Ranking de Poder</div>' +
+      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
+      '<div style="' + cardCSS + '">' +
+        '<div style="display:flex;justify-content:center;">' +
+          '<svg width="520" height="' + rankSvgH + '" xmlns="http://www.w3.org/2000/svg">' + hBarSVG(rankItems) + '</svg>' +
+        '</div>' +
+      '</div>' +
+      '<div style="' + cardCSS + 'padding:14px 20px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">' +
+        '<span style="font-size:12px;font-weight:600;color:#EDE9F8;margin-right:8px;">Categorías:</span>' + legendHTML +
+      '</div>' +
+      footerHTML + '</div>');
+
+    // ═══ PAGE 3: TIMELINE ═══
+    const ma = gs.monthlyActivity || [];
+    const tlLabels = ma.map(m => m.month);
+    const tlData = ma.map(m => m.total);
+    const tlMax = Math.max(1, ...tlData);
+    const tlN = Math.max(1, tlLabels.length);
+    const tlBarW = Math.max(4, Math.floor(660 / tlN) - 2);
+    const tlValueStep = Math.max(1, Math.floor(tlN / 12));
+    const tlChartBase = 200;
+    const tlSvgW = 50 + tlN * (tlBarW + 2) + 20;
+
+    const tlBars = tlData.map((v, i) => {
+      const h = Math.max(2, (v / tlMax) * 160);
+      const x = 50 + i * (tlBarW + 2);
+      const cx = x + tlBarW / 2;
+      const cy = tlChartBase - h;
+      const isPeak = v === tlMax;
+      const intensity = (0.4 + (v / tlMax) * 0.55).toFixed(2);
+      const bar = '<rect x="' + x + '" y="' + cy + '" width="' + tlBarW + '" height="' + h + '" rx="2" fill="' + (isPeak ? '#FF2D78' : '#8B5CF6') + '" opacity="' + (isPeak ? '1' : intensity) + '"/>';
+      const showLabel = v > 0 && (isPeak || i % tlValueStep === 0);
+      const label = showLabel ? '<text x="' + cx + '" y="' + (cy - 4) + '" text-anchor="middle" font-size="9" font-weight="700" fill="#FFF">' + v + '</text>' : '';
+      return bar + label;
+    }).join('');
+
+    const tlLabelStep = Math.max(1, Math.floor(tlN / 8));
+    const tlRotate = tlN > 14;
+    const tlSvgH = tlRotate ? 270 : 240;
+    const tlLabelY = 218;
+    const tlLabelsSvg = tlLabels.map((l, i) => {
+      if (i % tlLabelStep !== 0) return '';
+      const x = 50 + i * (tlBarW + 2) + tlBarW / 2;
+      if (tlRotate) {
+        return '<text x="' + x + '" y="' + tlLabelY + '" text-anchor="end" font-size="9" fill="#6B6780" transform="rotate(-45,' + x + ',' + tlLabelY + ')">' + l + '</text>';
+      }
+      return '<text x="' + x + '" y="' + tlLabelY + '" text-anchor="middle" font-size="10" fill="#6B6780">' + l + '</text>';
+    }).join('');
+    const timelineSVG = '<svg width="' + tlSvgW + '" height="' + tlSvgH + '" xmlns="http://www.w3.org/2000/svg" style="display:block;max-width:100%;">' + tlBars + tlLabelsSvg + '</svg>';
+
+    // Peak month info
+    const peakIdx = tlData.indexOf(tlMax);
+    const peakMonth = peakIdx >= 0 ? tlLabels[peakIdx] : 'N/A';
+
+    pages.push('<div style="' + pageCSS + '">' +
+      '<div style="font-size:24px;font-weight:700;color:#FFF;margin-bottom:4px;">\u{1F4C8} Línea de Vida del Grupo</div>' +
+      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
+      '<div style="font-size:13px;color:#9B96B0;margin-bottom:28px;">Evolución mensual de mensajes a lo largo del tiempo</div>' +
+      '<div style="' + cardCSS + '">' +
+        '<div style="display:flex;justify-content:center;margin:16px 0;width:100%;">' + timelineSVG + '</div>' +
+        '<div style="font-size:12px;color:#9B96B0;line-height:1.5;margin-top:12px;padding:12px 16px;background:#1E1B2E;border-radius:8px;border-left:3px solid #FF2D78;">' +
+          'El punto más alto fue en <strong>' + clean(peakMonth) + '</strong> con <strong>' + tlMax.toLocaleString() + '</strong> mensajes.' +
+        '</div>' +
+      '</div>' +
+      footerHTML + '</div>');
+
+    // ═══ PAGE 4: ARCHETYPES ═══
+    const archetypes = assignGroupArchetypes(gs.members, gs);
+    const archCardsHTML = gs.members.map(member => {
+      const arch = archetypes[member.name] || ARCHETYPES[ARCHETYPES.length - 1];
+      return '<div style="background:#120F1E;border:1px solid #1E1B2E;border-radius:12px;padding:16px;border-left:3px solid ' + arch.color + ';">' +
+        '<div style="font-size:2rem;margin-bottom:6px;">' + arch.emoji + '</div>' +
+        '<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:' + arch.color + ';font-weight:700;margin-bottom:4px;">' + clean(arch.name) + '</div>' +
+        '<div style="font-size:14px;font-weight:700;color:#FFF;margin-bottom:6px;">' + clean(member.name) + '</div>' +
+        '<div style="font-size:11px;color:#9B96B0;line-height:1.4;margin-bottom:8px;">"' + clean(arch.desc) + '"</div>' +
+        '<div style="font-size:10px;color:#6B6780;">' + member.msgCount.toLocaleString() + ' msgs · ' + member.pct + '% · ' + member.mediaCount.total + ' multimedia</div>' +
+      '</div>';
+    }).join('');
+
+    pages.push('<div style="' + pageCSS + '">' +
+      '<div style="font-size:24px;font-weight:700;color:#FFF;margin-bottom:4px;">\u{1F3AD} Arquetipos del Grupo</div>' +
+      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
+      '<div style="font-size:13px;color:#9B96B0;margin-bottom:20px;">Cada miembro tiene un rol único basado en su comportamiento</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">' + archCardsHTML + '</div>' +
+      footerHTML + '</div>');
+
+    // ═══ PAGE 5: HEATMAP + GHOSTS ═══
+    const heatmap = gs.hourlyHeatmap || [];
+    const hmMax = Math.max(1, ...heatmap.map(h => h.count));
+    const dayLabels = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    let hmHTML = '<table style="border-collapse:collapse;width:100%;"><thead><tr><th style="width:40px;"></th>';
+    for (let h = 0; h < 24; h++) {
+      hmHTML += '<th style="font-size:8px;color:#6B6780;text-align:center;padding:2px;width:28px;">' + h + '</th>';
+    }
+    hmHTML += '</tr></thead><tbody>';
+    for (let d = 0; d < 7; d++) {
+      hmHTML += '<tr><td style="font-size:10px;color:#9B96B0;text-align:right;padding-right:6px;">' + dayLabels[d] + '</td>';
+      for (let h = 0; h < 24; h++) {
+        const cell = heatmap[d * 24 + h];
+        const intensity = cell ? cell.count / hmMax : 0;
+        const bg = intensity === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(255,45,120,' + (0.1 + intensity * 0.8).toFixed(2) + ')';
+        hmHTML += '<td style="background:' + bg + ';width:28px;height:22px;border-radius:3px;border:1px solid #0A0812;"></td>';
+      }
+      hmHTML += '</tr>';
+    }
+    hmHTML += '</tbody></table>';
+
+    // Ghost members
+    const ghosts = gs.members.filter(m => m.daysSinceLastMessage > 30).sort((a, b) => b.daysSinceLastMessage - a.daysSinceLastMessage);
+    const ghostMaxDays = Math.max(1, ghosts.length > 0 ? ghosts[0].daysSinceLastMessage : 1);
+    const ghostBarsHTML = ghosts.length > 0 ?
+      ghosts.slice(0, 10).map(m => {
+        const w = Math.max(30, (m.daysSinceLastMessage / ghostMaxDays) * 350);
+        return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' +
+          '<div style="width:100px;font-size:11px;color:#9B96B0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + clean(m.name) + '</div>' +
+          '<div style="flex:1;height:22px;background:#1E1B2E;border-radius:4px;overflow:hidden;">' +
+            '<div style="height:100%;width:' + w + 'px;max-width:100%;background:linear-gradient(90deg,#4A4660,#FF2D78);border-radius:4px;opacity:0.75;"></div>' +
+          '</div>' +
+          '<span style="font-size:12px;font-weight:700;color:#FF2D78;min-width:60px;text-align:right;">' + m.daysSinceLastMessage + ' días</span>' +
+        '</div>';
+      }).join('')
+      : '<p style="color:#9B96B0;font-size:13px;">No se detectaron fantasmas en este grupo.</p>';
+
+    pages.push('<div style="' + pageCSS + '">' +
+      '<div style="font-size:24px;font-weight:700;color:#FFF;margin-bottom:4px;">\u{1F550} Mapa de Horarios</div>' +
+      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
+      '<div style="' + cardCSS + 'padding:16px;">' + hmHTML + '</div>' +
+      separatorHTML +
+      '<div style="font-size:22px;font-weight:700;color:#FFF;margin-bottom:4px;margin-top:20px;">\u{1F47B} Mapa de Fantasmas</div>' +
+      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:8px 0 16px;"></div>' +
+      '<div style="font-size:12px;color:#9B96B0;margin-bottom:12px;">' + gs.ghostCount + ' fantasmas de ' + gs.members.length + ' miembros</div>' +
+      '<div style="' + cardCSS + 'padding:16px;">' + ghostBarsHTML + '</div>' +
+      footerHTML + '</div>');
+
+    // ═══ PAGE 6: DELETED + DEATH PROBABILITY ═══
+    const deleters = gs.members.filter(m => m.deletedMessages > 0).sort((a, b) => b.deletedMessages - a.deletedMessages).slice(0, 10);
+    const delItems = deleters.map(m => [m.name, m.deletedMessages]);
+    const delSvgH = delItems.length * 44 + 16;
+    const delBarsHTML = delItems.length > 0 ?
+      '<svg width="520" height="' + delSvgH + '" xmlns="http://www.w3.org/2000/svg">' + hBarSVG(delItems) + '</svg>'
+      : '<p style="color:#9B96B0;font-size:13px;">No se detectaron mensajes eliminados.</p>';
+
+    // Death probability algorithm (copied from renderGroupDeathProbability)
+    let deathScore = 0;
+    const sorted = gs.sorted;
+    let trend = 1;
+    let daysSinceLast = 0;
+    if (sorted && sorted.length >= 50) {
+      const now = sorted[sorted.length - 1].timestamp;
+      const d30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const d60 = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+      const recent = sorted.filter(m => m.timestamp >= d30).length;
+      const previous = sorted.filter(m => m.timestamp >= d60 && m.timestamp < d30).length;
+      trend = previous > 0 ? recent / previous : 1;
+      if (trend < 0.3) deathScore += 40;
+      else if (trend < 0.5) deathScore += 25;
+      else if (trend < 0.7) deathScore += 10;
+      deathScore += Math.round((gs.ghostCount / Math.max(1, gs.members.length)) * 30);
+      daysSinceLast = Math.round((Date.now() - now) / (1000 * 60 * 60 * 24));
+      if (daysSinceLast > 30) deathScore += 20;
+      else if (daysSinceLast > 7) deathScore += 10;
+      deathScore = Math.min(99, Math.max(0, deathScore));
+    }
+    const deathVerdicts = [
+      { max: 20, text: '\u{1F331} Tu grupo está vivito y coleando', color: '#3BCEAC' },
+      { max: 40, text: '\u{1F610} Algo tranquilo, pero se mantiene', color: '#FFD23F' },
+      { max: 60, text: '\u{26A0}\u{FE0F} Señales de alarma — la actividad baja', color: '#FF6B35' },
+      { max: 80, text: '\u{1F6A8} En cuidados intensivos', color: '#FF2D78' },
+      { max: 100, text: '\u{1F480} Prácticamente un cementerio digital', color: '#FF2D78' },
+    ];
+    const dv = deathVerdicts.find(v => deathScore <= v.max) || deathVerdicts[deathVerdicts.length - 1];
+    const trendText = trend < 1 ? '\u{1F4C9} ' + Math.round((1 - trend) * 100) + '% menos msgs que el mes anterior' : '\u{1F4C8} Actividad estable o creciendo';
+
+    pages.push('<div style="' + pageCSS + '">' +
+      '<div style="font-size:24px;font-weight:700;color:#FFF;margin-bottom:4px;">\u{1F5D1}\u{FE0F} Mensajes Eliminados</div>' +
+      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
+      '<div style="' + cardCSS + 'padding:16px;">' +
+        (gs.totalDeleted > 0 ? '<div style="background:#1E1B2E;border-radius:8px;padding:10px 14px;text-align:center;margin-bottom:12px;"><div style="font-size:22px;font-weight:700;color:#F5C842;">' + gs.totalDeleted + '</div><div style="font-size:10px;color:#9B96B0;">Total eliminados</div></div>' : '') +
+        '<div style="display:flex;justify-content:center;">' + delBarsHTML + '</div>' +
+      '</div>' +
+      separatorHTML +
+      '<div style="margin-top:20px;">' +
+        '<div style="font-size:22px;font-weight:700;color:#FFF;margin-bottom:4px;">\u{1F480} Probabilidad de Muerte</div>' +
+        '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:8px 0 16px;"></div>' +
+        '<div style="' + cardCSS + 'text-align:center;padding:28px;">' +
+          '<div style="font-size:64px;font-weight:700;color:' + dv.color + ';">' + deathScore + '%</div>' +
+          '<div style="font-size:13px;color:#9B96B0;margin-top:4px;">probabilidad de inactividad total en 6 meses</div>' +
+          '<div style="margin:16px auto;width:80%;height:8px;background:#1E1B2E;border-radius:4px;overflow:hidden;"><div style="height:100%;width:' + deathScore + '%;background:' + dv.color + ';border-radius:4px;"></div></div>' +
+          '<div style="font-size:15px;font-weight:600;color:#EDE9F8;margin-top:12px;">' + dv.text + '</div>' +
+          '<div style="font-size:12px;color:#9B96B0;margin-top:8px;">' + trendText + ' · ' + gs.ghostCount + ' fantasmas de ' + gs.members.length + ' miembros</div>' +
+        '</div>' +
+      '</div>' +
+      footerHTML + '</div>');
+
+    // ═══ PAGE 7: AI ANALYSIS ═══
+    const aiCardCSS = 'background:#120F1E;border:1px solid #1E1B2E;border-radius:12px;padding:24px;margin-bottom:18px;height:auto;overflow:visible;';
+    let aiGridHTML = '';
+    if (aiAnalysis) {
+      const sections = [
+        { key: 'dynamics', icon: '\u{1F4CA}', title: 'Dinámica del grupo', color: '#F5C842' },
+        { key: 'highlights', icon: '\u{1F31F}', title: 'Lo más destacado', color: '#4ADE80' },
+        { key: 'concerns', icon: '\u{26A0}\u{FE0F}', title: 'Puntos de atención', color: '#FF2D78' },
+        { key: 'prediction', icon: '\u{1F52E}', title: 'Predicción', color: '#8B5CF6' }
+      ];
+      const aiText = (key) => {
+        const val = aiAnalysis[key] || aiAnalysis[key + 's'] || '';
+        return clean(typeof val === 'string' ? val : Array.isArray(val) ? val.join('. ') : JSON.stringify(val)).replace(/\*\*/g, '').replace(/\*/g, '');
+      };
+      // If specific keys don't exist, try to parse from summary
+      let hasSections = sections.some(s => aiText(s.key).length > 0);
+      if (!hasSections && aiAnalysis.summary) {
+        aiGridHTML = '<div style="' + aiCardCSS + 'grid-column:1/-1;"><h4 style="font-size:14px;font-weight:600;color:#F5C842;margin-bottom:8px;">\u{1F9E0} Resumen del grupo</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiAnalysis.summary).replace(/\*\*/g, '').replace(/\*/g, '') + '</p></div>';
+        if (aiAnalysis.funInsight) {
+          aiGridHTML += '<div style="' + aiCardCSS + 'grid-column:1/-1;"><h4 style="font-size:14px;font-weight:600;color:#4ADE80;margin-bottom:8px;">\u{1F4A1} Dato curioso</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + clean(aiAnalysis.funInsight) + '</p></div>';
+        }
+      } else {
+        aiGridHTML = sections.map(s => {
+          const text = aiText(s.key) || 'No disponible.';
+          return '<div style="' + aiCardCSS + '"><h4 style="font-size:14px;font-weight:600;color:' + s.color + ';margin-bottom:8px;">' + s.icon + ' ' + s.title + '</h4><p style="font-size:12px;line-height:1.6;color:#C8C3D8;">' + text + '</p></div>';
+        }).join('');
+      }
+    } else {
+      aiGridHTML = '<div style="' + aiCardCSS + 'grid-column:1/-1;text-align:center;padding:40px;"><p style="color:#9B96B0;font-size:14px;">Resumen no disponible. Intenta de nuevo más tarde.</p></div>';
+    }
+
+    pages.push('<div style="' + pageCSS + '">' +
+      '<div style="font-size:26px;font-weight:700;color:#FFF;margin-bottom:4px;">\u{1F9E0} Análisis de IA</div>' +
+      '<div style="width:50px;height:3px;background:linear-gradient(90deg,#FF2D78,#8B5CF6);border-radius:2px;margin:10px 0 24px;"></div>' +
+      '<div style="font-size:13px;color:#9B96B0;margin-bottom:28px;">Resumen generado por inteligencia artificial</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">' + aiGridHTML + '</div>' +
+      footerHTML + '</div>');
+
+    // ═══ RENDER PAGES → jsPDF ═══
+    const { jsPDF } = window.jspdf;
+    const pdfWidth = 210; // mm
+    let doc = null;
+
+    for (let i = 0; i < pages.length; i++) {
+      const container = document.createElement('div');
+      container.innerHTML = pages[i];
+      container.style.position = 'fixed';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.style.width = '794px';
+      container.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif';
+      document.body.appendChild(container);
+
+      const pageEl = container.firstElementChild;
+      const actualW = Math.max(794, pageEl.scrollWidth || 794);
+      const actualH = Math.max(200, pageEl.scrollHeight || pageEl.offsetHeight || 600);
+      const canvas = await htmlToCanvasWithTimeout(pageEl, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        foreignObjectRendering: false,
+        logging: false,
+        imageTimeout: 0,
+        removeContainer: true,
+        backgroundColor: '#0A0812',
+        width: actualW,
+        height: actualH,
+        windowWidth: actualW,
+        windowHeight: actualH
+      });
+
+      document.body.removeChild(container);
+
+      const ratio = pdfWidth / canvas.width;
+      const pdfHeight = canvas.height * ratio;
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+
+      if (i === 0) {
+        doc = new jsPDF({ unit: 'mm', format: [pdfWidth, pdfHeight] });
+      } else {
+        doc.addPage([pdfWidth, pdfHeight]);
+      }
+      doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+    }
+
+    const safeName = (gs.groupName || 'Grupo').replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, '').slice(0, 40);
+    doc.save('YaLoSabia-Grupo-' + safeName + '.pdf');
+
+  } catch (err) {
+    console.error('Group PDF Error:', err);
+    alert('Error generando PDF: ' + err.message);
+  } finally {
+    btn.textContent = origText;
+    btn.disabled = false;
+  }
 }
 
 async function generatePDF() {
