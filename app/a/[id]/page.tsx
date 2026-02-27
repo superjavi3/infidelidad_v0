@@ -1,12 +1,13 @@
 import { Metadata } from 'next';
 import { supabaseAdmin } from '@/lib/supabase';
 
+type Stats = Record<string, unknown>;
+type Premium = Record<string, string | null>;
 interface SharedAnalysis {
   id: string;
-  created_at: string;
   alias: string | null;
   score: number;
-  stats: Record<string, unknown>;
+  stats: Stats;
   ai_insight: string | null;
   participant_names: string[];
   date_range: string | null;
@@ -26,15 +27,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       .single();
     if (!data) return { title: 'Análisis compartido — YaLoSabía' };
     const names = data.alias || data.participant_names?.join(' y ') || 'Análisis';
-    const verdict = (data.stats as Record<string, unknown>)?.verdict || '';
-    const total = data.total_messages || 0;
     const title = `${names}: Score ${data.score}/100 — YaLoSabía`;
-    const description = `${verdict} | ${total.toLocaleString()} mensajes analizados.`;
+    const desc = `${(data.stats as Stats)?.verdict || ''} | ${(data.total_messages || 0).toLocaleString()} mensajes analizados.`;
     return {
-      title, description,
+      title, description: desc,
       robots: { index: false, follow: false },
-      openGraph: { title, description, url: `https://yalosabia.com/a/${id}`, siteName: 'YaLoSabía', locale: 'es_MX', type: 'website' },
-      twitter: { card: 'summary_large_image', title, description },
+      openGraph: { title, description: desc, url: `https://yalosabia.com/a/${id}`, siteName: 'YaLoSabía', locale: 'es_MX', type: 'website' },
+      twitter: { card: 'summary_large_image', title, description: desc },
     };
   } catch { return { title: 'Análisis compartido — YaLoSabía' }; }
 }
@@ -66,9 +65,12 @@ const CSS = `
 .cd-e{font-size:1.5rem;margin-bottom:8px}
 .cd-v{font-family:'Dela Gothic One',sans-serif;font-size:1.4rem;margin-bottom:4px;word-break:break-word;color:#FAFAFA}
 .cd-l{color:#a0a0b8;font-size:.78rem;line-height:1.3}
-.inf{background:#1a1a2e;border-radius:16px;padding:24px 20px;border:1px solid rgba(255,255,255,.06)}
-.inf p{color:#a0a0b8;font-size:.88rem;line-height:1.6;margin:0}
-.inf h4{font-family:'Dela Gothic One',sans-serif;font-size:.95rem;margin-bottom:10px;color:#FAFAFA}
+.pcard{background:#1a1a2e;border-radius:16px;padding:24px 20px;border:1px solid rgba(255,255,255,.06);margin-bottom:16px}
+.pcard-h{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.pcard-icon{font-size:1.4rem}
+.pcard-title{font-family:'Dela Gothic One',sans-serif;font-size:.9rem;color:#FAFAFA}
+.pcard-sub{font-size:.78rem;color:#a0a0b8;margin-top:2px}
+.pcard-body{color:#a0a0b8;font-size:.88rem;line-height:1.7;white-space:pre-line}
 .ai{background:linear-gradient(135deg,rgba(255,210,63,.1),rgba(255,107,53,.1));border:1px solid rgba(255,210,63,.2);border-radius:16px;padding:24px 20px;font-size:.95rem;line-height:1.6;text-align:center;color:#FAFAFA}
 .ai strong{color:#FFD23F}
 .vw{text-align:center;color:#a0a0b8;font-size:.82rem;margin-bottom:40px}
@@ -86,8 +88,39 @@ const CSS = `
   .g2{gap:10px}
   .cd{padding:16px 12px}
   .cd-v{font-size:1.2rem}
+  .pcard{padding:20px 16px}
 }
 `;
+
+// Premium section definitions
+const DETECTIVE_SECTIONS: { key: string; icon: string; title: string; sub: string }[] = [
+  { key: 'timeline', icon: '📉', title: 'Línea de Vida de la Relación', sub: 'Intensidad mes a mes' },
+  { key: 'silences', icon: '🔇', title: 'Mapa de Silencios', sub: 'Pausas de 48+ horas' },
+  { key: 'doubleText', icon: '😤', title: 'Double Texting', sub: '5+ mensajes seguidos sin respuesta' },
+  { key: 'multimedia', icon: '📱', title: 'Reyes del Multimedia', sub: 'Quién habla y quién manda archivos' },
+  { key: 'deleted', icon: '🗑️', title: 'Mensajes Eliminados', sub: 'Lo que no quisieron que vieras' },
+];
+const OBSESIVO_SECTIONS: { key: string; icon: string; title: string; sub: string }[] = [
+  { key: 'forensic', icon: '🕵️', title: 'Reconstrucción Forense', sub: 'El día exacto donde algo cambió' },
+  { key: 'beforeNow', icon: '💔', title: 'Antes vs Ahora', sub: 'Primeros meses vs los últimos' },
+  { key: 'ghosting', icon: '📱', title: 'Ghosting Selectivo', sub: '¿Te ignora cuando más lo necesitas?' },
+  { key: 'language', icon: '🎯', title: 'Cambios de Lenguaje', sub: 'El lenguaje dice lo que las palabras callan' },
+];
+
+function PremiumCard({ icon, title, sub, body }: { icon: string; title: string; sub: string; body: string }) {
+  return (
+    <div className="pcard">
+      <div className="pcard-h">
+        <span className="pcard-icon">{icon}</span>
+        <div>
+          <div className="pcard-title">{title}</div>
+          <div className="pcard-sub">{sub}</div>
+        </div>
+      </div>
+      <div className="pcard-body">{body}</div>
+    </div>
+  );
+}
 
 export default async function SharedAnalysisPage({ params }: PageProps) {
   const { id } = await params;
@@ -112,16 +145,11 @@ export default async function SharedAnalysisPage({ params }: PageProps) {
             <p style={{ color: '#a0a0b8', marginBottom: 24 }}>Este enlace no existe o ha expirado.</p>
           </div>
           <div className="err">
-            <strong>Debug (temporal):</strong><br/>
-            ID: {id}<br/>
-            Error: {error?.message || 'none'}<br/>
-            Code: {error?.code || 'none'}<br/>
-            URL: {process.env.SUPABASE_URL ? 'set' : 'MISSING'}<br/>
-            Key: {process.env.SUPABASE_ANON_KEY ? 'set' : 'MISSING'}
+            <strong>Debug (temporal):</strong><br/>ID: {id}<br/>Error: {error?.message || 'none'}<br/>Code: {error?.code || 'none'}
           </div>
           <div className="cta">
             <h3>¿Quieres analizar tu propio chat?</h3>
-            <p>Sube tu chat de WhatsApp y descubre qué dicen tus mensajes sobre tu relación</p>
+            <p>Sube tu chat de WhatsApp y descubre qué dicen tus mensajes</p>
             <a href="https://www.yalosabia.com" className="btn">Analizar mi chat →</a>
           </div>
         </div>
@@ -131,13 +159,15 @@ export default async function SharedAnalysisPage({ params }: PageProps) {
 
   const a = data as SharedAnalysis;
   const s = a.stats || {};
-
-  // Helper to safely read stats fields
-  const v = (key: string): string => String(s[key] ?? '');
+  const premium = (s.premium as Premium) || {};
   const n = (key: string): number => Number(s[key]) || 0;
+  const v = (key: string): string => String(s[key] ?? '');
   const firstName = (key: string): string => String(s[key] || '?').split(' ')[0];
 
   supabaseAdmin.rpc('increment_views', { analysis_id: id }).then();
+
+  const hasDetective = DETECTIVE_SECTIONS.some(sec => premium[sec.key]);
+  const hasObsesivo = OBSESIVO_SECTIONS.some(sec => premium[sec.key]);
 
   return (
     <>
@@ -148,7 +178,7 @@ export default async function SharedAnalysisPage({ params }: PageProps) {
 
       <div className="sa">
 
-        {/* ── Header ── */}
+        {/* Header */}
         <div className="hdr">
           <a href="https://www.yalosabia.com" className="logo">YaLo<span className="pk">Sabía</span></a>
           <div className="sub">Análisis de chat compartido</div>
@@ -164,7 +194,7 @@ export default async function SharedAnalysisPage({ params }: PageProps) {
           <div>{(a.total_messages || 0).toLocaleString()} mensajes analizados</div>
         </div>
 
-        {/* ── Score ── */}
+        {/* Score */}
         <div className="sc">
           <div className="sc-g" />
           <div className="sc-z">
@@ -175,7 +205,7 @@ export default async function SharedAnalysisPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* ── Estadísticas generales ── */}
+        {/* Basic Stats */}
         <div className="sec">
           <div className="sec-t">📊 Estadísticas</div>
           <div className="g2">
@@ -212,44 +242,50 @@ export default async function SharedAnalysisPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* ── Dinámica ── */}
+        {/* Dynamics */}
         <div className="sec">
-          <div className="sec-t">⚡ Dinámica de la relación</div>
-          <div className="inf">
-            <h4>Quién lleva la relación</h4>
-            <p>
+          <div className="sec-t">⚡ Dinámica</div>
+          <div className="pcard">
+            <div className="pcard-h">
+              <span className="pcard-icon">⚖️</span>
+              <div>
+                <div className="pcard-title">Quién lleva la relación</div>
+              </div>
+            </div>
+            <div className="pcard-body">
               {n('leaderPct') >= 55
                 ? `${firstName('leader')} lleva la relación con ${n('leaderPct')}% de los mensajes. Ratio: ${v('ratio') || '?'}.`
                 : `Relación equilibrada: ${firstName('personA')} (${n('leaderPct')}%) y ${firstName('personB')} (${100 - n('leaderPct')}%). Ratio: ${v('ratio') || '?'}.`
               }
-            </p>
+            </div>
           </div>
         </div>
 
-        {/* ── Detective: Silencios y Double Texting ── */}
-        {(n('silencesCount') > 0 || n('totalDouble') > 0) && (
+        {/* Detective Section */}
+        {hasDetective && (
           <div className="sec">
             <div className="sec-t">🔍 Análisis Detective</div>
-            <div className="g2">
-              {n('silencesCount') > 0 && (
-                <div className="cd">
-                  <div className="cd-e">🤫</div>
-                  <div className="cd-v">{n('silencesCount')}</div>
-                  <div className="cd-l">Silencios largos detectados</div>
-                </div>
-              )}
-              {n('totalDouble') > 0 && (
-                <div className="cd">
-                  <div className="cd-e">📩</div>
-                  <div className="cd-v">{n('totalDouble')}</div>
-                  <div className="cd-l">Double texting</div>
-                </div>
-              )}
-            </div>
+            {DETECTIVE_SECTIONS.map(sec => {
+              const body = premium[sec.key];
+              if (!body) return null;
+              return <PremiumCard key={sec.key} icon={sec.icon} title={sec.title} sub={sec.sub} body={body} />;
+            })}
           </div>
         )}
 
-        {/* ── AI Insight ── */}
+        {/* Obsesivo Section */}
+        {hasObsesivo && (
+          <div className="sec">
+            <div className="sec-t">🔬 Análisis Obsesivo</div>
+            {OBSESIVO_SECTIONS.map(sec => {
+              const body = premium[sec.key];
+              if (!body) return null;
+              return <PremiumCard key={sec.key} icon={sec.icon} title={sec.title} sub={sec.sub} body={body} />;
+            })}
+          </div>
+        )}
+
+        {/* AI Insight */}
         {a.ai_insight && (
           <div className="sec">
             <div className="sec-t">🤖 Análisis con IA</div>
@@ -259,10 +295,10 @@ export default async function SharedAnalysisPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* ── Vistas ── */}
+        {/* Views */}
         <div className="vw">👁️ Este análisis ha sido visto {(a.views || 0) + 1} veces</div>
 
-        {/* ── CTA ── */}
+        {/* CTA */}
         <div className="cta">
           <div className="cta-i">💬</div>
           <h3>¿Quieres analizar tu propio chat?</h3>

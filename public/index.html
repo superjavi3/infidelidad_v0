@@ -8489,6 +8489,25 @@ async function generateShareLink() {
     if (first && last) dateRange = first + ' — ' + last;
   }
 
+  // Capture rendered text from Detective + Obsesivo premium sections
+  function grabSection(id) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    const text = el.innerText?.trim();
+    return (text && text.length > 5) ? text : null;
+  }
+  const premiumSections = {
+    timeline: grabSection('timelineInsight'),
+    silences: grabSection('silencesBody'),
+    doubleText: grabSection('doubleTextBody'),
+    multimedia: grabSection('multimediaBody'),
+    deleted: grabSection('deletedBody'),
+    forensic: grabSection('forensicBody'),
+    beforeNow: grabSection('beforeNowBody'),
+    ghosting: grabSection('ghostingBody'),
+    language: grabSection('languageBody'),
+  };
+
   try {
     const res = await fetch('/api/share', {
       method: 'POST',
@@ -8501,6 +8520,7 @@ async function generateShareLink() {
         participantNames: [lastStats.personA, lastStats.personB],
         dateRange: dateRange,
         totalMessages: lastStats.total,
+        premiumSections: premiumSections,
       }),
     });
 

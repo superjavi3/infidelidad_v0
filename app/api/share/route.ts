@@ -6,7 +6,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { alias, score, stats, aiInsight, participantNames, dateRange, totalMessages } = body;
+    const { alias, score, stats, aiInsight, participantNames, dateRange, totalMessages, premiumSections } = body;
 
     if (score == null || !stats || !participantNames || !totalMessages) {
       return NextResponse.json(
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Sanitize: only keep computed stats, never raw messages
-    const safeStats = {
+    const safeStats: Record<string, unknown> = {
       personA: stats.personA,
       personB: stats.personB,
       msgsA: stats.msgsA,
@@ -34,6 +34,22 @@ export async function POST(req: NextRequest) {
       silencesCount: stats.silencesCount,
       totalDouble: stats.totalDouble,
     };
+
+    // Include premium section text content (Detective + Obsesivo)
+    if (premiumSections && typeof premiumSections === 'object') {
+      const truncate = (val: unknown) => typeof val === 'string' ? val.substring(0, 2000) : null;
+      safeStats.premium = {
+        timeline: truncate(premiumSections.timeline),
+        silences: truncate(premiumSections.silences),
+        doubleText: truncate(premiumSections.doubleText),
+        multimedia: truncate(premiumSections.multimedia),
+        deleted: truncate(premiumSections.deleted),
+        forensic: truncate(premiumSections.forensic),
+        beforeNow: truncate(premiumSections.beforeNow),
+        ghosting: truncate(premiumSections.ghosting),
+        language: truncate(premiumSections.language),
+      };
+    }
 
     const id = nanoid(10);
 
