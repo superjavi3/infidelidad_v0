@@ -2478,8 +2478,8 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <button class="btn-secondary" onclick="shareToStories()" style="width: 100%; max-width: 480px; padding: 16px 32px; font-size: 1.1rem;">📸 Comparte tu score en Stories</button>
     <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px;">Descarga tu resultado y compártelo</p>
   </div>
-  <!-- PDF Report CTA -->
-  <div style="text-align: center; margin-top: 12px;">
+  <!-- PDF Report CTA (hidden temporarily) -->
+  <div style="display:none; text-align: center; margin-top: 12px;">
     <button class="btn-secondary" onclick="isPremiumUser() ? generatePDF() : openPayModal()" style="width: 100%; max-width: 480px; padding: 14px 32px; font-size: 1rem; background: linear-gradient(135deg, #1a1a2e, #16213e); border: 1px solid rgba(255,255,255,0.1);">📄 Descargar Reporte PDF Completo</button>
   </div>
 
@@ -2939,8 +2939,8 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <div class="pf-body" id="group-deathBody"></div>
     </div>
 
-    <!-- Feature 13: PDF -->
-    <div class="premium-feature-card" id="group-featurePDF" data-plan-required="premium">
+    <!-- Feature 13: PDF (hidden temporarily) -->
+    <div class="premium-feature-card" id="group-featurePDF" data-plan-required="premium" style="display:none;">
       <div class="pf-header"><span class="pf-icon">📄</span><div><h4 class="pf-title">PDF Completo</h4><p class="pf-subtitle">Descarga el reporte completo del grupo</p></div></div>
       <div class="pf-body" id="group-pdfBody">
         <div style="text-align:center;padding:16px;">
@@ -3125,7 +3125,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
           <li>💔 Comparación: Antes vs Ahora</li>
           <li>👻 Ghosting selectivo</li>
           <li>👥 Análisis completo de grupos</li>
-          <li>📄 Reporte PDF descargable</li>
+          <!-- <li>📄 Reporte PDF descargable</li> -->
         </ul>
         </div>
         <div class="price-card-footer">
