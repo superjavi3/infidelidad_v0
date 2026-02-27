@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { id } = await params;
   const { data } = await supabaseAdmin
     .from('shared_analyses')
-    .select('score, stats, participant_names, alias')
+    .select('score, stats, participant_names, alias, total_messages')
     .eq('id', id)
     .single();
 
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const names = data.alias || data.participant_names.join(' y ');
   const title = `${names}: Score ${data.score}/100 — YaLoSabía`;
-  const description = `${data.stats.verdict} | ${data.stats.total.toLocaleString()} mensajes analizados. Descubre qué dicen los chats sobre tu relación.`;
+  const description = `${data.stats.verdict} | ${data.total_messages.toLocaleString()} mensajes analizados. Descubre qué dicen los chats sobre tu relación.`;
 
   return {
     title,
@@ -90,277 +90,142 @@ export default async function SharedAnalysisPage({ params }: PageProps) {
   supabaseAdmin.rpc('increment_views', { analysis_id: id }).then();
 
   const statCards = [
-    { emoji: '💬', value: s.msgsA.toLocaleString(), label: `Mensajes de ${s.personA.split(' ')[0]}` },
-    { emoji: '💬', value: s.msgsB.toLocaleString(), label: `Mensajes de ${s.personB.split(' ')[0]}` },
-    { emoji: '⏱️', value: s.avgReplyFormatted, label: 'Tiempo promedio de respuesta' },
-    { emoji: '🌙', value: `${s.nightPct}%`, label: 'Mensajes nocturnos (12am-5am)' },
-    { emoji: '❤️', value: s.loveCount.toLocaleString(), label: 'Emojis de amor enviados' },
-    { emoji: '📅', value: String(s.uniqueDays), label: 'Días de conversación' },
+    { emoji: '💬', value: s.msgsA?.toLocaleString() ?? '0', label: `Mensajes de ${s.personA?.split(' ')[0] ?? '?'}` },
+    { emoji: '💬', value: s.msgsB?.toLocaleString() ?? '0', label: `Mensajes de ${s.personB?.split(' ')[0] ?? '?'}` },
+    { emoji: '⏱️', value: s.avgReplyFormatted ?? '—', label: 'Tiempo de respuesta' },
+    { emoji: '🌙', value: `${s.nightPct ?? 0}%`, label: 'Mensajes nocturnos' },
+    { emoji: '❤️', value: s.loveCount?.toLocaleString() ?? '0', label: 'Emojis de amor' },
+    { emoji: '📅', value: String(s.uniqueDays ?? 0), label: 'Días de conversación' },
   ];
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: `@import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DM+Sans:wght@400;500;600;700&display=swap');` }} />
+      <style dangerouslySetInnerHTML={{ __html: `
+        @import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DM+Sans:wght@400;500;600;700&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0d0d0d; color: #FAFAFA; font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+        .sa-container { max-width: 560px; margin: 0 auto; padding: 40px 20px 80px; }
+        .sa-header { text-align: center; margin-bottom: 36px; }
+        .sa-logo { font-family: 'Dela Gothic One', sans-serif; font-size: 1.4rem; color: #FAFAFA; text-decoration: none; }
+        .sa-logo span { color: #FF2D78; }
+        .sa-subtitle { color: #a0a0b8; font-size: 0.85rem; margin-top: 8px; }
+        .sa-alias { text-align: center; font-size: 1.05rem; font-weight: 600; color: #a0a0b8; margin-bottom: 20px; }
+        .sa-meta { text-align: center; color: #a0a0b8; font-size: 0.88rem; margin-bottom: 32px; line-height: 1.6; }
+        .sa-score-card { max-width: 360px; margin: 0 auto 40px; background: linear-gradient(135deg, #FF2D78, #6C5CE7); border-radius: 20px; padding: 36px 24px; text-align: center; position: relative; overflow: hidden; }
+        .sa-score-glow { position: absolute; inset: 0; background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.15), transparent 50%); }
+        .sa-score-inner { position: relative; z-index: 1; }
+        .sa-score-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 3px; opacity: 0.8; margin-bottom: 10px; }
+        .sa-score-num { font-family: 'Dela Gothic One', sans-serif; font-size: 4.5rem; line-height: 1; }
+        .sa-score-max { font-size: 1rem; opacity: 0.7; margin-top: 2px; }
+        .sa-score-verdict { margin-top: 14px; font-size: 1.05rem; font-weight: 600; }
+        .sa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 40px; }
+        .sa-stat { background: #1a1a2e; border-radius: 16px; padding: 20px 16px; border: 1px solid rgba(255,255,255,0.06); text-align: center; }
+        .sa-stat-emoji { font-size: 1.5rem; margin-bottom: 8px; }
+        .sa-stat-value { font-family: 'Dela Gothic One', sans-serif; font-size: 1.4rem; margin-bottom: 4px; word-break: break-word; }
+        .sa-stat-label { color: #a0a0b8; font-size: 0.78rem; line-height: 1.3; }
+        .sa-dynamics { background: #1a1a2e; border-radius: 16px; padding: 24px 20px; border: 1px solid rgba(255,255,255,0.06); margin-bottom: 40px; }
+        .sa-dynamics-tag { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #a0a0b8; margin-bottom: 6px; }
+        .sa-dynamics h4 { font-family: 'Dela Gothic One', sans-serif; font-size: 0.95rem; margin-bottom: 10px; }
+        .sa-dynamics p { color: #a0a0b8; font-size: 0.88rem; line-height: 1.6; }
+        .sa-insight { background: linear-gradient(135deg, rgba(255,210,63,0.1), rgba(255,107,53,0.1)); border: 1px solid rgba(255,210,63,0.2); border-radius: 16px; padding: 24px 20px; margin-bottom: 40px; font-size: 0.95rem; line-height: 1.6; text-align: center; }
+        .sa-insight strong { color: #FFD23F; }
+        .sa-cta { text-align: center; background: linear-gradient(135deg, rgba(255,45,120,0.08), rgba(108,92,231,0.08)); border: 1px solid rgba(255,45,120,0.15); border-radius: 20px; padding: 40px 24px; margin-bottom: 32px; }
+        .sa-cta-icon { font-size: 2.2rem; margin-bottom: 14px; }
+        .sa-cta h3 { font-family: 'Dela Gothic One', sans-serif; font-size: 1.2rem; margin-bottom: 10px; }
+        .sa-cta p { color: #a0a0b8; font-size: 0.9rem; margin-bottom: 20px; line-height: 1.5; }
+        .sa-cta-btn { display: inline-block; background: linear-gradient(135deg, #FF2D78, #FF6B35); color: white; padding: 14px 32px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 700; text-decoration: none; }
+        .sa-footer { text-align: center; color: #a0a0b8; font-size: 0.78rem; }
+        .sa-footer a { color: #FF2D78; text-decoration: none; }
+        @media (max-width: 400px) {
+          .sa-container { padding: 28px 16px 60px; }
+          .sa-score-num { font-size: 3.8rem; }
+          .sa-score-card { padding: 28px 20px; }
+          .sa-grid { gap: 10px; }
+          .sa-stat { padding: 16px 12px; }
+          .sa-stat-value { font-size: 1.2rem; }
+        }
+      ` }} />
 
-      <div style={{
-        maxWidth: 600,
-        margin: '0 auto',
-        padding: '40px 24px 80px',
-        fontFamily: "'DM Sans', sans-serif",
-      }}>
+      <div className="sa-container">
 
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <a href="https://yalosabia.com" style={{ textDecoration: 'none' }}>
-            <span style={{
-              fontFamily: "'Dela Gothic One', sans-serif",
-              fontSize: '1.4rem',
-              color: '#FAFAFA',
-            }}>
-              YaLo<span style={{ color: '#FF2D78' }}>Sabía</span>
-            </span>
+        <div className="sa-header">
+          <a href="https://www.yalosabia.com" className="sa-logo">
+            YaLo<span>Sabía</span>
           </a>
-          <p style={{ color: '#a0a0b8', fontSize: '0.85rem', marginTop: 8 }}>
-            Análisis de chat compartido
-          </p>
+          <p className="sa-subtitle">Análisis de chat compartido</p>
         </div>
 
         {/* Alias */}
         {analysis.alias && (
-          <p style={{
-            textAlign: 'center',
-            fontSize: '1.1rem',
-            fontWeight: 600,
-            marginBottom: 24,
-            color: '#a0a0b8',
-          }}>
-            &quot;{analysis.alias}&quot;
-          </p>
+          <p className="sa-alias">&quot;{analysis.alias}&quot;</p>
         )}
 
-        {/* Date range + total messages */}
-        <div style={{ textAlign: 'center', marginBottom: 32, color: '#a0a0b8', fontSize: '0.9rem' }}>
-          {analysis.date_range && <p style={{ margin: '0 0 4px' }}>{analysis.date_range}</p>}
-          <p style={{ margin: 0 }}>{analysis.total_messages.toLocaleString()} mensajes analizados</p>
+        {/* Meta info */}
+        <div className="sa-meta">
+          {analysis.participant_names.length >= 2 && (
+            <p>{analysis.participant_names[0]} y {analysis.participant_names[1]}</p>
+          )}
+          {analysis.date_range && <p>{analysis.date_range}</p>}
+          <p>{analysis.total_messages.toLocaleString()} mensajes analizados</p>
         </div>
 
         {/* Score Card */}
-        <div style={{
-          maxWidth: 400,
-          margin: '0 auto 48px',
-          background: 'linear-gradient(135deg, #FF2D78, #6C5CE7)',
-          borderRadius: 20,
-          padding: 40,
-          textAlign: 'center',
-          position: 'relative',
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'radial-gradient(circle at 30% 20%, rgba(255,255,255,0.15), transparent 50%)',
-          }} />
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <div style={{
-              fontSize: '0.85rem',
-              textTransform: 'uppercase',
-              letterSpacing: 3,
-              opacity: 0.8,
-              marginBottom: 12,
-            }}>Score de la relación</div>
-            <div style={{
-              fontFamily: "'Dela Gothic One', sans-serif",
-              fontSize: '5rem',
-              lineHeight: 1,
-              marginBottom: 4,
-            }}>{s.score}</div>
-            <div style={{ fontSize: '1.1rem', opacity: 0.7 }}>de 100</div>
-            <div style={{
-              marginTop: 16,
-              fontSize: '1.1rem',
-              fontWeight: 600,
-            }}>{s.verdict}</div>
+        <div className="sa-score-card">
+          <div className="sa-score-glow" />
+          <div className="sa-score-inner">
+            <div className="sa-score-label">Score de la relación</div>
+            <div className="sa-score-num">{analysis.score}</div>
+            <div className="sa-score-max">de 100</div>
+            <div className="sa-score-verdict">{s.verdict}</div>
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-          gap: 16,
-          marginBottom: 48,
-        }}>
+        {/* Stats Grid — 2 columns, mobile safe */}
+        <div className="sa-grid">
           {statCards.map((stat, i) => (
-            <div key={i} style={{
-              background: '#1a1a2e',
-              borderRadius: 20,
-              padding: 28,
-              border: '1px solid rgba(255,255,255,0.06)',
-              textAlign: 'center',
-            }}>
-              <div style={{ fontSize: '1.8rem', marginBottom: 12 }}>{stat.emoji}</div>
-              <div style={{
-                fontFamily: "'Dela Gothic One', sans-serif",
-                fontSize: '1.8rem',
-                marginBottom: 4,
-              }}>{stat.value}</div>
-              <div style={{ color: '#a0a0b8', fontSize: '0.88rem' }}>{stat.label}</div>
+            <div key={i} className="sa-stat">
+              <div className="sa-stat-emoji">{stat.emoji}</div>
+              <div className="sa-stat-value">{stat.value}</div>
+              <div className="sa-stat-label">{stat.label}</div>
             </div>
           ))}
         </div>
 
         {/* Who Leads */}
-        <div style={{
-          background: '#1a1a2e',
-          borderRadius: 20,
-          padding: 32,
-          border: '1px solid rgba(255,255,255,0.06)',
-          marginBottom: 48,
-        }}>
-          <div style={{
-            fontSize: '0.78rem',
-            textTransform: 'uppercase',
-            letterSpacing: 2,
-            color: '#a0a0b8',
-            marginBottom: 8,
-          }}>⚡ Dinámica</div>
-          <h4 style={{
-            fontFamily: "'Dela Gothic One', sans-serif",
-            fontSize: '1rem',
-            margin: '0 0 12px',
-          }}>Quién lleva la relación</h4>
-          <p style={{ color: '#a0a0b8', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>
+        <div className="sa-dynamics">
+          <div className="sa-dynamics-tag">⚡ Dinámica</div>
+          <h4>Quién lleva la relación</h4>
+          <p>
             {s.leaderPct >= 55
-              ? `${s.leader.split(' ')[0]} lleva la relación con ${s.leaderPct}% de los mensajes.`
-              : `Relación equilibrada: ${s.personA.split(' ')[0]} (${s.leaderPct}%) y ${s.personB.split(' ')[0]} (${100 - s.leaderPct}%).`
+              ? `${s.leader?.split(' ')[0] ?? '?'} lleva la relación con ${s.leaderPct}% de los mensajes.`
+              : `Relación equilibrada: ${s.personA?.split(' ')[0] ?? '?'} (${s.leaderPct}%) y ${s.personB?.split(' ')[0] ?? '?'} (${100 - s.leaderPct}%).`
             }
           </p>
         </div>
 
         {/* AI Insight */}
         {analysis.ai_insight && (
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(255,210,63,0.1), rgba(255,107,53,0.1))',
-            border: '1px solid rgba(255,210,63,0.2)',
-            borderRadius: 20,
-            padding: '28px 32px',
-            marginBottom: 48,
-            fontSize: '1.05rem',
-            lineHeight: 1.6,
-            textAlign: 'center',
-          }}>
-            <span>🤖 </span>
-            <strong style={{ color: '#FFD23F' }}>Insight con IA:</strong>{' '}
-            {analysis.ai_insight}
+          <div className="sa-insight">
+            🤖 <strong>Insight con IA:</strong> {analysis.ai_insight}
           </div>
         )}
 
-        {/* Blurred Premium Teaser */}
-        <div style={{ position: 'relative', marginBottom: 48 }}>
-          <div style={{
-            filter: 'blur(8px)',
-            opacity: 0.3,
-            pointerEvents: 'none',
-            userSelect: 'none',
-          }}>
-            <div style={{
-              background: '#1a1a2e',
-              borderRadius: 20,
-              padding: 32,
-              border: '1px solid rgba(255,255,255,0.06)',
-              marginBottom: 16,
-            }}>
-              <h4 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: '1rem', margin: '0 0 8px' }}>
-                🔍 Análisis Detective
-              </h4>
-              <p style={{ color: '#a0a0b8', margin: 0 }}>Timeline emocional, patrones de silencios, double texting, horarios sospechosos...</p>
-            </div>
-            <div style={{
-              background: '#1a1a2e',
-              borderRadius: 20,
-              padding: 32,
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}>
-              <h4 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: '1rem', margin: '0 0 8px' }}>
-                🔬 Análisis Obsesivo
-              </h4>
-              <p style={{ color: '#a0a0b8', margin: 0 }}>Análisis forense completo, mapas de calor, evolución de vocabulario...</p>
-            </div>
-          </div>
-          <div style={{ textAlign: 'center', padding: '18px 16px' }}>
-            <a
-              href="https://yalosabia.com"
-              style={{
-                display: 'inline-block',
-                padding: '14px 28px',
-                background: 'linear-gradient(135deg, #3B82F6, #6C5CE7)',
-                border: 'none',
-                borderRadius: 10,
-                color: '#fff',
-                fontWeight: 700,
-                fontSize: '0.95rem',
-                textDecoration: 'none',
-              }}
-            >
-              🔓 Desbloquear análisis completo
-            </a>
-          </div>
-        </div>
-
-        {/* CTA Section */}
-        <div style={{
-          textAlign: 'center',
-          background: 'linear-gradient(135deg, rgba(255,45,120,0.1), rgba(108,92,231,0.1))',
-          border: '1px solid rgba(255,45,120,0.2)',
-          borderRadius: 20,
-          padding: '48px 32px',
-          marginBottom: 32,
-        }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>🔍</div>
-          <h3 style={{
-            fontFamily: "'Dela Gothic One', sans-serif",
-            fontSize: '1.3rem',
-            marginBottom: 12,
-          }}>
-            ¿Quieres analizar TU chat?
-          </h3>
-          <p style={{
-            color: '#a0a0b8',
-            fontSize: '0.95rem',
-            marginBottom: 24,
-            lineHeight: 1.5,
-          }}>
-            Sube tu chat de WhatsApp y descubre qué dicen tus mensajes sobre tu relación
-          </p>
-          <a
-            href="https://yalosabia.com"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              background: 'linear-gradient(135deg, #FF2D78, #FF6B35)',
-              color: 'white',
-              border: 'none',
-              padding: '16px 36px',
-              borderRadius: 50,
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: '1.05rem',
-              fontWeight: 700,
-              textDecoration: 'none',
-            }}
-          >
+        {/* CTA */}
+        <div className="sa-cta">
+          <div className="sa-cta-icon">💬</div>
+          <h3>¿Quieres analizar tu propio chat?</h3>
+          <p>Sube tu chat de WhatsApp y descubre qué dicen tus mensajes sobre tu relación</p>
+          <a href="https://www.yalosabia.com" className="sa-cta-btn">
             Analizar mi chat →
           </a>
         </div>
 
         {/* Footer */}
-        <div style={{ textAlign: 'center', color: '#a0a0b8', fontSize: '0.8rem' }}>
+        <div className="sa-footer">
           <p>👁️ {analysis.views + 1} vistas</p>
           <p style={{ marginTop: 8 }}>
-            <a href="https://yalosabia.com" style={{ color: '#FF2D78', textDecoration: 'none' }}>
-              yalosabia.com
-            </a>
-            {' '}— Analiza tu chat de WhatsApp con IA
+            <a href="https://www.yalosabia.com">yalosabia.com</a> — Analiza tu chat de WhatsApp con IA
           </p>
         </div>
       </div>
