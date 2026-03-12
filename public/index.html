@@ -9540,7 +9540,11 @@ async function checkPaymentSuccess() {
         window.isPremium = true;
 
         if (typeof fbq !== 'undefined') {
-          fbq('track', 'Purchase', { value: 99, currency: 'MXN', content_name: 'premium' });
+          fbq('track', 'Purchase', {
+            value: data.value || 99,
+            currency: (data.currency || 'mxn').toUpperCase(),
+            content_name: 'premium'
+          });
         }
 
         updatePlanUI();

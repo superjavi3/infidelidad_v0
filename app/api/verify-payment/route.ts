@@ -20,10 +20,18 @@ export async function GET(req: NextRequest) {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (session.status === 'complete') {
+      // amount_total is in smallest currency unit (cents for MXN/USD, whole units for COP/CLP etc.)
+      const amountTotal = session.amount_total ?? 0;
+      const currency = (session.currency || 'mxn').toLowerCase();
+      const zeroDecimal = ['cop', 'ars', 'clp', 'pyg'].includes(currency);
+      const value = zeroDecimal ? amountTotal : amountTotal / 100;
+
       return NextResponse.json({
         paid: true,
         email: session.metadata?.email || session.customer_email || '',
         plan: 'premium',
+        value,
+        currency,
       });
     }
 
