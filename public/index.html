@@ -34,6 +34,8 @@
 <!-- Chart.js para gráficas premium -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Contrato de privacidad: único constructor de lo que viaja a /api/analyze -->
+<script src="/js/ai-payload.js"></script>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -1924,240 +1926,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   color: #FF6B35;
 }
 
-/* ── CHATBOT TERAPEUTA ── */
-.chatbot-trigger {
-  background: linear-gradient(135deg, rgba(236,72,153,0.08), rgba(168,85,247,0.08));
-  border: 1px solid rgba(236,72,153,0.2);
-  border-radius: var(--radius);
-  padding: 36px 32px;
-  text-align: center;
-  margin-top: 20px;
-}
-.chatbot-trigger h3 {
-  font-family: var(--font-display);
-  font-size: 1.3rem;
-  margin-bottom: 10px;
-}
-.chatbot-trigger p {
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  line-height: 1.6;
-  margin-bottom: 20px;
-  max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.chatbot-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.85);
-  z-index: 10000;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.chatbot-container {
-  background: linear-gradient(135deg, #1a1a2e, #16213e);
-  border-radius: 20px;
-  width: 100%;
-  max-width: 700px;
-  height: 80vh;
-  max-height: 700px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(236,72,153,0.1);
-}
-.chatbot-header {
-  padding: 18px 24px;
-  background: linear-gradient(135deg, #EC4899, #8B5CF6);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0;
-}
-.chatbot-header h3 {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  color: white;
-  margin: 0;
-}
-.chatbot-header-badge {
-  background: rgba(255,255,255,0.2);
-  padding: 3px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-left: 10px;
-  color: white;
-}
-.chatbot-close {
-  background: rgba(255,255,255,0.2);
-  border: none;
-  color: white;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 1.3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background .2s;
-}
-.chatbot-close:hover { background: rgba(255,255,255,0.35); }
-
-.chat-suggestions {
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  flex-shrink: 0;
-  max-height: 220px;
-  overflow-y: auto;
-}
-.chat-suggestions p {
-  color: var(--text-muted);
-  font-size: 0.82rem;
-  margin-bottom: 10px;
-}
-.chat-suggestions button {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 10px 14px;
-  margin-bottom: 6px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
-  color: var(--text);
-  cursor: pointer;
-  transition: all .2s;
-  font-family: var(--font-body);
-  font-size: 0.88rem;
-}
-.chat-suggestions button:hover {
-  background: rgba(236,72,153,0.1);
-  border-color: rgba(236,72,153,0.3);
-}
-
-.chat-messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.chat-message {
-  display: flex;
-  gap: 10px;
-  animation: fadeInUp .3s ease;
-}
-.chat-message.user { flex-direction: row-reverse; }
-.msg-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  flex-shrink: 0;
-}
-.msg-bubble {
-  max-width: 75%;
-  padding: 12px 16px;
-  border-radius: 16px;
-  line-height: 1.55;
-  font-size: 0.92rem;
-  white-space: pre-wrap;
-}
-.chat-message.user .msg-bubble {
-  background: linear-gradient(135deg, #EC4899, #F472B6);
-  color: white;
-  border-bottom-right-radius: 4px;
-}
-.chat-message.assistant .msg-bubble {
-  background: rgba(255,255,255,0.07);
-  color: var(--text);
-  border-bottom-left-radius: 4px;
-}
-.msg-time {
-  font-size: 0.68rem;
-  color: rgba(255,255,255,0.4);
-  margin-top: 4px;
-  display: block;
-}
-
-.typing-indicator {
-  padding: 0 20px 10px;
-  gap: 10px;
-  flex-shrink: 0;
-}
-.typing-dots {
-  display: flex;
-  gap: 5px;
-  padding: 12px 16px;
-  background: rgba(255,255,255,0.07);
-  border-radius: 16px;
-  border-bottom-left-radius: 4px;
-  width: fit-content;
-}
-.typing-dots span {
-  width: 7px;
-  height: 7px;
-  background: rgba(255,255,255,0.4);
-  border-radius: 50%;
-  animation: typingBounce 1.4s infinite;
-}
-.typing-dots span:nth-child(2) { animation-delay: .2s; }
-.typing-dots span:nth-child(3) { animation-delay: .4s; }
-@keyframes typingBounce {
-  0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-8px); }
-}
-
-.chat-input-wrap {
-  padding: 16px 20px;
-  background: rgba(0,0,0,0.25);
-  display: flex;
-  gap: 10px;
-  flex-shrink: 0;
-}
-.chat-input-wrap input {
-  flex: 1;
-  padding: 12px 18px;
-  border-radius: 25px;
-  border: 1px solid rgba(255,255,255,0.15);
-  background: rgba(255,255,255,0.05);
-  color: white;
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-}
-.chat-input-wrap input::placeholder { color: rgba(255,255,255,0.35); }
-.chat-input-wrap input:focus {
-  outline: none;
-  border-color: #EC4899;
-  background: rgba(255,255,255,0.08);
-}
-.chat-send-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #EC4899, #8B5CF6);
-  border: none;
-  color: white;
-  font-size: 1.15rem;
-  cursor: pointer;
-  transition: transform .2s, box-shadow .2s;
-  flex-shrink: 0;
-}
-.chat-send-btn:hover {
-  transform: scale(1.08);
-  box-shadow: 0 4px 16px rgba(236,72,153,0.4);
-}
-
 /* ── RESPONSIVE ── */
 /* ── GROUP MODE STYLES ── */
 #group-statsGrid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
@@ -2189,9 +1957,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   .bvn-table { font-size: 0.8rem; }
   .bvn-table th, .bvn-table td { padding: 8px 6px; }
   .bvn-table td:nth-child(2), .bvn-table td:nth-child(3) { font-size: 0.9rem; }
-  .chatbot-container { height: 100vh; max-height: none; border-radius: 0; }
-  .chatbot-modal { padding: 0; }
-  .msg-bubble { max-width: 85%; }
 }
 
 @media (max-width: 480px) {
@@ -2637,26 +2402,6 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <div class="plan-badge obsessive">🔓 PREMIUM — <span class="precio-premium">$99 MXN</span></div>
       <div class="plan-title obsessive">Análisis Obsesivo Premium</div>
       <div class="plan-subtitle">4 análisis devastadores para quien necesita saber TODO</div>
-    </div>
-
-    <!-- Chatbot Terapeuta IA (first item, high FOMO) -->
-    <div class="premium-feature-card" id="featureChatbot" data-plan-required="premium">
-      <div class="pf-header">
-        <span class="pf-icon">💬</span>
-        <div>
-          <h4 class="pf-title">Chatbot Terapeuta IA</h4>
-          <p class="pf-subtitle">Pregúntale todo sobre tu relación, 24/7. Analiza fechas, patrones y red flags basándose en tus datos reales.</p>
-        </div>
-      </div>
-      <div class="pf-body" id="chatbotPreviewBody">
-        <div style="display:flex;flex-direction:column;gap:12px;padding:8px 0;">
-          <div style="align-self:flex-end;background:rgba(108,92,231,0.2);border-radius:14px 14px 4px 14px;padding:10px 14px;max-width:80%;font-size:0.9rem;color:#c4b5fd;">¿Por qué dejó de responder rápido en octubre?</div>
-          <div style="align-self:flex-start;background:rgba(255,255,255,0.06);border-radius:14px 14px 14px 4px;padding:10px 14px;max-width:80%;font-size:0.9rem;color:var(--text-muted);">Según los datos, en octubre se detecta una caída del 43% en velocidad de respuesta. El tiempo promedio pasó de 8 min a 47 min, especialmente los fines de semana...</div>
-          <div style="align-self:flex-end;background:rgba(108,92,231,0.2);border-radius:14px 14px 4px 14px;padding:10px 14px;max-width:80%;font-size:0.9rem;color:#c4b5fd;">¿Hay red flags en los últimos meses?</div>
-          <div style="align-self:flex-start;background:rgba(255,255,255,0.06);border-radius:14px 14px 14px 4px;padding:10px 14px;max-width:80%;font-size:0.9rem;color:var(--text-muted);">He detectado 3 patrones preocupantes: silencios prolongados después de las 11pm, reducción de emojis de amor en un 67% y...</div>
-        </div>
-        <button onclick="openChatbot()" class="btn-primary" style="width:100%;margin-top:16px;padding:14px;font-size:1rem;">💬 Hablar con el Terapeuta IA</button>
-      </div>
     </div>
 
     <!-- Obsessive 1: Reconstrucción Forense -->
@@ -3164,7 +2909,6 @@ if (localStorage.getItem('cookieConsent') === 'all') {
           <li>😤 Análisis de double texting</li>
           <li>📱 Reyes del Multimedia</li>
           <li>🗑️ Mensajes eliminados</li>
-          <li>💬 Chatbot terapeuta IA (10/día)</li>
           <li>🕵️ Reconstrucción forense de momentos clave</li>
           <li>💔 Comparación: Antes vs Ahora</li>
           <li>👻 Ghosting selectivo</li>
@@ -3221,7 +2965,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
           </div>
         </div>
         <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-        <div class="testimonial-text">Pensé que era de broma pero el chatbot me hizo preguntas que ni mi terapeuta me había hecho. El plan Premium vale cada peso.</div>
+        <div class="testimonial-text">Pensé que era de broma pero el informe me señaló patrones que yo ya intuía y no sabía nombrar. El plan Premium vale cada peso.</div>
       </div>
       <div class="testimonial-card">
         <div class="testimonial-header">
@@ -4186,41 +3930,6 @@ function analyzeGroupMessages(messages, senderCounts, systemEvents) {
   };
 }
 
-function sampleGroupMessages(messages, groupStats) {
-  if (messages.length <= 350) return messages;
-
-  const sample = [];
-  // First 50
-  sample.push(...messages.slice(0, 50));
-  // Last 50
-  sample.push(...messages.slice(-50));
-  // 50 from peak activity days
-  const dayMsgMap = {};
-  messages.forEach(m => { dayMsgMap[m.date] = (dayMsgMap[m.date] || 0) + 1; });
-  const topDays = Object.entries(dayMsgMap).sort((a, b) => b[1] - a[1]).slice(0, 3).map(d => d[0]);
-  let peakMsgs = messages.filter(m => topDays.includes(m.date));
-  sample.push(...peakMsgs.slice(0, 50));
-  // 50 with emotional load (caps, !, emojis)
-  const emotional = messages.filter(m => /[A-ZÁÉÍÓÚÑ]{3,}|!!!|😂|😡|❤️|😭|🔥/.test(m.text || ''));
-  sample.push(...emotional.slice(0, 50));
-  // 50 random from top 5 members
-  const top5Names = groupStats.members.slice(0, 5).map(m => m.name);
-  const top5Msgs = messages.filter(m => top5Names.includes(m.sender));
-  for (let i = 0; i < 50 && top5Msgs.length > 0; i++) {
-    const idx = Math.floor(Math.random() * top5Msgs.length);
-    sample.push(top5Msgs.splice(idx, 1)[0]);
-  }
-
-  // Deduplicate by index in original array and sort
-  const seen = new Set();
-  const unique = [];
-  sample.forEach(m => {
-    const key = m.date + m.time + m.sender + (m.text || '').substring(0, 30);
-    if (!seen.has(key)) { seen.add(key); unique.push(m); }
-  });
-  return unique.slice(0, 350);
-}
-
 // ── Plan resolution on chat load ──
 function onNewChatLoaded(messages) {
   if (window._adminBypass) {
@@ -4260,8 +3969,6 @@ function generateChatFingerprint(messages) {
 async function processChat(text) {
   window.isDemoMode = false;
   document.getElementById('demoBanner').style.display = 'none';
-  const chatbotBtn = document.querySelector('[onclick*="openChatbot"]');
-  if (chatbotBtn) { chatbotBtn.style.opacity = ''; chatbotBtn.style.cursor = ''; chatbotBtn.title = ''; }
   uploadZone.style.display = 'none';
   document.querySelector('.mode-toggle-wrapper').style.display = 'none';
   processingState.classList.add('active');
@@ -4329,24 +4036,13 @@ async function processChat(text) {
     // AI fun fact (async, non-blocking)
     (async () => {
       try {
-        const sampled = sampleGroupMessages(messages, groupStats);
-        const aiRes = await gzipFetch('/api/analyze', {
-          mode: 'group-analysis',
-          messages: sampled,
-          stats: {
-            totalMessages: groupStats.totalMessages,
-            uniqueDays: groupStats.uniqueDays,
-            score: groupStats.score,
-            members: groupStats.members.slice(0, 15).map(m => ({
-              name: m.name, msgCount: m.msgCount, pct: m.pct, category: m.category
-            }))
-          }
-        });
+        const { payload, aliases } = YLSPayload.buildGroupAIPayload(groupStats);
+        const aiRes = await gzipFetch('/api/analyze', { mode: 'group-analysis', aggregate: payload });
         const aiData = await aiRes.json();
         if (aiData.success && aiData.analysis) {
           const funFactEl = document.getElementById('group-funFact');
           if (funFactEl && aiData.analysis.funInsight) {
-            funFactEl.innerHTML = '📊 <strong>Dato curioso:</strong> ' + aiData.analysis.funInsight;
+            funFactEl.innerHTML = '📊 <strong>Dato curioso:</strong> ' + aliases.restore(aiData.analysis.funInsight);
           }
         }
       } catch (err) {
@@ -4381,16 +4077,23 @@ async function processChat(text) {
 
   // Populate results (showResults calls applyBlurOverlays AFTER rendering features)
   showResults(stats);
-  // ========== NUEVO: Llamar a Gemini para análisis IA ==========
+  // ── Personalización con IA ──
+  // Solo viaja un agregado anónimo (números, fechas, categorías). Los mensajes
+  // y los nombres reales se quedan en el dispositivo. Ver public/js/ai-payload.js
   try {
-    console.log('Llamando a Gemini API...');
-    const aiResponse = await gzipFetch('/api/analyze', { messages, stats });
-    
+    const { payload, aliases } = YLSPayload.buildCoupleAIPayload(stats, {
+      timeline: analyzeRelationshipTimeline(messages),
+      silences: analyzeSilences(messages),
+      doubleText: analyzeDoubleTexting(messages),
+      multimedia: analyzeMultimedia(messages),
+      deleted: analyzeDeletedMessages(messages)
+    });
+
+    const aiResponse = await gzipFetch('/api/analyze', { mode: 'analysis', aggregate: payload });
     const aiData = await aiResponse.json();
-    
+
     if (aiData.success && aiData.analysis) {
-      console.log('Análisis IA recibido:', aiData.analysis);
-      updateWithAIInsights(aiData.analysis, stats);
+      updateWithAIInsights(aiData.analysis, stats, aliases);
     } else {
       console.warn('No se pudo obtener análisis IA');
     }
@@ -5406,17 +5109,8 @@ async function renderGroupAutopsy(messages, gs) {
   const body = document.getElementById('group-autopsyBody');
   body.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);">🔬 Analizando momentos clave con IA...</div>';
   try {
-    const sampled = sampleGroupMessages(messages, gs);
-    const res = await gzipFetch('/api/analyze', {
-      mode: 'group-autopsy',
-      messages: sampled,
-      stats: {
-        totalMessages: gs.totalMessages, uniqueDays: gs.uniqueDays,
-        members: gs.members.slice(0, 15).map(m => ({ name: m.name, msgCount: m.msgCount })),
-        monthlyActivity: gs.monthlyActivity,
-        systemEvents: gs.systemEvents.slice(0, 30)
-      }
-    });
+    const { payload, aliases } = YLSPayload.buildGroupAIPayload(gs);
+    const res = await gzipFetch('/api/analyze', { mode: 'group-autopsy', aggregate: payload });
     const data = await res.json();
     if (!data.success || !data.autopsy || data.autopsy.length === 0) {
       body.innerHTML = '<p style="color:var(--text-muted);">No se pudieron identificar momentos clave.</p>';
@@ -5429,9 +5123,9 @@ async function renderGroupAutopsy(messages, gs) {
       html += `<div style="margin-bottom:24px;position:relative;">
         <div style="position:absolute;left:-31px;top:4px;width:14px;height:14px;border-radius:50%;background:${color};border:2px solid var(--bg);"></div>
         <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:${color};margin-bottom:4px;">${evt.date}</div>
-        <div style="font-size:1rem;font-weight:700;margin-bottom:4px;">${evt.title}</div>
-        <div style="font-size:0.85rem;color:var(--text-muted);line-height:1.5;margin-bottom:4px;">${evt.description}</div>
-        <div style="font-size:0.8rem;color:var(--text-muted);font-style:italic;">💡 ${evt.impact}</div>
+        <div style="font-size:1rem;font-weight:700;margin-bottom:4px;">${aliases.restore(evt.title)}</div>
+        <div style="font-size:0.85rem;color:var(--text-muted);line-height:1.5;margin-bottom:4px;">${aliases.restore(evt.description)}</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);font-style:italic;">💡 ${aliases.restore(evt.impact)}</div>
       </div>`;
     });
     html += '</div>';
@@ -5506,21 +5200,10 @@ async function generateGroupPDF() {
     // Get AI summary (non-blocking)
     let aiAnalysis = null;
     try {
-      const sampled = sampleGroupMessages(lastGroupMessages, gs);
-      const aiRes = await gzipFetch('/api/analyze', {
-        mode: 'group-analysis',
-        messages: sampled,
-        stats: {
-          totalMessages: gs.totalMessages,
-          uniqueDays: gs.uniqueDays,
-          score: gs.score,
-          members: gs.members.slice(0, 15).map(m => ({
-            name: m.name, msgCount: m.msgCount, pct: m.pct, category: m.category
-          }))
-        }
-      });
+      const { payload, aliases } = YLSPayload.buildGroupAIPayload(gs);
+      const aiRes = await gzipFetch('/api/analyze', { mode: 'group-analysis', aggregate: payload });
       const aiData = await aiRes.json();
-      if (aiData.success && aiData.analysis) aiAnalysis = aiData.analysis;
+      if (aiData.success && aiData.analysis) aiAnalysis = YLSPayload.restoreDeep(aiData.analysis, aliases);
     } catch (e) {
       console.warn('AI group summary failed:', e);
     }
@@ -5931,9 +5614,16 @@ async function generatePDF() {
     // Get AI summary
     let aiSummary = 'Resumen no disponible.';
     try {
-      const summaryRes = await gzipFetch('/api/analyze', { mode: 'summary', stats: lastStats, messages: lastMessages.slice(-100) });
+      const { payload, aliases } = YLSPayload.buildCoupleAIPayload(lastStats, {
+        timeline: timelineData,
+        silences: silenceData,
+        doubleText: doubleTextData,
+        multimedia: multimediaData,
+        deleted: deletedData
+      });
+      const summaryRes = await gzipFetch('/api/analyze', { mode: 'summary', aggregate: payload });
       const summaryData = await summaryRes.json();
-      aiSummary = summaryData.summary || 'Resumen no disponible.';
+      aiSummary = aliases.restore(summaryData.summary || '') || 'Resumen no disponible.';
     } catch (e) {
       console.warn('AI summary failed:', e);
     }
@@ -6590,27 +6280,6 @@ async function loadDemo() {
 
   // Show results — applyBlurOverlays() inside will see isPremium and unlock everything
   showResults(demoStats);
-
-  // Re-lock ONLY the chatbot card — IA chatbot is not available in demo
-  const chatbotCard = document.getElementById('featureChatbot');
-  if (chatbotCard) {
-    chatbotCard.classList.remove('plan-unlocked');
-    chatbotCard.classList.add('plan-locked');
-    const body = chatbotCard.querySelector('.pf-body');
-    if (body) {
-      body.style.filter = 'blur(8px)';
-      body.style.pointerEvents = 'none';
-      body.style.opacity = '0.3';
-      body.style.userSelect = 'none';
-    }
-    // Remove any existing overlay and add demo-specific one
-    const oldOverlay = chatbotCard.querySelector('.body-unlock-overlay');
-    if (oldOverlay) oldOverlay.remove();
-    const overlay = document.createElement('div');
-    overlay.className = 'body-unlock-overlay';
-    overlay.innerHTML = '<button class="unlock-overlay-btn obsesivo-btn" onclick="showDemoUpgradePrompt(\'chatbot\')">🔒 Sube tu chat real para usar el Terapeuta IA</button>';
-    chatbotCard.appendChild(overlay);
-  }
 
   // Show demo banner
   document.getElementById('demoBanner').style.display = 'block';
@@ -8539,26 +8208,17 @@ const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.15 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-function updateWithAIInsights(analysis, stats) {
-  console.log('Actualizando UI con insights de IA');
-  
-  // Actualizar "Quién lleva la relación" con análisis IA
+function updateWithAIInsights(analysis, stats, aliases) {
+  // La IA solo conoce etiquetas anónimas: aquí se devuelven los nombres reales.
+  const real = (t) => (aliases && t) ? aliases.restore(t) : t;
+
   if (analysis.whoLeads) {
-    document.getElementById('whoLeads').textContent = analysis.whoLeads;
+    document.getElementById('whoLeads').textContent = real(analysis.whoLeads);
   }
-  
-  // Actualizar fun fact con insight de IA
+
   if (analysis.funInsight) {
-    document.getElementById('funFact').innerHTML = 
-      `🤖 <strong>Insight con IA:</strong> ${analysis.funInsight}`;
-  }
-  
-  // Log flags for debugging
-  if (analysis.redFlags && analysis.redFlags.length > 0) {
-    console.log('Red flags:', analysis.redFlags);
-  }
-  if (analysis.greenFlags && analysis.greenFlags.length > 0) {
-    console.log('Green flags:', analysis.greenFlags);
+    document.getElementById('funFact').innerHTML =
+      `🤖 <strong>Insight con IA:</strong> ${real(analysis.funInsight)}`;
   }
 }
 // ══════════════════════════════════════════
@@ -8620,7 +8280,11 @@ async function generateShareLink() {
   function grabSection(id) {
     const el = document.getElementById(id);
     if (!el) return null;
-    const html = el.innerHTML?.trim();
+    // Se comparte la sección renderizada, pero nunca texto literal del chat:
+    // la cita del mensaje que rompió cada silencio se elimina antes de subirla.
+    const copy = el.cloneNode(true);
+    copy.querySelectorAll('.silence-bar-message').forEach(node => node.remove());
+    const html = copy.innerHTML?.trim();
     return (html && html.length > 10) ? html : null;
   }
 
@@ -8658,9 +8322,10 @@ async function generateShareLink() {
 
     // Track event
     try {
+      // Sin nombres: la analítica solo recibe números.
       const trackData = isGroup
-        ? { event: 'share_link_created_group', score: lastGroupStats.score, groupName: lastGroupStats.groupName, totalMessages: lastGroupStats.totalMessages }
-        : { event: 'share_link_created', score: lastStats.score, personA: lastStats.personA, personB: lastStats.personB, totalMessages: lastStats.total };
+        ? { event: 'share_link_created_group', score: lastGroupStats.score, totalMessages: lastGroupStats.totalMessages }
+        : { event: 'share_link_created', score: lastStats.score, totalMessages: lastStats.total };
       fetch('/api/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -8829,18 +8494,11 @@ function shareViaWhatsApp() {
     : '¡Mira el análisis de nuestro chat! 🔍 ' + url;
   window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
 }
-
-// ══════════════════════════════════════════
-// ── CHATBOT TERAPEUTA IA ──
-// ══════════════════════════════════════════
-let chatbotHistory = [];
-
 function showDemoUpgradePrompt(feature) {
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;';
   overlay.onclick = () => overlay.remove();
   const msgs = {
-    chatbot: 'El chatbot analiza TU relación real — sube tu chat para activarlo 💬',
     share: 'Sube tu chat real para compartir un enlace con tus resultados 🔗'
   };
   overlay.innerHTML = `<div style="background:var(--bg-card);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px;max-width:400px;text-align:center;" onclick="event.stopPropagation()">
@@ -8851,262 +8509,7 @@ function showDemoUpgradePrompt(feature) {
   document.body.appendChild(overlay);
 }
 
-function openChatbot() {
-  if (window.isDemoMode) {
-    showDemoUpgradePrompt('chatbot');
-    return;
-  }
-  if (!lastStats || !lastMessages) {
-    alert('Primero sube un chat para analizar.');
-    return;
-  }
-  if (!isPremiumUser()) {
-    openPayModal();
-    return;
-  }
-
-  // Calcular día con más mensajes para sugerencia dinámica
-  const dayCount = {};
-  lastMessages.forEach(m => {
-    if (!dayCount[m.date]) dayCount[m.date] = 0;
-    dayCount[m.date]++;
-  });
-  let topDay = null, topCount = 0;
-  for (const [day, count] of Object.entries(dayCount)) {
-    if (count > topCount) { topCount = count; topDay = day; }
-  }
-  let topDayText = '';
-  if (topDay) {
-    const p = topDay.split('/');
-    const mNames = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-    const d = parseInt(p[0]), mo = parseInt(p[1]) - 1, yr = p[2]?.length === 2 ? '20' + p[2] : p[2];
-    topDayText = `${d} de ${mNames[mo]}${yr ? ' de ' + yr : ''}`;
-  }
-
-  // Actualizar sugerencias dinámicas
-  const sug = document.getElementById('chatSuggestions');
-  const pA = lastStats.personA || 'Persona A';
-  const pB = lastStats.personB || 'Persona B';
-  sug.innerHTML = `<p>Preguntas sugeridas:</p>
-    ${topDayText ? `<button onclick="askSuggestion(this)">¿De qué hablamos el ${topDayText}?</button>` : ''}
-    <button onclick="askSuggestion(this)">¿Cuándo empezó a cambiar todo?</button>
-    <button onclick="askSuggestion(this)">¿Por qué ${pB} tarda en responder?</button>
-    <button onclick="askSuggestion(this)">¿Quién habla más: ${pA} o ${pB}?</button>`;
-  sug.style.display = chatbotHistory.length > 0 ? 'none' : 'block';
-
-  document.getElementById('chatbotModal').style.display = 'flex';
-  updateTherapistUI();
-  document.getElementById('chatInput').focus();
-}
-
-function closeChatbot() {
-  document.getElementById('chatbotModal').style.display = 'none';
-}
-
-function askSuggestion(btn) {
-  document.getElementById('chatSuggestions').style.display = 'none';
-  document.getElementById('chatInput').value = btn.textContent;
-  sendChatMessage();
-}
-
-function getTherapistUsage() {
-  var today = new Date().toISOString().split('T')[0];
-  try {
-    var stored = JSON.parse(localStorage.getItem('therapist_usage'));
-    if (stored && stored.date === today) return stored;
-  } catch(e) {}
-  var fresh = { count: 0, date: today };
-  localStorage.setItem('therapist_usage', JSON.stringify(fresh));
-  return fresh;
-}
-
-function updateTherapistUI() {
-  var usage = getTherapistUsage();
-  var bar = document.getElementById('chatUsageBar');
-  var input = document.getElementById('chatInput');
-  var remaining = 10 - usage.count;
-  if (bar) {
-    bar.style.display = 'block';
-    if (remaining <= 0) {
-      bar.innerHTML = '<span style="color:#FF2D78;">10/10 consultas hoy</span>';
-      if (input) { input.disabled = true; input.placeholder = 'Límite diario alcanzado'; }
-    } else {
-      bar.textContent = usage.count + '/10 consultas hoy';
-      if (input) { input.disabled = false; input.placeholder = 'Escribe tu pregunta aquí...'; }
-    }
-  }
-}
-
-async function sendChatMessage() {
-  var usage = getTherapistUsage();
-  if (usage.count >= 10) {
-    addChatMsg('assistant', '🔮 Has usado tus 10 consultas de hoy. Vuelve mañana para seguir analizando tu relación.');
-    updateTherapistUI();
-    return;
-  }
-
-  const input = document.getElementById('chatInput');
-  const question = input.value.trim();
-  if (!question) return;
-  input.value = '';
-
-  // Incrementar contador
-  usage.count++;
-  localStorage.setItem('therapist_usage', JSON.stringify(usage));
-  updateTherapistUI();
-
-  addChatMsg('user', question);
-  document.getElementById('typingIndicator').style.display = 'flex';
-  scrollChat();
-
-  try {
-    // Detect date query client-side to send relevant messages
-    const dateQ = question.match(/(\d{1,2})\s+de\s+(\w+)(?:\s+(?:de|del)\s+(\d{2,4}))?/i);
-    let sampled;
-
-    if (dateQ) {
-      const mMap = {enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,octubre:10,noviembre:11,diciembre:12};
-      const qD = parseInt(dateQ[1]), qM = mMap[dateQ[2].toLowerCase()] || 0, qY = dateQ[3] ? parseInt(dateQ[3].toString().slice(-2)) : null;
-      if (qM) {
-        const dateMatched = lastMessages.filter(m => {
-          const p = (m.date || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
-          if (!p) return false;
-          return parseInt(p[1]) === qD && parseInt(p[2]) === qM && (!qY || parseInt(p[3]) === qY || parseInt(p[3]) === qY + 2000);
-        });
-        // Send date-matched messages + small general sample for context
-        const generalSample = lastMessages.length > 30 ? [...lastMessages.slice(0, 10), ...lastMessages.slice(-10)] : lastMessages;
-        sampled = [...dateMatched, ...generalSample];
-        console.log(`Date query: found ${dateMatched.length} messages for ${qD}/${qM}/${qY || 'XX'}`);
-      } else {
-        sampled = lastMessages.length > 150 ? [...lastMessages.slice(0, 50), ...lastMessages.slice(-100)] : lastMessages;
-      }
-    } else {
-      // General query: sample messages to avoid huge request body
-      sampled = lastMessages.length > 150
-        ? [...lastMessages.slice(0, 50), ...lastMessages.slice(-100)]
-        : lastMessages;
-    }
-
-    console.log('Chatbot request:', { question, statsOk: !!lastStats, msgCount: sampled.length });
-
-    // Timeout de 60 segundos
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000);
-
-    // Feedback visual con conteo
-    const typingEl = document.getElementById('typingIndicator');
-    const totalMsgs = lastStats?.total || 0;
-    typingEl.innerHTML = `<div class="msg-avatar">💭</div><div class="typing-dots"><span></span><span></span><span></span></div><span style="margin-left:8px;font-size:12px;color:#999;">Analizando ${totalMsgs.toLocaleString()} mensajes...</span>`;
-
-    const res = await gzipFetch('/api/analyze', {
-        mode: 'chat',
-        question,
-        chatHistory: chatbotHistory.slice(-4),
-        stats: lastStats,
-        messages: sampled
-      }, { signal: controller.signal });
-    clearTimeout(timeoutId);
-
-    const data = await res.json();
-    document.getElementById('typingIndicator').style.display = 'none';
-    console.log('Chatbot response:', data);
-
-    if (data.success && data.answer) {
-      addChatMsg('assistant', data.answer, true);
-      chatbotHistory.push({ role: 'user', text: question }, { role: 'assistant', text: data.answer });
-    } else {
-      addChatMsg('assistant', 'Error: ' + (data.error || 'Respuesta inesperada del servidor. Intenta reformular tu pregunta.'));
-    }
-  } catch (err) {
-    console.error('Chatbot error:', err);
-    document.getElementById('typingIndicator').style.display = 'none';
-    if (err.name === 'AbortError') {
-      addChatMsg('assistant', 'La respuesta tardó demasiado. Intenta con una pregunta más corta o específica.');
-    } else {
-      addChatMsg('assistant', 'Error de conexión: ' + err.message + '. Verifica tu conexión e intenta de nuevo.');
-    }
-  }
-  scrollChat();
-}
-
-function addChatMsg(role, text, streaming = false) {
-  const container = document.getElementById('chatMessages');
-  const div = document.createElement('div');
-  div.className = `chat-message ${role}`;
-  const time = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-
-  function formatText(t) {
-    return t
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/•/g, '<br>•')
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/\n/g, '<br>');
-  }
-
-  div.innerHTML = `<div class="msg-avatar">${role === 'user' ? '👤' : '💭'}</div><div class="msg-bubble"><p class="msg-text"></p><span class="msg-time">${time}</span></div>`;
-  container.appendChild(div);
-  const textEl = div.querySelector('.msg-text');
-
-  if (streaming && role === 'assistant') {
-    const words = text.split(' ');
-    let current = 0;
-    const interval = setInterval(() => {
-      if (current < words.length) {
-        const partial = words.slice(0, current + 1).join(' ');
-        textEl.innerHTML = formatText(partial);
-        current++;
-        scrollChat();
-      } else {
-        clearInterval(interval);
-      }
-    }, 40);
-  } else {
-    textEl.innerHTML = formatText(text);
-  }
-}
-
-function scrollChat() {
-  const c = document.getElementById('chatMessages');
-  c.scrollTop = c.scrollHeight;
-}
-
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChatbot(); });
 </script>
-
-<!-- Chatbot Modal -->
-<div id="chatbotModal" class="chatbot-modal" style="display:none;">
-  <div class="chatbot-container">
-    <div class="chatbot-header">
-      <div style="display:flex;align-items:center;">
-        <h3>💬 Terapeuta IA</h3>
-        <span class="chatbot-header-badge">Premium</span>
-      </div>
-      <button class="chatbot-close" onclick="closeChatbot()">✕</button>
-    </div>
-    <div id="chatSuggestions" class="chat-suggestions">
-      <p>Preguntas sugeridas:</p>
-      <button onclick="askSuggestion(this)">¿Quién inicia más las conversaciones?</button>
-      <button onclick="askSuggestion(this)">¿Cuándo empezó a cambiar la relación?</button>
-      <button onclick="askSuggestion(this)">¿Por qué tarda tanto en responder?</button>
-      <button onclick="askSuggestion(this)">¿Qué dice más: él o yo?</button>
-    </div>
-    <div id="chatMessages" class="chat-messages">
-      <div class="chat-message assistant">
-        <div class="msg-avatar">💭</div>
-        <div class="msg-bubble">Hola, soy tu terapeuta IA. He analizado toda tu conversación y puedo responder cualquier pregunta sobre tu relación. ¿Qué te gustaría saber?</div>
-      </div>
-    </div>
-    <div id="typingIndicator" class="typing-indicator" style="display:none;">
-      <div class="msg-avatar">💭</div>
-      <div class="typing-dots"><span></span><span></span><span></span></div>
-    </div>
-    <div id="chatUsageBar" style="text-align:center;padding:4px 0;font-size:0.75rem;color:#a0a0b8;display:none;"></div>
-    <div class="chat-input-wrap">
-      <input type="text" id="chatInput" placeholder="Escribe tu pregunta aquí..." onkeypress="if(event.key==='Enter')sendChatMessage()">
-      <button class="chat-send-btn" onclick="sendChatMessage()">➤</button>
-    </div>
-  </div>
-</div>
 
 <!-- Payment Modal -->
 <div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center;">
@@ -9726,16 +9129,6 @@ const previewSlides = {
 </div>`
   ],
   obsesivo: [
-    `<div class="preview-slide">
-  <div style="font-size:0.8rem;font-weight:700;color:white;margin-bottom:4px">💬 Terapeuta IA</div>
-  <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-bottom:12px">Pregúntale lo que sea sobre tu relación</div>
-  <div style="display:flex;flex-direction:column;gap:8px">
-    <div style="align-self:flex-end;background:rgba(255,45,120,0.2);border-radius:12px 12px 2px 12px;padding:8px 12px;max-width:80%;font-size:0.72rem;color:white;line-height:1.4">¿Por qué dejó de escribirme tanto?</div>
-    <div style="align-self:flex-start;background:rgba(108,92,231,0.2);border-radius:12px 12px 12px 2px;padding:8px 12px;max-width:85%;font-size:0.72rem;color:white;line-height:1.4">Detecté una caída del <strong style="color:#FF2D78">67%</strong> en marzo. Los mensajes pasaron de 1,840 a 423 ese mes...</div>
-    <div style="align-self:flex-end;background:rgba(255,45,120,0.2);border-radius:12px 12px 2px 12px;padding:8px 12px;max-width:80%;font-size:0.72rem;color:white;line-height:1.4">¿Y qué hago? 😔</div>
-  </div>
-  <div style="margin-top:12px;background:rgba(255,255,255,0.06);border-radius:20px;padding:8px 14px;font-size:0.65rem;color:rgba(255,255,255,0.3)">Escribe tu pregunta...</div>
-</div>`,
     `<div class="preview-slide">
   <div style="font-size:0.8rem;font-weight:700;color:white;margin-bottom:4px">🕵️ Reconstrucción Forense</div>
   <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-bottom:14px">Los momentos exactos donde cambió todo</div>
