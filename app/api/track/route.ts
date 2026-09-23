@@ -4,11 +4,10 @@ import path from 'path';
 
 const EVENTS_FILE = path.join(process.cwd(), 'analytics-events.json');
 
+// Solo números: la analítica nunca recibe nombres.
 interface TrackEvent {
   event: string;
   score?: number;
-  personA?: string;
-  personB?: string;
   totalMessages?: number;
   timestamp: string;
   userAgent?: string;
@@ -30,7 +29,7 @@ async function writeEvents(events: TrackEvent[]) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { event, score, personA, personB, totalMessages } = body;
+    const { event, score, totalMessages } = body;
 
     if (!event) {
       return NextResponse.json({ error: 'Missing event name' }, { status: 400 });
@@ -39,8 +38,6 @@ export async function POST(req: NextRequest) {
     const trackEvent: TrackEvent = {
       event,
       score,
-      personA,
-      personB,
       totalMessages,
       timestamp: new Date().toISOString(),
       userAgent: req.headers.get('user-agent') || undefined,
@@ -51,7 +48,7 @@ export async function POST(req: NextRequest) {
     await writeEvents(events);
 
     // Log to console for server monitoring
-    console.log(`[ANALYTICS] ${event}`, { score, personA, personB, totalMessages });
+    console.log(`[ANALYTICS] ${event}`, { score, totalMessages });
 
     return NextResponse.json({ success: true, totalEvents: events.length });
   } catch (error: any) {
