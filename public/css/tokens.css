@@ -1,0 +1,69 @@
+/*
+ * tokens.css — YaLoSabía v3 · "editorial cálido"
+ *
+ * Papel, tinta y una sola tinta de color. Nada de gradientes, neón, glow ni
+ * sombras: el contraste se consigue con tipografía y espacio.
+ *
+ * Todo lo nuevo usa estos tokens. Las variables legacy (--pink, --bg-deep…)
+ * siguen definidas en el <style> de index.html porque el dashboard de
+ * resultados todavía depende de ellas; desaparecen en la Fase 2.
+ */
+:root {
+  /* ── Superficies y tinta ── */
+  --paper:      #F7F3EC;   /* fondo principal, hueso cálido */
+  --paper-2:    #EFE9DF;   /* fondo de secciones alternas */
+  --ink:        #1F1D1B;   /* texto principal */
+  --ink-2:      #4A4642;   /* texto secundario */
+  --muted:      #8A837A;   /* notas y texto decorativo (ver nota AA) */
+  --line:       #DED6C9;   /* bordes 1px, separadores */
+  --accent:     #B5533C;   /* arcilla: CTA, énfasis, lo delicado */
+  --accent-2:   #2F4A3E;   /* verde bosque: lo sano, lo que va bien */
+  --gold:       #B9924B;   /* filetes y detalles (ver nota AA) */
+
+  --radius:     6px;       /* esquinas suaves, no pill */
+  --shadow:     none;      /* nada de sombras; se separa con líneas y fondo */
+  --measure:    68ch;      /* ancho máximo de texto */
+
+  /*
+   * Derivados para accesibilidad. Sobre --paper:
+   *   --muted   3.4:1  → solo texto decorativo o ≥24px, nunca cuerpo ni labels
+   *   --accent  4.4:1  → se queda a un pelo de AA: vale como relleno y para
+   *                      titulares grandes, no para texto pequeño
+   *   --gold    2.6:1  → no pasa AA ni en texto grande: solo filetes y bordes
+   * Para esos casos existen estas dos variantes, que sí pasan AA:
+   */
+  --accent-ink: #9C4531;   /* 5.7:1 — énfasis y enlaces en texto corrido */
+  --label-ink:  var(--ink-2); /* 8.5:1 — labels de 12px */
+
+  /* ── Tipografía ── */
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+
+  --step--1: 0.875rem;  /* 14 — notas al pie */
+  --step-0:  1.0625rem; /* 17 — cuerpo, móvil */
+  --step-1:  1.375rem;  /* 22 — h3 */
+  --step-2:  1.875rem;  /* 30 — h2, móvil */
+  --step-3:  2.75rem;   /* 44 — h1, móvil */
+  --step-4:  3.5rem;    /* 56 — dato grande */
+
+  /* ── Ritmo vertical ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 40px;
+  --space-6: 64px;
+  --space-7: 96px;
+
+  --gutter: 20px;       /* margen lateral en móvil */
+  --container: 1040px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --step-0: 1.125rem;  /* 18 */
+    --step-2: 2.25rem;   /* 36 */
+    --step-3: 3.25rem;   /* 52 */
+    --gutter: 32px;
+  }
+}

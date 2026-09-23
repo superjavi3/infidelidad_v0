@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>YaLoSabía — Analiza tu chat de WhatsApp con IA</title>
-<meta name="description" content="Sube tu chat de WhatsApp y descubre qué dicen tus mensajes sobre tu relación. Score, patrones, silencios y red flags analizados con inteligencia artificial.">
+<title>YaLoSabía — Lo que tus mensajes ya saben de tu relación</title>
+<meta name="description" content="Sube tu chat de WhatsApp. En un minuto tienes un informe honesto y una guía para cuidar lo que tienes, o para entender qué pasó. Tus mensajes no salen de tu teléfono.">
 <meta name="keywords" content="analizar chat whatsapp, análisis relación IA, red flags whatsapp, infidelidad whatsapp, estadísticas chat pareja">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://www.yalosabia.com/">
@@ -12,21 +12,22 @@
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.yalosabia.com/">
-<meta property="og:title" content="YaLoSabía — Analiza tu chat de WhatsApp con IA">
-<meta property="og:description" content="Descubre qué dicen tus conversaciones de WhatsApp sobre tu relación. Análisis con IA en segundos.">
+<meta property="og:title" content="YaLoSabía — Lo que tus mensajes ya saben de tu relación">
+<meta property="og:description" content="Un informe honesto sobre tu relación y una guía para cuidarla, a partir de tu chat de WhatsApp.">
 <meta property="og:image" content="https://www.yalosabia.com/og-image.jpg">
 <meta property="og:locale" content="es_MX">
 <meta property="og:site_name" content="YaLoSabía">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="YaLoSabía — Analiza tu chat de WhatsApp con IA">
-<meta name="twitter:description" content="Descubre qué dicen tus conversaciones de WhatsApp sobre tu relación.">
+<meta name="twitter:title" content="YaLoSabía — Lo que tus mensajes ya saben de tu relación">
+<meta name="twitter:description" content="Un informe honesto sobre tu relación y una guía para cuidarla.">
 <meta name="twitter:image" content="https://www.yalosabia.com/og-image.jpg">
 
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- JSZip para procesar archivos ZIP -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <!-- html2canvas para generar imagen de Stories -->
@@ -83,285 +84,6 @@ body::before {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-
-/* ── NAV ── */
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  padding: 18px 32px;
-  display: flex; justify-content: space-between; align-items: center;
-  backdrop-filter: blur(20px);
-  background: rgba(13,13,13,0.7);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.logo {
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  letter-spacing: -0.5px;
-}
-.logo span { color: var(--pink); }
-nav a {
-  color: var(--text-muted);
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: color .2s;
-}
-nav a:hover { color: var(--text); }
-.nav-links { display: flex; gap: 28px; align-items: center; }
-.nav-cta {
-  background: var(--pink) !important;
-  color: white !important;
-  padding: 8px 20px;
-  border-radius: 50px;
-  font-weight: 600;
-  transition: transform .2s, box-shadow .2s;
-}
-.nav-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(255,45,120,0.4); }
-
-/* ── HERO ── */
-.hero {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 120px 24px 80px;
-  position: relative;
-}
-.hero::before {
-  content: '';
-  position: absolute;
-  top: -20%; left: 50%; transform: translateX(-50%);
-  width: 800px; height: 800px;
-  background: radial-gradient(circle, rgba(255,45,120,0.15) 0%, rgba(108,92,231,0.08) 40%, transparent 70%);
-  pointer-events: none;
-}
-.hero-badge {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: rgba(255,45,120,0.1);
-  border: 1px solid rgba(255,45,120,0.25);
-  padding: 8px 18px;
-  border-radius: 50px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--pink);
-  margin-bottom: 32px;
-  animation: fadeInDown .8s ease;
-}
-.hero-badge .dot {
-  width: 8px; height: 8px;
-  background: var(--pink);
-  border-radius: 50%;
-  animation: pulse-dot 2s infinite;
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: .5; transform: scale(1.4); }
-}
-.hero h1 {
-  font-family: var(--font-display);
-  font-size: clamp(2.6rem, 7vw, 4.8rem);
-  line-height: 1.1;
-  max-width: 800px;
-  margin-bottom: 24px;
-  animation: fadeInUp .8s ease .1s both;
-}
-.hero p {
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
-  color: var(--text-muted);
-  max-width: 540px;
-  line-height: 1.6;
-  margin-bottom: 48px;
-  animation: fadeInUp .8s ease .25s both;
-}
-
-/* ── MODE TOGGLE ── */
-.mode-toggle-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 24px;
-  animation: fadeInUp .8s ease .3s both;
-}
-.mode-toggle {
-  position: relative;
-  display: inline-flex;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 50px;
-  padding: 4px;
-  width: 340px;
-  max-width: 90vw;
-}
-.mode-toggle-slider {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: calc(50% - 4px);
-  height: calc(100% - 8px);
-  background: linear-gradient(135deg, var(--pink), var(--purple));
-  border-radius: 50px;
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 0;
-}
-.mode-toggle.grupo .mode-toggle-slider {
-  transform: translateX(100%);
-}
-.mode-toggle-btn {
-  flex: 1;
-  padding: 10px 0;
-  text-align: center;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.45);
-  cursor: pointer;
-  position: relative;
-  z-index: 1;
-  transition: color 0.3s ease;
-  user-select: none;
-  -webkit-user-select: none;
-  border: none;
-  background: none;
-  font-family: inherit;
-}
-.mode-toggle-btn.active {
-  color: #fff;
-}
-.mode-context-tag {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  transition: opacity 0.3s ease;
-  text-align: center;
-}
-
-/* ── UPLOAD ZONE ── */
-.upload-zone {
-  width: 100%;
-  max-width: 520px;
-  border: 2px dashed rgba(255,45,120,0.35);
-  border-radius: var(--radius);
-  padding: 48px 32px;
-  text-align: center;
-  cursor: pointer;
-  transition: all .3s ease;
-  background: rgba(26,26,46,0.6);
-  backdrop-filter: blur(10px);
-  position: relative;
-  animation: fadeInUp .8s ease .4s both;
-}
-.upload-zone:hover, .upload-zone.drag-over {
-  border-color: var(--pink);
-  background: rgba(255,45,120,0.05);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 40px rgba(255,45,120,0.15);
-}
-.upload-zone.grupo-mode:hover, .upload-zone.grupo-mode.drag-over {
-  border-color: var(--purple);
-  background: rgba(108,92,231,0.05);
-  box-shadow: 0 8px 40px rgba(108,92,231,0.15);
-}
-.upload-icon {
-  width: 64px; height: 64px;
-  margin: 0 auto 16px;
-  background: linear-gradient(135deg, var(--pink), var(--purple));
-  border-radius: 16px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 28px;
-}
-.upload-zone h3 {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  margin-bottom: 8px;
-}
-.upload-zone p { color: var(--text-muted); font-size: 0.9rem; }
-.upload-zone input[type="file"] { display: none; }
-.upload-formats {
-  margin-top: 16px;
-  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
-}
-.format-tag {
-  font-size: 0.75rem;
-  padding: 4px 12px;
-  border-radius: 50px;
-  background: rgba(255,255,255,0.06);
-  color: var(--text-muted);
-  font-weight: 500;
-}
-.demo-btn {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.2);
-  color: rgba(255,255,255,0.6);
-  border-radius: 8px;
-  padding: 10px 20px;
-  font-size: 0.85rem;
-  width: 100%;
-  margin-top: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.demo-btn:hover {
-  color: #fff;
-  border-color: rgba(255,45,120,0.5);
-}
-
-/* ── PROCESSING STATE ── */
-.processing-state {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-  padding: 40px;
-  animation: fadeInUp .5s ease;
-}
-.processing-state.active { display: flex; }
-
-.spinner-wrap {
-  width: 80px; height: 80px;
-  position: relative;
-}
-.spinner-wrap::before, .spinner-wrap::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 3px solid transparent;
-}
-.spinner-wrap::before {
-  border-top-color: var(--pink);
-  animation: spin 1s linear infinite;
-}
-.spinner-wrap::after {
-  border-bottom-color: var(--purple);
-  animation: spin 1.5s linear infinite reverse;
-  inset: 8px;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.processing-steps { text-align: left; }
-.processing-steps .step {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 0.95rem;
-  color: var(--text-muted);
-  padding: 6px 0;
-  transition: all .4s;
-}
-.processing-steps .step.active { color: var(--text); }
-.processing-steps .step.done { color: var(--green); }
-.step-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.15);
-  flex-shrink: 0;
-  transition: all .4s;
-}
-.step.active .step-dot {
-  background: var(--pink);
-  box-shadow: 0 0 12px rgba(255,45,120,0.6);
-  animation: pulse-dot 1.5s infinite;
-}
-.step.done .step-dot { background: var(--green); }
 
 /* ── RESULTS ── */
 .results-section {
@@ -490,99 +212,6 @@ nav a:hover { color: var(--text); }
   background: rgba(255,255,255,0.04);
 }
 
-/* ── HOW IT WORKS ── */
-.section { padding: 100px 0; }
-.section-title {
-  font-family: var(--font-display);
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  text-align: center;
-  margin-bottom: 16px;
-}
-.section-subtitle {
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 1.1rem;
-  margin-bottom: 56px;
-  max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.steps {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-.step-card {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 36px 28px;
-  text-align: center;
-  border: 1px solid rgba(255,255,255,0.05);
-  position: relative;
-  transition: transform .3s;
-}
-.step-card:hover { transform: translateY(-4px); }
-.step-number {
-  font-family: var(--font-display);
-  font-size: 3.5rem;
-  line-height: 1;
-  margin-bottom: 16px;
-}
-.step-card:nth-child(1) .step-number { color: var(--pink); }
-.step-card:nth-child(2) .step-number { color: var(--yellow); }
-.step-card:nth-child(3) .step-number { color: var(--green); }
-.step-card h3 {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-}
-.step-card p {
-  color: var(--text-muted);
-  font-size: 0.92rem;
-  line-height: 1.6;
-}
-/* Step 1 OS tabs */
-.os-tabs {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-.os-tab {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 20px;
-  padding: 6px 16px;
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  cursor: pointer;
-  min-height: 36px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: background .2s, color .2s, border-color .2s;
-}
-.os-tab.active {
-  background: var(--pink);
-  color: #fff;
-  border-color: var(--pink);
-}
-.os-tab-content {
-  text-align: left;
-  transition: opacity .2s ease;
-}
-.os-tab-content[hidden] {
-  display: none;
-}
-.os-tab-content ol {
-  margin: 0;
-  padding-left: 20px;
-  color: var(--text-muted);
-  font-size: 0.82rem;
-  line-height: 1.8;
-}
-
 /* ── EXAMPLES PREVIEW ── */
 .example-card {
   background: var(--bg-card);
@@ -604,66 +233,6 @@ nav a:hover { color: var(--text); }
 }
 .example-card p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; }
 
-/* ── PRICING ── */
-.pricing-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  align-items: stretch;
-}
-.price-card {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 36px;
-  border: 1px solid rgba(255,255,255,0.06);
-  text-align: center;
-  transition: transform .3s;
-  display: flex;
-  flex-direction: column;
-}
-.price-card-body { flex: 1; }
-.price-card-footer { margin-top: auto; }
-.price-card:hover { transform: translateY(-4px); }
-.price-card.featured {
-  border-color: var(--pink);
-  background: linear-gradient(180deg, rgba(255,45,120,0.08), var(--bg-card));
-  position: relative;
-}
-.price-card.featured::before {
-  content: '🔥 MÁS POPULAR';
-  position: absolute;
-  top: -14px;
-  left: 50%; transform: translateX(-50%);
-  background: linear-gradient(135deg, var(--pink), var(--purple));
-  color: white;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  padding: 5px 18px;
-  border-radius: 50px;
-  animation: pulse-badge 2s infinite;
-}
-.price-tier {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  margin-bottom: 16px;
-}
-.price-amount {
-  font-family: var(--font-display);
-  font-size: 2.8rem;
-  line-height: 1;
-}
-.price-amount small { font-size: 1rem; opacity: 0.6; }
-.price-desc {
-  color: var(--text-muted);
-  font-size: 0.88rem;
-  margin: 12px 0 24px;
-}
-.price-features {
-  text-align: left;
-  list-style: none;
-  margin-bottom: 28px;
-}
 /* ── Preview button in pricing cards ── */
 .preview-btn {
   background: transparent;
@@ -833,42 +402,6 @@ nav a:hover { color: var(--text); }
   50% { opacity: 0.75; transform: translateX(-50%) scale(1.05); }
 }
 
-/* ── TESTIMONIALS ── */
-.testimonials-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-.testimonial-card {
-  background: var(--bg-card);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: var(--radius);
-  padding: 24px;
-}
-.testimonial-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-.testimonial-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--pink), var(--purple));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 700;
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-.testimonial-name { font-size: 0.88rem; font-weight: 600; }
-.testimonial-city { font-size: 0.78rem; color: var(--text-muted); }
-.testimonial-stars { color: #F5C842; font-size: 0.85rem; margin-bottom: 8px; }
-.testimonial-text { color: rgba(255,255,255,0.85); font-size: 0.88rem; line-height: 1.6; }
-
 /* ── EXIT INTENT ── */
 .exit-overlay {
   display: none;
@@ -935,70 +468,6 @@ nav a:hover { color: var(--text); }
   cursor: pointer;
   margin-top: 12px;
 }
-
-/* ── FAQ ── */
-.faq-list { max-width: 680px; margin: 0 auto; }
-.faq-item {
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-.faq-q {
-  width: 100%;
-  background: none; border: none; color: var(--text);
-  padding: 22px 0;
-  font-family: var(--font-body);
-  font-size: 1.05rem;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.faq-q::after {
-  content: '+';
-  font-size: 1.5rem;
-  color: var(--pink);
-  transition: transform .3s;
-}
-.faq-item.open .faq-q::after { transform: rotate(45deg); }
-.faq-a {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height .4s ease, padding .4s ease;
-}
-.faq-item.open .faq-a {
-  max-height: 200px;
-  padding-bottom: 22px;
-}
-.faq-a p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; }
-
-/* ── FOOTER ── */
-footer {
-  border-top: 1px solid rgba(255,255,255,0.06);
-  padding: 40px 0;
-  text-align: center;
-}
-footer .logo { margin-bottom: 12px; }
-footer p { color: var(--text-muted); font-size: 0.85rem; }
-.footer-links { display: flex; gap: 24px; justify-content: center; margin-top: 16px; }
-.footer-links a {
-  color: var(--text-muted);
-  text-decoration: none;
-  font-size: 0.85rem;
-  transition: color .2s;
-}
-.footer-links a:hover { color: var(--text); }
-
-/* ── Privacy badge ── */
-.privacy-badge {
-  display: flex; align-items: center; gap: 8px;
-  justify-content: center;
-  margin-top: 16px;
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  animation: fadeInUp .8s ease .55s both;
-}
-.privacy-badge svg { flex-shrink: 0; }
 
 /* ── ANIMATIONS ── */
 @keyframes fadeInUp {
@@ -2104,6 +1573,11 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   opacity: 0.7;
 }
 </style>
+
+<!-- Sistema de diseño v3 -->
+<link rel="stylesheet" href="/css/tokens.css">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/components.css">
 <!-- Meta Pixel (carga condicional según consentimiento de cookies) -->
 <script>
 function loadMetaPixel() {
@@ -2164,63 +1638,73 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   });
 </script>
 </head>
-<body>
+<body class="v3">
 
 <!-- ── NAV ── -->
-<nav>
-  <div class="logo" style="cursor: pointer;" onclick="window.location.href = window.location.origin">YaLo<span>Sabía</span>.com</div>
-  <div class="nav-links">
-    <a href="#como-funciona">Cómo funciona</a>
-    <a href="#precios">Precios</a>
-    <a href="#faq">FAQ</a>
-    <a href="#top" class="nav-cta">Analizar chat</a>
+<nav class="site-nav">
+  <div class="container site-nav__inner">
+    <button type="button" class="logo" onclick="window.location.href = window.location.origin">YaLo<em>Sabía</em></button>
+    <div class="site-nav__links">
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#ejemplo">Informe de ejemplo</a>
+      <a href="#precios">Precios</a>
+      <a href="#faq">Preguntas</a>
+      <a href="#subir" class="btn btn--primary btn--small">Crear mi informe</a>
+    </div>
   </div>
 </nav>
 
 <!-- ── HERO ── -->
-<section class="hero" id="top">
-  <div class="hero-badge"><span class="dot"></span> +12,000 chats analizados</div>
-  <h1>Ya lo sabías,<br>pero ahora <span class="gradient-text">tienes pruebas</span></h1>
-  <p>Sube tu chat de WhatsApp y la IA te revela lo que tus conversaciones dicen de tu relación. Gratis.</p>
-  <!-- Mode Toggle -->
-  <div class="mode-toggle-wrapper">
-    <div class="mode-toggle" id="modeToggle">
-      <div class="mode-toggle-slider"></div>
-      <button class="mode-toggle-btn active" data-mode="pareja" onclick="switchMode('pareja')">💑 Pareja</button>
-      <button class="mode-toggle-btn" data-mode="grupo" onclick="switchMode('grupo')">👥 Grupo</button>
-    </div>
-    <div class="mode-context-tag" id="modeContextTag">Analiza el chat entre tú y tu pareja</div>
-  </div>
+<section class="hero section--flush" id="top">
+  <div class="container">
+    <h1 class="hero__title">Lo que tus mensajes ya saben de tu <em>relación</em>.</h1>
+    <p class="hero__sub">Sube tu chat de WhatsApp. En un minuto tienes un informe honesto y una guía para cuidar lo que tienes, o para entender qué pasó.</p>
 
-  <!-- Upload Zone -->
-  <div class="upload-zone" id="uploadZone">
-    <div class="upload-icon" id="uploadIcon">📱</div>
-    <h3 id="uploadTitle">Arrastra tu chat de WhatsApp aquí</h3>
-    <p>o haz clic para seleccionar el .txt exportado</p>
-    <input type="file" id="fileInput" accept=".txt,.zip">
-    <div class="upload-formats" id="uploadFormats">
-      <span class="format-tag">WhatsApp .txt o .zip</span>
-      <span class="format-tag">Hasta 40,000 mensajes</span>
-    </div>
-    <!-- DESACTIVADO: botón "Ver ejemplo" (modo demo gratuito). Para reactivarlo, descomenta esta línea. El código de loadDemo()/loadGroupDemo() sigue intacto más abajo.
-    <button class="demo-btn" id="demoBtn" onclick="event.stopPropagation(); window.selectedMode === 'grupo' ? loadGroupDemo() : loadDemo()">👀 Ver ejemplo — sin subir nada</button>
-    -->
-  </div>
+    <div id="subir" class="measure">
+      <div class="mode-toggle-wrapper">
+        <div class="mode-switch" id="modeToggle" role="group" aria-label="Tipo de chat">
+          <button type="button" class="mode-switch__btn mode-toggle-btn active" data-mode="pareja" aria-pressed="true" onclick="switchMode('pareja')">Pareja</button>
+          <button type="button" class="mode-switch__btn mode-toggle-btn" data-mode="grupo" aria-pressed="false" onclick="switchMode('grupo')">Grupo</button>
+        </div>
+        <p class="note" id="modeContextTag">Analiza el chat entre tú y tu pareja</p>
+      </div>
 
-  <!-- Processing State -->
-  <div class="processing-state" id="processingState">
-    <div class="spinner-wrap"></div>
-    <div class="processing-steps">
-      <div class="step active" data-step="1"><span class="step-dot"></span> Leyendo mensajes...</div>
-      <div class="step" data-step="2"><span class="step-dot"></span> Calculando estadísticas...</div>
-      <div class="step" data-step="3"><span class="step-dot"></span> Analizando patrones emocionales...</div>
-      <div class="step" data-step="4"><span class="step-dot"></span> Generando tu reporte...</div>
-    </div>
-  </div>
+      <div class="upload upload-zone" id="uploadZone">
+        <h3 class="upload__title" id="uploadTitle">Arrastra aquí tu chat de WhatsApp</h3>
+        <p class="upload__hint">o toca para elegir el archivo que exportaste</p>
+        <input type="file" id="fileInput" accept=".txt,.zip">
+        <div class="upload__formats" id="uploadFormats">
+          <span class="tag format-tag">WhatsApp .txt o .zip</span>
+          <span class="tag format-tag">Hasta 40.000 mensajes</span>
+        </div>
+        <p style="margin-top:var(--space-4);margin-bottom:0;">
+          <button type="button" class="btn btn--primary" onclick="event.stopPropagation(); document.getElementById('fileInput').click()">Crear mi informe</button>
+        </p>
+        <!-- DESACTIVADO: botón "Ver ejemplo" (modo demo gratuito). Para reactivarlo, descomenta esta línea. El código de loadDemo()/loadGroupDemo() sigue intacto más abajo.
+        <button class="btn btn--secondary" id="demoBtn" onclick="event.stopPropagation(); window.selectedMode === 'grupo' ? loadGroupDemo() : loadDemo()">Ver un análisis de ejemplo</button>
+        -->
+      </div>
 
-  <div class="privacy-badge">
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-    Tu chat se analiza y se elimina. Nunca almacenamos tus conversaciones.
+      <!-- Estado de análisis -->
+      <div class="processing-state" id="processingState">
+        <div class="spinner-wrap"></div>
+        <div class="processing-steps">
+          <div class="step active" data-step="1"><span class="step-dot"></span> Leyendo los mensajes</div>
+          <div class="step" data-step="2"><span class="step-dot"></span> Calculando estadísticas</div>
+          <div class="step" data-step="3"><span class="step-dot"></span> Buscando patrones</div>
+          <div class="step" data-step="4"><span class="step-dot"></span> Preparando tu informe</div>
+        </div>
+      </div>
+
+      <p class="trust-line" style="margin-top:var(--space-4);">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Tus mensajes no salen de tu teléfono. Solo viajan los números.</span>
+      </p>
+
+      <p style="margin-top:var(--space-4);">
+        <a href="#ejemplo" class="btn btn--secondary" style="border-bottom:1px solid var(--ink);">Ver un informe de ejemplo</a>
+      </p>
+    </div>
   </div>
 </section>
 
@@ -2237,7 +1721,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     </button>
   </div>
 </div>
-<section class="results-section container" id="resultsSection">
+<section class="results-section container legacy-dark" id="resultsSection">
   <div class="results-header">
     <h2>Tu relación al <span class="gradient-text">descubierto</span></h2>
     <p style="color: var(--text-muted);">Análisis basado en <span id="totalMsgs">0</span> mensajes</p>
@@ -2556,7 +2040,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 <!-- ══════════════════════════════════════════════ -->
 <!-- ── GROUP ANALYSIS RESULTS (hidden by default) ── -->
 <!-- ══════════════════════════════════════════════ -->
-<section class="results-section container" id="groupResultsSection" style="display:none; padding-top: 40px;">
+<section class="results-section container legacy-dark" id="groupResultsSection" style="display:none; padding-top: 40px;">
   <div style="text-align:center;margin-bottom:32px;">
     <h2 style="font-family:var(--font-display);font-size:1.6rem;margin-bottom:8px;">Análisis del <span class="gradient-text">grupo</span></h2>
     <p style="color:var(--text-muted);font-size:0.95rem;">Análisis basado en <span id="group-totalMsgs">0</span> mensajes de <span id="group-totalMembers">0</span> participantes</p>
@@ -2813,221 +2297,279 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   </div>
 </div>
 
-<!-- ── HOW IT WORKS ── -->
+<!-- ── CÓMO FUNCIONA ── -->
 <section class="section" id="como-funciona">
   <div class="container">
-    <div class="reveal">
-      <h2 class="section-title">Así de fácil funciona</h2>
-      <p class="section-subtitle">En 3 pasos, sin instalar nada. Tu chat nunca se almacena.</p>
+    <div class="rule">
+      <span class="rule__num">01</span>
+      <span class="rule__line"></span>
     </div>
-    <div class="steps reveal">
-      <div class="step-card">
-        <div class="step-number">1</div>
-        <h3>Exporta tu chat de WhatsApp</h3>
-        <div class="os-tabs">
-          <button class="os-tab active" onclick="switchOsTab('android',this)">🤖 Android</button>
-          <button class="os-tab" onclick="switchOsTab('ios',this)">🍎 iPhone</button>
+    <h2 class="measure">Tres pasos. Nada que instalar.</h2>
+    <p class="measure" style="color:var(--ink-2);margin-top:var(--space-3);margin-bottom:var(--space-6);">El chat se lee en tu teléfono. Lo único que sale de él son las cifras del análisis.</p>
+
+    <div class="steps">
+      <div class="step-item">
+        <span class="step-item__num">01</span>
+        <h3>Exporta el chat</h3>
+        <div class="os-tabs" role="tablist" aria-label="Sistema operativo">
+          <button type="button" class="os-tab active" role="tab" aria-selected="true" onclick="switchOsTab('android',this)">Android</button>
+          <button type="button" class="os-tab" role="tab" aria-selected="false" onclick="switchOsTab('ios',this)">iPhone</button>
         </div>
         <div class="os-tab-content" id="osTabAndroid">
           <ol>
-            <li>Abre el chat con tu pareja</li>
-            <li>Toca los ⋮ (3 puntos) arriba a la derecha</li>
-            <li>"Más" → "Exportar chat"</li>
-            <li>Elige "Sin archivos"</li>
-            <li>Te descarga un .zip (o .txt según el móvil)</li>
+            <li>Abre el chat.</li>
+            <li>Toca los tres puntos, arriba a la derecha.</li>
+            <li>Más &rarr; Exportar chat.</li>
+            <li>Elige <strong>Sin archivos</strong>.</li>
+            <li>Se descarga un .zip, o un .txt según el teléfono.</li>
           </ol>
         </div>
         <div class="os-tab-content" id="osTabIos" hidden>
           <ol>
-            <li>Abre el chat con tu pareja</li>
-            <li>Toca el nombre de tu contacto arriba</li>
-            <li>Baja hasta "Exportar chat"</li>
-            <li>Elige "Sin archivos"</li>
-            <li>Guarda el .zip en Archivos</li>
+            <li>Abre el chat.</li>
+            <li>Toca el nombre del contacto, arriba.</li>
+            <li>Baja hasta Exportar chat.</li>
+            <li>Elige <strong>Sin archivos</strong>.</li>
+            <li>Guarda el .zip en Archivos.</li>
           </ol>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 10px; opacity: 0.7;">⚠️ Solo funciona desde el móvil, no desde WhatsApp Web</p>
+        <p class="note" style="margin-top:var(--space-3);">Solo funciona desde el teléfono, no desde WhatsApp Web.</p>
       </div>
-      <div class="step-card">
-        <div class="step-number">2</div>
-        <h3>Sube el archivo aquí</h3>
-        <p>Arrastra el .zip o .txt o tócalo para seleccionarlo. La IA analiza patrones, sentimiento y dinámicas en segundos.</p>
+
+      <div class="step-item">
+        <span class="step-item__num">02</span>
+        <h3>Súbelo aquí</h3>
+        <p>Arrastra el archivo o tócalo para elegirlo. Se lee entero en tu navegador, y en menos de un minuto está el análisis.</p>
       </div>
-      <div class="step-card">
-        <div class="step-number">3</div>
-        <h3>Descubre la verdad</h3>
-        <p>Recibe tu score, estadísticas que no esperabas y un análisis que probablemente ya sospechabas. 👀</p>
+
+      <div class="step-item">
+        <span class="step-item__num">03</span>
+        <h3>Lee tu informe</h3>
+        <p>Primero, cómo va la relación en datos. Después, una guía larga: qué significa cada patrón, qué conversaciones merece la pena tener y cómo cuidar lo que hay.</p>
       </div>
     </div>
-    <p class="reveal" style="text-align: center; color: var(--text-muted); font-size: 0.82rem; margin-top: 24px; opacity: 0.7;">🔒 Tu chat no se guarda en ningún servidor. Todo se procesa en tu dispositivo y se borra al cerrar.</p>
   </div>
 </section>
 
-<!-- ── PRICING ── -->
+<!-- ── INFORME DE EJEMPLO ── -->
+<section class="section section--alt" id="ejemplo">
+  <div class="container">
+    <div class="rule">
+      <span class="rule__num">02</span>
+      <span class="rule__line"></span>
+    </div>
+    <h2 class="measure">Un informe de ejemplo, abierto.</h2>
+    <p class="measure" style="color:var(--ink-2);margin-top:var(--space-3);margin-bottom:var(--space-5);">Esto es lo que recibe una persona real, con los nombres cambiados. Nada borroso: si vas a pagar, es justo que sepas qué estás comprando.</p>
+
+    <div class="report-sample">
+      <div class="report-sample__cover">
+        <p class="label">Informe de relación</p>
+        <h3 style="font-size:var(--step-2);margin-top:var(--space-2);">Elena y Tomás</h3>
+        <div class="report-sample__meta">
+          <span class="stat"><span class="stat__value" style="font-size:var(--step-1);">Mar 2023 — Ago 2025</span><span class="stat__label">Periodo</span></span>
+          <span class="stat"><span class="stat__value" style="font-size:var(--step-1);">12.482</span><span class="stat__label">Mensajes</span></span>
+          <span class="stat"><span class="stat__value" style="font-size:var(--step-1);">26</span><span class="stat__label">Páginas</span></span>
+        </div>
+      </div>
+
+      <div class="report-sample__body">
+        <p class="label">En una página</p>
+        <p class="report-sample__lead measure" style="margin-top:var(--space-3);">Se escriben todos los días desde hace dos años y medio, y eso no es poca cosa. Lo que ha cambiado no es cuánto, sino cuándo: desde marzo, casi toda la conversación ocurre de noche.</p>
+
+        <div style="display:flex;flex-wrap:wrap;gap:var(--space-5);margin-bottom:var(--space-5);">
+          <span class="stat"><span class="stat__value">64</span><span class="stat__label">Score de la relación</span></span>
+          <span class="stat"><span class="stat__value">11<span style="font-size:var(--step-1);"> min</span></span><span class="stat__label">Respuesta media</span></span>
+          <span class="stat"><span class="stat__value">58<span style="font-size:var(--step-1);"> %</span></span><span class="stat__label">Mensajes de Elena</span></span>
+        </div>
+
+        <div class="findings">
+          <div class="findings__col findings--good">
+            <h4>Tres cosas que van bien</h4>
+            <ul>
+              <li>Se dan los buenos días 4 de cada 5 mañanas, y lo han sostenido los 29 meses.</li>
+              <li>El reparto de quien escribe es 58/42: desigual, pero dentro de lo normal.</li>
+              <li>Ninguno de los dos deja pasar más de un día sin responder.</li>
+            </ul>
+          </div>
+          <div class="findings__col findings--watch">
+            <h4>Tres cosas que merecen atención</h4>
+            <ul>
+              <li>El 71 % de los mensajes de los últimos tres meses son después de las 22:00.</li>
+              <li>Elena inicia 7 de cada 10 conversaciones, y la diferencia crece desde marzo.</li>
+              <li>Hay 14 preguntas que se quedaron sin respuesta, casi todas sobre planes.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-sample__body" style="border-top:1px solid var(--line);">
+        <p class="label">Índice del informe completo</p>
+
+        <div class="toc">
+          <p class="label toc__part">Parte A · Cómo va tu relación</p>
+          <div class="toc__item"><span class="toc__num">01</span><div><span class="toc__title">En una página</span><p class="toc__desc">El score explicado en palabras, tres cosas que van bien y tres que merecen atención.</p></div></div>
+          <div class="toc__item"><span class="toc__num">02</span><div><span class="toc__title">Los dos, en números</span><p class="toc__desc">Iniciativa, ritmo de respuesta, calidez, constancia y atención, persona a persona.</p></div></div>
+          <div class="toc__item"><span class="toc__num">03</span><div><span class="toc__title">La línea de vida</span><p class="toc__desc">Mensajes mes a mes, con los momentos en que algo cambió y qué pasaba alrededor.</p></div></div>
+          <div class="toc__item"><span class="toc__num">04</span><div><span class="toc__title">Cómo empiezan y cómo terminan las conversaciones</span><p class="toc__desc">Quién abre, quién cierra y qué preguntas se quedaron sin responder.</p></div></div>
+          <div class="toc__item"><span class="toc__num">05</span><div><span class="toc__title">Ritmos</span><p class="toc__desc">Cuánto tardan en contestarse según la hora y el día. Cuándo estás más presente y cuándo no.</p></div></div>
+          <div class="toc__item"><span class="toc__num">06</span><div><span class="toc__title">Silencios</span><p class="toc__desc">Los días sin mensajes, el silencio más largo y quién suele romperlo.</p></div></div>
+          <div class="toc__item"><span class="toc__num">07</span><div><span class="toc__title">Cómo se hablan</span><p class="toc__desc">Apodos, emojis y longitud de los mensajes: antes y ahora.</p></div></div>
+          <div class="toc__item"><span class="toc__num">08</span><div><span class="toc__title">Lo que se comparte</span><p class="toc__desc">Fotos, audios, stickers y ubicaciones, y el equilibrio entre los dos.</p></div></div>
+          <div class="toc__item"><span class="toc__num">09</span><div><span class="toc__title">Lo que desaparece</span><p class="toc__desc">Mensajes eliminados, con contexto y sin acusaciones.</p></div></div>
+          <div class="toc__item"><span class="toc__num">10</span><div><span class="toc__title">Los temas</span><p class="toc__desc">Cuánto se tarda en responder según de qué se hable: planes, futuro, familia, dinero, trabajo.</p></div></div>
+
+          <p class="label toc__part">Parte B · Tu guía</p>
+          <div class="toc__item"><span class="toc__num">11</span><div><span class="toc__title">Qué significa lo que has visto</span><p class="toc__desc">Una página por patrón: qué suele significar, qué no significa, cuándo es normal y cuándo preocupa.</p></div></div>
+          <div class="toc__item"><span class="toc__num">12</span><div><span class="toc__title">Lo que sí va bien y cómo protegerlo</span><p class="toc__desc">Los rituales que ya existen en el chat y cómo no perderlos.</p></div></div>
+          <div class="toc__item"><span class="toc__num">13</span><div><span class="toc__title">Conversaciones que merece la pena tener</span><p class="toc__desc">Tres a cinco, con por qué, cuándo, cómo abrirlas y qué escuchar.</p></div></div>
+          <div class="toc__item"><span class="toc__num">14</span><div><span class="toc__title">Un plan de 30 días</span><p class="toc__desc">Cuatro semanas, dos o tres acciones pequeñas por semana, con sitio para anotar.</p></div></div>
+          <div class="toc__item"><span class="toc__num">15</span><div><span class="toc__title">Cómo cuidar la relación a partir de ahora</span><p class="toc__desc">Pedir lo que necesitas, poner límites y reparar después de una discusión.</p></div></div>
+          <div class="toc__item"><span class="toc__num">16</span><div><span class="toc__title">Cuándo hablar con alguien</span><p class="toc__desc">Señales para buscar ayuda profesional y líneas de apoyo en México y España.</p></div></div>
+          <div class="toc__item"><span class="toc__num">17</span><div><span class="toc__title">Tu informe en 10 frases</span><p class="toc__desc">El resumen, para releer dentro de un mes.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PLANES ── -->
 <section class="section" id="precios">
   <div class="container">
-    <div class="reveal">
-      <h2 class="section-title">Elige tu nivel de <span class="gradient-text">revelación</span></h2>
-      <p class="section-subtitle">Desde estadísticas curiosas hasta un análisis profundo de tu relación</p>
+    <div class="rule">
+      <span class="rule__num">03</span>
+      <span class="rule__line"></span>
     </div>
-    <div class="pricing-grid reveal" style="max-width:800px;margin:0 auto;grid-template-columns:repeat(2,1fr);">
-      <!-- Free -->
-      <div class="price-card">
-        <div class="price-card-body">
-          <div class="price-tier">GRATUITO</div>
-          <div class="price-amount">$0</div>
-          <div class="price-desc">Para darte una probadita</div>
-          <ul class="price-features">
-            <li>Estadísticas básicas del chat</li>
-            <li>Score de la relación</li>
-            <li>Quién lleva la relación</li>
-            <li>Dato curioso personalizado</li>
-            <li>Imagen shareable para Stories</li>
-          </ul>
-        </div>
-        <div class="price-card-footer">
-          <button class="price-btn price-btn-secondary" onclick="document.getElementById('top').scrollIntoView({behavior:'smooth'})">Analizar gratis</button>
-        </div>
-      </div>
-      <!-- Premium -->
-      <div class="price-card featured">
-        <div class="price-card-body">
-        <div class="price-tier">PREMIUM</div>
-        <div class="price-display" style="text-align:center;line-height:1;">
-          <div style="font-family:var(--font-display);font-size:2.8rem;line-height:1;">
-            <span class="precio-symbol">$</span><span class="precio-premium-numero">99</span>
-          </div>
-          <div style="font-size:0.7rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-top:4px;font-family:var(--font-display);">
-            <span class="precio-moneda-label">MXN</span> · pago único
-          </div>
-        </div>
-        <div class="price-desc">Todo desbloqueado — parejas y grupos</div>
-        <ul class="price-features">
-          <li>Todo lo del plan Gratuito</li>
-          <li>📉 Línea de vida: evolución mes a mes</li>
-          <li>🔇 Mapa de silencios + quién cede primero</li>
-          <li>😤 Análisis de double texting</li>
-          <li>📱 Reyes del Multimedia</li>
-          <li>🗑️ Mensajes eliminados</li>
-          <li>🕵️ Reconstrucción forense de momentos clave</li>
-          <li>💔 Comparación: Antes vs Ahora</li>
-          <li>👻 Ghosting selectivo</li>
-          <li>👥 Análisis completo de grupos</li>
-          <!-- <li>📄 Reporte PDF descargable</li> -->
+    <h2 class="measure">El análisis es gratis. El informe, no.</h2>
+    <p class="measure" style="color:var(--ink-2);margin-top:var(--space-3);margin-bottom:var(--space-6);">Puedes ver cómo va tu relación sin pagar nada. Lo que se paga es la guía: las 26 páginas que explican qué significa y qué hacer con ello.</p>
+
+    <div class="plans">
+      <div class="plan">
+        <p class="label">Gratuito</p>
+        <div class="plan__price">Gratis</div>
+        <p class="plan__desc">Para ver cómo va.</p>
+        <ul class="plan__features">
+          <li>Score de la relación, explicado</li>
+          <li>Estadísticas básicas del chat</li>
+          <li>Quién lleva el ritmo</li>
+          <li>Portada y «En una página» del informe</li>
+          <li>Imagen para compartir</li>
         </ul>
-        </div>
-        <div class="price-card-footer">
-          <button class="preview-btn" onclick="openPreview('detective')">👁️ Ver vista previa del análisis</button>
-          <button class="price-btn price-btn-primary" onclick="openPayModal()">Desbloquear todo →</button>
-          <p class="fomo-text">🔥 <span class="fomo-count"></span> personas analizaron su chat hoy</p>
-        </div>
+        <button type="button" class="btn btn--secondary btn--block" onclick="document.getElementById('subir').scrollIntoView({behavior:'smooth'})">Analizar mi chat</button>
+      </div>
+
+      <div class="plan plan--featured">
+        <p class="label">Informe completo</p>
+        <div class="plan__price"><span class="precio-symbol">$</span><span class="precio-premium-numero">99</span></div>
+        <p class="plan__currency"><span class="precio-moneda-label">MXN</span> · pago único</p>
+        <p class="plan__desc">Tu informe completo &middot; 26 páginas &middot; guía personalizada &middot; PDF para guardar.</p>
+        <ul class="plan__features">
+          <li>Todo lo del plan gratuito</li>
+          <li>Las 10 secciones de la Parte A, con tus datos</li>
+          <li>La guía entera: qué significa cada patrón y qué hacer</li>
+          <li>Las conversaciones que merece la pena tener, con guion</li>
+          <li>Un plan de 30 días</li>
+          <li>PDF con texto de verdad, para guardar y releer</li>
+          <li>Análisis completo de grupos</li>
+        </ul>
+        <button type="button" class="btn btn--primary btn--block price-btn" onclick="openPayModal()">Desbloquear mi informe</button>
+        <p class="note center" style="margin-top:var(--space-3);"><span class="fomo-count"></span> personas analizaron su chat hoy</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── TESTIMONIALS ── -->
+<!-- ── PRIVACIDAD ── -->
+<section class="section section--alt" id="privacidad">
+  <div class="container">
+    <div class="rule">
+      <span class="rule__num">04</span>
+      <span class="rule__line"></span>
+    </div>
+    <h2 class="measure">Tus mensajes no salen de tu teléfono.</h2>
+    <div class="measure stack" style="margin-top:var(--space-4);color:var(--ink-2);">
+      <p>El archivo que subes se lee entero dentro de tu navegador. No se sube a ningún servidor, no se guarda y desaparece al cerrar la pestaña.</p>
+      <p>Para redactar la parte personalizada de la guía sí sale algo del teléfono, y conviene que sepas exactamente qué: números, porcentajes, fechas y categorías. Nunca el texto de un mensaje, nunca un nombre. Las personas viajan como «Persona A» y «Persona B», y tu navegador vuelve a poner los nombres al recibir la respuesta.</p>
+      <p>Puedes comprobarlo tú: abre las herramientas de desarrollo, pestaña Red, y mira lo que se envía.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIOS ── -->
 <section class="section">
   <div class="container">
-    <div class="reveal">
-      <h2 class="section-title">Lo que dicen los que ya lo saben 👀</h2>
-      <p class="section-subtitle">+2,400 relaciones analizadas</p>
+    <div class="rule">
+      <span class="rule__num">05</span>
+      <span class="rule__line"></span>
     </div>
-    <div class="testimonials-grid reveal">
-      <div class="testimonial-card">
-        <div class="testimonial-header">
-          <div class="testimonial-avatar">V</div>
-          <div>
-            <div class="testimonial-name">Valentina R., 28 años</div>
-            <div class="testimonial-city">Ciudad de México</div>
-          </div>
-        </div>
-        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-        <div class="testimonial-text">Subí el chat con mi ex pensando que iba a ver lo que quería ver... y el análisis me dijo exactamente lo que necesitaba escuchar. El score de 34/100 lo dijo todo.</div>
-      </div>
-      <div class="testimonial-card">
-        <div class="testimonial-header">
-          <div class="testimonial-avatar">D</div>
-          <div>
-            <div class="testimonial-name">Diego M., 31 años</div>
-            <div class="testimonial-city">Monterrey</div>
-          </div>
-        </div>
-        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-        <div class="testimonial-text">Lo del mapa de silencios me rompió. 47 días sin hablar y siempre era yo quien rompía el silencio. Datos que ya sabía pero necesitaba ver en pantalla.</div>
-      </div>
-      <div class="testimonial-card">
-        <div class="testimonial-header">
-          <div class="testimonial-avatar">C</div>
-          <div>
-            <div class="testimonial-name">Camila F., 25 años</div>
-            <div class="testimonial-city">Bogotá</div>
-          </div>
-        </div>
-        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-        <div class="testimonial-text">Pensé que era de broma pero el informe me señaló patrones que yo ya intuía y no sabía nombrar. El plan Premium vale cada peso.</div>
-      </div>
-      <div class="testimonial-card">
-        <div class="testimonial-header">
-          <div class="testimonial-avatar">A</div>
-          <div>
-            <div class="testimonial-name">Andrés P., 33 años</div>
-            <div class="testimonial-city">Buenos Aires</div>
-          </div>
-        </div>
-        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-        <div class="testimonial-text">Mi novia y yo lo hicimos juntos por curiosidad. Score 91/100 y resulta que yo soy el que nunca inicia conversación 😭 Al menos ahora lo sé.</div>
-      </div>
+    <h2 class="measure">Lo que dicen quienes ya lo leyeron.</h2>
+
+    <div class="steps" style="margin-top:var(--space-6);">
+      <blockquote class="step-item" style="margin:0;">
+        <p style="font-family:var(--font-display);font-weight:300;font-size:var(--step-1);line-height:1.4;">«Subí el chat con mi ex esperando ver lo que quería ver. El informe me dijo lo que necesitaba leer, y sin regodearse.»</p>
+        <p class="label" style="margin-top:var(--space-3);">Valentina R. &middot; Ciudad de México</p>
+      </blockquote>
+      <blockquote class="step-item" style="margin:0;">
+        <p style="font-family:var(--font-display);font-weight:300;font-size:var(--step-1);line-height:1.4;">«Lo del mapa de silencios me sentó como un jarro de agua fría. 47 días, y siempre era yo quien escribía primero.»</p>
+        <p class="label" style="margin-top:var(--space-3);">Diego M. &middot; Monterrey</p>
+      </blockquote>
+      <blockquote class="step-item" style="margin:0;">
+        <p style="font-family:var(--font-display);font-weight:300;font-size:var(--step-1);line-height:1.4;">«Mi novia y yo lo leímos juntos. Terminamos hablando de cosas que llevábamos un año esquivando.»</p>
+        <p class="label" style="margin-top:var(--space-3);">Andrés P. &middot; Buenos Aires</p>
+      </blockquote>
     </div>
   </div>
 </section>
 
-<!-- ── FAQ ── -->
-<section class="section" id="faq">
+<!-- ── PREGUNTAS ── -->
+<section class="section section--alt" id="faq">
   <div class="container">
-    <div class="reveal">
-      <h2 class="section-title">Preguntas frecuentes</h2>
-      <p class="section-subtitle">Todo lo que necesitas saber antes de descubrir la verdad</p>
+    <div class="rule">
+      <span class="rule__num">06</span>
+      <span class="rule__line"></span>
     </div>
-    <div class="faq-list reveal">
+    <h2 class="measure">Preguntas frecuentes</h2>
+
+    <div class="faq-list measure" style="margin-top:var(--space-5);">
       <div class="faq-item">
-        <button class="faq-q">¿Mi pareja se va a enterar que exporté el chat?</button>
-        <div class="faq-a"><p>No. La exportación de chat en WhatsApp es completamente silenciosa. No se envía ninguna notificación ni se deja rastro. Es una función oficial de WhatsApp.</p></div>
+        <button type="button" class="faq-q">¿La otra persona se entera de que exporté el chat?</button>
+        <div class="faq-a"><p>No. Exportar un chat es una función oficial de WhatsApp y es silenciosa: no manda ninguna notificación ni deja rastro en la conversación.</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">¿Almacenan mis conversaciones?</button>
-        <div class="faq-a"><p>Jamás. Tu chat se procesa en el momento, se genera el análisis y se elimina inmediatamente. No guardamos, copiamos ni compartimos tus mensajes con nadie.</p></div>
+        <button type="button" class="faq-q">¿Guardan mis conversaciones?</button>
+        <div class="faq-a"><p>No, y no es una cuestión de confianza: técnicamente no podemos. El archivo se lee dentro de tu navegador y nunca se sube. Lo único que viaja son cifras agregadas, sin nombres ni texto de mensajes.</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">¿Cómo exporto mi chat de WhatsApp?</button>
-        <div class="faq-a"><p>Abre el chat en WhatsApp → Toca los tres puntitos ⋮ (Android) o el nombre del contacto (iOS) → "Exportar chat" → "Sin archivos multimedia". Recibirás un archivo .txt que puedes subir aquí.</p></div>
+        <button type="button" class="faq-q">¿Cómo exporto el chat?</button>
+        <div class="faq-a"><p>Abre el chat, toca los tres puntos en Android o el nombre del contacto en iPhone, elige «Exportar chat» y después «Sin archivos». Te quedará un .txt o un .zip que puedes subir aquí.</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">¿Qué tan preciso es el análisis?</button>
-        <div class="faq-a"><p>Usamos IA avanzada para detectar patrones reales en la comunicación. Dicho esto, este es un análisis de entretenimiento y no sustituye la asesoría profesional de un terapeuta. Tómalo como una herramienta de reflexión, no como un diagnóstico.</p></div>
+        <button type="button" class="faq-q">¿Qué mide el informe y qué no?</button>
+        <div class="faq-a"><p>Mide lo que se puede contar en un chat: cuántos mensajes, a qué horas, cuánto se tarda en responder, qué palabras aparecen y cuáles dejaron de aparecer. No mide lo que sienten, y no es terapia ni un diagnóstico. Es una herramienta para pensar y para hablar, no un veredicto.</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">¿Puedo analizar chats grupales?</button>
-        <div class="faq-a"><p>¡Sí! Sube cualquier chat de WhatsApp — si tiene 2 participantes se analiza como pareja, y si tiene 3 o más se activa el modo grupo con ranking de poder, arquetipos, fantasmas y más.</p></div>
+        <button type="button" class="faq-q">¿Sirve para chats de grupo?</button>
+        <div class="faq-a"><p>Sí. Si el chat tiene dos participantes se analiza como pareja; con tres o más se activa el modo grupo, con su propio análisis.</p></div>
+      </div>
+      <div class="faq-item">
+        <button type="button" class="faq-q">¿Puedo volver a analizar más adelante?</button>
+        <div class="faq-a"><p>Sí, y es lo que recomendamos. Exporta el chat otra vez dentro de 30 días y compara: lo interesante no es una foto, es el movimiento.</p></div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ── FOOTER ── -->
-<footer>
+<footer class="site-footer">
   <div class="container">
-    <div class="logo" style="font-size:1.2rem; margin-bottom: 16px; cursor: pointer;" onclick="window.location.href = window.location.origin">YaLo<span>Sabía</span>.com</div>
-    <p>Hecho con 🔍 y un poco de drama</p>
-    <div class="footer-links">
+    <button type="button" class="logo" onclick="window.location.href = window.location.origin">YaLo<em>Sabía</em></button>
+    <div class="site-footer__links">
       <a href="/aviso-legal.html">Aviso legal</a>
       <a href="/privacidad.html">Política de privacidad</a>
       <a href="/terminos.html">Términos de uso</a>
       <a href="/cookies.html">Cookies</a>
       <a href="mailto:contacto@yalosabia.com">Contacto</a>
-      <a href="/mockup-studio.html">Studio</a>
     </div>
-    <p style="margin-top: 20px; opacity: 0.4; font-size: 0.8rem;">Este análisis es entretenimiento y no sustituye asesoría profesional.</p>
+    <p>Este informe describe mensajes, no sentimientos. No es terapia ni un diagnóstico.</p>
   </div>
 </footer>
 
@@ -3072,7 +2614,11 @@ function switchMode(mode) {
   } else {
     toggle.classList.remove('grupo');
   }
-  btns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  btns.forEach(b => {
+    const on = b.dataset.mode === mode;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', String(on));
+  });
   updateContextTag(mode);
   updateUploadArea(mode);
 }
@@ -3080,28 +2626,23 @@ function switchMode(mode) {
 function updateContextTag(mode) {
   const tag = document.getElementById('modeContextTag');
   if (mode === 'pareja') {
-    tag.textContent = 'Analiza el chat entre tú y tu pareja';
+    tag.textContent = 'Analiza el chat entre tú y otra persona';
   } else {
     tag.textContent = 'Analiza cualquier grupo de WhatsApp';
   }
 }
 
 function updateUploadArea(mode) {
-  const icon = document.getElementById('uploadIcon');
   const title = document.getElementById('uploadTitle');
   const formats = document.getElementById('uploadFormats');
   const zone = document.getElementById('uploadZone');
   if (mode === 'grupo') {
-    icon.textContent = '👥';
-    title.textContent = 'Arrastra tu chat grupal aquí';
-    formats.innerHTML = '<span class="format-tag">WhatsApp .txt o .zip</span><span class="format-tag">3+ participantes</span>';
-    zone.style.borderColor = 'rgba(108,92,231,0.35)';
+    title.textContent = 'Arrastra aquí tu chat de grupo';
+    formats.innerHTML = '<span class="tag format-tag">WhatsApp .txt o .zip</span><span class="tag format-tag">3 o más participantes</span>';
     zone.classList.add('grupo-mode');
   } else {
-    icon.textContent = '📱';
-    title.textContent = 'Arrastra tu chat de WhatsApp aquí';
-    formats.innerHTML = '<span class="format-tag">WhatsApp .txt o .zip</span><span class="format-tag">Hasta 40,000 mensajes</span>';
-    zone.style.borderColor = '';
+    title.textContent = 'Arrastra aquí tu chat de WhatsApp';
+    formats.innerHTML = '<span class="tag format-tag">WhatsApp .txt o .zip</span><span class="tag format-tag">Hasta 40.000 mensajes</span>';
     zone.classList.remove('grupo-mode');
   }
 }
@@ -8788,8 +8329,12 @@ function removeBlurOverlays() {
 function switchOsTab(os, btn) {
   document.getElementById('osTabAndroid').hidden = os !== 'android';
   document.getElementById('osTabIos').hidden = os !== 'ios';
-  btn.parentElement.querySelectorAll('.os-tab').forEach(t => t.classList.remove('active'));
+  btn.parentElement.querySelectorAll('.os-tab').forEach(t => {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+  });
   btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
 }
 
 // ── Payment modal ──
