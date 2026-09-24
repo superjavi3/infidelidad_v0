@@ -27,23 +27,21 @@
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<!-- JSZip para procesar archivos ZIP -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<!-- html2canvas para generar imagen de Stories -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- Chart.js para gráficas premium -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Las fuentes no bloquean el primer pintado: se aplican al llegar (display=swap). -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Inter:wght@400;500;600&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
+<!-- JSZip, Chart.js, html2canvas y jsPDF se cargan bajo demanda: ver loadLib(). -->
 <!-- Contrato de privacidad: único constructor de lo que viaja a /api/analyze -->
-<script src="/js/ai-payload.js"></script>
-<script src="/js/report-model.js"></script>
-<script src="/js/keywords.js"></script>
-<script src="/js/metrics.js"></script>
-<!-- La guía: biblioteca de bloques y ensamblado. Solo hace falta al descargar. -->
+<script src="/js/ai-payload.js" defer></script>
+<script src="/js/report-model.js" defer></script>
+<script src="/js/keywords.js" defer></script>
+<script src="/js/metrics.js" defer></script>
+<!-- La guía, el PDF y la imagen de Stories. Solo hacen falta al pagar o compartir. -->
 <script src="/guide/blocks.js" defer></script>
 <script src="/guide/assemble.js" defer></script>
 <script src="/js/report-pdf.js" defer></script>
+<script src="/js/stories.js" defer></script>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -239,242 +237,6 @@ body::before {
   margin-bottom: 12px;
 }
 .example-card p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; }
-
-/* ── Preview button in pricing cards ── */
-.preview-btn {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 0.85rem;
-  color: rgba(255,255,255,0.7);
-  width: 100%;
-  margin-bottom: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.preview-btn:hover {
-  border-color: rgba(255,45,120,0.6);
-  color: #fff;
-}
-/* ── Preview modal ── */
-.preview-modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.85);
-  z-index: 9999;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(4px);
-}
-.preview-modal-overlay.active { display: flex; }
-.preview-modal-container {
-  background: #1A1A2E;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.1);
-  width: 90%;
-  max-width: 480px;
-  padding: 24px;
-  position: relative;
-  animation: modalIn 0.25s ease;
-}
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.95) translateY(10px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-.preview-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  font-weight: 700;
-  font-size: 1rem;
-  color: white;
-}
-.preview-modal-close {
-  background: rgba(255,255,255,0.1);
-  border: none;
-  color: white;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.preview-slides-wrapper {
-  overflow: hidden;
-  border-radius: 12px;
-}
-.preview-slides {
-  display: flex;
-  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
-}
-.preview-slide {
-  min-width: 100%;
-  background: #0D0D1A;
-  border-radius: 12px;
-  padding: 20px;
-  box-sizing: border-box;
-  min-height: 220px;
-}
-.preview-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 16px;
-}
-.preview-nav-btn {
-  background: rgba(255,255,255,0.1);
-  border: none;
-  color: white;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.2s;
-}
-.preview-nav-btn:hover { background: rgba(255,45,120,0.4); }
-.preview-dots {
-  display: flex;
-  gap: 8px;
-}
-.preview-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.3);
-  transition: all 0.2s;
-  cursor: pointer;
-}
-.preview-dot.active {
-  background: #FF2D78;
-  width: 20px;
-  border-radius: 4px;
-}
-.preview-counter {
-  text-align: center;
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.4);
-  margin-top: 8px;
-}
-.price-features li {
-  padding: 7px 0;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-.price-features li::before {
-  content: '✓';
-  color: var(--green);
-  font-weight: 700;
-  flex-shrink: 0;
-}
-.price-btn {
-  width: 100%;
-  padding: 14px;
-  border-radius: 50px;
-  border: none;
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all .2s;
-}
-.price-btn-primary {
-  background: linear-gradient(135deg, var(--pink), var(--orange));
-  color: white;
-}
-.price-btn-primary:hover { box-shadow: 0 6px 24px rgba(255,45,120,0.3); transform: translateY(-1px); }
-.price-btn-secondary {
-  background: rgba(255,255,255,0.06);
-  color: var(--text);
-  border: 1px solid rgba(255,255,255,0.1);
-}
-.price-btn-secondary:hover { background: rgba(255,255,255,0.1); }
-.fomo-text {
-  text-align: center;
-  font-size: 0.8rem;
-  color: rgba(255,45,120,0.7);
-  margin-top: 12px;
-}
-@keyframes pulse-badge {
-  0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
-  50% { opacity: 0.75; transform: translateX(-50%) scale(1.05); }
-}
-
-/* ── EXIT INTENT ── */
-.exit-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.85);
-  z-index: 2000;
-  align-items: center;
-  justify-content: center;
-}
-.exit-overlay.active { display: flex; }
-.exit-card {
-  background: var(--bg-card);
-  border-radius: 16px;
-  padding: 40px;
-  max-width: 480px;
-  width: 90%;
-  text-align: center;
-  position: relative;
-  animation: exitSlideUp 0.3s ease-out;
-}
-@keyframes exitSlideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.exit-close {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  background: none;
-  border: none;
-  color: #9CA3AF;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-.exit-score {
-  font-family: var(--font-display);
-  font-size: 3.5rem;
-  background: linear-gradient(135deg, var(--pink), var(--purple));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 16px 0 8px;
-}
-.exit-cta {
-  width: 100%;
-  padding: 14px;
-  border-radius: 50px;
-  border: none;
-  background: linear-gradient(135deg, var(--pink), var(--purple));
-  color: white;
-  font-weight: 700;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-top: 20px;
-  transition: all .2s;
-}
-.exit-cta:hover { box-shadow: 0 6px 24px rgba(255,45,120,0.3); }
-.exit-dismiss {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 0.82rem;
-  cursor: pointer;
-  margin-top: 12px;
-}
 
 /* ── ANIMATIONS ── */
 @keyframes fadeInUp {
@@ -1635,7 +1397,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 
 <!-- PostHog Analytics -->
 <script>
-  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",e.__load=function(){e.__load=null;(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r)};var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
   posthog.init('phc_TkTrczwMpAU20xzlxW31MXleYSAdzV9XfKikM0lUUem', {
     api_host: 'https://us.i.posthog.com',
     person_profiles: 'identified_only',
@@ -1643,6 +1405,18 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     capture_pageview: true,
     capture_pageleave: true
   });
+  // La librería (~90 KB y casi 1 s de CPU en móvil) no se descarga al abrir la
+  // página: el stub de arriba ya encola pageview y eventos, y array.js llega
+  // con la primera interacción o 5 s después de cargar, lo que antes ocurra.
+  (function () {
+    var evs = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
+    function go() {
+      evs.forEach(function (ev) { removeEventListener(ev, go, true); });
+      if (posthog.__load) posthog.__load();
+    }
+    evs.forEach(function (ev) { addEventListener(ev, go, { capture: true, passive: true, once: true }); });
+    addEventListener('load', function () { setTimeout(go, 5000); });
+  })();
 </script>
 </head>
 <body class="v3">
@@ -1682,7 +1456,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       </div>
 
       <div class="upload upload-zone" id="uploadZone">
-        <h3 class="upload__title" id="uploadTitle">Arrastra aquí tu chat de WhatsApp</h3>
+        <h2 class="upload__title" id="uploadTitle">Arrastra aquí tu chat de WhatsApp</h2>
         <p class="upload__hint">o toca para elegir el archivo que exportaste</p>
         <input type="file" id="fileInput" accept=".txt,.zip">
         <div class="upload__formats" id="uploadFormats">
@@ -1716,20 +1490,12 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 </section>
 
 <!-- ── RESULTS (hidden until analysis) ── -->
-<div id="demoBanner" style="display:none;max-width:720px;margin:0 auto 0">
-  <div style="background:rgba(255,211,61,0.1);border:1px solid rgba(255,211,61,0.3);
-    border-radius:8px;padding:10px 16px;text-align:center;margin-bottom:16px;
-    font-size:0.85rem;color:#FFD93D">
-    👀 Estás viendo un análisis de ejemplo —
-    <button onclick="document.getElementById('top').scrollIntoView({behavior:'smooth'})"
-      style="background:none;border:none;color:#FF2D78;cursor:pointer;
-      font-weight:700;font-size:0.85rem">
-      Analiza tu propio chat →
-    </button>
-  </div>
+<div id="demoBanner" style="display:none;">
+  <p class="demo-note">Estás viendo un análisis de ejemplo.
+    <button type="button" onclick="document.getElementById('top').scrollIntoView({behavior:'smooth'})">Analiza tu propio chat</button></p>
 </div>
 <!-- ══ VISTA PREVIA DEL INFORME (pareja) ══ -->
-<section class="report" id="resultsSection">
+<section class="ph-no-capture report" id="resultsSection">
   <div class="container">
 
     <!-- Portada -->
@@ -1766,109 +1532,12 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <div id="leaderboardSection" style="display:none;"></div>
   </div>
 
-  <!-- Hidden container for Stories image (1080x1920) -->
-  <div id="storiesContainer" style="position: absolute; left: -9999px; top: 0;">
-    <div id="storiesCard" style="
-      width: 1080px;
-      height: 1920px;
-      background: linear-gradient(135deg, #FF2D78, #6C5CE7);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-family: 'DM Sans', sans-serif;
-      color: #FAFAFA;
-      position: relative;
-      overflow: hidden;
-    ">
-      <!-- Radial glow overlay -->
-      <div style="position: absolute; inset: 0; background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.15), transparent 50%);"></div>
-
-      <!-- Logo top -->
-      <div style="position: absolute; top: 120px; text-align: center; z-index: 1;">
-        <div style="font-family: 'Dela Gothic One', sans-serif; font-size: 56px; letter-spacing: -1px;">
-          YaLo<span style="color: #FF2D78;">Sabía</span>.com
-        </div>
-        <div style="font-size: 24px; opacity: 0.7; margin-top: 8px; letter-spacing: 2px;">SCORE DE RELACIÓN</div>
-      </div>
-
-      <!-- Score center -->
-      <div style="text-align: center; z-index: 1; margin-top: -60px;">
-        <div id="storiesScore" style="font-family: 'Dela Gothic One', sans-serif; font-size: 242px; line-height: 1;">72</div>
-        <div style="font-size: 40px; opacity: 0.7; margin-top: -10px;">de 100</div>
-      </div>
-
-      <!-- Names -->
-      <div style="text-align: center; z-index: 1; margin-top: 48px;">
-        <div id="storiesNames" style="font-size: 42px; font-weight: 700; letter-spacing: 1px;">Persona 1 & Persona 2</div>
-      </div>
-
-      <!-- Verdict -->
-      <div style="text-align: center; z-index: 1; margin-top: 32px; padding: 0 80px;">
-        <div id="storiesVerdict" style="font-size: 36px; font-weight: 700; opacity: 0.9; line-height: 1.3;">Conexión fuerte con áreas de mejora</div>
-      </div>
-
-      <!-- Stats grid 2x3 -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; z-index: 1; margin-top: 58px; padding: 0 55px; width: 100%; box-sizing: border-box;">
-        <div style="text-align: center; background: rgba(255,255,255,0.12); border-radius: 20px; padding: 34px 14px;">
-          <div style="font-size: 36px; margin-bottom: 8px;">💬</div>
-          <div id="storiesMsgs" style="font-family: 'Dela Gothic One', sans-serif; font-size: 43px; line-height: 1.2;">4,521</div>
-          <div style="font-size: 24px; opacity: 0.6; margin-top: 4px;">mensajes enviados</div>
-        </div>
-        <div style="text-align: center; background: rgba(255,255,255,0.12); border-radius: 20px; padding: 34px 14px;">
-          <div style="font-size: 36px; margin-bottom: 8px;">📅</div>
-          <div id="storiesDays" style="font-family: 'Dela Gothic One', sans-serif; font-size: 43px; line-height: 1.2;">128</div>
-          <div style="font-size: 24px; opacity: 0.6; margin-top: 4px;">días juntos</div>
-        </div>
-        <div style="text-align: center; background: rgba(255,255,255,0.12); border-radius: 20px; padding: 34px 14px;">
-          <div style="font-size: 36px; margin-bottom: 8px;">⚡</div>
-          <div id="storiesLeader" style="font-family: 'Dela Gothic One', sans-serif; font-size: 37px; line-height: 1.2;">Ana</div>
-          <div id="storiesLeaderPct" style="font-size: 24px; opacity: 0.6; margin-top: 4px;">lleva la voz</div>
-        </div>
-        <div style="text-align: center; background: rgba(255,255,255,0.12); border-radius: 20px; padding: 34px 14px;">
-          <div style="font-size: 36px; margin-bottom: 8px;">⏱️</div>
-          <div id="storiesReply" style="font-family: 'Dela Gothic One', sans-serif; font-size: 43px; line-height: 1.2;">12</div>
-          <div id="storiesReplyLabel" style="font-size: 24px; opacity: 0.6; margin-top: 4px;">min para responder</div>
-        </div>
-        <div style="text-align: center; background: rgba(255,255,255,0.12); border-radius: 20px; padding: 34px 14px;">
-          <div style="font-size: 36px; margin-bottom: 8px;">❤️</div>
-          <div id="storiesLove" style="font-family: 'Dela Gothic One', sans-serif; font-size: 43px; line-height: 1.2;">85</div>
-          <div style="font-size: 24px; opacity: 0.6; margin-top: 4px;">❤️ de amor enviados</div>
-        </div>
-        <div style="text-align: center; background: rgba(255,255,255,0.12); border-radius: 20px; padding: 34px 14px;">
-          <div style="font-size: 36px; margin-bottom: 8px;">🌙</div>
-          <div id="storiesNight" style="font-family: 'Dela Gothic One', sans-serif; font-size: 43px; line-height: 1.2;">23%</div>
-          <div style="font-size: 24px; opacity: 0.6; margin-top: 4px;">% mensajes nocturnos</div>
-        </div>
-      </div>
-
-      <!-- Percentile bar -->
-      <div style="position: absolute; bottom: 270px; width: 100%; text-align: center; z-index: 1;">
-        <div style="width: 80%; margin: 0 auto; border-top: 1px solid rgba(255,255,255,0.25); padding-top: 20px;"></div>
-        <div id="storiesPercentile" style="font-size: 28px; opacity: 0.85; letter-spacing: 0.5px;">Mejor que el 66% de relaciones analizadas</div>
-        <div style="position: relative; width: 80%; height: 8px; margin: 16px auto 0; padding-top: 24px; border-radius: 999px;">
-          <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; border-radius: 999px; background: linear-gradient(to right, #ff4444, #ffaa00, #44cc44);"></div>
-          <div id="storiesPercentileDot" style="position: absolute; bottom: 0; transform: translate(-50%, 50%); width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 0 6px rgba(0,0,0,0.3); left: 66%;">
-            <div id="storiesPercentileLabel" style="position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 22px; font-weight: 700; color: #FF2D78;">Tú: 72</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CTA bottom -->
-      <div style="position: absolute; bottom: 120px; text-align: center; z-index: 1;">
-        <div style="font-size: 30px; opacity: 0.6; letter-spacing: 1px;">Analiza tu relación en</div>
-        <div style="font-family: 'Dela Gothic One', sans-serif; font-size: 44px; margin-top: 8px;">
-          YaLo<span style="color: #FF2D78;">Sabía</span>.com
-        </div>
-      </div>
-    </div>
-  </div>
 </section>
 
 <!-- ══════════════════════════════════════════════ -->
 <!-- ── GROUP ANALYSIS RESULTS (hidden by default) ── -->
 <!-- ══════════════════════════════════════════════ -->
-<section class="results-section container legacy-dark" id="groupResultsSection" style="display:none; padding-top: 40px;">
+<section class="ph-no-capture results-section container legacy-dark" id="groupResultsSection" style="display:none; padding-top: 40px;">
   <div style="text-align:center;margin-bottom:32px;">
     <h2 style="font-family:var(--font-display);font-size:1.6rem;margin-bottom:8px;">Análisis del <span class="gradient-text">grupo</span></h2>
     <p style="color:var(--text-muted);font-size:0.95rem;">Análisis basado en <span id="group-totalMsgs">0</span> mensajes de <span id="group-totalMembers">0</span> participantes</p>
@@ -2263,6 +1932,8 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 <!-- ── PLANES ── -->
 <section class="section" id="precios">
   <div class="container">
+    <!-- Ancla antigua: el cancel_url de Stripe vuelve a /#pricing. -->
+    <span id="pricing"></span>
     <div class="rule">
       <span class="rule__num">03</span>
       <span class="rule__line"></span>
@@ -2300,7 +1971,6 @@ if (localStorage.getItem('cookieConsent') === 'all') {
           <li>Análisis completo de grupos</li>
         </ul>
         <button type="button" class="btn btn--primary btn--block price-btn" onclick="openPayModal()">Desbloquear mi informe</button>
-        <p class="note center" style="margin-top:var(--space-3);"><span class="fomo-count"></span> personas analizaron su chat hoy</p>
       </div>
     </div>
   </div>
@@ -2402,6 +2072,44 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 </footer>
 
 <script>
+// ── EMBUDO EN POSTHOG ──
+// Eventos explícitos de cada paso. Solo categorías y números redondeados:
+// nunca nombres ni nada del chat. El informe va marcado con ph-no-capture
+// para que ni el autocapture ni una grabación de sesión lean su contenido.
+function track(event, props) {
+  try { if (window.posthog && typeof posthog.capture === 'function') posthog.capture(event, props || {}); }
+  catch (e) { /* la analítica nunca rompe el producto */ }
+}
+function sizeBucket(n) {
+  return n < 1000 ? '<1k' : n < 5000 ? '1k-5k' : n < 20000 ? '5k-20k' : '20k+';
+}
+
+// ── LIBRERÍAS BAJO DEMANDA ──
+// Ninguna hace falta para ver la landing ni la vista previa de pareja, así
+// que no bloquean la carga: JSZip solo al subir un .zip; Chart.js,
+// html2canvas y jsPDF solo en el modo grupo.
+const LIBS = {
+  jszip: { src: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js', ready: () => window.JSZip },
+  chart: { src: 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js', ready: () => window.Chart },
+  html2canvas: { src: 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', ready: () => window.html2canvas },
+  jspdf: { src: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', ready: () => window.jspdf }
+};
+const _libLoads = {};
+function loadLib(name) {
+  const lib = LIBS[name];
+  if (lib.ready()) return Promise.resolve();
+  if (!_libLoads[name]) {
+    _libLoads[name] = new Promise((resolve, reject) => {
+      const el = document.createElement('script');
+      el.src = lib.src;
+      el.onload = resolve;
+      el.onerror = () => { delete _libLoads[name]; reject(new Error('No se pudo cargar ' + name)); };
+      document.head.appendChild(el);
+    });
+  }
+  return _libLoads[name];
+}
+
 // ── GZIP HELPER ──
 async function gzipFetch(url, data, options = {}) {
   const jsonStr = JSON.stringify(data);
@@ -2493,8 +2201,9 @@ async function handleFile(file) {
   try {
     // Si es ZIP, extraer el texto
     if (file.name.endsWith('.zip')) {
+      await loadLib('jszip').catch(() => {});
       if (typeof JSZip === 'undefined') {
-        alert('Error: JSZip no está cargado. Recarga la página.');
+        alert('No pudimos abrir el .zip. Revisa tu conexión y vuelve a intentarlo, o sube el .txt.');
         return;
       }
       
@@ -2513,7 +2222,7 @@ async function handleFile(file) {
       }
       
       if (!chatFile) {
-        alert('No se encontró el archivo de chat en el ZIP. Asegúrate de exportar desde WhatsApp.');
+        alert('No encontramos el chat dentro del .zip. Expórtalo desde WhatsApp con «Exportar chat» y vuelve a subirlo.');
         return;
       }
       
@@ -2529,7 +2238,7 @@ async function handleFile(file) {
       });
     } 
     else {
-      alert('Por favor sube un archivo .txt o .zip exportado de WhatsApp');
+      alert('Sube el archivo .txt o .zip que te da WhatsApp al exportar el chat.');
       return;
     }
     
@@ -2538,7 +2247,7 @@ async function handleFile(file) {
     
   } catch (error) {
     console.error('Error al procesar archivo:', error);
-    alert('Error al procesar el archivo. Asegúrate de que sea una exportación válida de WhatsApp.');
+    alert('No pudimos leer el archivo. Comprueba que sea un chat exportado desde WhatsApp.');
   }
 }
 
@@ -3191,12 +2900,13 @@ async function processChat(text) {
   // Se lee primero para poder decir cuántos mensajes hay de verdad.
   const messages = parseWhatsApp(text);
   const count = messages.length.toLocaleString('es-MX');
+  track('chat_subido', { mensajes: sizeBucket(messages.length) });
 
   reportProgress(45, 'Leyendo ' + count + ' mensajes');
   await sleep(180);
 
   if (messages.length < 10) {
-    alert('No se pudieron detectar suficientes mensajes. Asegúrate de exportar el chat de WhatsApp como archivo .txt sin media.');
+    alert('Encontramos muy pocos mensajes. Exporta el chat desde WhatsApp, sin archivos multimedia, y vuelve a subirlo.');
     resetUpload();
     return;
   }
@@ -3236,6 +2946,7 @@ async function processChat(text) {
     onNewGroupChatLoaded();
 
     // Show group results
+    await loadLib('chart').catch(err => console.warn('[Grupo] sin gráficas:', err));
     showGroupResults(groupStats);
 
     // Render premium features (blurred if curioso)
@@ -3273,7 +2984,7 @@ async function processChat(text) {
   const stats = analyzeMessages(messages);
   console.timeEnd('analyzeMessages');
   if (!stats) {
-    alert('No se pudieron identificar 2 participantes en la conversación.');
+    alert('No encontramos a dos personas en esta conversación. El informe de pareja necesita un chat entre dos.');
     resetUpload();
     return;
   }
@@ -3291,6 +3002,7 @@ async function processChat(text) {
 
   reportProgress(100, 'Informe listo');
   showResults(stats);
+  track('analisis_ok', { modo: 'pareja', mensajes: sizeBucket(stats.total), score_decena: Math.floor(stats.score / 10) * 10, premium: isPremiumUser() });
   // ── Personalización con IA ──
   // Solo viaja un agregado anónimo (números, fechas, categorías). Los mensajes
   // y los nombres reales se quedan en el dispositivo. Ver public/js/ai-payload.js
@@ -3322,11 +3034,12 @@ async function processChat(text) {
 // ══════════════════════════════════════════════
 // El modelo (índice de secciones y redacción de «En una página») vive en
 // public/js/report-model.js, que se prueba en tests/report-model.test.mjs.
-const REPORT_SECTIONS = YLSReport.REPORT_SECTIONS;
-const firstName = YLSReport.firstName;
-const formatReportDate = YLSReport.formatReportDate;
-const scoreInWords = YLSReport.scoreInWords;
-const buildOnePage = YLSReport.buildOnePage;
+// Los scripts de public/js van con defer: estos atajos resuelven YLSReport
+// al llamarse, no al cargar la página.
+const firstName = (name) => YLSReport.firstName(name);
+const formatReportDate = (d) => YLSReport.formatReportDate(d);
+const scoreInWords = (score) => YLSReport.scoreInWords(score);
+const buildOnePage = (s) => YLSReport.buildOnePage(s);
 
 function renderReport(s) {
   const a = firstName(s.personA);
@@ -4321,6 +4034,8 @@ async function groupShareToStories() {
 // ── GROUP CHATBOT ──
 // ── GROUP PDF (full 7-page export) ──
 async function generateGroupPDF() {
+  try { await Promise.all([loadLib('jspdf'), loadLib('html2canvas')]); }
+  catch (err) { alert('No pudimos preparar el PDF. Revisa tu conexión y vuelve a intentarlo.'); return; }
   if (!lastGroupStats || !lastGroupMessages) { alert('Primero analiza un grupo.'); return; }
 
   const btn = event.target;
@@ -4736,7 +4451,9 @@ async function downloadReport(btn) {
     const guide = await getGuide();
     if (btn) btn.textContent = 'Maquetando el PDF…';
     const out = await YLSReportPDF.download(getReportData(), guide);
-    console.log('[PDF]', out.name, Math.round(out.size / 1024) + ' KB');
+    // Sin el nombre del archivo: la grabación de sesión de PostHog guarda la consola.
+    console.log('[PDF]', Math.round(out.size / 1024) + ' KB');
+    track('pdf_descargado', { personalizado: !!guide.personalized, kb: Math.round(out.size / 1024) });
   } catch (err) {
     console.error('[PDF] Error:', err);
     alert('No pudimos generar el PDF. Revisa tu conexión y vuelve a intentarlo; si sigue fallando, escríbenos.');
@@ -4747,6 +4464,7 @@ async function downloadReport(btn) {
 
 // Wrapper con timeout para html2canvas
 async function htmlToCanvasWithTimeout(element, options, timeoutMs = 15000) {
+  await loadLib('html2canvas');
   return Promise.race([
     html2canvas(element, options),
     new Promise((_, reject) =>
@@ -4766,70 +4484,19 @@ async function toBase64(url) {
   });
 }
 
+// Imagen para Stories: score, una frase y yalosabia.com (public/js/stories.js).
 async function shareToStories() {
   if (!lastStats) { alert('Primero sube un chat para analizar.'); return; }
-  // Los datos salen del análisis, ya no de la vista.
-  const currentScore = lastStats.score;
-  document.getElementById('storiesScore').textContent = currentScore;
-  document.getElementById('storiesVerdict').textContent = scoreInWords(currentScore);
-
-  // Percentile bar
-  const percentil = Math.round(currentScore * 0.92);
-  document.getElementById('storiesPercentile').textContent = 'Mejor que el ' + percentil + '% de relaciones analizadas';
-  document.getElementById('storiesPercentileDot').style.left = percentil + '%';
-  document.getElementById('storiesPercentileLabel').textContent = 'Tú: ' + currentScore;
-
-  const personA = lastStats.personA || 'Persona 1';
-  const personB = lastStats.personB || 'Persona 2';
-  document.getElementById('storiesNames').textContent = personA + ' & ' + personB;
-
-  // Populate stats grid
-  if (lastStats) {
-    document.getElementById('storiesMsgs').textContent = lastStats.total.toLocaleString();
-    document.getElementById('storiesDays').textContent = lastStats.uniqueDays;
-    document.getElementById('storiesLeader').textContent = lastStats.leader;
-    document.getElementById('storiesLeaderPct').textContent = lastStats.leader.split(' ')[0] + ' lleva la voz';
-    document.getElementById('storiesReply').textContent = lastStats.avgReplyFormatted;
-    document.getElementById('storiesReplyLabel').textContent = 'para responder';
-    document.getElementById('storiesLove').textContent = lastStats.loveCount;
-    document.getElementById('storiesNight').textContent = lastStats.nightPct + '%';
-  }
-
-  const card = document.getElementById('storiesCard');
-
-  // Forzar fuente del sistema para evitar bloqueos de Google Fonts en producción
-  const origFont = card.style.fontFamily;
-  card.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif';
-
+  // El número y la frase tienen que contar lo mismo: el score del periodo
+  // y su lectura, o la frase de la IA si la hay.
+  const headlineEl = document.getElementById('rpHeadline');
+  const phrase = headlineEl && headlineEl.dataset.fromAi ? headlineEl.textContent : scoreInWords(lastStats.score);
   try {
-    const canvas = await htmlToCanvasWithTimeout(card, {
-      width: 1080,
-      height: 1920,
-      scale: 2,
-      useCORS: true,
-      allowTaint: false,
-      foreignObjectRendering: false,
-      logging: false,
-      imageTimeout: 0,
-      removeContainer: true,
-      backgroundColor: null
-    });
-
-    canvas.toBlob(function(blob) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'yalosabia-score.jpg';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 'image/jpeg', 0.95);
+    const how = await YLSStories.share({ score: lastStats.score, phrase });
+    track('stories_creada', { via: how });
   } catch (err) {
     console.error('Error generando imagen:', err);
-    alert('Error al generar la imagen: ' + err.message);
-  } finally {
-    card.style.fontFamily = origFont;
+    alert('No pudimos crear la imagen. Vuelve a intentarlo.');
   }
 }
 
@@ -5220,6 +4887,7 @@ async function loadGroupDemo() {
   window.isPremium = true;
 
   // Show group results
+  await loadLib('chart').catch(err => console.warn('[Grupo] sin gráficas:', err));
   showGroupResults(groupStats);
   renderGroupPremiumFeatures(demoMessages, groupStats);
   applyBlurOverlays();
@@ -5783,13 +5451,13 @@ function copyShareLink() {
   input.select();
   navigator.clipboard.writeText(input.value).then(() => {
     const btn = document.getElementById('copyShareBtn');
-    btn.textContent = '✅ Copiado';
-    setTimeout(() => { btn.textContent = '📋 Copiar'; }, 2000);
+    btn.textContent = 'Copiado';
+    setTimeout(() => { btn.textContent = 'Copiar'; }, 2000);
   }).catch(() => {
     document.execCommand('copy');
     const btn = document.getElementById('copyShareBtn');
-    btn.textContent = '✅ Copiado';
-    setTimeout(() => { btn.textContent = '📋 Copiar'; }, 2000);
+    btn.textContent = 'Copiado';
+    setTimeout(() => { btn.textContent = 'Copiar'; }, 2000);
   });
 }
 
@@ -5798,7 +5466,7 @@ function shareViaWhatsApp() {
   if (!url) return;
   const text = window._shareMode === 'group'
     ? '¡Mira el análisis de nuestro grupo! 👥🔍 ' + url
-    : '¡Mira el análisis de nuestro chat! 🔍 ' + url;
+    : 'Así se ve nuestra conversación según YaLoSabía: ' + url;
   window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
 }
 function showDemoUpgradePrompt(feature) {
@@ -5818,68 +5486,61 @@ function showDemoUpgradePrompt(feature) {
 
 </script>
 
-<!-- Payment Modal -->
-<div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center;">
-  <div style="background:#1A1A2E;border-radius:20px;padding:40px;max-width:400px;width:90%;text-align:center;position:relative;">
-    <button onclick="closePayModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#9CA3AF;font-size:1.5rem;cursor:pointer;">&times;</button>
-    <div id="payModalIcon" style="font-size:2rem;margin-bottom:8px;">🔓</div>
-    <h3 id="payModalTitle" style="color:white;margin-bottom:8px;font-size:1.3rem;">Desbloquear Todo</h3>
-    <p id="payModalPrice" class="precio-premium" style="color:#9CA3AF;margin-bottom:24px;">$99 MXN — pago único</p>
-    <input id="payEmail" type="email" name="email" autocomplete="email" inputmode="email" placeholder="tu@email.com" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0A0A14;color:white;margin-bottom:16px;box-sizing:border-box;font-size:1rem;">
-    <label style="display:flex;align-items:flex-start;gap:10px;text-align:left;margin-bottom:16px;cursor:pointer;">
-      <input type="checkbox" id="acceptTerms" onchange="document.getElementById('goToCheckout').disabled=!this.checked;document.getElementById('goToCheckout').style.opacity=this.checked?'1':'0.5'" style="margin-top:3px;accent-color:#FF2D78;min-width:18px;min-height:18px;cursor:pointer;">
-      <span style="color:#a0a0b8;font-size:0.8rem;line-height:1.4;">He leído y acepto los <a href="/terminos.html" target="_blank" style="color:#FF2D78;text-decoration:none;">Términos y Condiciones</a> y la <a href="/privacidad.html" target="_blank" style="color:#FF2D78;text-decoration:none;">Política de Privacidad</a></span>
+<!-- Modal de pago: mismo flujo de Stripe, nuevo estilo y nuevo copy. -->
+<div id="payModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="payModalTitle">
+  <div class="modal__panel">
+    <button type="button" class="modal__close" onclick="closePayModal()" aria-label="Cerrar">&times;</button>
+    <p class="label" style="color:var(--accent-ink);">Pago único</p>
+    <h3 id="payModalTitle" class="modal__title">Tu informe completo</h3>
+    <p class="modal__lead">Más de 40 páginas &middot; guía personalizada &middot; PDF para guardar.</p>
+    <ul class="modal__list">
+      <li>Las diez secciones de datos, con gráficas.</li>
+      <li>Qué significa cada patrón y qué hacer con él.</li>
+      <li>Conversaciones con guion y un plan de 30 días.</li>
+    </ul>
+    <p id="payModalPrice" class="modal__price precio-premium">$99 MXN — pago único</p>
+    <label class="field-label" for="payEmail">Tu correo, para el recibo</label>
+    <input id="payEmail" class="field" type="email" name="email" autocomplete="email" inputmode="email" placeholder="tu@correo.com">
+    <label class="check">
+      <input type="checkbox" id="acceptTerms" onchange="document.getElementById('goToCheckout').disabled=!this.checked">
+      <span>He leído y acepto los <a href="/terminos.html" target="_blank">Términos y Condiciones</a> y la <a href="/privacidad.html" target="_blank">Política de Privacidad</a>.</span>
     </label>
-    <button id="goToCheckout" onclick="goToStripeCheckout()" disabled style="width:100%;padding:14px;background:linear-gradient(135deg,#FF2D78,#6C5CE7);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:1rem;opacity:0.5;transition:opacity .2s;">
-      Ir al pago →
-    </button>
-    <p id="payError" style="color:#FF2D78;font-size:0.85rem;margin-top:12px;display:none;"></p>
-    <p style="color:#6B7280;font-size:0.75rem;margin-top:16px;">Pago seguro con Stripe. Aceptamos tarjetas de crédito y débito.</p>
+    <button id="goToCheckout" type="button" class="btn btn--primary btn--block" onclick="goToStripeCheckout()" disabled>Ir al pago</button>
+    <p id="payError" class="modal__error"></p>
+    <p class="modal__fine">Pago seguro con Stripe, con tarjeta de crédito o débito. Tus mensajes no salen de tu teléfono.</p>
   </div>
 </div>
 
-<!-- Share Link Modal -->
-<div id="shareLinkModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center;">
-  <div style="background:#1A1A2E;border-radius:20px;padding:40px;max-width:440px;width:90%;text-align:center;position:relative;">
-    <button onclick="closeShareLinkModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#9CA3AF;font-size:1.5rem;cursor:pointer;">&times;</button>
+<!-- Compartir por enlace -->
+<div id="shareLinkModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="shareLinkTitle">
+  <div class="modal__panel">
+    <button type="button" class="modal__close" onclick="closeShareLinkModal()" aria-label="Cerrar">&times;</button>
 
-    <!-- Step 1: Input alias -->
     <div id="shareLinkStep1">
-      <div style="font-size:2rem;margin-bottom:8px;">🔗</div>
-      <h3 style="color:white;margin-bottom:8px;font-size:1.3rem;">Compartir análisis</h3>
-      <p style="color:#9CA3AF;margin-bottom:20px;font-size:0.9rem;">Genera un link único para compartir tu resultado</p>
-      <input id="shareAlias" type="text" maxlength="50" placeholder="Alias opcional (ej: 'Ana y Luis')" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0A0A14;color:white;margin-bottom:16px;box-sizing:border-box;font-size:1rem;">
-      <button onclick="generateShareLink()" style="width:100%;padding:14px;background:linear-gradient(135deg,#6C5CE7,#FF2D78);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:1rem;">
-        Generar enlace →
-      </button>
-      <p style="color:#6B7280;font-size:0.75rem;margin-top:16px;">⚠️ Solo se comparten estadísticas generales. Nunca tus mensajes.</p>
+      <h3 id="shareLinkTitle" class="modal__title">Compartir el resumen</h3>
+      <p class="modal__lead">Crea un enlace con el score y los datos generales. Nunca tus mensajes.</p>
+      <label class="field-label" for="shareAlias">Cómo quieres que aparezca (opcional)</label>
+      <input id="shareAlias" class="field" type="text" maxlength="50" placeholder="Por ejemplo: Ana y Luis">
+      <button type="button" class="btn btn--primary btn--block" onclick="generateShareLink()">Crear enlace</button>
     </div>
 
-    <!-- Step 2: Show link -->
     <div id="shareLinkStep2" style="display:none;">
-      <div style="font-size:2rem;margin-bottom:8px;">✅</div>
-      <h3 style="color:white;margin-bottom:16px;font-size:1.2rem;">¡Listo! Tu enlace:</h3>
-      <div style="display:flex;gap:8px;margin-bottom:16px;">
-        <input id="shareLinkUrl" type="text" readonly style="flex:1;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0A0A14;color:white;font-size:0.9rem;box-sizing:border-box;">
-        <button onclick="copyShareLink()" id="copyShareBtn" style="padding:12px 16px;border-radius:10px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;cursor:pointer;font-weight:600;white-space:nowrap;">📋 Copiar</button>
+      <h3 class="modal__title">Tu enlace</h3>
+      <div class="share-row">
+        <input id="shareLinkUrl" class="field" type="text" readonly aria-label="Enlace para compartir">
+        <button type="button" onclick="copyShareLink()" id="copyShareBtn" class="btn btn--secondary btn--small">Copiar</button>
       </div>
-      <button onclick="shareViaWhatsApp()" style="width:100%;padding:14px;background:#25D366;border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:1rem;margin-bottom:12px;">
-        📱 Compartir por WhatsApp
-      </button>
-      <p style="color:#6B7280;font-size:0.8rem;margin-top:8px;">Cualquier persona con el link puede ver tu score y stats básicas</p>
+      <button type="button" class="btn btn--primary btn--block" onclick="shareViaWhatsApp()">Enviar por WhatsApp</button>
+      <p class="modal__fine">Cualquier persona con el enlace puede ver el score y los datos generales.</p>
     </div>
 
-    <!-- Loading state -->
     <div id="shareLinkLoading" style="display:none;">
-      <div style="font-size:2rem;margin-bottom:12px;">⏳</div>
-      <p style="color:#9CA3AF;">Generando enlace...</p>
+      <p class="modal__lead" style="margin-top:var(--space-3);">Creando el enlace…</p>
     </div>
 
-    <!-- Error state -->
     <div id="shareLinkError" style="display:none;">
-      <div style="font-size:2rem;margin-bottom:12px;">❌</div>
-      <p style="color:#FF2D78;margin-bottom:16px;" id="shareLinkErrorMsg">Error al generar el enlace</p>
-      <button onclick="document.getElementById('shareLinkStep1').style.display='block';document.getElementById('shareLinkError').style.display='none';" style="padding:10px 24px;border-radius:10px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;cursor:pointer;">Intentar de nuevo</button>
+      <p class="modal__lead" id="shareLinkErrorMsg" style="color:var(--accent-ink);margin-top:var(--space-3);">No pudimos crear el enlace.</p>
+      <button type="button" class="btn btn--secondary" onclick="document.getElementById('shareLinkStep1').style.display='block';document.getElementById('shareLinkError').style.display='none';">Intentar de nuevo</button>
     </div>
   </div>
 </div>
@@ -6121,15 +5782,15 @@ function openPayModal() {
   const lp = window.localPricing;
   const price = (lp ? lp.premiumFormatted : '$99 MXN') + ' — pago único';
 
-  document.getElementById('payModalIcon').textContent = '🔓';
-  document.getElementById('payModalTitle').textContent = 'Desbloquear Todo';
+  document.getElementById('payModalTitle').textContent = 'Tu informe completo';
   document.getElementById('payModalPrice').textContent = price;
   // Reset checkbox and button state
   var cb = document.getElementById('acceptTerms');
   var btn = document.getElementById('goToCheckout');
   if (cb) { cb.checked = false; }
-  if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; }
+  if (btn) { btn.disabled = true; }
   document.getElementById('payModal').style.display = 'flex';
+  track('pago_abierto', {});
 }
 
 function showPayModal() { openPayModal(); }
@@ -6145,13 +5806,14 @@ async function goToStripeCheckout() {
   const btn = document.getElementById('goToCheckout');
 
   if (!email || !email.includes('@')) {
-    errorEl.textContent = 'Ingresa un email válido';
+    errorEl.textContent = 'Escribe un correo válido para enviarte el recibo.';
     errorEl.style.display = 'block';
     return;
   }
 
-  btn.textContent = 'Redirigiendo...';
+  btn.textContent = 'Redirigiendo…';
   btn.disabled = true;
+  track('checkout_iniciado', {});
   errorEl.style.display = 'none';
 
   try {
@@ -6171,9 +5833,10 @@ async function goToStripeCheckout() {
 
     window.location.href = data.url;
   } catch (err) {
-    errorEl.textContent = 'Error: ' + err.message;
+    errorEl.textContent = 'No pudimos abrir el pago. Revisa tu conexión y vuelve a intentarlo.';
+    console.error('checkout:', err);
     errorEl.style.display = 'block';
-    btn.textContent = 'Ir al pago →';
+    btn.textContent = 'Ir al pago';
     btn.disabled = false;
   }
 }
@@ -6307,29 +5970,19 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- ── EXIT INTENT POPUP ── -->
-<div class="exit-overlay" id="exitOverlay">
-  <div class="exit-card">
-    <button class="exit-close" onclick="closeExitIntent()">&times;</button>
-    <div style="font-size: 2rem; margin-bottom: 8px;">🔍</div>
-    <h3 style="color: white; font-size: 1.4rem; margin-bottom: 4px;">¿Te vas sin saber la verdad?</h3>
-    <p style="color: var(--text-muted); font-size: 0.9rem;">Tu análisis está listo. Solo falta el paso que más importa.</p>
-    <div class="exit-score" id="exitScore">72</div>
-    <p style="color: white; font-size: 0.95rem; margin-bottom: 4px;">Tu relación tiene un score de <strong><span id="exitScoreText">72</span>/100</strong></p>
-    <p style="color: var(--text-muted); font-size: 0.85rem;">Hay cosas en tu chat que aún no has visto.</p>
-    <button class="exit-cta" onclick="closeExitIntent(); document.getElementById('precios').scrollIntoView({behavior:'smooth'});">Ver el análisis completo — <span class="precio-premium">$99 MXN</span> →</button>
-    <button class="exit-dismiss" onclick="closeExitIntent()">No, prefiero quedarme con dudas</button>
+<!-- Aviso al salir: recuerda que el chat no se guarda. Sin presión. -->
+<div class="modal" id="exitOverlay" role="dialog" aria-modal="true" aria-labelledby="exitTitle">
+  <div class="modal__panel">
+    <button type="button" class="modal__close" onclick="closeExitIntent()" aria-label="Cerrar">&times;</button>
+    <h3 id="exitTitle" class="modal__title">Tu vista previa sigue aquí</h3>
+    <p class="modal__lead">Un aviso antes de irte: tu chat no se guarda en ningún sitio. Si vuelves más tarde tendrás que subirlo otra vez.</p>
+    <p class="modal__price">Score de la relación: <span id="exitScore">72</span> <small>de 100</small><span id="exitScoreText" hidden></span></p>
+    <button type="button" class="btn btn--primary btn--block" onclick="closeExitIntent(); document.getElementById('rpToc').scrollIntoView({behavior:'smooth'});">Ver qué incluye el informe completo</button>
+    <button type="button" class="btn btn--secondary btn--block" style="margin-top:var(--space-2);" onclick="closeExitIntent()">Cerrar</button>
   </div>
 </div>
 
 <script>
-// ═══ FOMO COUNTER ═══
-(function() {
-  let fomo = Math.floor(Math.random() * 15) + 18;
-  if (fomo % 2 === 0) fomo++;
-  document.querySelectorAll('.fomo-count').forEach(el => el.textContent = fomo);
-})();
-
 // ═══ EXIT INTENT ═══
 function closeExitIntent() {
   document.getElementById('exitOverlay').classList.remove('active');
@@ -6350,186 +6003,15 @@ document.addEventListener('mouseleave', function(e) {
 });
 </script>
 
-<!-- ── PREVIEW MODAL ── -->
-<div id="preview-modal" class="preview-modal-overlay" onclick="closePreview(event)">
-  <div class="preview-modal-container">
-    <div class="preview-modal-header">
-      <span id="preview-modal-title">Vista previa</span>
-      <button class="preview-modal-close" onclick="closePreview()">✕</button>
-    </div>
-    <div class="preview-slides-wrapper">
-      <div id="preview-slides" class="preview-slides"></div>
-    </div>
-    <div class="preview-nav">
-      <button class="preview-nav-btn" id="prev-slide" onclick="changeSlide(-1)">←</button>
-      <div id="preview-dots" class="preview-dots"></div>
-      <button class="preview-nav-btn" id="next-slide" onclick="changeSlide(1)">→</button>
-    </div>
-    <div class="preview-counter">
-      <span id="slide-current">1</span> / <span id="slide-total">3</span>
-    </div>
-  </div>
-</div>
 
-<script>
-// ── PREVIEW MODAL LOGIC ──
-let currentSlide = 0;
-let currentPlan = null;
-
-const previewSlides = {
-  detective: [
-    `<div class="preview-slide">
-  <div style="font-size:0.8rem;font-weight:700;color:white;margin-bottom:4px">📉 Línea de Vida</div>
-  <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-bottom:12px">Evolución mes a mes — mensajes enviados</div>
-  <div style="display:flex;align-items:flex-end;gap:5px;height:90px;padding-bottom:4px">
-    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:35%;border-radius:3px 3px 0 0"></div>
-    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:55%;border-radius:3px 3px 0 0"></div>
-    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:85%;border-radius:3px 3px 0 0"></div>
-    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:65%;border-radius:3px 3px 0 0"></div>
-    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:95%;border-radius:3px 3px 0 0"></div>
-    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:45%;border-radius:3px 3px 0 0"></div>
-    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:28%;border-radius:3px 3px 0 0"></div>
-    <div style="flex:1;background:linear-gradient(to top,#6C5CE7,#FF2D78);height:60%;border-radius:3px 3px 0 0"></div>
-  </div>
-  <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:rgba(255,255,255,0.4);margin-top:6px"><span>Ene 23</span><span>Jun 23</span><span>Dic 23</span></div>
-  <div style="margin-top:12px;background:rgba(255,45,120,0.1);border-left:3px solid #FF2D78;border-radius:0 6px 6px 0;padding:8px 10px;font-size:0.7rem;color:rgba(255,255,255,0.8)">📍 Pico máximo en <strong style="color:#FF2D78">Mayo 2023</strong> — 1,840 mensajes ese mes</div>
-</div>`,
-    `<div class="preview-slide">
-  <div style="font-size:0.8rem;font-weight:700;color:white;margin-bottom:4px">📱 Reyes del Multimedia</div>
-  <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-bottom:14px">Quién habla con palabras y quién con archivos</div>
-  <div style="display:flex;flex-direction:column;gap:10px">
-    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:0.75rem;width:90px;color:rgba(255,255,255,0.7);flex-shrink:0">🎙️ Audios</span><div style="flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden"><div style="width:73%;height:100%;background:#FF2D78;border-radius:3px"></div></div><span style="font-size:0.65rem;color:#6C5CE7;font-weight:700;width:50px;text-align:right">Ella 73%</span></div>
-    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:0.75rem;width:90px;color:rgba(255,255,255,0.7);flex-shrink:0">📸 Imágenes</span><div style="flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden"><div style="width:100%;height:100%;background:#FF2D78;border-radius:3px"></div></div><span style="font-size:0.65rem;color:#6C5CE7;font-weight:700;width:50px;text-align:right">Tú 100%</span></div>
-    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:0.75rem;width:90px;color:rgba(255,255,255,0.7);flex-shrink:0">🎬 Videos</span><div style="flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden"><div style="width:60%;height:100%;background:#FF2D78;border-radius:3px"></div></div><span style="font-size:0.65rem;color:#6C5CE7;font-weight:700;width:50px;text-align:right">Ella 60%</span></div>
-    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:0.75rem;width:90px;color:rgba(255,255,255,0.7);flex-shrink:0">📄 Docs</span><div style="flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden"><div style="width:55%;height:100%;background:#FF2D78;border-radius:3px"></div></div><span style="font-size:0.65rem;color:#6C5CE7;font-weight:700;width:50px;text-align:right">Tú 55%</span></div>
-    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:0.75rem;width:90px;color:rgba(255,255,255,0.7);flex-shrink:0">🎭 Stickers</span><div style="flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden"><div style="width:68%;height:100%;background:#FF2D78;border-radius:3px"></div></div><span style="font-size:0.65rem;color:#6C5CE7;font-weight:700;width:50px;text-align:right">Ella 68%</span></div>
-  </div>
-</div>`,
-    `<div class="preview-slide">
-  <div style="font-size:0.8rem;font-weight:700;color:white;margin-bottom:4px">🔇 Mapa de Silencios</div>
-  <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-bottom:14px">Períodos de más de 48h sin mensajes</div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-    <div style="background:rgba(255,255,255,0.08);border-radius:20px;padding:6px 12px;font-size:0.75rem">💀 <strong style="color:#FF2D78">22 días</strong> el más largo</div>
-    <div style="background:rgba(255,255,255,0.08);border-radius:20px;padding:6px 12px;font-size:0.75rem"><strong style="color:white">8</strong> silencios totales</div>
-  </div>
-  <div style="font-size:0.7rem;color:rgba(255,255,255,0.5);margin-bottom:8px">¿Quién rompe el silencio?</div>
-  <div style="margin-bottom:8px">
-    <div style="display:flex;justify-content:space-between;font-size:0.7rem;margin-bottom:3px"><span style="color:white">Tú</span><span style="color:#FF2D78">65%</span></div>
-    <div style="height:7px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden"><div style="width:65%;height:100%;background:#FF2D78;border-radius:4px"></div></div>
-  </div>
-  <div>
-    <div style="display:flex;justify-content:space-between;font-size:0.7rem;margin-bottom:3px"><span style="color:white">Él/Ella</span><span style="color:#6C5CE7">35%</span></div>
-    <div style="height:7px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden"><div style="width:35%;height:100%;background:#6C5CE7;border-radius:4px"></div></div>
-  </div>
-  <div style="margin-top:12px;font-size:0.65rem;color:rgba(255,255,255,0.5);font-style:italic">💬 Tú rompiste el silencio: "Oye, ¿todo bien?" — 14 mar 2024</div>
-</div>`
-  ],
-  obsesivo: [
-    `<div class="preview-slide">
-  <div style="font-size:0.8rem;font-weight:700;color:white;margin-bottom:4px">🕵️ Reconstrucción Forense</div>
-  <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-bottom:14px">Los momentos exactos donde cambió todo</div>
-  <div style="border-left:3px solid #FF2D78;padding-left:12px;margin-bottom:12px">
-    <div style="font-size:0.8rem;color:#FF2D78;font-weight:700;margin-bottom:3px">⚡ Mar 2024 — Punto de Inflexión</div>
-    <div style="font-size:0.72rem;color:white;margin-bottom:3px">Mensajes: 1,840 → 423</div>
-    <div style="font-size:0.68rem;color:#FF6B6B">-77% en un mes</div>
-  </div>
-  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
-    <span style="background:rgba(108,92,231,0.3);color:#a29bfe;border-radius:10px;padding:3px 9px;font-size:0.65rem">trabajo</span>
-    <span style="background:rgba(108,92,231,0.3);color:#a29bfe;border-radius:10px;padding:3px 9px;font-size:0.65rem">distancia</span>
-    <span style="background:rgba(108,92,231,0.3);color:#a29bfe;border-radius:10px;padding:3px 9px;font-size:0.65rem">silencio</span>
-  </div>
-  <div style="border-left:3px solid #6C5CE7;padding-left:12px;opacity:0.7">
-    <div style="font-size:0.75rem;color:#6C5CE7;font-weight:700;margin-bottom:3px">↑ Jun 2022 — Punto de Inflexión</div>
-    <div style="font-size:0.68rem;color:rgba(255,255,255,0.7)">Mensajes subieron +64% ese mes</div>
-  </div>
-</div>`,
-    `<div class="preview-slide">
-  <div style="font-size:0.8rem;font-weight:700;color:white;margin-bottom:4px">💔 Antes vs Ahora</div>
-  <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-bottom:14px">Primeros 3 meses vs últimos 3 meses</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0">
-    <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.08)"></div>
-    <div style="font-size:0.65rem;color:#6BCB77;font-weight:700;padding:6px 4px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:center">Antes</div>
-    <div style="font-size:0.65rem;color:#FF6B6B;font-weight:700;padding:6px 4px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:center">Ahora</div>
-    <div style="font-size:0.68rem;color:rgba(255,255,255,0.5);padding:8px 0">Msgs/día</div>
-    <div style="font-size:0.85rem;color:#6BCB77;font-weight:700;padding:8px 4px;text-align:center">187</div>
-    <div style="font-size:0.85rem;color:#FF6B6B;font-weight:700;padding:8px 4px;text-align:center">31</div>
-    <div style="font-size:0.68rem;color:rgba(255,255,255,0.5);padding:8px 0;border-top:1px solid rgba(255,255,255,0.06)">Respuesta</div>
-    <div style="font-size:0.85rem;color:#6BCB77;font-weight:700;padding:8px 4px;text-align:center;border-top:1px solid rgba(255,255,255,0.06)">4 min</div>
-    <div style="font-size:0.85rem;color:#FF6B6B;font-weight:700;padding:8px 4px;text-align:center;border-top:1px solid rgba(255,255,255,0.06)">3.2h</div>
-    <div style="font-size:0.68rem;color:rgba(255,255,255,0.5);padding:8px 0;border-top:1px solid rgba(255,255,255,0.06)">Te quiero</div>
-    <div style="font-size:0.85rem;color:#6BCB77;font-weight:700;padding:8px 4px;text-align:center;border-top:1px solid rgba(255,255,255,0.06)">124x</div>
-    <div style="font-size:0.85rem;color:#FF6B6B;font-weight:700;padding:8px 4px;text-align:center;border-top:1px solid rgba(255,255,255,0.06)">8x</div>
-  </div>
-</div>`
-  ]
-};
-
-function openPreview(plan) {
-  currentPlan = plan;
-  currentSlide = 0;
-  const modal = document.getElementById('preview-modal');
-  const title = document.getElementById('preview-modal-title');
-  const slidesContainer = document.getElementById('preview-slides');
-  const dotsContainer = document.getElementById('preview-dots');
-  const total = document.getElementById('slide-total');
-  title.textContent = plan === 'detective'
-    ? '\u{1F50D} Premium — Vista previa'
-    : '\u{1F52C} Premium — Vista previa';
-  const slides = previewSlides[plan];
-  total.textContent = slides.length;
-  slidesContainer.innerHTML = slides.join('');
-  dotsContainer.innerHTML = slides.map((_, i) =>
-    '<div class="preview-dot ' + (i === 0 ? 'active' : '') + '" onclick="goToSlide(' + i + ')"></div>'
-  ).join('');
-  updateSlide();
-  modal.classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
-
-function closePreview(event) {
-  if (event && event.target !== document.getElementById('preview-modal')) return;
-  document.getElementById('preview-modal').classList.remove('active');
-  document.body.style.overflow = '';
-}
-
-function changeSlide(dir) {
-  var slides = previewSlides[currentPlan];
-  currentSlide = (currentSlide + dir + slides.length) % slides.length;
-  updateSlide();
-}
-
-function goToSlide(index) {
-  currentSlide = index;
-  updateSlide();
-}
-
-function updateSlide() {
-  var container = document.getElementById('preview-slides');
-  container.style.transform = 'translateX(-' + (currentSlide * 100) + '%)';
-  document.querySelectorAll('.preview-dot').forEach(function(dot, i) {
-    dot.classList.toggle('active', i === currentSlide);
-  });
-  document.getElementById('slide-current').textContent = currentSlide + 1;
-}
-
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    document.getElementById('preview-modal').classList.remove('active');
-    document.body.style.overflow = '';
-  }
-  if (!document.getElementById('preview-modal').classList.contains('active')) return;
-  if (e.key === 'ArrowLeft') changeSlide(-1);
-  if (e.key === 'ArrowRight') changeSlide(1);
-});
-</script>
 
 <!-- ── COOKIE CONSENT BANNER ── -->
-<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9998;background:#1A1A2E;border-top:2px solid rgba(255,45,120,0.3);padding:16px 24px;font-size:0.9rem;">
-  <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
-    <p style="color:#a0a0b8;margin:0;flex:1;min-width:200px;line-height:1.5;">Usamos cookies propias y de terceros para mejorar tu experiencia y mostrarte contenido personalizado. Puedes configurar tus preferencias en nuestra <a href="/cookies.html" style="color:#FF2D78;text-decoration:none;">política de cookies</a>.</p>
-    <div style="display:flex;gap:10px;flex-shrink:0;">
-      <button onclick="acceptCookies('essential')" style="padding:10px 20px;border-radius:50px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:#FAFAFA;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">Solo necesarias</button>
-      <button onclick="acceptCookies('all')" style="padding:10px 20px;border-radius:50px;border:none;background:linear-gradient(135deg,#FF2D78,#FF6B35);color:white;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;">Aceptar todas</button>
+<div id="cookieBanner" class="cookie-bar" role="region" aria-label="Aviso de cookies">
+  <div class="cookie-bar__inner">
+    <p>Usamos cookies propias y de terceros para medir el uso de la web y, si aceptas, para publicidad. Más detalles en la <a href="/cookies.html">política de cookies</a>.</p>
+    <div class="cookie-bar__actions">
+      <button type="button" class="btn btn--secondary btn--small" onclick="acceptCookies('essential')">Solo necesarias</button>
+      <button type="button" class="btn btn--primary btn--small" onclick="acceptCookies('all')">Aceptar todas</button>
     </div>
   </div>
 </div>
