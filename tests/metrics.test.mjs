@@ -183,7 +183,7 @@ test('momentos de cambio: los más grandes, separados y en orden', () => {
       'Julio 2025', 'Agosto 2025', 'Septiembre 2025']
   });
   assert.deepEqual(wire(tp).map(t => [t.label, t.direction]), [['Mayo 2025', 'down'], ['Agosto 2025', 'up']]);
-  assert.match(tp[0].sentence, /^En mayo 2025 la conversación bajó un \d+ %/);
+  assert.match(tp[0].sentence, /^En mayo de 2025 la conversación bajó un \d+%/);
 });
 
 test('rituales: el afecto se pierde en el chat que se enfría y no en el sano', () => {

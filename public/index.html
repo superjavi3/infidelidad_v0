@@ -40,6 +40,9 @@
 <script src="/js/report-model.js"></script>
 <script src="/js/keywords.js"></script>
 <script src="/js/metrics.js"></script>
+<!-- La guía: biblioteca de bloques y ensamblado. Solo hace falta al descargar. -->
+<script src="/guide/blocks.js" defer></script>
+<script src="/guide/assemble.js" defer></script>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -2423,6 +2426,7 @@ const resultsSection = document.getElementById('resultsSection');
 let lastStats = null;
 let lastMessages = null;
 let lastReport = null;
+let lastGuide = null;
 let lastGroupStats = null;
 let lastGroupMessages = null;
 let groupSystemEvents = [];
@@ -3116,6 +3120,41 @@ function getReportData() {
   return lastReport;
 }
 
+// La guía del informe (public/guide/). Es determinista y está completa sin
+// IA. En los planes de pago se personaliza con Gemini a partir de un agregado
+// anónimo (YLSPayload.buildGuideAIPayload); si la IA falla, tarda más de 25 s
+// o devuelve algo que no pasa YLSGuide.sanitizeAI, se usa sin personalizar.
+async function getGuide() {
+  if (lastGuide) return lastGuide;
+  const report = getReportData();
+  if (!report) return null;
+
+  let ai = null;
+  if (isPremiumUser() && !window.isDemoMode) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 25000);
+    try {
+      const ctx = YLSGuide.aiContext(report);
+      const { payload, aliases } = YLSPayload.buildGuideAIPayload(lastStats, report, ctx);
+      const res = await gzipFetch('/api/analyze', { mode: 'guide', aggregate: payload }, { signal: controller.signal });
+      const data = await res.json();
+      if (data.success && data.guide) {
+        ai = YLSGuide.sanitizeAI(YLSPayload.restoreDeep(data.guide, aliases), ctx);
+      }
+      console.log('[Guía] personalizada:', !!ai);
+    } catch (err) {
+      console.warn('[Guía] se usa sin personalizar:', err);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  const headlineEl = document.getElementById('rpHeadline');
+  const headline = headlineEl && headlineEl.dataset.fromAi ? headlineEl.textContent : null;
+  lastGuide = YLSGuide.assemble(report, { ai, headline });
+  return lastGuide;
+}
+
 function generateChatFingerprint(messages) {
   const first20 = messages.slice(0, 20).map(m => m.timestamp + m.sender).join('|');
   const last20 = messages.slice(-20).map(m => m.timestamp + m.sender).join('|');
@@ -3240,6 +3279,7 @@ async function processChat(text) {
   lastStats = stats;
   lastMessages = messages;
   lastReport = null;
+  lastGuide = null;
 
   // Generate fingerprint BEFORE deciding plan access
   window.currentChatFingerprint = generateChatFingerprint(messages);
@@ -3340,7 +3380,9 @@ function renderReportIndex() {
   if (!toc) return;
   const premium = isPremiumUser();
 
-  toc.innerHTML = REPORT_SECTIONS.map(item => {
+  // La sección «Si estás pensando en terminar» depende de los datos completos.
+  const ending = lastReport ? YLSGuide.includesEnding(lastReport) : (lastStats && lastStats.score < 40);
+  toc.innerHTML = YLSReport.buildIndex({ ending }).map(item => {
     if (item.part) return '<p class="label toc__part">' + item.part + '</p>';
     const locked = !premium && !item.free;
     return '<div class="toc__item' + (locked ? ' toc__item--locked' : '') + '">' +
@@ -3372,6 +3414,14 @@ function showResults(s) {
   if (groupSection) groupSection.style.display = 'none';
 
   renderReport(s);
+
+  // Los datos completos del informe se calculan justo después de pintar la
+  // vista previa, para no retrasarla, y el índice se repinta con ellos.
+  setTimeout(() => {
+    if (lastStats !== s) return;
+    getReportData();
+    renderReportIndex();
+  }, 60);
 
   resultsSection.classList.add('active');
   resultsSection.scrollIntoView({ behavior: 'smooth' });
@@ -5352,6 +5402,7 @@ async function loadDemo() {
   lastMessages = demoMessages;
   lastStats = demoStats;
   lastReport = null;
+  lastGuide = null;
 
   // Unlock all sections for demo
   window.isPremium = true;

@@ -253,6 +253,110 @@
   }
 
   /*
+   * GUÍA (solo planes de pago)
+   *
+   * report → salida de YLSMetrics.buildReportData()
+   * ctx    → YLSGuide.aiContext(report): patrones activos y conversaciones
+   *          entre las que la IA puede elegir. Solo viajan sus identificadores
+   *          y los títulos fijos de la biblioteca, nunca texto del chat.
+   *
+   * Reutiliza el agregado de pareja y le añade el detalle por persona que
+   * necesita la guía: iniciativa, preguntas, ritmos, calidez, temas y los
+   * cinco ejes. Todo números, porcentajes y categorías.
+   */
+  var SCHEMA_GUIDE = 'yls.aggregate.guide.v1';
+
+  function buildGuideAIPayload(stats, report, ctx) {
+    if (!stats || !report) throw new Error('ai-payload: faltan stats o report');
+    ctx = ctx || {};
+    var names = [stats.personA, stats.personB];
+
+    var base = buildCoupleAIPayload(stats, {
+      timeline: report.timeline,
+      silences: report.silences,
+      doubleText: report.doubleText,
+      multimedia: report.multimedia,
+      deleted: report.deleted
+    });
+    var aliases = base.aliases;
+
+    function personOf(list, name) {
+      for (var i = 0; i < (list || []).length; i++) if (list[i].name === name) return list[i];
+      return {};
+    }
+
+    var people = names.map(function (name, i) {
+      var c = personOf(report.conversations && report.conversations.people, name);
+      var q = personOf(report.questions && report.questions.people, name);
+      var r = personOf(report.rhythms && report.rhythms.people, name);
+      var w = personOf(report.warmth && report.warmth.people, name);
+      var ind = personOf(report.individual && report.individual.people, name);
+      var scores = ind.scores || {};
+      return {
+        label: aliases.alias[i],
+        openedPct: num(c.openedPct),
+        openedPctEarly: num(c.openedPctEarly),
+        openedPctLate: num(c.openedPctLate),
+        closedPct: num(c.closedPct),
+        questionsAsked: num(q.asked),
+        unansweredPct: num(q.unansweredPct),
+        unansweredPctEarly: num(q.unansweredPctEarly),
+        unansweredPctLate: num(q.unansweredPctLate),
+        replyMedianMin: r.medianMin === null || r.medianMin === undefined ? null : round(r.medianMin, 1),
+        replyMedianMinEarly: r.medianMinEarly === null || r.medianMinEarly === undefined ? null : round(r.medianMinEarly, 1),
+        replyMedianMinLate: r.medianMinLate === null || r.medianMinLate === undefined ? null : round(r.medianMinLate, 1),
+        lateNightPct: num(r.lateNightPct),
+        warmthPer100Early: round(w.per100Early, 1),
+        warmthPer100Late: round(w.per100Late, 1),
+        axes: {
+          iniciativa: scores.iniciativa === null ? null : num(scores.iniciativa),
+          ritmo: scores.ritmo === null ? null : num(scores.ritmo),
+          calidez: scores.calidez === null ? null : num(scores.calidez),
+          constancia: scores.constancia === null ? null : num(scores.constancia),
+          atencion: scores.atencion === null ? null : num(scores.atencion)
+        }
+      };
+    });
+
+    var topics = ((report.topics && report.topics.topics) || []).map(function (t) {
+      return {
+        key: String(t.key),
+        label: String(t.label),
+        mentions: num(t.mentions),
+        avoided: !!t.avoided,
+        avoidedBy: (t.avoidedBy || []).map(function (n) { return aliases.toAlias(n); }).filter(Boolean)
+      };
+    });
+
+    var payload = {
+      schema: SCHEMA_GUIDE,
+      couple: base.payload,
+      detail: {
+        recentScore: report.recentStats ? num(report.recentStats.score) : null,
+        people: people,
+        topics: topics,
+        rituals: (((report.rituals && report.rituals.rituals) || [])).map(function (r) {
+          return { key: String(r.key), present: !!r.present, trend: String(r.trend), daysPct: num(r.daysPct) };
+        }),
+        turningPoints: (report.turningPoints || []).map(function (t) {
+          return { month: String(t.month || ''), direction: t.direction === 'up' ? 'up' : 'down', pct: num(t.pct) };
+        }),
+        endsInSilence: !!(report.ending && report.ending.endsInSilence),
+        daysSinceLast: report.ending ? num(report.ending.daysSinceLast) : 0
+      },
+      patterns: (ctx.patterns || []).map(function (p) {
+        return { id: String(p.id), severity: num(p.severity), title: String(p.title || '') };
+      }),
+      conversationOptions: (ctx.conversations || []).map(function (c) {
+        return { id: String(c.id), title: String(c.title || '') };
+      })
+    };
+
+    assertNoIdentifiers(payload, names);
+    return { payload: payload, aliases: aliases };
+  }
+
+  /*
    * GRUPO
    *
    * groupStats → salida de analyzeGroupMessages()
@@ -307,7 +411,9 @@
     createAliasMap: createAliasMap,
     restoreDeep: restoreDeep,
     assertNoIdentifiers: assertNoIdentifiers,
+    SCHEMA_GUIDE: SCHEMA_GUIDE,
     buildCoupleAIPayload: buildCoupleAIPayload,
+    buildGuideAIPayload: buildGuideAIPayload,
     buildGroupAIPayload: buildGroupAIPayload
   };
 })(typeof window !== 'undefined' ? window : globalThis);
