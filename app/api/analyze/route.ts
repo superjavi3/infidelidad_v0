@@ -190,6 +190,7 @@ ${LABEL_RULE}
 
 Responde SOLO en JSON con esta estructura exacta:
 {
+  "headline": "La frase más importante del análisis, en una sola línea, en segunda persona y sin dramatizar",
   "whoLeads": "Dos frases sobre quién lleva el ritmo de la conversación y qué muestran los números",
   "funInsight": "Un dato llamativo y concreto de estas estadísticas, en una frase"
 }

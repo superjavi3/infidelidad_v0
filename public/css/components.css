@@ -521,3 +521,124 @@
 
 /* Contenido de las pestañas de exportación */
 .v3 .os-tab-content[hidden] { display: none; }
+
+/* ══ VISTA PREVIA DEL INFORME ══ */
+.v3 .report { display: none; padding-block: var(--space-6); }
+.v3 .report.active { display: block; }
+
+.v3 .report__cover {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-2);
+  padding: var(--space-5) var(--space-4);
+}
+
+.v3 .report__names {
+  font-size: var(--step-2);
+  margin-top: var(--space-2);
+}
+
+.v3 .report__headline {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: var(--step-1);
+  line-height: 1.4;
+  color: var(--ink);
+  max-width: var(--measure);
+  margin: var(--space-3) 0 0;
+}
+
+.v3 .report__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-5) 0 0;
+}
+.v3 .report__meta dt { margin-bottom: var(--space-1); }
+.v3 .report__meta-value {
+  margin: 0;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.v3 .report__plan {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+.v3 .report__part {
+  padding-top: var(--space-6);
+  margin-top: var(--space-6);
+  border-top: 1px solid var(--line);
+}
+
+.v3 .report__verdict {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: var(--step-1);
+  line-height: 1.4;
+  max-width: var(--measure);
+  margin: var(--space-3) 0 var(--space-5);
+}
+
+.v3 .report__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+/* Las secciones de pago se listan con su descripción, nunca borrosas:
+   se vende por contenido. El candado es tipográfico, no un efecto. */
+.v3 .toc__item--locked .toc__num,
+.v3 .toc__item--locked .toc__title { color: var(--ink-2); }
+.v3 .toc__item--locked .toc__title::after {
+  content: '·  incluido en el informe completo';
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--accent-ink);
+  white-space: nowrap;
+  margin-left: var(--space-2);
+}
+
+.v3 .report__actions {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+.v3 .report__actions .btn { width: 100%; }
+
+.v3 .report__unlock-copy {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: var(--step-1);
+  line-height: 1.4;
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .v3 .report__meta { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .v3 .report__actions { flex-direction: row; align-items: center; flex-wrap: wrap; }
+  .v3 .report__actions .btn { width: auto; }
+  .v3 .report__unlock-copy { flex-basis: 100%; }
+  .v3 .report__actions .note { flex-basis: 100%; margin-top: 0 !important; }
+}
+
+/* Vuelta desde Stripe sin el chat en memoria. */
+.v3 .paid-notice {
+  border: 1px solid var(--accent-2);
+  border-radius: var(--radius);
+  background: var(--paper);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.v3 .paid-notice p:last-child { color: var(--ink-2); margin: var(--space-2) 0 0; }
+.v3 .paid-notice .label { color: var(--accent-2); }
