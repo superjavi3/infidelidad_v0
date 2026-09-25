@@ -2048,6 +2048,33 @@ function goToUpload(from) {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') box.classList.remove('open'); });
 })();
 
+// Participantes del chat y limpieza de mensajes pegados.
+// Mensajes copiados de otro chat y pegados en uno: WhatsApp exporta cada línea pegada como
+// «[fecha] Nombre: texto» y parecen de otras personas. Si fuera de las dos personas
+// principales solo hay un puñado de líneas, se descartan en vez de tomarlo por un grupo.
+// Solo cambia algo en chats que antes se rechazaban, así que no altera la huella de ningún pago.
+// La huella (hookDiaryIntoFlow) se calcula sobre esta misma lista limpia.
+function dropPastedLines(messages) {
+  const fake = ['meta ai', 'meta ia'];
+  const counts = {};
+  messages.forEach(m => {
+    if (m.sender && !isWaSystem(m) && !fake.includes(m.sender.toLowerCase().trim())) {
+      counts[m.sender] = (counts[m.sender] || 0) + 1;
+    }
+  });
+  const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  if (ranked.length <= 2) return { messages, senders: ranked.map(([name]) => name) };
+  const total = ranked.reduce((n, [, c]) => n + c, 0);
+  const extras = ranked.slice(2);
+  const extraTotal = extras.reduce((n, [, c]) => n + c, 0);
+  if (extras.every(([, c]) => c <= total * 0.02) && extraTotal <= total * 0.05) {
+    const drop = new Set(extras.map(([name]) => name));
+    console.log('[Chat] Líneas pegadas descartadas:', extraTotal);
+    return { messages: messages.filter(m => !drop.has(m.sender)), senders: ranked.slice(0, 2).map(([name]) => name) };
+  }
+  return { messages, senders: ranked.map(([name]) => name) };
+}
+
 // ── PROCESS FLOW ──
 async function processChat(text) {
   trackFunnel('chat_uploaded');
@@ -2069,7 +2096,7 @@ async function processChat(text) {
   steps[steps.length-1].classList.add('done');
 
   // Parse
-  const messages = parseWhatsApp(text);
+  let messages = parseWhatsApp(text);
 
   if (messages.length < 10) {
     alert('No se pudieron detectar suficientes mensajes. Asegúrate de exportar el chat de WhatsApp como archivo .txt sin media.');
@@ -2078,15 +2105,9 @@ async function processChat(text) {
   }
 
   // Check for group chats (>2 participants)
-  const _quickFake = ['meta ai', 'meta ia'];
-  const _senderCounts = {};
-  messages.forEach(m => {
-    if (m.sender && !isWaSystem(m)
-        && !_quickFake.includes(m.sender.toLowerCase().trim())) {
-      _senderCounts[m.sender] = (_senderCounts[m.sender] || 0) + 1;
-    }
-  });
-  const _uniqueSenders = Object.keys(_senderCounts);
+  const _clean = dropPastedLines(messages);
+  messages = _clean.messages;
+  const _uniqueSenders = _clean.senders;
   if (_uniqueSenders.length > 2) {
     alert('Este chat tiene más de dos personas. YaLoSabía analiza chats de pareja: sube la conversación entre tú y la otra persona.');
     resetUpload();
@@ -3995,7 +4016,7 @@ async function loadDiaryAI(messages, stats) {
   processChat = async function(text) {
     window.lastRawChat = text;
     window.currentChatFp = null;
-    try { window.currentChatFp = await chatFingerprint(parseWhatsApp(text)); } catch (e) { console.warn('[Diario] Sin huella del chat', e); }
+    try { window.currentChatFp = await chatFingerprint(dropPastedLines(parseWhatsApp(text)).messages); } catch (e) { console.warn('[Diario] Sin huella del chat', e); }
     return _process(text);
   };
 
