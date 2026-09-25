@@ -1,6 +1,6 @@
 # YaLoSabía — contexto del proyecto
 
-Web que convierte un chat de WhatsApp de pareja en **«su diario»**: un PDF de 13 páginas con la historia de la relación. Público: México (español de México, «ustedes», nunca «vosotros»). Producción: https://www.yalosabia.com (repo `superjavi3/infidelidad_v0`; «el proyecto de infidelidad» para el dueño, Javi).
+Web que convierte un chat de WhatsApp de pareja en **«su diario»**: un PDF de 14 páginas con la historia de la relación. Público: México (español de México, «ustedes», nunca «vosotros»). Producción: https://www.yalosabia.com (repo `superjavi3/infidelidad_v0`; «el proyecto de infidelidad» para el dueño, Javi).
 
 ## El producto (decidido en septiembre de 2026)
 
@@ -37,13 +37,16 @@ Web que convierte un chat de WhatsApp de pareja en **«su diario»**: un PDF de 
 ### Dentro de `public/index.html` (script principal, por orden)
 Parser de WhatsApp (`parseWhatsApp`) → `analyzeMessages` (índice 0-100, `verdict`) → `processChat` → `showResults` (adelanto) → análisis que usa el PDF (`analyzeRelationshipTimeline`, `analyzeSilences`, `analyzeDoubleTexting`, `analyzeMultimedia`, `analyzeDeletedMessages`, `analyzeForensicReconstruction`, `analyzeBeforeVsNow`, `analyzeSelectiveGhosting`, `analyzeLanguageChanges`) → modo demo (`loadDemo`, `generateDemoMessages`).
 Bloque «PREMIUM PLAN SYSTEM»: precios, estado de pago (`rememberPurchase`, `sessionForChat`, `loadPremiumState`, `revokePremium`, `revalidateStoredPayment`), modal de pago, `checkPaymentSuccess`.
-Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeople`, adelanto (`renderLockedIndex`, `refreshDiaryState`), `loadDiaryAI`, IndexedDB, Story (`shareToStories`) y **PDF** (`buildDiaryPages` → 13 páginas, `generatePDF`).
+Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeople`, adelanto (`renderLockedIndex`, `refreshDiaryState`), `loadDiaryAI`, IndexedDB, Story (`shareToStories`) y **PDF** (`buildDiaryPages` → 14 páginas, `generatePDF`).
+- `computeMoments`: hasta 4 «días que recordar» (primer mensaje, primer «te quiero», día con más mensajes, último «te quiero» o vuelta tras el silencio más largo) con sus mensajes reales; se envían a Gemini para que escriba un texto por momento.
+- `verifyQuote`: toda cita que devuelve la IA (perfiles, señales, frases para guardar, mensaje final) solo se pinta si existe **tal cual** en el chat. Si no, se omite.
+- `isWaSystem` / `WA_SYSTEM_RE`: avisos automáticos de WhatsApp (cifrado, llamadas, mensajes temporales…). Se excluyen de todo lo que se pinta; el servidor tiene la misma regex para la muestra de la IA.
 
 ## Seguridad del pago (importante)
 
 - **Stripe es la única fuente de verdad.** No hay tabla de compras. El navegador solo guarda `session_id`s (`localStorage`: `yalosabia_plan_v2` y `yalosabia_diaries` = `{huella: session_id}`).
 - El servidor escribe el diario solo si la sesión está pagada, sin reembolso (ni parcial) ni disputa, **y** la huella de los mensajes recibidos coincide con `metadata.chat_fp`. Si no: 402 o 403 y no se llama a Gemini.
-- **Huella del chat** = SHA-256 de `JSON.stringify([[date,time,sender,text], …])` sobre los mensajes de texto (`diaryPayload` en el cliente = lo que se envía). Cliente (`chatFingerprint` con `crypto.subtle`) y servidor (`lib/payments.ts`) **deben calcularla igual**: si cambias `isRealText`, el formato de mensaje o el orden, cambia en los dos sitios.
+- **Huella del chat** = SHA-256 de `JSON.stringify([[date,time,sender,text], …])` sobre los mensajes de texto (`diaryPayload` en el cliente = lo que se envía). Cliente (`chatFingerprint` con `crypto.subtle`) y servidor (`lib/payments.ts`) **deben calcularla igual**: la lista sale de `isRealTextV1` (congelado): **no lo cambies** o los chats ya pagados darán 403. Para filtrar más cosas en el PDF, cambia `isRealText`/`isWaSystem`, que no afectan a la huella.
 - Las compras anteriores a «un pago = un diario» no tienen huella y valen para cualquier chat.
 - Ya no existe ninguna clave de admin. Para probar con acceso usa el preview estático (abajo) o un pago real reembolsado.
 

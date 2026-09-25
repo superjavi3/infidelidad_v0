@@ -16,20 +16,31 @@ const root = resolve(process.argv[2] || 'public');
 const port = Number(process.argv[3] || 5173);
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json', '.txt': 'text/plain' };
 
+// Las citas son textos que existen en el chat de ejemplo (generateDemoMessages) para que pasen la verificación
 const DIARY = {
+  opening: 'Querida Laura, querido Carlos: leímos cada uno de sus mensajes, desde aquel primer «qué día más largo» hasta el último buenas noches. Esto es lo que encontramos.',
   profiles: {
-    A: { archetype: '«la que inicia»', description: 'Empieza casi todas las conversaciones y cuenta su día con detalle.', traits: ['directa', 'nocturna', 'detallista'] },
-    B: { archetype: '«el que cierra con broma»', description: 'Tiene la última palabra en casi todas las discusiones, casi siempre con humor.', traits: ['relajado', 'conciliador', 'de día'] },
+    A: { archetype: '«la que inicia»', description: 'Empieza casi todas las conversaciones y cuenta su día con detalle.', traits: ['directa', 'nocturna', 'detallista'], quote: { text: '¿Comemos juntos?' } },
+    B: { archetype: '«el que cierra con broma»', description: 'Tiene la última palabra en casi todas las discusiones, casi siempre con humor.', traits: ['relajado', 'conciliador', 'de día'], quote: { text: 'Qué día más largo' } },
   },
+  moments: [
+    { id: 'first', text: 'Empezó con algo tan pequeño como un día largo. Ninguno de los dos sabía que ahí empezaba todo.' },
+    { id: 'love', text: 'Lo dijeron casi sin pensarlo, y la respuesta llegó enseguida. Hay cosas que no hace falta preparar.' },
+    { id: 'busiest', text: 'Ese día no se soltaron: cientos de mensajes, como si no quisieran que la conversación se acabara.' },
+    { id: 'lastLove', text: 'La última vez que se lo escribieron. Quizá se lo dicen en persona; quizá toca volver a escribirlo.' },
+    { id: 'silence', text: 'Después de días sin hablar, alguien dio el primer paso. Eso también es querer.' },
+  ],
   compatibility: {
     percent: 78, summary: 'Se entienden muy bien en lo emocional; chocan en los tiempos.',
     loveLanguages: { A: { palabras: 90, tiempo: 70, servicio: 40, contacto: 50, regalos: 20 }, B: { palabras: 65, tiempo: 85, servicio: 60, contacto: 45, regalos: 30 } },
     strengths: ['Se dicen lo que sienten', 'Se ríen mucho juntos'], toWork: ['Los tiempos al discutir', 'Más planes a futuro'],
   },
-  signals: { toWatch: [{ title: 'Se dejan de hablar después de discutir', detail: 'Los silencios largos llegan tras un desacuerdo.', level: 'importante' }], greenFlags: ['Se dan las buenas noches casi a diario'] },
+  signals: { toWatch: [{ title: 'Se dejan de hablar después de discutir', detail: 'Los silencios largos llegan tras un desacuerdo.', level: 'importante', quote: { text: 'Tenemos que hablar de lo nuestro' } }], greenFlags: ['Se dan las buenas noches casi a diario'] },
   forecast: { level: 'estable', position: 68, headline: 'Buen rumbo, con una condición.', explanation: 'Se buscan a diario y el cariño se mantiene.', pros: ['Hablan todos los días'], cons: ['Silencios tras discutir'], condition: 'No dejarse de hablar cuando discuten.' },
   advice: [1, 2, 3, 4, 5].map(i => ({ title: `Consejo ${i}`, text: 'Texto de ejemplo del consejo.' })),
   bestMessage: null,
+  quotesToKeep: [{ text: 'Eres lo mejor que me ha pasado' }, { text: 'Gracias por existir' }, { text: 'Estoy muy bien contigo' }],
+  closing: 'Ojalá este diario les recuerde por qué empezaron a escribirse. Y ojalá esta noche alguno de los dos escriba primero.',
 };
 
 createServer(async (req, res) => {
