@@ -1,0 +1,51 @@
+// Preview local de public/ sin Next, sin Stripe y sin Gemini.
+// /api/pricing devuelve el precio de México y /api/analyze un diario de ejemplo,
+// así se puede recorrer todo el flujo (adelanto → pago simulado → PDF) sin gastar nada.
+// Uso: npm run preview:static  →  http://localhost:5173
+//
+// En la consola del navegador:
+//   loadDemo()                                   chat de ejemplo (modo demo: muestra el paywall)
+//   await processChat(texto)                      procesa un export de WhatsApp como texto
+//   rememberPurchase('cs_test_x'.padEnd(20,'x'), window.currentChatFp); onNewChatLoaded(); unlockPlan()
+//                                                  simula que este chat está pagado → «¡Listo!» + PDF
+import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { extname, join, resolve } from 'node:path';
+
+const root = resolve(process.argv[2] || 'public');
+const port = Number(process.argv[3] || 5173);
+const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json', '.txt': 'text/plain' };
+
+const DIARY = {
+  profiles: {
+    A: { archetype: '«la que inicia»', description: 'Empieza casi todas las conversaciones y cuenta su día con detalle.', traits: ['directa', 'nocturna', 'detallista'] },
+    B: { archetype: '«el que cierra con broma»', description: 'Tiene la última palabra en casi todas las discusiones, casi siempre con humor.', traits: ['relajado', 'conciliador', 'de día'] },
+  },
+  compatibility: {
+    percent: 78, summary: 'Se entienden muy bien en lo emocional; chocan en los tiempos.',
+    loveLanguages: { A: { palabras: 90, tiempo: 70, servicio: 40, contacto: 50, regalos: 20 }, B: { palabras: 65, tiempo: 85, servicio: 60, contacto: 45, regalos: 30 } },
+    strengths: ['Se dicen lo que sienten', 'Se ríen mucho juntos'], toWork: ['Los tiempos al discutir', 'Más planes a futuro'],
+  },
+  signals: { toWatch: [{ title: 'Se dejan de hablar después de discutir', detail: 'Los silencios largos llegan tras un desacuerdo.', level: 'importante' }], greenFlags: ['Se dan las buenas noches casi a diario'] },
+  forecast: { level: 'estable', position: 68, headline: 'Buen rumbo, con una condición.', explanation: 'Se buscan a diario y el cariño se mantiene.', pros: ['Hablan todos los días'], cons: ['Silencios tras discutir'], condition: 'No dejarse de hablar cuando discuten.' },
+  advice: [1, 2, 3, 4, 5].map(i => ({ title: `Consejo ${i}`, text: 'Texto de ejemplo del consejo.' })),
+  bestMessage: null,
+};
+
+createServer(async (req, res) => {
+  const url = decodeURIComponent(req.url.split('?')[0]);
+  const json = (status, body) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)); };
+  if (url === '/api/pricing') return json(200, { country: 'MX', currency: 'mxn', symbol: '$', label: 'MXN', premium: 12900, premiumFormatted: '$129', isZeroDecimal: false });
+  if (url === '/api/analyze') return json(200, { success: true, diary: DIARY });
+  if (url.startsWith('/api/')) return json(503, { success: false, error: 'API no disponible en el preview estático' });
+
+  const file = join(root, url === '/' ? 'index.html' : url);
+  if (!file.startsWith(root)) { res.writeHead(403); return res.end(); }
+  try {
+    const data = await readFile(file);
+    res.writeHead(200, { 'Content-Type': types[extname(file)] || 'application/octet-stream' });
+    res.end(data);
+  } catch {
+    res.writeHead(404); res.end('not found');
+  }
+}).listen(port, () => console.log(`Preview estático en http://localhost:${port}`));

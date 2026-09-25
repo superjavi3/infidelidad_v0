@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:html": "node scripts/check-inline-js.mjs public/index.html",
+    "preview:static": "node scripts/preview-static.mjs public 5173"
   },
   "dependencies": {
     "@stripe/stripe-js": "^8.8.0",
