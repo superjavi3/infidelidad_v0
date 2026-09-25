@@ -13,6 +13,9 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemi
 
 const REJECTED_KEYS = ['messages', 'message', 'text', 'sender', 'chatHistory', 'question'];
 
+// La guía pide una respuesta más larga que el resto de modos.
+export const maxDuration = 30;
+
 type Json = Record<string, any>;
 
 async function askGemini(prompt: string, maxOutputTokens: number, temperature = 0.3): Promise<string | null> {
@@ -31,6 +34,113 @@ async function askGemini(prompt: string, maxOutputTokens: number, temperature = 
     return null;
   }
   return String(data.candidates[0].content.parts[0].text || '').replace(/```json/g, '').replace(/```/g, '').trim();
+}
+
+/*
+ * Igual que askGemini, pero pidiendo JSON con un schema estricto. Gemini
+ * garantiza la forma; el contenido lo valida después el cliente
+ * (YLSGuide.sanitizeAI) y descarta lo que no cumpla.
+ */
+async function askGeminiJson(prompt: string, schema: Json, maxOutputTokens: number, temperature = 0.2): Promise<Json | null> {
+  const response = await fetch(GEMINI_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature,
+        maxOutputTokens,
+        responseMimeType: 'application/json',
+        responseSchema: schema,
+        thinkingConfig: { thinkingBudget: 0 }
+      }
+    })
+  });
+  const data = await response.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) {
+    console.error('Gemini sin respuesta:', JSON.stringify(data).substring(0, 300));
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(text);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return extractJson(text, 'object');
+  }
+}
+
+const GUIDE_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    headline: { type: 'STRING' },
+    onePage: {
+      type: 'OBJECT',
+      properties: {
+        summary: { type: 'STRING' },
+        good: { type: 'ARRAY', items: { type: 'STRING' } },
+        watch: { type: 'ARRAY', items: { type: 'STRING' } }
+      },
+      required: ['summary', 'good', 'watch']
+    },
+    patterns: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: { id: { type: 'STRING' }, intro: { type: 'STRING' } },
+        required: ['id', 'intro']
+      }
+    },
+    conversations: { type: 'ARRAY', items: { type: 'STRING' } },
+    plan: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          week: { type: 'INTEGER' },
+          focus: { type: 'STRING' },
+          actions: { type: 'ARRAY', items: { type: 'STRING' } }
+        },
+        required: ['week', 'focus', 'actions']
+      }
+    }
+  },
+  required: ['headline', 'onePage', 'patterns', 'conversations', 'plan']
+};
+
+/* El detalle por persona que añade el agregado de la guía. */
+function describeGuideDetail(d: Json): string {
+  const fmt = (v: any, suffix = '') => (v === null || v === undefined ? 'sin datos' : `${v}${suffix}`);
+  const people = (d.people || []).map((p: Json) => [
+    `  - ${p.label}:`,
+    `abre el ${p.openedPct}% de las conversaciones (${p.openedPctEarly}% en la primera mitad, ${p.openedPctLate}% en la segunda);`,
+    `cierra el ${p.closedPct}%;`,
+    `hizo ${p.questionsAsked} preguntas, ${p.unansweredPct}% sin respuesta en 12 h (${p.unansweredPctEarly}% → ${p.unansweredPctLate}%);`,
+    `contesta en ${fmt(p.replyMedianMin, ' min')} de mediana (${fmt(p.replyMedianMinEarly, ' min')} → ${fmt(p.replyMedianMinLate, ' min')});`,
+    `${p.lateNightPct}% de sus mensajes entre las 22 y las 6 h;`,
+    `afecto escrito ${p.warmthPer100Early} → ${p.warmthPer100Late} por cada 100 mensajes;`,
+    `ejes 0-100: iniciativa ${fmt(p.axes?.iniciativa)}, ritmo ${fmt(p.axes?.ritmo)}, calidez ${fmt(p.axes?.calidez)}, constancia ${fmt(p.axes?.constancia)}, atención ${fmt(p.axes?.atencion)}`
+  ].join(' ')).join('\n');
+
+  const topics = (d.topics || [])
+    .filter((t: Json) => t.mentions > 0)
+    .map((t: Json) => `${t.label} (${t.mentions} veces${t.avoided ? `, cuesta a ${(t.avoidedBy || []).join(' y ')}` : ''})`)
+    .join(', ');
+  const rituals = (d.rituals || [])
+    .map((r: Json) => `${r.key}: ${r.present ? `presente en el ${r.daysPct}% de los días, ${r.trend}` : 'casi ausente'}`)
+    .join('; ');
+  const turning = (d.turningPoints || [])
+    .map((t: Json) => `${t.month} (${t.direction === 'up' ? '+' : '−'}${t.pct}%)`)
+    .join(', ');
+
+  return [
+    `- Score de los últimos 90 días: ${fmt(d.recentScore)}`,
+    `- Por persona:\n${people}`,
+    `- Temas: ${topics || 'sin datos suficientes'}`,
+    `- Rituales: ${rituals || 'ninguno detectado'}`,
+    `- Momentos de cambio: ${turning || 'ninguno marcado'}`,
+    `- La conversación terminó en silencio: ${d.endsInSilence ? `sí, hace ${d.daysSinceLast} días` : 'no'}`
+  ].join('\n');
 }
 
 function extractJson(text: string, shape: 'object' | 'array'): any | null {
@@ -135,6 +245,47 @@ Reglas: habla en segunda persona, con calidez y sin dramatizar. Apóyate en los 
 
       const text = await askGemini(prompt, 800);
       return NextResponse.json({ success: true, summary: text || 'Resumen no disponible.' });
+    }
+
+    // ═══ GUÍA PERSONALIZADA (planes de pago) ═══
+    if (mode === 'guide') {
+      const couple = aggregate.couple || {};
+      const detail = aggregate.detail || {};
+      const patterns = (aggregate.patterns || [])
+        .map((p: Json) => `  - ${p.id}: «${p.title}» (gravedad ${p.severity} de 3)`)
+        .join('\n');
+      const options = (aggregate.conversationOptions || [])
+        .map((c: Json) => `  - ${c.id}: «${c.title}»`)
+        .join('\n');
+
+      const prompt = `Eres quien redacta un informe personal sobre la conversación de WhatsApp de una pareja. El informe ya tiene una guía escrita por expertos para cada patrón; tu trabajo es personalizarla con los números de este chat.
+
+DATOS DEL CHAT (solo estadísticas, nunca mensajes):
+${describeCouple(couple)}
+${describeGuideDetail(detail)}
+
+PATRONES QUE MERECEN ATENCIÓN (id: título):
+${patterns || '  - ninguno'}
+
+CONVERSACIONES DISPONIBLES (id: título):
+${options}
+
+${LABEL_RULE}
+
+ESCRIBE, en español neutro de México (tú, nunca vosotros):
+1. "headline": la frase más importante del análisis, una sola línea (máximo 140 caracteres), en segunda persona.
+2. "onePage": "summary" (2 o 3 frases que explican el score con palabras), "good" (hasta 3 frases con lo que va bien, cada una con un número concreto) y "watch" (hasta 3 frases con lo que merece atención, cada una con un número concreto).
+3. "patterns": para CADA patrón de la lista, un objeto con su "id" exacto y un "intro" de 2 a 3 frases que cuente lo que muestran los números de este chat para ese patrón. Sin interpretar intenciones.
+4. "conversations": entre 3 y 5 ids de la lista de conversaciones disponibles, ordenados de más a menos útil para este chat.
+5. "plan": exactamente 4 semanas (week 1 a 4). Semana 1 observar, 2 hablar, 3 probar algo distinto, 4 comparar. Cada una con "focus" (máximo 6 palabras) y "actions": 2 o 3 acciones pequeñas, concretas y medibles, en segunda persona.
+
+REGLAS: tono claro, cálido y honesto. Sin dramatizar y sin culpar a nadie. Nada de términos clínicos ni etiquetas («tóxico», «narcisista», «apego ansioso», «red flag», «infiel»). No digas qué debe hacer con la relación: da herramientas para decidir. No uses emojis. Usa solo los números de arriba; no inventes datos.`;
+
+      const guide = await askGeminiJson(prompt, GUIDE_SCHEMA, 3000, 0.2);
+      if (!guide) {
+        return NextResponse.json({ success: false, error: 'Sin respuesta de Gemini' }, { status: 502 });
+      }
+      return NextResponse.json({ success: true, guide });
     }
 
     // ═══ DATO CURIOSO DEL GRUPO ═══

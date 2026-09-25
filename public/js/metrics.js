@@ -1562,7 +1562,9 @@ function getLanguageVerdict(personData) {
     const data = (timeline && timeline.data) || [];
     const labels = (timeline && timeline.labelsLong) || [];
     const candidates = [];
-    for (let i = 2; i < data.length; i++) {
+    // El último mes del export casi siempre está a medias: no se marca.
+    const last = data.length > 3 ? data.length - 1 : data.length;
+    for (let i = 2; i < last; i++) {
       const prev = data.slice(Math.max(0, i - 3), i);
       const avg = prev.reduce((s, v) => s + v, 0) / prev.length;
       if (avg < 30) continue;
@@ -1579,16 +1581,18 @@ function getLanguageVerdict(personData) {
     chosen.sort((a, b) => a.index - b.index);
     return chosen.map(c => {
       const p = Math.round(Math.abs(c.rel) * 100);
-      const month = (labels[c.index] || '').toLowerCase();
+      // «Agosto 2025» → «agosto de 2025».
+      const month = (labels[c.index] || '').toLowerCase().replace(/ (\d{4})$/, ' de $1');
       const up = c.rel > 0;
       return {
         index: c.index,
         label: labels[c.index] || '',
+        month,
         direction: up ? 'up' : 'down',
         pct: p,
         sentence: up
-          ? 'En ' + month + ' la conversación creció un ' + p + ' % respecto a los meses anteriores.'
-          : 'En ' + month + ' la conversación bajó un ' + p + ' % respecto a los meses anteriores.'
+          ? 'En ' + month + ' la conversación creció un ' + p + '% respecto a los meses anteriores.'
+          : 'En ' + month + ' la conversación bajó un ' + p + '% respecto a los meses anteriores.'
       };
     });
   }
@@ -1729,8 +1733,27 @@ function getLanguageVerdict(personData) {
       }
     }
 
+    // El score de los últimos 90 días, con el mismo analyzeMessages y los
+    // mismos umbrales. El del periodo completo promedia años de chat y puede
+    // seguir alto en una conversación que ya se apagó.
+    let recentStats = null;
+    if (sorted.length) {
+      const lastMs = sorted[sorted.length - 1].timestamp.getTime();
+      if ((lastMs - sorted[0].timestamp.getTime()) / DAY >= 180) {
+        const recentMsgs = own.filter(m => {
+          try { return lastMs - parseMessageDate(m.date, m.time, m.ampm).getTime() <= 90 * DAY; }
+          catch (e) { return false; }
+        });
+        const rs = recentMsgs.length >= 50 ? analyzeMessages(recentMsgs) : null;
+        if (rs && rs.personA && [stats.personA, stats.personB].indexOf(rs.personA) !== -1) {
+          recentStats = { score: rs.score, total: rs.total, avgReplyFormatted: rs.avgReplyFormatted, factors: rs.factors, windowDays: 90 };
+        }
+      }
+    }
+
     return {
       stats,
+      recentStats,
       timeline,
       turningPoints: findTurningPoints(timeline),
       conversations,

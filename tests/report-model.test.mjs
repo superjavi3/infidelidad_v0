@@ -11,7 +11,7 @@ const source = readFileSync(new URL('../public/js/report-model.js', import.meta.
 const sandbox = { window: {} };
 vm.createContext(sandbox);
 vm.runInContext(source, sandbox);
-const { REPORT_SECTIONS, firstName, scoreInWords, buildOnePage } = sandbox.window.YLSReport;
+const { REPORT_SECTIONS, buildIndex, firstName, scoreInWords, buildOnePage } = sandbox.window.YLSReport;
 
 /* El modelo se evalúa dentro del vm, así que sus objetos llevan el prototipo
    de ese realm y deepEqual los rechazaría. */
@@ -139,4 +139,18 @@ test('solo «En una página» es gratis, y todas las secciones se describen', ()
     assert.ok(s.title && s.title.length > 3, `sección ${s.n} sin título`);
     assert.ok(s.desc && s.desc.length > 20, `sección ${s.n} sin descripción`);
   }
+});
+
+test('la sección de final solo entra cuando toca y renumera lo que sigue', () => {
+  const normal = wire(buildIndex()).filter(s => s.n);
+  assert.equal(normal.length, 17);
+  assert.deepEqual(normal.map(s => s.n), wire(REPORT_SECTIONS.filter(s => s.n).map(s => s.n)));
+
+  const withEnding = wire(buildIndex({ ending: true })).filter(s => s.n);
+  assert.equal(withEnding.length, 18);
+  const i = withEnding.findIndex(s => s.conditional);
+  assert.equal(withEnding[i].n, '16');
+  assert.equal(withEnding[i - 1].title, 'Cómo cuidar la relación a partir de ahora');
+  assert.equal(withEnding[i + 1].n, '17');
+  assert.equal(withEnding[withEnding.length - 1].n, '18');
 });

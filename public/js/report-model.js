@@ -49,6 +49,29 @@
       desc: 'El resumen, para releer dentro de un mes.' }
   ];
 
+  // Solo aparece si el score es bajo o el chat terminó en silencio. Se
+  // inserta detrás de «Cómo cuidar la relación» y renumera lo que sigue.
+  const ENDING_SECTION = {
+    title: 'Si estás pensando en terminar, o ya terminó',
+    desc: 'Cómo leer este informe sin castigarte, qué patrones son tuyos y qué aprender de ellos.'
+  };
+
+  function buildIndex(opts) {
+    opts = opts || {};
+    const out = [];
+    let n = 0;
+    REPORT_SECTIONS.forEach(item => {
+      if (item.part) { out.push(item); return; }
+      n++;
+      out.push(Object.assign({}, item, { n: String(n).padStart(2, '0') }));
+      if (opts.ending && item.n === '15') {
+        n++;
+        out.push(Object.assign({}, ENDING_SECTION, { n: String(n).padStart(2, '0'), conditional: true }));
+      }
+    });
+    return out;
+  }
+
   function firstName(name) {
     return String(name || '').trim().split(/\s+/)[0] || 'Persona';
   }
@@ -119,6 +142,7 @@
 
   root.YLSReport = {
     REPORT_SECTIONS: REPORT_SECTIONS,
+    buildIndex: buildIndex,
     firstName: firstName,
     formatReportDate: formatReportDate,
     scoreInWords: scoreInWords,
