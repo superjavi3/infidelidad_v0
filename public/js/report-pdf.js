@@ -980,6 +980,9 @@
     const a = document.createElement('a');
     a.href = url;
     a.download = name;
+    // El nombre del archivo lleva los nombres de pila: que el autocapture de
+    // PostHog no registre este clic.
+    a.className = 'ph-no-capture';
     document.body.appendChild(a);
     a.click();
     a.remove();
