@@ -859,7 +859,8 @@ function analyzeLanguageChanges(sorted, stats) {
     function wordFreqs(msgs) {
       const freq = {};
       msgs.forEach(m => {
-        const words = m.text.toLowerCase().match(/\b[a-záéíóúñü]{4,}\b/g) || [];
+        // Sin \b: en JS solo entiende ASCII y cortaba «llegué» en «lleg».
+        const words = m.text.toLowerCase().match(/[a-záéíóúñü]{4,}/g) || [];
         words.forEach(w => {
           if (!isStopword(w, nameWords)) freq[w] = (freq[w] || 0) + 1;
         });
