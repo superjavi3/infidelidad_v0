@@ -5,7 +5,7 @@ Web que convierte un chat de WhatsApp de pareja en **«su diario»**: un PDF de 
 ## El producto (decidido en septiembre de 2026)
 
 - **El producto es el PDF.** La web solo enseña un adelanto y vende. Nada de capítulos, gráficas ni chatbot en la web.
-- **Un solo precio:** $129 MXN, pago único (otros países: `app/api/pricing/route.ts`).
+- **Un solo precio:** $199 MXN (antes $129; subido el 25 sep 2026), pago único (otros países: `app/api/pricing/route.ts`).
 - **Un pago = un diario:** cada pago vale para el chat con el que se pagó.
 - **Solo parejas:** un chat con 3+ personas muestra un aviso. El modo grupo se eliminó.
 - **Estética «diario íntimo»:** papel rayado rosa, margen rojo, Caveat (a mano) + Courier Prime, rojo boli `#C8102E` (persona A) y tinta azul `#1F3A93` (persona B), polaroids, cinta washi.
@@ -28,7 +28,7 @@ Web que convierte un chat de WhatsApp de pareja en **«su diario»**: un PDF de 
 | `app/api/create-checkout/route.ts` | Crea la sesión de Stripe. Exige `chatFp` y lo guarda en `metadata.chat_fp`. |
 | `app/api/verify-payment/route.ts` | Comprueba una sesión contra Stripe (pagada, no reembolsada ni disputada). |
 | `app/api/stripe-webhook/route.ts` | Solo invalida la caché de pagos en `charge.refunded` / `charge.dispute.created`. |
-| `app/api/pricing/route.ts` | Precio por país (cabecera `x-vercel-ip-country`). MX = 12900 centavos. |
+| `app/api/pricing/route.ts` | Precio por país (cabecera `x-vercel-ip-country`). MX = 19900 centavos. |
 | `lib/payments.ts` | `checkSessionPayment()` (Stripe como fuente de verdad, caché 10 min) y `chatFingerprint()`. |
 | `app/api/share`, `app/a/[id]` | Links compartidos **antiguos** (Supabase). La web ya no crea links; se mantienen para que los viejos abran. |
 | `app/api/track` | Eventos a Supabase. |
