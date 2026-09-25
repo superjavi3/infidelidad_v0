@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
     paid: true,
     email: check.email || '',
     plan: 'premium',
+    chatFp: check.chatFp || null,
     value,
     currency,
   });

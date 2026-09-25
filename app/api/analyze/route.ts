@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { gunzipSync } from 'zlib';
-import { checkSessionPayment } from '@/lib/payments';
+import { checkSessionPayment, chatFingerprint } from '@/lib/payments';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
@@ -25,6 +25,11 @@ export async function POST(req: NextRequest) {
       if (!payment.paid) {
         const status = payment.reason === 'error' ? 503 : 402;
         return NextResponse.json({ success: false, error: 'payment_required', reason: payment.reason }, { status });
+      }
+      // Un pago = un diario: el diario solo se escribe para el chat con el que se pagó.
+      // (Las compras anteriores a este cambio no traen huella y siguen valiendo para cualquier chat.)
+      if (mode === 'diary' && payment.chatFp && chatFingerprint(messages || []) !== payment.chatFp) {
+        return NextResponse.json({ success: false, error: 'payment_required', reason: 'other_chat' }, { status: 403 });
       }
     }
 

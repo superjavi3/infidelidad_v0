@@ -1,4 +1,14 @@
 import Stripe from 'stripe';
+import { createHash } from 'crypto';
+
+// Huella de un chat: SHA-256 de sus mensajes de texto en orden. El cliente calcula la misma
+// (chatFingerprint en public/index.html) sobre la misma lista que envía al pedir el diario.
+export const CHAT_FP_RE = /^[a-f0-9]{64}$/;
+type ChatMessage = { date?: string; time?: string; sender?: string; text?: string };
+export function chatFingerprint(messages: ChatMessage[]): string {
+  const rows = (messages || []).map(m => [m.date ?? '', m.time ?? '', m.sender ?? '', m.text ?? '']);
+  return createHash('sha256').update(JSON.stringify(rows), 'utf8').digest('hex');
+}
 
 // Stripe es la única fuente de verdad del acceso: una sesión de Checkout da acceso
 // si está pagada y su cargo no se ha reembolsado ni disputado.
@@ -9,6 +19,7 @@ export interface PaymentCheck {
   email?: string;
   amountTotal?: number;
   currency?: string;
+  chatFp?: string | null; // huella del chat al que está atado el pago (null en compras antiguas)
 }
 
 const SESSION_ID_RE = /^cs_(live|test)_[A-Za-z0-9]{10,}$/;
@@ -44,6 +55,7 @@ export async function checkSessionPayment(sessionId: unknown, { fresh = false } 
         email: session.customer_details?.email || session.customer_email || '',
         amountTotal: session.amount_total ?? 0,
         currency: (session.currency || '').toLowerCase(),
+        chatFp: session.metadata?.chat_fp || null,
       };
       if (charge && (charge.refunded || charge.amount_refunded > 0)) result = { paid: false, reason: 'refunded', ...base };
       else if (charge && charge.disputed) result = { paid: false, reason: 'disputed', ...base };
