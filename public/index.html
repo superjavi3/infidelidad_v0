@@ -1230,7 +1230,10 @@ function loadMetaPixel() {
   t.src=v;s=b.getElementsByTagName(e)[0];
   s.parentNode.insertBefore(t,s)}(window, document,'script',
   'https://connect.facebook.net/en_US/fbevents.js');
+  // Dos píxeles: «Market data» (portfolio YaloSabía) y «Pixel2» (cuenta publicitaria personal «Yalosabía App»,
+  // desde donde se lanzan ahora las campañas). Cada evento se envía a los dos.
   fbq('init', '1580141019940219');
+  fbq('init', '1867438827762719');
   fbq('track', 'PageView');
 }
 if (localStorage.getItem('cookieConsent') === 'all') {
