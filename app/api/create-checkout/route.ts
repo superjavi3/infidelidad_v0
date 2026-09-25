@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getPricingForCountry } from '../pricing/route';
+import { CHAT_FP_RE } from '@/lib/payments';
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY || '');
@@ -8,11 +9,19 @@ function getStripe() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, plan } = await req.json();
+    const { email, plan, chatFp } = await req.json();
 
     if (!email) {
       return NextResponse.json(
         { error: 'Email es requerido' },
+        { status: 400 }
+      );
+    }
+
+    // Un pago = un diario: la sesión queda atada a la huella del chat
+    if (typeof chatFp !== 'string' || !CHAT_FP_RE.test(chatFp)) {
+      return NextResponse.json(
+        { error: 'Primero sube el chat: el diario se escribe para una conversación concreta' },
         { status: 400 }
       );
     }
@@ -53,6 +62,7 @@ export async function POST(req: NextRequest) {
         cancel_url: `${origin}/#pricing`,
         metadata: {
           plan: 'premium',
+          chat_fp: chatFp,
           country,
           currency: cur,
         },

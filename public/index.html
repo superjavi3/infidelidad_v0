@@ -3298,7 +3298,7 @@ function analyzeMessages(messages) {
 
 // ── Plan resolution on chat load ──
 function onNewChatLoaded(messages) {
-  window.isPremium = loadPremiumState();
+  window.isPremium = loadPremiumState(); // depende de window.currentChatFp: un pago = un diario
   console.log('[Plan] isPremium:', window.isPremium);
   updatePlanBadge();
 }
@@ -6105,54 +6105,80 @@ function hasPlanAccess() {
   return isPremiumUser();
 }
 
-// ── Load premium state with migration ──
+// ── Estado de pago ──
+// Un pago = un diario. El navegador guarda qué sesión de Stripe pagó cada chat (por su huella)
+// y el servidor lo comprueba contra Stripe antes de escribir el diario (lib/payments.ts).
+const STRIPE_SESSION_RE = /^cs_(live|test)_[A-Za-z0-9]{10,}$/;
+
+function readStored(key) {
+  try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; }
+}
+function storedDiaries() { return readStored('yalosabia_diaries') || {}; }
+
+function rememberPurchase(sessionId, chatFp, email) {
+  try {
+    localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
+      premium: true, sessionId, chatFp: chatFp || null, email: email || '', paidAt: new Date().toISOString()
+    }));
+    if (chatFp) {
+      const diaries = storedDiaries();
+      diaries[chatFp] = sessionId;
+      localStorage.setItem('yalosabia_diaries', JSON.stringify(diaries));
+    }
+  } catch (e) {}
+}
+
+// Sesión de Stripe que da acceso al diario de este chat (o null)
+function sessionForChat(chatFp) {
+  const own = chatFp ? storedDiaries()[chatFp] : null;
+  if (own && STRIPE_SESSION_RE.test(own)) return own;
+  // Compras anteriores a «un pago = un diario»: no están atadas a ningún chat
+  const v2 = readStored('yalosabia_plan_v2');
+  if (v2 && !v2.chatFp && STRIPE_SESSION_RE.test(v2.sessionId || '')) return v2.sessionId;
+  return null;
+}
+function getStoredSessionId() { return sessionForChat(window.currentChatFp); }
+
 function loadPremiumState() {
   try {
-    // New format first
-    const v2 = localStorage.getItem('yalosabia_plan_v2');
-    if (v2) {
-      const data = JSON.parse(v2);
-      if (data.sessionId === 'admin-bypass') { localStorage.removeItem('yalosabia_plan_v2'); return false; }
-      if (data.premium) return true;
+    // Formatos antiguos: solo se conservan si traen un session_id real de Stripe
+    if (!localStorage.getItem('yalosabia_plan_v2')) {
+      const legacy = ['losabia_plan', 'yalosabia_group_premium'].map(readStored)
+        .find(d => d && STRIPE_SESSION_RE.test(d.sessionId || ''));
+      if (legacy) rememberPurchase(legacy.sessionId, null, legacy.email);
     }
-    // Migrate from old couple plans (detective/obsesivo)
-    const oldCouple = localStorage.getItem('losabia_plan');
-    if (oldCouple) {
-      const data = JSON.parse(oldCouple);
-      if (data.plan === 'detective' || data.plan === 'obsesivo') {
-        localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
-          premium: true, sessionId: data.sessionId || 'migrated',
-          email: data.email || '', paidAt: data.paidAt || new Date().toISOString()
-        }));
-        return true;
-      }
-    }
-    // Migrate from old group plan
-    const oldGroup = localStorage.getItem('yalosabia_group_premium');
-    if (oldGroup) {
-      const data = JSON.parse(oldGroup);
-      if (data.plan === 'completo') {
-        localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
-          premium: true, sessionId: data.sessionId || 'migrated',
-          email: data.email || '', paidAt: data.paidAt || new Date().toISOString()
-        }));
-        return true;
-      }
-    }
-    // Legacy fallback
-    const legacy = localStorage.getItem('losabia_premium');
-    if (legacy) {
-      const data = JSON.parse(legacy);
-      if (data.paid === true) {
-        localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
-          premium: true, sessionId: 'migrated',
-          email: data.email || '', paidAt: new Date().toISOString()
-        }));
-        return true;
-      }
-    }
-  } catch(e) {}
-  return false;
+    const v2 = readStored('yalosabia_plan_v2');
+    if (v2 && !STRIPE_SESSION_RE.test(v2.sessionId || '')) localStorage.removeItem('yalosabia_plan_v2');
+  } catch (e) {}
+  return !!getStoredSessionId();
+}
+
+function revokePremium(reason, sessionId) {
+  console.warn('[Paywall] Acceso retirado:', reason);
+  try {
+    const sid = sessionId || getStoredSessionId();
+    const diaries = storedDiaries();
+    Object.keys(diaries).forEach(fp => { if (diaries[fp] === sid) delete diaries[fp]; });
+    localStorage.setItem('yalosabia_diaries', JSON.stringify(diaries));
+    const v2 = readStored('yalosabia_plan_v2');
+    if (v2 && v2.sessionId === sid) localStorage.removeItem('yalosabia_plan_v2');
+  } catch (e) {}
+  window.isPremium = !!getStoredSessionId();
+  if (typeof updatePlanUI === 'function') updatePlanUI();
+}
+
+// Revalida en segundo plano los pagos guardados (reembolsos, disputas, sesiones inventadas)
+async function revalidateStoredPayment() {
+  const v2 = readStored('yalosabia_plan_v2');
+  const ids = new Set(Object.values(storedDiaries()).concat(v2 ? [v2.sessionId] : []).filter(id => STRIPE_SESSION_RE.test(id || '')));
+  for (const sessionId of ids) {
+    try {
+      const res = await fetch('/api/verify-payment?session_id=' + encodeURIComponent(sessionId));
+      if (res.status === 503) continue; // Stripe no respondió: no quitamos nada por un fallo puntual
+      const data = await res.json();
+      if (!data.paid) revokePremium(data.reason || 'unpaid', sessionId);
+    } catch (e) {}
+  }
 }
 
 // ── Blur overlay system ──
@@ -6232,6 +6258,13 @@ function switchOsTab(os, btn) {
 
 // ── Payment modal ──
 function openPayModal() {
+  // El pago se ata a un chat concreto: sin chat subido no hay nada que comprar todavía
+  if (!lastMessages || !window.currentChatFp) {
+    alert('Primero sube su chat: el diario se escribe para una conversación concreta.');
+    document.getElementById('top').scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
+
   // If already premium, just unlock
   if (isPremiumUser()) {
     unlockPlan();
@@ -6294,7 +6327,7 @@ async function goToStripeCheckout() {
     const res = await fetch('/api/create-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, plan: 'premium' })
+      body: JSON.stringify({ email, plan: 'premium', chatFp: window.currentChatFp })
     });
 
     const data = await res.json();
@@ -6373,12 +6406,7 @@ async function checkPaymentSuccess() {
       if (data.paid) {
         console.log('[Paywall] Payment verified! Premium unlocked.');
 
-        localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
-          premium: true,
-          sessionId: sessionId,
-          email: data.email || '',
-          paidAt: new Date().toISOString()
-        }));
+        rememberPurchase(sessionId, data.chatFp, data.email);
 
         window.isPremium = true;
 
@@ -6405,6 +6433,7 @@ async function checkPaymentSuccess() {
   // Load stored premium state (with migration)
   window.isPremium = loadPremiumState();
   console.log('[Paywall] Page load — isPremium:', window.isPremium);
+  revalidateStoredPayment();
   updatePlanBadge();
   applyBlurOverlays();
 }
@@ -6463,6 +6492,17 @@ const DIARY_AUDIO_RE = /audio|\.opus|ptt-/i;
 const DIARY_LOVE_RE = /\bte\s+(quiero|amo|adoro)\b/i;
 
 function diaryDate(m) { return parseMessageDate(m.date, m.time, m.ampm); }
+
+// Huella del chat: SHA-256 de sus mensajes de texto, igual que chatFingerprint() en lib/payments.ts
+// y calculada sobre la misma lista que se envía al pedir el diario.
+function diaryPayload(messages) {
+  return messages.filter(isRealText).map(m => ({ date: m.date, time: m.time, sender: m.sender, text: m.text }));
+}
+async function chatFingerprint(messages) {
+  const rows = diaryPayload(messages).map(m => [m.date ?? '', m.time ?? '', m.sender ?? '', m.text ?? '']);
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(rows)));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
 function isRealText(m) {
   return !!m.text && stripEmoji(m.text).length > 1 && !DIARY_MEDIA_RE.test(m.text) && !/cifrado de extremo|end-to-end/i.test(m.text);
 }
@@ -6639,10 +6679,20 @@ async function loadDiaryAI(messages, stats) {
     try {
       const res = await gzipFetch('/api/analyze', {
         mode: 'diary',
-        messages: messages.filter(isRealText).map(m => ({ date: m.date, time: m.time, sender: m.sender, text: m.text })),
+        sessionId: getStoredSessionId(),
+        messages: diaryPayload(messages),
         stats,
         people: { A: slim(people.A), B: slim(people.B) }
       });
+      if (res.status === 402) {
+        revokePremium('diary_402');
+        throw new Error('payment_required');
+      }
+      if (res.status === 403) { // el pago es de otro chat
+        window.isPremium = false;
+        refreshDiaryState();
+        throw new Error('other_chat');
+      }
       const data = await res.json();
       if (!data.success || !data.diary) throw new Error(data.error || 'sin diario');
       window.lastDiary = data.diary;
@@ -6670,9 +6720,12 @@ async function loadDiaryAI(messages, stats) {
   // El análisis IA gratuito ya no pinta nada en la web; se guarda para el PDF
   updateWithAIInsights = function(analysis) { window.lastAIAnalysis = analysis; };
 
+  // La huella del chat se calcula antes de decidir el acceso (un pago = un diario)
   const _process = processChat;
-  processChat = function(text) {
+  processChat = async function(text) {
     window.lastRawChat = text;
+    window.currentChatFp = null;
+    try { window.currentChatFp = await chatFingerprint(parseWhatsApp(text)); } catch (e) { console.warn('[Diario] Sin huella del chat', e); }
     return _process(text);
   };
 
@@ -7068,7 +7121,10 @@ async function generatePDF() {
   document.body.appendChild(host);
   try {
     const diary = await loadDiaryAI(lastMessages, lastStats);
-    if (!diary) throw new Error('No pudimos escribir los capítulos con IA. Inténtalo de nuevo en un momento.');
+    if (!diary) {
+      if (!isPremiumUser()) throw new Error('Cada pago es para el diario de un chat. No encontramos un pago para este chat: si pagaste por él y ves este mensaje, escríbenos a contacto@yalosabia.com.');
+      throw new Error('No pudimos escribir los capítulos con IA. Inténtalo de nuevo en un momento.');
+    }
     if (document.fonts && document.fonts.ready) await document.fonts.ready;
     const pages = buildDiaryPages(lastMessages, lastStats, diary);
     const { jsPDF } = window.jspdf;
