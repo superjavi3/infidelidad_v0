@@ -293,7 +293,8 @@ REGLAS:
 - "A" es ${p.A?.name || stats?.personA} y "B" es ${p.B?.name || stats?.personB}.
 - Máximo 3 elementos en signals.toWatch y exactamente 5 en advice.
 - bestMessage.text debe ser un mensaje copiado palabra por palabra de la muestra; si no hay ninguno cariñoso, usa null en bestMessage.
-- No inventes hechos que no estén en los datos o la muestra.`;
+- No inventes hechos que no estén en los datos o la muestra.
+- No uses emojis ni símbolos decorativos en ningún texto. Escribe como una persona, sin frases hechas de IA (nada de «en resumen», «es importante destacar», «sin duda»).`;
 
       const diaryRes = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,

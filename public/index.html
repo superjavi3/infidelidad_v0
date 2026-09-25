@@ -2469,7 +2469,7 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .diary-price-sub { font-weight: 700; margin: 6px 0 18px; }
 .diary-price ul { text-align: left; list-style: none; margin: 0 0 22px; }
 .diary-price li { padding: 6px 0; border-bottom: 1px dashed var(--paper-line); font-size: 0.92rem; }
-.diary-price li::before { content: '✓ '; color: var(--pink); font-weight: 700; }
+.diary-price li::before { content: '— '; color: var(--pink); font-weight: 700; }
 .diary-price small { display: block; margin-top: 12px; color: var(--text-muted); font-size: 0.75rem; }
 
 /* Capítulos (resultados) */
@@ -2584,6 +2584,15 @@ footer p, .footer-links a { color: var(--text-muted); }
 .best-message small { display: block; margin-top: 16px; color: var(--text-muted); font-size: 0.8rem; }
 .pdf-download { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 56px auto 0; max-width: 480px; }
 .pdf-download .btn-primary { width: 100%; justify-content: center; padding: 18px 24px; }
+.teaser-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 40px; }
+@media (max-width: 560px) { .teaser-stats { grid-template-columns: 1fr; } }
+.teaser-stats .stat-value { font-size: 2.2rem; }
+.locked-index { list-style: none; margin: 8px 0 0; padding: 0; }
+.locked-index li { padding: 12px 0; border-bottom: 1px solid var(--margin-line); }
+.locked-index .li-title { font-family: var(--font-display); font-weight: 700; font-size: 1.7rem; line-height: 1.1; }
+.locked-index .li-title b { color: var(--pink); margin-right: 6px; }
+.locked-index .li-teaser { font-size: 0.85rem; line-height: 1.5; margin-top: 2px; }
+.blurred { filter: blur(5px); user-select: none; }
 </style>
 <!-- Meta Pixel (carga condicional según consentimiento de cookies) -->
 <script>
@@ -2678,7 +2687,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   <div class="hero-example">(ejemplo)</div>
   <!-- Upload Zone -->
   <div class="upload-zone" id="uploadZone">
-    <div class="upload-icon" id="uploadIcon">📱</div>
+    <div class="upload-icon" id="uploadIcon"></div>
     <h3 id="uploadTitle">Arrastra tu chat de WhatsApp aquí</h3>
     <p>o haz clic para seleccionar el .txt exportado</p>
     <input type="file" id="fileInput" accept=".txt,.zip">
@@ -2687,7 +2696,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <span class="format-tag">Hasta 40,000 mensajes</span>
     </div>
     <!-- DESACTIVADO: botón "Ver ejemplo" (modo demo gratuito). Para reactivarlo, descomenta esta línea. El código de loadDemo() sigue intacto más abajo.
-    <button class="demo-btn" id="demoBtn" onclick="event.stopPropagation(); loadDemo()">👀 Ver ejemplo — sin subir nada</button>
+    <button class="demo-btn" id="demoBtn" onclick="event.stopPropagation(); loadDemo()">Ver un ejemplo sin subir nada</button>
     -->
   </div>
 
@@ -2713,7 +2722,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   <div style="background:rgba(183,121,31,0.1);border:1px solid rgba(183,121,31,0.3);
     border-radius:8px;padding:10px 16px;text-align:center;margin-bottom:16px;
     font-size:0.85rem;color:#B7791F">
-    👀 Estás viendo un análisis de ejemplo —
+    Estás viendo un ejemplo —
     <button onclick="document.getElementById('top').scrollIntoView({behavior:'smooth'})"
       style="background:none;border:none;color:#C8102E;cursor:pointer;
       font-weight:700;font-size:0.85rem">
@@ -2725,218 +2734,62 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   <div class="results-header">
     <div class="results-kicker">Querido diario:</div>
     <h2><span class="personA">Persona 1</span> <span style="color:var(--pink)">&amp;</span> <span class="personB">Persona 2</span></h2>
-    <p style="color: var(--text-muted);">Leímos <span id="totalMsgs">0</span> mensajes para escribir esto</p>
+    <p style="color: var(--text-muted);">Leímos <span id="totalMsgs">0</span> mensajes para escribir su diario</p>
   </div>
 
-  <!-- Score Card -->
+  <!-- Índice (adelanto gratis) -->
   <div class="score-card">
     <div class="score-label">Índice de la relación</div>
-    <div class="score-number" id="scoreNumber">72</div>
+    <div class="score-number" id="scoreNumber">0</div>
     <div class="score-max">de 100</div>
-    <div class="score-verdict" id="scoreVerdict">Conexión fuerte con áreas de mejora</div>
-    <div class="user-plan-badge curioso" id="userPlanBadge">Plan Curioso</div>
+    <div class="score-verdict" id="scoreVerdict"></div>
   </div>
 
-  <!-- Share Stories CTA -->
-  <div style="text-align: center; margin-top: 20px;">
-    <button class="btn-secondary" onclick="shareToStories()" style="width: 100%; max-width: 480px; padding: 16px 32px; font-size: 1.1rem;">Compartir en Stories</button>
-    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px;">Descarga tu resultado y compártelo</p>
-  </div>
-  <!-- Share Link CTA -->
-  <div style="text-align: center; margin-top: 12px;">
-    <button class="btn-secondary" onclick="openShareLinkModal()" style="width: 100%; max-width: 480px; padding: 14px 32px; font-size: 0.9rem;">Compartir por link</button>
+  <div class="teaser-stats">
+    <div class="stat-card"><div class="stat-value" id="statDays">0</div><div class="stat-label">días hablando</div></div>
+    <div class="stat-card"><div class="stat-value" id="statAvgReply">0 min</div><div class="stat-label">tardan en contestarse</div></div>
+    <div class="stat-card"><div class="stat-value" id="statBalance">50 / 50</div><div class="stat-label">% de mensajes de cada uno</div></div>
   </div>
 
-  <!-- ══════ PRIMERA PÁGINA (gratis) ══════ -->
-  <div class="plan-header">
-    <div class="plan-badge free">Primera página · gratis</div>
-    <div class="plan-title free">Lo primero que vimos</div>
-  </div>
-
-  <!-- Stats Grid -->
-  <div class="stats-grid" id="statsGrid">
-    <div class="stat-card">
-      <div class="stat-value" id="statMsgsA">0</div>
-      <div class="stat-label">mensajes de <span class="personA">Persona 1</span></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="statMsgsB">0</div>
-      <div class="stat-label">mensajes de <span class="personB">Persona 2</span></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="statAvgReply">0 min</div>
-      <div class="stat-label">tardan en contestarse</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="statNightMsgs">0%</div>
-      <div class="stat-label">mensajes de madrugada (0 a 6 h)</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="statEmoji">0</div>
-      <div class="stat-label">emojis de amor</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="statDays">0</div>
-      <div class="stat-label">días hablando</div>
-    </div>
-  </div>
-
-  <!-- Fun Fact -->
   <div class="fun-fact" id="funFact"></div>
 
-  <!-- Quién lleva la relación -->
-  <div class="example-card" style="margin-bottom: 48px;">
-    <div class="example-label">Dinámica</div>
-    <h4>Quién lleva la relación</h4>
-    <p id="whoLeads"></p>
-  </div>
-
-  <!-- Leaderboard: Tu relación vs el promedio -->
-  <div id="leaderboardSection" style="display:none;"></div>
-
-  <!-- ══════ CAPÍTULOS I–III (datos del chat) ══════ -->
-  <div id="premiumSection" class="plan-section plan-detective-wrap" style="display:none;">
-    <div class="plan-header">
-      <div class="plan-badge detective">El diario completo · <span class="precio-premium">$129 MXN</span></div>
-      <div class="plan-title detective">…y esto es solo la primera página.</div>
-      <div class="plan-subtitle">Ya leímos todo su chat. Estos capítulos están esperando:</div>
+  <!-- Antes de pagar: el resto del diario está cerrado -->
+  <div id="diaryPaywall" style="display:none;">
+    <div class="diary-chapter" style="margin-top:56px;">
+      <div class="diary-chapter-title">…y esto es solo la primera página.</div>
+      <div class="diary-chapter-sub">Ya leímos todo su chat. El resto está en su diario:</div>
     </div>
+    <ol class="locked-index" id="lockedIndex"></ol>
 
-    <div class="diary-chapter">
-      <div class="diary-chapter-title"><b>I.</b> Cómo empezó todo</div>
-      <div class="diary-chapter-sub">su historia, de principio a hoy.</div>
-    </div>
-
-    <div class="premium-feature-card" id="featureFirstMessage" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">El primer mensaje</h4><p class="pf-subtitle">Y el primer «te quiero»</p></div></div>
-      <div class="pf-body" id="firstMessageBody"></div>
-    </div>
-
-    <div class="premium-feature-card" id="featureTimeline" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">Su línea de vida</h4><p class="pf-subtitle">Cuánto se escribieron, mes a mes</p></div></div>
-      <div class="pf-body" id="timelineBody">
-        <div style="position: relative; height: 320px; padding-bottom: 40px;">
-          <canvas id="timelineChart"></canvas>
-        </div>
-        <div class="pf-insight" id="timelineInsight"></div>
-      </div>
-    </div>
-
-    <div class="premium-feature-card" id="featureForensic" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">Los días que lo cambiaron todo</h4><p class="pf-subtitle">Los momentos exactos en que algo cambió</p></div></div>
-      <div class="pf-body" id="forensicBody"></div>
-    </div>
-
-    <div class="premium-feature-card" id="featureBeforeNow" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">Antes vs ahora</h4><p class="pf-subtitle">Sus primeros meses frente a los últimos</p></div></div>
-      <div class="pf-body" id="beforeNowBody"></div>
-    </div>
-
-    <div class="diary-chapter">
-      <div class="diary-chapter-title"><b>II.</b> Quién es quién</div>
-      <div class="diary-chapter-sub">dos formas muy distintas de querer.</div>
-    </div>
-
-    <div class="premium-feature-card" id="featureProfiles" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">El perfil de cada uno</h4><p class="pf-subtitle">Su papel en la relación, sus palabras y sus horarios</p></div></div>
-      <div class="pf-body" id="profilesBody"><div class="diary-loading">escribiendo sus perfiles…</div></div>
-    </div>
-
-    <div class="premium-feature-card" id="featureMultimedia" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">Audios, fotos y stickers</h4><p class="pf-subtitle">Quién habla con palabras y quién con archivos</p></div></div>
-      <div class="pf-body" id="multimediaBody"></div>
-    </div>
-
-    <div class="diary-chapter">
-      <div class="diary-chapter-title"><b>III.</b> Cómo se hablan</div>
-      <div class="diary-chapter-sub">rápido, lento, de día, de noche… y sus silencios.</div>
-    </div>
-
-    <div class="premium-feature-card" id="featureSilences" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">Sus silencios</h4><p class="pf-subtitle">Cuando la conversación se detuvo más de 48 horas</p></div></div>
-      <div class="pf-body" id="silencesBody"></div>
-    </div>
-
-    <div class="premium-feature-card" id="featureDoubleText" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">Mensajes sin respuesta</h4><p class="pf-subtitle">Quién escribe varias veces seguidas sin que le contesten</p></div></div>
-      <div class="pf-body" id="doubleTextBody"></div>
-    </div>
-
-    <div class="premium-feature-card" id="featureGhosting" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">Cuándo contestan rápido (y cuándo no)</h4><p class="pf-subtitle">Los temas que responden al momento y los que dejan en visto</p></div></div>
-      <div class="pf-body" id="ghostingBody"></div>
-    </div>
-
-    <div class="premium-feature-card" id="featureLanguage" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">Cómo ha cambiado su forma de hablarse</h4><p class="pf-subtitle">El cariño en sus palabras, entonces y ahora</p></div></div>
-      <div class="pf-body" id="languageBody"></div>
-    </div>
-
-    <div class="premium-feature-card" id="featureDeleted" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">Mensajes eliminados</h4><p class="pf-subtitle">Lo que alguien escribió y luego borró</p></div></div>
-      <div class="pf-body" id="deletedBody"></div>
+    <div class="diary-price" style="margin-top: 44px;">
+      <div class="tape"></div>
+      <div style="font-family:var(--font-display);font-weight:700;font-size:2.2rem;line-height:1;">Su diario completo</div>
+      <div class="diary-price-amount" style="margin-top:12px;"><span class="precio-symbol">$</span><span class="precio-premium-numero">129</span></div>
+      <div class="diary-price-sub"><span class="precio-moneda-label">MXN</span> · pago único</div>
+      <ul>
+        <li>Un PDF de 13 páginas, escrito a partir de su chat</li>
+        <li>Para guardarlo, leerlo juntos o regalarlo</li>
+        <li>Te llega al momento, sin volver a subir nada</li>
+      </ul>
+      <button class="price-btn price-btn-primary" onclick="openPayModal()">Quiero mi diario</button>
+      <small>Pago seguro con Stripe</small>
     </div>
   </div>
 
-  <!-- ══════ CAPÍTULOS IV–VIII (IA) ══════ -->
-  <div id="obsessiveSection" class="plan-section plan-obsessive-wrap" style="display:none;">
-
-    <div class="diary-chapter">
-      <div class="diary-chapter-title"><b>IV.</b> Compatibilidad</div>
+  <!-- Después de pagar: descarga -->
+  <div id="diaryReady" style="display:none;">
+    <div class="diary-chapter" style="margin-top:56px;text-align:center;">
+      <div class="diary-chapter-title" style="color:var(--pink);font-size:4rem;">¡Listo!</div>
+      <div class="diary-chapter-sub">su diario ya está escrito.</div>
     </div>
-    <div class="premium-feature-card" id="featureCompat" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">Qué tan compatibles son</h4><p class="pf-subtitle">Su lenguaje del amor, lo que les sale bien y lo que pueden trabajar</p></div></div>
-      <div class="pf-body" id="compatBody"><div class="diary-loading">calculando su compatibilidad…</div></div>
-    </div>
-
-    <div class="diary-chapter">
-      <div class="diary-chapter-title"><b>V.</b> Las señales</div>
-      <div class="diary-chapter-sub">no es para acusar a nadie: son patrones que vimos en sus mensajes.</div>
-    </div>
-    <div class="premium-feature-card" id="featureSignals" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">A cuidar y green flags</h4><p class="pf-subtitle">Lo que conviene mirar y lo que ya hacen bien</p></div></div>
-      <div class="pf-body" id="signalsBody"><div class="diary-loading">buscando señales…</div></div>
-    </div>
-
-    <div class="diary-chapter">
-      <div class="diary-chapter-title"><b>VI.</b> ¿Van a durar?</div>
-    </div>
-    <div class="premium-feature-card" id="featureForecast" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">Nuestro pronóstico</h4><p class="pf-subtitle">Una lectura honesta de hacia dónde va la relación</p></div></div>
-      <div class="pf-body" id="forecastBody"><div class="diary-loading">escribiendo el pronóstico…</div></div>
-    </div>
-
-    <div class="diary-chapter">
-      <div class="diary-chapter-title"><b>VII.</b> Consejos para ustedes</div>
-      <div class="diary-chapter-sub">cosas que pueden hacer desde hoy.</div>
-    </div>
-    <div class="premium-feature-card" id="featureAdvice" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">Para tachar cada semana</h4><p class="pf-subtitle">Hechos a partir de su propia conversación</p></div></div>
-      <div class="pf-body" id="adviceBody"><div class="diary-loading">pensando en ustedes…</div></div>
-    </div>
-
-    <div class="diary-chapter">
-      <div class="diary-chapter-title"><b>VIII.</b> El mensaje</div>
-      <div class="diary-chapter-sub">de todos sus mensajes, este es el que elegimos para cerrar.</div>
-    </div>
-    <div class="premium-feature-card" id="featureBestMessage" data-plan-required="premium">
-      <div class="pf-header"><div><h4 class="pf-title">El más bonito</h4><p class="pf-subtitle">Palabra por palabra, como lo escribieron</p></div></div>
-      <div class="pf-body" id="bestMessageBody"><div class="diary-loading">eligiendo el mensaje…</div></div>
-    </div>
-
-    <!-- Chatbot (extra) -->
-    <div class="premium-feature-card" id="featureChatbot" data-plan-required="premium" style="margin-top: 56px;">
-      <div class="pf-header"><div><h4 class="pf-title">Pregúntale a su diario</h4><p class="pf-subtitle">Un chat con IA que conoce su conversación: fechas, patrones, dudas.</p></div></div>
-      <div class="pf-body" id="chatbotPreviewBody">
-        <button onclick="openChatbot()" class="btn-primary" style="width:100%;justify-content:center;">Hacer una pregunta</button>
-      </div>
-    </div>
-
-    <!-- Descarga del PDF -->
     <div class="pdf-download" id="pdfDownload">
-      <button class="btn-primary" id="pdfDownloadBtn" onclick="isPremiumUser() ? generatePDF() : openPayModal()">Descargar mi diario (PDF)</button>
-      <small style="color:var(--text-muted);font-size:0.78rem;background:var(--paper);">Para guardarlo, leerlo juntos o regalarlo.</small>
+      <button class="btn-primary" id="pdfDownloadBtn" onclick="generatePDF()">Descargar mi diario (PDF)</button>
+      <small style="color:var(--text-muted);font-size:0.78rem;background:var(--paper);">Tarda unos segundos. Guárdalo: no guardamos su chat.</small>
     </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 28px;">
+    <button class="btn-secondary" onclick="shareToStories()" style="width: 100%; max-width: 480px; padding: 16px 32px;">Compartir en Stories</button>
   </div>
 
   <!-- Hidden container for Stories image (1080x1920) — estilo diario -->
@@ -3005,7 +2858,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <div class="step-card">
         <div class="step-number">3</div>
         <h3>Lee su historia</h3>
-        <p>Ves la primera página gratis y descargas el diario completo en PDF.</p>
+        <p>Ves un adelanto gratis y descargas su diario completo en PDF.</p>
       </div>
     </div>
   </div>
@@ -3043,10 +2896,9 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <div class="diary-price-amount"><span class="precio-symbol">$</span><span class="precio-premium-numero">129</span></div>
       <div class="diary-price-sub"><span class="precio-moneda-label">MXN</span> · pago único</div>
       <ul>
-        <li>Los 8 capítulos, en la web y en PDF</li>
+        <li>Un PDF de 13 páginas con los 8 capítulos</li>
         <li>Perfil de cada uno y compatibilidad</li>
         <li>Señales, pronóstico y consejos</li>
-        <li>Pregúntale a su diario (chat con IA)</li>
       </ul>
       <button class="price-btn price-btn-primary" onclick="openPayModal()">Quiero mi diario</button>
       <small>Pago seguro con Stripe</small>
@@ -3421,16 +3273,16 @@ function analyzeMessages(messages) {
   const score = Math.round(Math.min(100, Math.max(0, (rawScore + 25) / 105 * 100)));
 
   let verdict = '';
-  if      (score >= 95) verdict = 'De otro planeta 🪐';
-  else if (score >= 85) verdict = 'Sólidos de verdad 💚';
-  else if (score >= 75) verdict = 'Va muy bien 💛';
-  else if (score >= 65) verdict = 'Bien, pero ojo 👀';
-  else if (score >= 55) verdict = 'Tibio, cuidado 🟠';
-  else if (score >= 45) verdict = 'Enfriándose ya 🟠';
-  else if (score >= 35) verdict = 'Algo está mal 🔴';
-  else if (score >= 25) verdict = 'Bajo presión seria 🔴';
-  else if (score >= 15) verdict = 'Casi apagado 💔';
-  else                  verdict = 'Houston, hablemos 🚨';
+  if      (score >= 95) verdict = 'De otro planeta';
+  else if (score >= 85) verdict = 'Sólidos de verdad';
+  else if (score >= 75) verdict = 'Va muy bien';
+  else if (score >= 65) verdict = 'Bien, pero ojo';
+  else if (score >= 55) verdict = 'Tibio, cuidado';
+  else if (score >= 45) verdict = 'Enfriándose';
+  else if (score >= 35) verdict = 'Algo no va bien';
+  else if (score >= 25) verdict = 'Bajo mucha presión';
+  else if (score >= 15) verdict = 'Casi apagado';
+  else                  verdict = 'Toca hablar';
 
   // Who leads
   const leader = msgsA > msgsB ? personA : personB;
@@ -3681,84 +3533,39 @@ function renderLeaderboard(s) {
 function showResults(s) {
   processingState.classList.remove('active');
   processingState.style.display = 'none';
+  window.diaryPromise = null;
 
-
-  document.getElementById('totalMsgs').textContent = s.total.toLocaleString();
+  document.getElementById('totalMsgs').textContent = s.total.toLocaleString('es-MX');
   document.getElementById('scoreNumber').textContent = s.score;
-  document.getElementById('scoreVerdict').textContent = s.verdict;
-
-  document.getElementById('statMsgsA').textContent = s.msgsA.toLocaleString();
-  document.getElementById('statMsgsB').textContent = s.msgsB.toLocaleString();
+  document.getElementById('scoreVerdict').textContent = stripEmoji(s.verdict);
+  document.getElementById('statDays').textContent = s.uniqueDays.toLocaleString('es-MX');
   document.getElementById('statAvgReply').textContent = s.avgReplyFormatted;
-  document.getElementById('statNightMsgs').textContent = s.nightPct + '%';
-  document.getElementById('statEmoji').textContent = s.loveCount.toLocaleString();
-  document.getElementById('statDays').textContent = s.uniqueDays;
+  const pctA = Math.round(s.msgsA / s.total * 100);
+  document.getElementById('statBalance').textContent = pctA + ' / ' + (100 - pctA);
+  document.querySelectorAll('.personA').forEach(el => el.textContent = firstName(s.personA));
+  document.querySelectorAll('.personB').forEach(el => el.textContent = firstName(s.personB));
 
-  document.querySelectorAll('.personA').forEach(el => el.textContent = s.personA);
-  document.querySelectorAll('.personB').forEach(el => el.textContent = s.personB);
-
-  const follower = s.leader === s.personA ? s.personB : s.personA;
-  const followerPct = 100 - s.leaderPct;
-  const leaderShort = s.leader.split(' ')[0];
-  const followerShort = follower.split(' ')[0];
-  const whoLeadsEl = document.getElementById('whoLeads');
-  if (s.leaderPct >= 55) {
-    const context = s.leaderPct >= 65
-      ? `${leaderShort} inicia más, pregunta más, lleva el peso.`
-      : 'Ligeramente desequilibrado pero dentro de lo normal.';
-    whoLeadsEl.innerHTML =
-      `<strong style="font-size:1.1em;">${leaderShort} lleva la relación</strong><br>` +
-      `${leaderShort}: <strong>${s.leaderPct}%</strong> · ${followerShort}: <strong>${followerPct}%</strong><br>` +
-      `<span style="color:var(--text-muted);font-size:0.9em;">${context}</span>`;
+  // Datos locales que alimentan el adelanto y el PDF
+  window.lastMilestones = lastMessages ? analyzeMilestones(lastMessages) : {};
+  window.lastPeople = lastMessages ? computePeople(lastMessages, s) : null;
+  const ms = window.lastMilestones;
+  const ff = document.getElementById('funFact');
+  if (ms.love && ms.love.replySender) {
+    ff.textContent = `${firstName(ms.love.sender)} dijo «te quiero» primero, ${ms.love.day === 1 ? 'el primer día' : 'a los ' + ms.love.day + ' días'}. ${firstName(ms.love.replySender)} contestó en ${fmtSeconds(ms.love.replySecs)}.`;
   } else {
-    whoLeadsEl.innerHTML =
-      `<strong style="font-size:1.1em;">Relación equilibrada</strong><br>` +
-      `${leaderShort}: <strong>${s.leaderPct}%</strong> · ${followerShort}: <strong>${followerPct}%</strong><br>` +
-      `<span style="color:var(--text-muted);font-size:0.9em;">Los dos se implican por igual. Poco común.</span>`;
+    ff.textContent = `${firstName(s.personA)} escribió ${s.msgsA.toLocaleString('es-MX')} mensajes y ${firstName(s.personB)}, ${s.msgsB.toLocaleString('es-MX')}.`;
   }
-
-  document.getElementById('funFact').innerHTML =
-    `📊 <strong>Dato curioso:</strong> ${s.personA} envió <strong>${s.msgsA.toLocaleString()}</strong> mensajes y ${s.personB} envió <strong>${s.msgsB.toLocaleString()}</strong>. ${s.loveCount > 20 ? 'Hay mucho amor en este chat ❤️' : 'Podrían usar más emojis de amor... 😬'}`;
-
-  renderLeaderboard(s);
-
-  console.log('[showResults] isPremium:', window.isPremium);
-
-  // Step 1: Show sections so DOM is available
-  document.getElementById('premiumSection').style.display = 'block';
-  document.getElementById('obsessiveSection').style.display = 'block';
-
-  // Step 2: Render ALL feature content (data fills into .pf-body elements)
-  if (lastMessages) {
-    featuresRendered = true;
-    try {
-      renderPremiumFeatures(lastMessages, s);
-      console.log('[showResults] renderPremiumFeatures completed OK');
-    } catch(err) {
-      console.error('[showResults] ERROR in renderPremiumFeatures:', err);
-    }
-  } else {
-    console.warn('[showResults] lastMessages is null — features skipped');
-  }
-
-  // Step 3: Apply blur overlays AFTER all content is rendered
-  console.log('[showResults] Before applyBlurOverlays — isPremium:', window.isPremium);
-  applyBlurOverlays();
+  renderLockedIndex(s);
+  refreshDiaryState();
 
   resultsSection.classList.add('active');
   resultsSection.scrollIntoView({ behavior: 'smooth' });
 
-  // Hide landing sections but keep pricing visible for curioso
-  const landingSections = ['exportGuide', 'como-funciona', 'indice', 'faq'];
-  landingSections.forEach(id => {
+  // La landing desaparece: a partir de aquí solo existe su diario
+  ['exportGuide', 'como-funciona', 'indice', 'precios', 'faq'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
-  // Show/hide pricing based on plan
-  const pricingEl = document.getElementById('precios');
-  if (pricingEl) {
-    pricingEl.style.display = isPremiumUser() ? 'none' : 'block';
-  }
 }
 
 async function htmlToCanvasWithTimeout(element, options, timeoutMs = 15000) {
@@ -3951,7 +3758,7 @@ async function loadDemo() {
     avgReply: 47,
     avgReplyFormatted: "47 min",
     score: 58,
-    verdict: "Tibio, cuidado 🟠",
+    verdict: "Tibio, cuidado",
     leader: "Laura",
     leaderPct: 54,
     ratio: "1.17",
@@ -6679,7 +6486,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-// ── DIARIO: capítulos, IA, Story, PDF y chat conservado al pagar ──
+// ── DIARIO: adelanto en la web, el producto es el PDF ──
 // ═══════════════════════════════════════════════════════════════
 
 function escapeHtml(str) {
@@ -6687,19 +6494,24 @@ function escapeHtml(str) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
-function firstName(name) { return String(name || '').split(' ')[0]; }
-function stripEmoji(str) { return String(str || '').replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, '').trim(); }
+function stripEmoji(str) {
+  return String(str || '').replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{1F3FB}-\u{1F3FF}]/gu, '').replace(/\s{2,}/g, ' ').trim();
+}
+// Texto seguro y sin emojis para pintar en HTML
+const T = s => escapeHtml(stripEmoji(s));
+function firstName(name) { return stripEmoji(String(name || '')).split(' ')[0]; }
 
-const DIARY_MEDIA_RE = /omitid|omitted|<adjunto|adjunto:|multimedia|\.(jpe?g|png|webp|opus|mp4|pdf|vcf)\b|sticker|eliminaste este mensaje|se eliminó este mensaje|this message was deleted|mensaje eliminado|null$/i;
+const DIARY_MEDIA_RE = /omitid|omitted|<adjunto|adjunto:|multimedia|\.(jpe?g|png|webp|opus|mp4|pdf|vcf)\b|sticker|eliminaste este mensaje|se eliminó este mensaje|este mensaje fue eliminado|this message was deleted|null$/i;
 const DIARY_AUDIO_RE = /audio|\.opus|ptt-/i;
 const DIARY_LOVE_RE = /\bte\s+(quiero|amo|adoro)\b/i;
 
 function diaryDate(m) { return parseMessageDate(m.date, m.time, m.ampm); }
 function isRealText(m) {
-  return !!m.text && m.text.length > 1 && !DIARY_MEDIA_RE.test(m.text) && !/cifrado de extremo|end-to-end/i.test(m.text);
+  return !!m.text && stripEmoji(m.text).length > 1 && !DIARY_MEDIA_RE.test(m.text) && !/cifrado de extremo|end-to-end/i.test(m.text);
 }
 const fmtDay = d => d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
 const fmtShort = d => d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+const fmtMonth = d => d.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
 const fmtHour = d => d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false });
 function fmtMinutes(mins) {
   if (mins == null || isNaN(mins)) return '—';
@@ -6719,6 +6531,14 @@ function median(arr) {
   const mid = Math.floor(s.length / 2);
   return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
 }
+function sortedWithTimestamps(messages) {
+  const sorted = [];
+  messages.forEach(m => {
+    try { const ts = diaryDate(m); if (!isNaN(ts.getTime())) sorted.push({ ...m, timestamp: ts }); } catch (e) {}
+  });
+  return sorted.sort((a, b) => a.timestamp - b.timestamp);
+}
+function safe(fn) { try { return fn(); } catch (e) { console.warn('[Diario] análisis omitido:', e); return null; } }
 
 // ── Hitos: primer mensaje, primer «te quiero», mensaje más largo, día más intenso ──
 function analyzeMilestones(messages) {
@@ -6797,37 +6617,43 @@ function computePeople(messages, stats) {
   return { A: people[stats.personA], B: people[stats.personB] };
 }
 
-// ═══ Capítulo I: el primer mensaje (web) ═══
-function renderFirstMessage(ms, stats) {
-  const el = document.getElementById('firstMessageBody');
-  if (!el || !ms.first) return;
-  const other = ms.love && ms.love.replySender ? firstName(ms.love.replySender) : '';
-  el.innerHTML = `
-    <div style="background:var(--rose);padding:18px;display:flex;flex-direction:column;gap:10px;max-width:420px;">
-      <div class="bubble-in" style="font-size:0.9rem;">${escapeHtml(ms.first.text.slice(0, 220))}</div>
-      ${ms.firstReply ? `<div class="bubble-out" style="font-size:0.9rem;">${escapeHtml(ms.firstReply.text.slice(0, 160))}</div>` : ''}
-      <small style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(firstName(ms.first.sender))} · ${fmtDay(ms.firstDate)} · ${fmtHour(ms.firstDate)}</small>
-    </div>
-    <div class="two-notes">
-      <div class="note-card"><h4 style="color:var(--pink)">${ms.love ? escapeHtml(firstName(ms.love.sender)) + ', el día ' + ms.love.day : 'Todavía no'}</h4>
-        <ul><li>${ms.love ? 'Primer «te quiero»: ' + fmtDay(ms.love.date) + '.' : 'No encontramos un «te quiero» escrito en el chat.'}${ms.love && ms.love.replySecs != null ? ' ' + escapeHtml(other) + ' contestó en ' + fmtSeconds(ms.love.replySecs) + '.' : ''}</li></ul></div>
-      <div class="note-card"><h4>${ms.longest ? escapeHtml(firstName(ms.longest.sender)) + ', ' + ms.longest.words.toLocaleString('es-MX') + ' palabras' : ''}</h4>
-        <ul><li>El mensaje más largo: ${ms.longest ? fmtDay(ms.longest.date) + ', a las ' + fmtHour(ms.longest.date) : '—'}.</li>
-        ${ms.busiest ? `<li>Su día más intenso: ${fmtDay(ms.busiest.date)}, con ${ms.busiest.count.toLocaleString('es-MX')} mensajes.</li>` : ''}</ul></div>
-    </div>`;
+// ═══ Web: adelanto y estado de pago ═══
+function renderLockedIndex(s) {
+  const el = document.getElementById('lockedIndex');
+  if (!el) return;
+  const ms = window.lastMilestones || {};
+  const sil = lastMessages ? safe(() => analyzeSilences(lastMessages)) : null;
+  const B = t => `<span class="blurred">${t}</span>`;
+  const weekday = ms.firstDate ? ms.firstDate.toLocaleDateString('es-MX', { weekday: 'long' }) : '';
+  const rows = [
+    ['I.', 'Cómo empezó todo', ms.firstDate ? `Su primer mensaje fue un ${weekday}, a las ${B(fmtHour(ms.firstDate))}.` : 'Su primer mensaje, su línea de vida y los meses que lo cambiaron todo.'],
+    ['II.', 'Quién es quién', `${T(firstName(s.personA))} es ${B('«la que…»')} y ${T(firstName(s.personB))}, ${B('«el que…»')}.`],
+    ['III.', 'Cómo se hablan', sil && sil.longest ? `Su silencio más largo duró ${B(Math.max(2, Math.round(sil.longest.hours / 24)) + ' días')}.` : 'Tiempos, horarios, silencios y cómo ha cambiado su forma de hablarse.'],
+    ['IV.', 'Compatibilidad', `Qué tan compatibles son y su lenguaje del amor: ${B('está en su diario')}.`],
+    ['V.', 'Las señales', `Lo que conviene cuidar y lo que ya hacen bien.`],
+    ['VI.', '¿Van a durar?', `Nuestro pronóstico: ${B('está en su diario')}.`],
+    ['VII.', 'Consejos para ustedes', 'Cinco cosas que pueden hacer desde hoy.'],
+    ['VIII.', 'El mensaje', `El más bonito de sus ${s.total.toLocaleString('es-MX')} mensajes.`],
+  ];
+  el.innerHTML = rows.map(([n, t, d]) => `<li><div class="li-title"><b>${n}</b> ${t}</div><div class="li-teaser">${d}</div></li>`).join('');
 }
 
-// ═══ Capítulos IA (web) ═══
-function levelPosition(level) {
-  return { fragil: 12, 'frágil': 12, inestable: 37, estable: 62, solida: 87, 'sólida': 87 }[String(level || '').toLowerCase()] ?? 62;
+function refreshDiaryState() {
+  const paid = isPremiumUser() && !window.isDemoMode;
+  const paywall = document.getElementById('diaryPaywall');
+  const ready = document.getElementById('diaryReady');
+  if (paywall) paywall.style.display = paid ? 'none' : 'block';
+  if (ready) ready.style.display = paid ? 'block' : 'none';
+  if (paid && lastMessages && lastStats) loadDiaryAI(lastMessages, lastStats); // se precarga para que el PDF salga rápido
 }
 
+// ═══ IA del diario (solo si ya pagó) ═══
 function findBestMessage(diary, messages) {
   const bm = diary && diary.bestMessage;
   if (bm && bm.text) {
     const wanted = String(bm.text).trim();
     const hit = messages.find(m => m.text && m.text.trim() === wanted);
-    if (hit) return { sender: hit.sender, text: hit.text, date: diaryDate(hit) };
+    if (hit && stripEmoji(hit.text).length > 3) return { sender: hit.sender, text: hit.text, date: diaryDate(hit) };
   }
   // Respaldo local: el mensaje cariñoso más elaborado, de largo razonable
   let best = null;
@@ -6839,81 +6665,6 @@ function findBestMessage(diary, messages) {
   return best ? { sender: best.m.sender, text: best.m.text, date: diaryDate(best.m) } : null;
 }
 
-function renderDiaryAI(diary, messages, stats) {
-  const people = window.lastPeople || computePeople(messages, stats);
-  const A = people.A, B = people.B;
-  const prof = (diary && diary.profiles) || {};
-  const card = (p, ai, cls) => `
-    <div class="profile-card ${cls}">
-      <div class="profile-name">${escapeHtml(firstName(p.name))}</div>
-      <div class="profile-archetype">${escapeHtml(ai && ai.archetype ? ai.archetype : '')}</div>
-      <div class="profile-desc">${escapeHtml(ai && ai.description ? ai.description : '')}</div>
-      <div class="profile-row"><span>inicia</span><b>${p.initiatesPct}% de las conversaciones</b></div>
-      <div class="profile-row"><span>su palabra</span><b>${p.topWords[0] ? '«' + escapeHtml(p.topWords[0]) + '»' : '—'}</b></div>
-      <div class="profile-row"><span>su hora</span><b>${p.peakHour}:00 – ${(p.peakHour + 2) % 24}:00</b></div>
-      <div class="profile-row"><span>contesta en</span><b>${p.replyLabel}</b></div>
-      <div class="profile-row"><span>su formato</span><b>${p.format}</b></div>
-      <div class="profile-traits">${escapeHtml(((ai && ai.traits) || []).slice(0, 3).join(' · '))}</div>
-    </div>`;
-  const profilesEl = document.getElementById('profilesBody');
-  if (profilesEl) profilesEl.innerHTML = `<div class="profile-grid">${card(A, prof.A, 'a')}${card(B, prof.B, 'b')}</div>`;
-
-  const c = (diary && diary.compatibility) || {};
-  const LL = [['palabras', 'Palabras de afirmación'], ['tiempo', 'Tiempo de calidad'], ['servicio', 'Actos de servicio'], ['contacto', 'Contacto físico'], ['regalos', 'Regalos']];
-  const llA = (c.loveLanguages && c.loveLanguages.A) || {}, llB = (c.loveLanguages && c.loveLanguages.B) || {};
-  const pct = v => Math.max(3, Math.min(100, Number(v) || 0));
-  const compatEl = document.getElementById('compatBody');
-  if (compatEl) compatEl.innerHTML = c.percent == null ? '<div class="diary-loading">No pudimos escribir este capítulo. Recarga la página para intentarlo de nuevo.</div>' : `
-    <div class="compat-top"><div class="compat-score">${Math.round(c.percent)}%</div><div class="compat-summary">${escapeHtml(c.summary || '')}</div></div>
-    <div class="love-legend"><span style="color:var(--pink)">— ${escapeHtml(firstName(A.name))}</span><span style="color:var(--purple)">— ${escapeHtml(firstName(B.name))}</span></div>
-    ${LL.map(([k, label]) => `<div class="love-row"><div>${label}</div><div class="love-bars"><i style="width:${pct(llA[k])}%"></i><i style="width:${pct(llB[k])}%"></i></div></div>`).join('')}
-    <div class="two-notes">
-      <div class="note-card"><h4 style="color:var(--pink)">Lo que les sale bien</h4><ul>${(c.strengths || []).map(s => '<li>✓ ' + escapeHtml(s) + '</li>').join('')}</ul></div>
-      <div class="note-card"><h4>Lo que pueden trabajar</h4><ul>${(c.toWork || []).map(s => '<li>→ ' + escapeHtml(s) + '</li>').join('')}</ul></div>
-    </div>`;
-
-  const sig = (diary && diary.signals) || {};
-  const ai0 = window.lastAIAnalysis || {};
-  const toWatch = sig.toWatch && sig.toWatch.length ? sig.toWatch : (ai0.redFlags || []).map(t => ({ title: t, detail: '', level: 'a vigilar' }));
-  const green = sig.greenFlags && sig.greenFlags.length ? sig.greenFlags : (ai0.greenFlags || []);
-  const signalsEl = document.getElementById('signalsBody');
-  if (signalsEl) signalsEl.innerHTML = `
-    ${toWatch.length ? toWatch.slice(0, 3).map(s => `<div class="postit"><span class="stamp">${escapeHtml(String(s.level || 'a vigilar').toUpperCase())}</span><h4>${escapeHtml(s.title)}</h4>${s.detail ? `<p>${escapeHtml(s.detail)}</p>` : ''}</div>`).join('') : '<div class="postit"><h4>Nada que nos preocupe</h4><p>No encontramos patrones que merezca la pena señalar.</p></div>'}
-    <div class="note-card" style="margin-top:22px;"><h4 style="color:var(--purple)">Green flags</h4><ul>${green.map(g => '<li>✓ ' + escapeHtml(g) + '</li>').join('')}</ul></div>`;
-
-  const f = (diary && diary.forecast) || {};
-  const pos = Math.max(4, Math.min(96, typeof f.position === 'number' ? f.position : levelPosition(f.level)));
-  const forecastEl = document.getElementById('forecastBody');
-  if (forecastEl) forecastEl.innerHTML = !f.headline ? '<div class="diary-loading">No pudimos escribir este capítulo. Recarga la página para intentarlo de nuevo.</div>' : `
-    <div class="forecast-verdict">${escapeHtml(f.headline)}</div>
-    <div class="forecast-scale"><div class="line"></div><div class="marker" style="left:${pos}%"></div></div>
-    <div class="forecast-labels"><span>frágil</span><span>inestable</span><span>estable</span><span>sólida</span></div>
-    <p style="margin-top:22px;line-height:1.7;background:var(--paper);">${escapeHtml(f.explanation || '')}</p>
-    <div class="two-notes">
-      <div class="note-card"><h4 style="color:var(--purple)">A su favor</h4><ul>${(f.pros || []).map(s => '<li>+ ' + escapeHtml(s) + '</li>').join('')}</ul></div>
-      <div class="note-card"><h4 style="color:var(--pink)">En contra</h4><ul>${(f.cons || []).map(s => '<li>− ' + escapeHtml(s) + '</li>').join('')}</ul></div>
-    </div>
-    ${f.condition ? `<div class="postit" style="margin-top:22px;"><p style="font-size:0.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);">La condición</p><h4>${escapeHtml(f.condition)}</h4></div>` : ''}`;
-
-  const adviceEl = document.getElementById('adviceBody');
-  const advice = (diary && diary.advice) || [];
-  if (adviceEl) adviceEl.innerHTML = advice.length ? advice.slice(0, 5).map((a, i) => `
-    <label class="advice-item"><input type="checkbox" aria-label="Hecho: ${escapeHtml(a.title)}"><div><h4>${escapeHtml(a.title)}</h4><p>${escapeHtml(a.text || '')}</p></div></label>`).join('')
-    : '<div class="diary-loading">No pudimos escribir este capítulo. Recarga la página para intentarlo de nuevo.</div>';
-
-  const best = findBestMessage(diary, messages);
-  window.lastBestMessage = best;
-  const bestEl = document.getElementById('bestMessageBody');
-  if (bestEl) bestEl.innerHTML = best ? `
-    <div class="best-message"><div class="tape" style="left:-18px;transform:rotate(-12deg);"></div><div class="tape" style="right:-18px;transform:rotate(10deg);"></div>
-      <q>${escapeHtml(best.text)}</q>
-      <small><b>${escapeHtml(firstName(best.sender))}</b> · ${fmtDay(best.date)} · ${fmtHour(best.date)}</small></div>
-    <p style="margin-top:36px;font-family:var(--font-display);font-size:1.7rem;line-height:1.2;">Gracias por dejarnos leer su historia. Ojalá este diario les sirva para seguir escribiéndola.</p>
-    <p style="font-family:var(--font-display);font-weight:700;font-size:2.2rem;color:var(--pink);">Con cariño, YaLoSabía</p>`
-    : '<div class="diary-loading">No encontramos un mensaje que elegir.</div>';
-}
-
-// ═══ Llamada a la IA (solo si ya pagó) ═══
 async function loadDiaryAI(messages, stats) {
   if (window.diaryPromise) return window.diaryPromise;
   const key = 'yls_diary_' + (window.currentChatFingerprint || '');
@@ -6921,7 +6672,6 @@ async function loadDiaryAI(messages, stats) {
     const cached = sessionStorage.getItem(key);
     if (cached) {
       window.lastDiary = JSON.parse(cached);
-      renderDiaryAI(window.lastDiary, messages, stats);
       window.diaryPromise = Promise.resolve(window.lastDiary);
       return window.diaryPromise;
     }
@@ -6943,8 +6693,8 @@ async function loadDiaryAI(messages, stats) {
     } catch (err) {
       console.error('[Diario] Error IA:', err);
       window.lastDiary = null;
+      window.diaryPromise = null; // se puede reintentar al pulsar «Descargar»
     }
-    renderDiaryAI(window.lastDiary, messages, stats);
     return window.lastDiary;
   })();
   return window.diaryPromise;
@@ -6952,42 +6702,16 @@ async function loadDiaryAI(messages, stats) {
 
 // ═══ Enganches con el flujo existente ═══
 (function hookDiaryIntoFlow() {
-  const _render = renderPremiumFeatures;
-  renderPremiumFeatures = function(messages, stats) {
-    _render(messages, stats);
-    try {
-      window.lastMilestones = analyzeMilestones(messages);
-      window.lastPeople = computePeople(messages, stats);
-      renderFirstMessage(window.lastMilestones, stats);
-    } catch (e) { console.error('[Diario] Error local:', e); }
-    if (isPremiumUser() && !window.isDemoMode) loadDiaryAI(messages, stats);
-  };
-
-  const _unlock = unlockPlan;
   unlockPlan = function() {
-    _unlock();
-    if (isPremiumUser() && lastMessages && lastStats) loadDiaryAI(lastMessages, lastStats);
+    refreshDiaryState();
+    closePayModal();
   };
 
-  const _show = showResults;
-  showResults = function(s) {
-    window.diaryPromise = null;
-    _show(s);
-    document.getElementById('scoreVerdict').textContent = stripEmoji(s.verdict);
-    const ms = lastMessages ? analyzeMilestones(lastMessages) : {};
-    const ff = document.getElementById('funFact');
-    if (ms.love && ms.love.replySender) {
-      ff.textContent = `${firstName(ms.love.sender)} dijo «te quiero» primero, a los ${ms.love.day} días. ${firstName(ms.love.replySender)} contestó en ${fmtSeconds(ms.love.replySecs)}.`;
-    } else {
-      ff.textContent = `${firstName(s.personA)} envió ${s.msgsA.toLocaleString('es-MX')} mensajes y ${firstName(s.personB)}, ${s.msgsB.toLocaleString('es-MX')}.`;
-    }
-  };
+  const _updatePlanUI = updatePlanUI;
+  updatePlanUI = function() { _updatePlanUI(); refreshDiaryState(); };
 
-  updateWithAIInsights = function(analysis) {
-    window.lastAIAnalysis = analysis;
-    if (analysis.whoLeads) document.getElementById('whoLeads').textContent = analysis.whoLeads;
-    if (analysis.funInsight) document.getElementById('funFact').textContent = stripEmoji(analysis.funInsight);
-  };
+  // El análisis IA gratuito ya no pinta nada en la web; se guarda para el PDF
+  updateWithAIInsights = function(analysis) { window.lastAIAnalysis = analysis; };
 
   const _process = processChat;
   processChat = function(text) {
@@ -7040,7 +6764,7 @@ function pendingChatStore(op, value) {
   });
 })();
 
-// ═══ Story (1080×1920) ═══
+// ═══ Líneas de libreta (html2canvas no pinta bien los degradados repetidos) ═══
 function addPaperLines(el, step, width, color) {
   if (el.querySelector(':scope > .paper-lines')) return;
   const wrap = document.createElement('div');
@@ -7056,6 +6780,7 @@ function addPaperLines(el, step, width, color) {
   el.style.backgroundImage = 'none';
 }
 
+// ═══ Story (1080×1920) ═══
 async function shareToStories() {
   const s = lastStats;
   if (!s) { alert('Primero sube un chat.'); return; }
@@ -7089,219 +6814,285 @@ async function shareToStories() {
   }
 }
 
-// ═══ PDF: el diario completo (A4, 9 páginas) ═══
+// ═══════════════════════════════════════════════
+// ── PDF: el diario completo (A4, 13 páginas) ──
+// ═══════════════════════════════════════════════
 const PDF_PAGE = "position:relative;width:794px;height:1123px;box-sizing:border-box;background:#FFF8F6;color:#3B0A12;font-family:'Courier Prime','Courier New',monospace;padding:56px 64px 44px 120px;display:flex;flex-direction:column;overflow:hidden;";
 const CAV = "font-family:'Caveat',cursive;font-weight:700;";
+const CAVL = "font-family:'Caveat',cursive;font-weight:500;";
 const MUTED = "font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#7A4B52;";
+const RED = '#C8102E', BLUE = '#1F3A93', INK = '#3B0A12', ROSE = '#F7DDD8', LINE = '#EAD0CB';
 
-function pdfHead(names, label) {
-  return `<div style="position:absolute;left:88px;top:0;bottom:0;width:2px;background:#E0707F;"></div>
-    <div style="display:flex;justify-content:space-between;${MUTED}"><span>${escapeHtml(names)}</span><span>${label}</span></div>`;
-}
-function pdfTitle(num, title, sub) {
-  return `<div style="margin-top:26px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;${CAV}font-size:64px;line-height:1;"><span style="color:#C8102E;">${num}.</span><span>${title}</span></div>
-    ${sub ? `<div style="${CAV}font-weight:500;font-size:28px;line-height:40px;">${sub}</div>` : ''}`;
-}
-function pdfFoot(n) {
-  return `<div style="margin-top:auto;display:flex;justify-content:space-between;align-items:baseline;${MUTED}"><span>yalosabia.com</span><span style="${CAV}font-size:26px;letter-spacing:0;text-transform:none;color:#3B0A12;">— ${n} —</span></div>`;
-}
-const pdfTape = (css) => `<div style="position:absolute;width:110px;height:28px;background:rgba(224,112,127,0.45);${css}"></div>`;
-const pdfCard = (inner, css) => `<div style="position:relative;background:#FFFFFF;border:1px solid #EAD0CB;padding:18px 16px;${css || ''}">${inner}</div>`;
-const pdfList = (items, mark) => (items || []).map(t => `<div style="font-size:13px;line-height:1.7;">${mark} ${escapeHtml(t)}</div>`).join('');
-
-function pdfBars(values, highlight, height, color) {
+const pdfMargin = () => `<div style="position:absolute;left:88px;top:0;bottom:0;width:2px;background:#E0707F;"></div>`;
+const pdfHead = (names, label) => `${pdfMargin()}<div style="display:flex;justify-content:space-between;${MUTED}"><span>${T(names)}</span><span>${label}</span></div>`;
+const pdfTitle = (num, title, sub) => `<div style="margin-top:24px;${CAV}font-size:${title.length > 20 ? 50 : 58}px;line-height:1.02;">${num ? `<span style="color:${RED};">${num}.</span> ` : ''}${title}</div>${sub ? `<div style="${CAVL}font-size:28px;line-height:40px;">${sub}</div>` : ''}`;
+const pdfH2 = (t, css) => `<div style="${CAV}font-size:34px;line-height:40px;${css || ''}">${t}</div>`;
+const pdfFoot = n => `<div style="margin-top:auto;padding-top:10px;display:flex;justify-content:space-between;align-items:baseline;${MUTED}"><span>yalosabia.com</span><span style="${CAV}font-size:26px;letter-spacing:0;text-transform:none;color:${INK};">— ${n} —</span></div>`;
+const pdfTape = css => `<div style="position:absolute;width:110px;height:28px;background:rgba(224,112,127,0.45);${css}"></div>`;
+const pdfCard = (inner, css) => `<div style="position:relative;background:#FFFFFF;border:1px solid ${LINE};padding:16px;${css || ''}">${inner}</div>`;
+const pdfNote = (inner, css) => `<div style="position:relative;background:${ROSE};padding:16px 18px;${css || ''}">${inner}</div>`;
+const pdfList = (items, mark) => (items || []).map(t => `<div style="font-size:13px;line-height:1.65;">${mark} ${T(t)}</div>`).join('');
+const pdfRow = (k, v, css) => `<div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px dashed #E6BDB6;font-size:13px;${css || ''}"><span style="color:#7A4B52;">${k}</span><b style="text-align:right;">${v}</b></div>`;
+const pdfQuote = (text, meta, size) => pdfCard(`${pdfTape('left:-16px;top:-12px;transform:rotate(-10deg);')}<div style="${CAV}font-size:${size || 30}px;line-height:1.12;">«${T(text)}»</div><div style="margin-top:10px;font-size:12px;color:#7A4B52;">${meta}</div>`, 'transform:rotate(-1deg);padding:22px 20px;');
+const pdfBars = (values, highlight, height) => {
   const max = Math.max(...values, 1);
-  return `<div style="display:flex;align-items:flex-end;gap:4px;height:${height}px;border-bottom:2.5px solid #3B0A12;">${values.map((v, i) =>
-    `<div style="flex:1;height:${Math.max(3, Math.round(v / max * (height - 6)))}px;background:${i === highlight ? '#C8102E' : (color || '#F0A7B1')};border-radius:4px 4px 0 0;"></div>`).join('')}</div>`;
-}
+  return `<div style="display:flex;align-items:flex-end;gap:4px;height:${height}px;border-bottom:2.5px solid ${INK};">${values.map((v, i) =>
+    `<div style="flex:1;height:${Math.max(3, Math.round(v / max * (height - 6)))}px;background:${i === highlight ? RED : '#F0A7B1'};border-radius:4px 4px 0 0;"></div>`).join('')}</div>`;
+};
+const pdfEmpty = t => `<div style="${CAVL}font-size:26px;line-height:1.2;color:#7A4B52;">${t}</div>`;
+const pct = v => Math.max(3, Math.min(100, Number(v) || 0));
 
 function buildDiaryPages(messages, stats, diary) {
   const ms = window.lastMilestones || analyzeMilestones(messages);
   const people = window.lastPeople || computePeople(messages, stats);
   const A = people.A, B = people.B;
-  const names = firstName(A.name) + ' & ' + firstName(B.name);
+  const nA = firstName(A.name), nB = firstName(B.name);
+  const names = nA + ' & ' + nB;
   const d = diary || {};
-  const pages = [];
-  const today = new Date();
+  const sorted = sortedWithTimestamps(messages);
+  const tl = safe(() => analyzeRelationshipTimeline(messages)) || { data: [], labels: [] };
+  const sil = safe(() => analyzeSilences(messages)) || { total: 0, brokeCount: {}, longest: null };
+  const mm = safe(() => analyzeMultimedia(messages));
+  const dt = safe(() => analyzeDoubleTexting(messages)) || {};
+  const del = safe(() => analyzeDeletedMessages(messages)) || { deleted: {}, total: 0 };
+  const bvn = safe(() => analyzeBeforeVsNow(sorted, stats));
+  const forensic = safe(() => analyzeForensicReconstruction(sorted, stats));
+  const ghost = safe(() => analyzeSelectiveGhosting(sorted, stats));
+  const lang = safe(() => analyzeLanguageChanges(sorted, stats));
+  const best = findBestMessage(d, messages);
+  const ai0 = window.lastAIAnalysis || {};
+  const colorOf = name => name === A.name ? RED : BLUE;
 
-  // Portada
-  pages.push(`<div style="${PDF_PAGE}">
-    <div style="position:absolute;left:88px;top:0;bottom:0;width:2px;background:#E0707F;"></div>
-    <div style="display:flex;justify-content:space-between;${MUTED}"><span>YaLoSabía · Diario Nº 01</span><span>${fmtShort(today)}</span></div>
-    <div style="margin-top:44px;${CAV}font-size:44px;line-height:40px;color:#C8102E;">Querido diario:</div>
-    <div style="${CAV}font-size:104px;line-height:1.05;">${escapeHtml(names)}</div>
-    <div style="${CAV}font-weight:500;font-size:30px;line-height:40px;max-width:540px;">esta es nuestra historia, escrita en ${stats.total.toLocaleString('es-MX')} mensajes${ms.start ? ' desde el ' + fmtDay(ms.start) : ''}.</div>
+  const pages = []; // cada entrada: n => html (n = número de página)
+
+  // ── Portada ──
+  pages.push(() => `<div style="${PDF_PAGE}">${pdfMargin()}
+    <div style="display:flex;justify-content:space-between;${MUTED}"><span>YaLoSabía · Diario Nº 01</span><span>${fmtShort(new Date())}</span></div>
+    <div style="margin-top:44px;${CAV}font-size:44px;line-height:40px;color:${RED};">Querido diario:</div>
+    <div style="${CAV}font-size:${names.length > 18 ? 84 : 104}px;line-height:1.05;">${T(names)}</div>
+    <div style="${CAVL}font-size:30px;line-height:40px;max-width:540px;">esta es nuestra historia, escrita en ${stats.total.toLocaleString('es-MX')} mensajes${ms.start ? ' desde el ' + fmtDay(ms.start) : ''}.</div>
     ${ms.first ? `<div style="position:relative;margin-top:50px;height:380px;">
       ${pdfTape('left:120px;top:0;transform:rotate(-7deg);z-index:2;')}
-      <div style="position:absolute;left:10px;top:20px;width:320px;background:#fff;padding:16px 16px 60px;border:1px solid #EAD0CB;transform:rotate(-4deg);">
-        <div style="height:250px;background:#F7DDD8;padding:18px;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;">
-          <div style="align-self:flex-start;background:#fff;border-radius:14px 14px 14px 4px;padding:9px 12px;font-size:14px;line-height:1.35;max-width:85%;">${escapeHtml(ms.first.text.slice(0, 140))}</div>
-          ${ms.firstReply ? `<div style="align-self:flex-end;background:#C8102E;color:#FFF4EF;border-radius:14px 14px 4px 14px;padding:9px 12px;font-size:14px;max-width:85%;">${escapeHtml(ms.firstReply.text.slice(0, 80))}</div>` : ''}
+      <div style="position:absolute;left:10px;top:20px;width:320px;background:#fff;border:1px solid ${LINE};padding:16px 16px 60px;transform:rotate(-4deg);">
+        <div style="height:250px;background:${ROSE};padding:18px;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;">
+          <div style="align-self:flex-start;background:#fff;border-radius:14px 14px 14px 4px;padding:9px 12px;font-size:14px;line-height:1.35;max-width:85%;">${T(ms.first.text.slice(0, 140))}</div>
+          ${ms.firstReply ? `<div style="align-self:flex-end;background:${RED};color:#FFF4EF;border-radius:14px 14px 4px 14px;padding:9px 12px;font-size:14px;max-width:85%;">${T(ms.firstReply.text.slice(0, 80))}</div>` : ''}
           <div style="margin-top:auto;font-size:11px;color:#7A4B52;">${fmtShort(ms.firstDate)} · ${fmtHour(ms.firstDate)}</div>
         </div>
         <div style="position:absolute;left:0;right:0;bottom:14px;text-align:center;${CAV}font-size:30px;">el primer mensaje</div>
       </div>
       <div style="position:absolute;right:0;top:70px;width:230px;display:flex;flex-direction:column;gap:26px;transform:rotate(3deg);">
-        <div style="position:relative;${CAV}font-size:34px;line-height:1.1;color:#C8102E;">índice: ${stats.score} / 100<div style="position:absolute;inset:-12px -14px;border:2.5px solid #C8102E;border-radius:50%;"></div></div>
-        ${ms.love ? `<div style="${CAV}font-weight:500;font-size:30px;line-height:1.15;">«te quiero» el día ${ms.love.day} (lo dijo ${escapeHtml(firstName(ms.love.sender))})</div>` : ''}
-        <div style="${CAV}font-weight:500;font-size:30px;line-height:1.15;">${stats.uniqueDays.toLocaleString('es-MX')} días hablando</div>
+        <div style="position:relative;${CAV}font-size:34px;line-height:1.1;color:${RED};">índice: ${stats.score} / 100<div style="position:absolute;inset:-12px -14px;border:2.5px solid ${RED};border-radius:50%;"></div></div>
+        ${ms.love ? `<div style="${CAVL}font-size:30px;line-height:1.15;">«te quiero» el día ${ms.love.day} (lo dijo ${T(firstName(ms.love.sender))})</div>` : ''}
+        <div style="${CAVL}font-size:30px;line-height:1.15;">${stats.uniqueDays.toLocaleString('es-MX')} días hablando</div>
       </div></div>` : ''}
     <div style="margin-top:auto;${MUTED}">Diario privado · yalosabia.com</div></div>`);
 
-  // I. Cómo empezó todo
-  const tl = analyzeRelationshipTimeline(messages);
-  let series = tl.data || [];
-  let labels = tl.labels || [];
-  if (series.length > 30) { // agrupar por trimestres
+  // ── Índice ──
+  const toc = [];
+  pages.push(n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Índice')}
+    ${pdfTitle('', 'Índice', 'ocho capítulos sobre ustedes dos.')}
+    <div style="margin-top:28px;">${toc.map(([num, title, page]) => `<div style="display:flex;align-items:baseline;gap:14px;${CAV}font-size:34px;line-height:52px;border-bottom:1px solid #E0707F;"><span style="color:${RED};min-width:64px;">${num}</span><span>${title}</span><span style="margin-left:auto;font-family:'Courier Prime',monospace;font-weight:700;font-size:14px;color:#7A4B52;">${page}</span></div>`).join('')}</div>
+    <div style="margin-top:36px;${CAVL}font-size:28px;line-height:40px;max-width:520px;">Las cifras salen de sus mensajes. Los perfiles, el pronóstico y los consejos los escribimos a partir de ellos.</div>
+    ${pdfFoot(n)}</div>`);
+  const chapter = (num, title, builder) => { if (!title.includes('·')) toc.push([num + '.', title, pages.length + 1]); pages.push(builder); };
+
+  // ── I. Cómo empezó todo ──
+  let series = tl.data || [], labels = tl.labels || [];
+  if (series.length > 30) {
     const q = [], ql = [];
     for (let i = 0; i < series.length; i += 3) { q.push(series.slice(i, i + 3).reduce((a, b) => a + b, 0)); ql.push(labels[i]); }
     series = q; labels = ql;
   }
   const peak = series.indexOf(Math.max(...series, 0));
-  pages.push(`<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo I')}${pdfTitle('I', 'Cómo empezó todo', ms.firstDate ? 'todo empezó un ' + ms.firstDate.toLocaleDateString('es-MX', { weekday: 'long' }) + '.' : '')}
-    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;margin-top:26px;">
-      ${pdfCard(`${pdfTape('left:30%;top:-14px;transform:rotate(-5deg);')}<div style="${MUTED}">Primer «te quiero»</div><div style="${CAV}font-size:36px;line-height:1.1;color:#C8102E;">${ms.love ? escapeHtml(firstName(ms.love.sender)) + ', el día ' + ms.love.day : 'todavía no'}</div><div style="font-size:13px;line-height:1.5;">${ms.love ? fmtDay(ms.love.date) + '.' + (ms.love.replySecs != null ? ' Le contestaron en ' + fmtSeconds(ms.love.replySecs) + '.' : '') : 'No aparece escrito en el chat.'}</div>`, 'transform:rotate(-1deg);')}
-      ${pdfCard(`<div style="${MUTED}">El mensaje más largo</div><div style="${CAV}font-size:36px;line-height:1.1;">${ms.longest ? escapeHtml(firstName(ms.longest.sender)) + ', ' + ms.longest.words.toLocaleString('es-MX') + ' palabras' : '—'}</div><div style="font-size:13px;line-height:1.5;">${ms.longest ? fmtDay(ms.longest.date) + ', a las ' + fmtHour(ms.longest.date) + '.' : ''}</div>`, 'transform:rotate(1deg);')}
+  chapter('I', 'Cómo empezó todo', n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo I')}${pdfTitle('I', 'Cómo empezó todo', ms.firstDate ? 'todo empezó un ' + ms.firstDate.toLocaleDateString('es-MX', { weekday: 'long' }) + '.' : '')}
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;margin-top:24px;">
+      ${pdfCard(`${pdfTape('left:30%;top:-14px;transform:rotate(-5deg);')}<div style="${MUTED}">Primer «te quiero»</div><div style="${CAV}font-size:34px;line-height:1.1;color:${RED};">${ms.love ? T(firstName(ms.love.sender)) + ', el día ' + ms.love.day : 'todavía no'}</div><div style="font-size:13px;line-height:1.5;">${ms.love ? fmtDay(ms.love.date) + '.' + (ms.love.replySecs != null ? ' Le contestaron en ' + fmtSeconds(ms.love.replySecs) + '.' : '') : 'No aparece escrito en el chat.'}</div>`, 'transform:rotate(-1deg);')}
+      ${pdfCard(`<div style="${MUTED}">El mensaje más largo</div><div style="${CAV}font-size:34px;line-height:1.1;">${ms.longest ? T(firstName(ms.longest.sender)) + ', ' + ms.longest.words.toLocaleString('es-MX') + ' palabras' : '—'}</div><div style="font-size:13px;line-height:1.5;">${ms.longest ? fmtDay(ms.longest.date) + ', a las ' + fmtHour(ms.longest.date) + '.' : ''}</div>`, 'transform:rotate(1deg);')}
     </div>
-    <div style="margin-top:34px;${CAV}font-size:40px;line-height:40px;">Su línea de vida</div>
-    <div style="margin-top:16px;">${pdfBars(series, peak, 200)}</div>
-    <div style="margin-top:6px;display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#7A4B52;"><span>${escapeHtml(labels[0] || '')}</span><span>${escapeHtml(labels[Math.floor(labels.length / 2)] || '')}</span><span>${escapeHtml(labels[labels.length - 1] || '')}</span></div>
-    ${tl.peakMonth ? `<div style="margin-top:14px;${CAV}font-size:26px;color:#C8102E;">← su mejor época: ${escapeHtml(tl.peakMonth)}</div>` : ''}
-    <div style="margin-top:18px;${CAV}font-size:32px;line-height:40px;">Días que lo cambiaron todo</div>
+    ${pdfH2('Su línea de vida', 'margin-top:32px;')}
+    <div style="margin-top:14px;">${series.length > 1 ? pdfBars(series, peak, 200) : pdfEmpty('Hace falta más tiempo de chat para dibujarla.')}</div>
+    ${series.length > 1 ? `<div style="margin-top:6px;display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#7A4B52;"><span>${T(labels[0] || '')}</span><span>${T(labels[Math.floor(labels.length / 2)] || '')}</span><span>${T(labels[labels.length - 1] || '')}</span></div>` : ''}
+    ${tl.peakMonth ? `<div style="margin-top:12px;${CAV}font-size:26px;color:${RED};">← su mejor época: ${T(tl.peakMonth)}</div>` : ''}
+    ${pdfH2('Días que recordar', 'margin-top:16px;')}
     ${ms.firstDate ? `<div style="font-size:14px;line-height:34px;"><b>${fmtShort(ms.firstDate)}</b> — el primer mensaje</div>` : ''}
-    ${ms.busiest ? `<div style="font-size:14px;line-height:34px;"><b>${fmtShort(ms.busiest.date)}</b> — su día con más mensajes: ${ms.busiest.count.toLocaleString('es-MX')}</div>` : ''}
     ${ms.love ? `<div style="font-size:14px;line-height:34px;"><b>${fmtShort(ms.love.date)}</b> — el primer «te quiero»</div>` : ''}
-    ${pdfFoot(2)}</div>`);
+    ${ms.busiest ? `<div style="font-size:14px;line-height:34px;"><b>${fmtShort(ms.busiest.date)}</b> — su día con más mensajes: ${ms.busiest.count.toLocaleString('es-MX')}</div>` : ''}
+    ${forensic && forensic.lastLove ? `<div style="font-size:14px;line-height:34px;"><b>${fmtShort(forensic.lastLove.date)}</b> — el último «te quiero» del chat</div>` : ''}
+    ${pdfFoot(n)}</div>`);
 
-  // II. Quién es quién
+  // ── I (cont.) Antes y ahora ──
+  const bvnCard = (p, color) => pdfCard(`<div style="${CAV}font-size:30px;line-height:1;color:${color};">${T(firstName(p.name))}</div>
+      <div style="display:grid;grid-template-columns:1fr 64px 64px;gap:6px;margin-top:10px;${MUTED}font-size:10px;"><span></span><span style="text-align:right;">antes</span><span style="text-align:right;">ahora</span></div>
+      ${p.metrics.map(m => `<div style="display:grid;grid-template-columns:1fr 64px 64px;gap:6px;padding:5px 0;border-bottom:1px dashed #E6BDB6;font-size:12px;"><span>${T(m.label)}</span><span style="text-align:right;">${Math.round(m.before).toLocaleString('es-MX')}</span><b style="text-align:right;">${Math.round(m.after).toLocaleString('es-MX')}</b></div>`).join('')}`);
+  const points = forensic && forensic.inflectionPoints ? forensic.inflectionPoints.slice(0, 3) : [];
+  chapter('I', 'Cómo empezó todo · antes y ahora', n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo I')}${pdfTitle('I', 'Antes y ahora', bvn ? 'sus primeros meses (' + T(bvn.beforeLabel) + ') frente a los últimos (' + T(bvn.afterLabel) + ').' : '')}
+    ${bvn ? `<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;margin-top:22px;">${bvnCard(bvn.personA, colorOf(bvn.personA.name))}${bvnCard(bvn.personB, colorOf(bvn.personB.name))}</div>` : pdfEmpty('Su chat es todavía corto para comparar el antes y el ahora.')}
+    ${pdfH2('Los meses que lo cambiaron todo', 'margin-top:28px;')}
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:10px;">${points.length ? points.map((p, i) => pdfNote(`<div style="display:flex;justify-content:space-between;align-items:baseline;"><div style="${CAV}font-size:30px;line-height:1;">${fmtMonth(p.date)}</div><div style="${CAV}font-size:28px;color:${p.direction === 'up' ? BLUE : RED};">${p.changePct > 0 ? '+' : ''}${p.changePct}%</div></div>
+        <div style="font-size:13px;line-height:1.5;margin-top:4px;">De ${p.prevCount.toLocaleString('es-MX')} a ${p.currCount.toLocaleString('es-MX')} mensajes en un mes.${p.keywords && p.keywords.length ? ' Hablaban de: ' + T(p.keywords.slice(0, 4).map(k => typeof k === 'string' ? k : (k.word || '')).filter(Boolean).join(', ')) + '.' : ''}</div>`, `transform:rotate(${i % 2 ? 0.6 : -0.6}deg);`)).join('') : pdfEmpty('Su ritmo ha sido bastante constante: no hubo cambios bruscos de un mes a otro.')}</div>
+    ${pdfFoot(n)}</div>`);
+
+  // ── II. Quién es quién ──
   const prof = d.profiles || {};
   const pCard = (p, ai, color, rot) => pdfCard(`
-      <div style="${CAV}font-size:50px;line-height:1;color:${color};">${escapeHtml(firstName(p.name))}</div>
-      <div style="${CAV}font-size:28px;line-height:1.1;">${escapeHtml((ai && ai.archetype) || '')}</div>
-      <div style="font-size:13px;line-height:1.55;margin:10px 0;">${escapeHtml((ai && ai.description) || '')}</div>
-      ${[['inicia', p.initiatesPct + '%'], ['su palabra', p.topWords[0] ? '«' + p.topWords[0] + '»' : '—'], ['su hora', p.peakHour + ':00 – ' + ((p.peakHour + 2) % 24) + ':00'], ['contesta en', p.replyLabel], ['su formato', p.format]]
-        .map(([k, v]) => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #E6BDB6;font-size:13px;"><span style="color:#7A4B52;">${k}</span><b>${escapeHtml(v)}</b></div>`).join('')}
-      <div style="margin-top:10px;${CAV}font-size:24px;color:${color};">${escapeHtml(((ai && ai.traits) || []).slice(0, 3).join(' · '))}</div>`,
+      <div style="${CAV}font-size:48px;line-height:1;color:${color};">${T(firstName(p.name))}</div>
+      <div style="${CAV}font-size:28px;line-height:1.1;">${T((ai && ai.archetype) || '')}</div>
+      <div style="font-size:13px;line-height:1.55;margin:10px 0;">${T((ai && ai.description) || '')}</div>
+      ${pdfRow('inicia', p.initiatesPct + '% de las charlas')}${pdfRow('su palabra', p.topWords[0] ? '«' + T(p.topWords[0]) + '»' : '—')}${pdfRow('su hora', p.peakHour + ':00 – ' + ((p.peakHour + 2) % 24) + ':00')}${pdfRow('contesta en', p.replyLabel)}${pdfRow('su formato', p.format)}
+      <div style="margin-top:10px;${CAV}font-size:24px;color:${color};">${T(((ai && ai.traits) || []).slice(0, 3).join(' · '))}</div>`,
     `border-top:4px solid ${color};transform:rotate(${rot}deg);`);
   const aPct = Math.round(stats.msgsA / stats.total * 100);
   const words = [];
-  A.topWords.slice(0, 4).forEach((w, i) => words.push([w, '#C8102E', 52 - i * 7]));
-  B.topWords.slice(0, 4).forEach((w, i) => words.push([w, '#1F3A93', 48 - i * 7]));
-  pages.push(`<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo II')}${pdfTitle('II', 'Quién es quién', 'dos formas muy distintas de querer.')}
-    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px;margin-top:24px;">${pCard(A, prof.A, '#C8102E', -1)}${pCard(B, prof.B, '#1F3A93', 1)}</div>
-    <div style="margin-top:30px;${CAV}font-size:34px;line-height:40px;">¿Quién escribe más?</div>
-    <div style="margin-top:8px;display:flex;height:28px;border:2px solid #3B0A12;border-radius:16px;overflow:hidden;"><div style="width:${aPct}%;background:#C8102E;"></div><div style="width:${100 - aPct}%;background:#1F3A93;"></div></div>
-    <div style="margin-top:6px;display:flex;justify-content:space-between;${CAV}font-size:24px;"><span style="color:#C8102E;">${escapeHtml(firstName(A.name))} ${aPct}%</span><span style="color:#1F3A93;">${escapeHtml(firstName(B.name))} ${100 - aPct}%</span></div>
-    <div style="margin-top:14px;${CAV}font-size:34px;line-height:40px;">Lo que más se dicen</div>
-    <div style="display:flex;flex-wrap:wrap;align-items:baseline;column-gap:18px;${CAV}line-height:1.2;">${words.map(([w, c, s]) => `<span style="font-size:${s}px;color:${c};">${escapeHtml(w)}</span>`).join('')}</div>
-    ${pdfFoot(3)}</div>`);
+  A.topWords.slice(0, 4).forEach((w, i) => words.push([w, RED, 50 - i * 7]));
+  B.topWords.slice(0, 4).forEach((w, i) => words.push([w, BLUE, 46 - i * 7]));
+  chapter('II', 'Quién es quién', n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo II')}${pdfTitle('II', 'Quién es quién', 'dos formas muy distintas de querer.')}
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:22px;">${pCard(A, prof.A, RED, -1)}${pCard(B, prof.B, BLUE, 1)}</div>
+    ${pdfH2('¿Quién escribe más?', 'margin-top:26px;')}
+    <div style="margin-top:8px;display:flex;height:28px;border:2px solid ${INK};border-radius:16px;overflow:hidden;"><div style="width:${aPct}%;background:${RED};"></div><div style="width:${100 - aPct}%;background:${BLUE};"></div></div>
+    <div style="margin-top:6px;display:flex;justify-content:space-between;${CAV}font-size:24px;"><span style="color:${RED};">${T(nA)} ${aPct}%</span><span style="color:${BLUE};">${T(nB)} ${100 - aPct}%</span></div>
+    ${pdfH2('Lo que más se dicen', 'margin-top:12px;')}
+    <div style="display:flex;flex-wrap:wrap;align-items:baseline;column-gap:18px;${CAV}line-height:1.2;">${words.map(([w, c, s]) => `<span style="font-size:${s}px;color:${c};">${T(w)}</span>`).join('')}</div>
+    ${pdfFoot(n)}</div>`);
 
-  // III. Cómo se hablan
-  const mm = analyzeMultimedia(messages);
-  const sil = analyzeSilences(messages);
+  // ── III. Cómo se hablan ──
   const hours = A.hours.map((v, i) => v + B.hours[i]);
   const peakH = hours.indexOf(Math.max(...hours));
-  const audTot = mm.audios.total, audA = mm.audios.perPerson[A.name] || 0;
-  const visTot = mm.imagenes.total + mm.stickers.total + mm.videos.total;
-  const visA = (mm.imagenes.perPerson[A.name] || 0) + (mm.stickers.perPerson[A.name] || 0) + (mm.videos.perPerson[A.name] || 0);
+  const count = (type, who) => mm && mm[type] ? (who ? (mm[type].perPerson[who] || 0) : mm[type].total) : 0;
+  const audTot = count('audios'), audA = count('audios', A.name);
+  const visTot = count('imagenes') + count('stickers') + count('videos');
+  const visA = count('imagenes', A.name) + count('stickers', A.name) + count('videos', A.name);
   const breakers = Object.entries(sil.brokeCount || {}).sort((a, b) => b[1] - a[1]);
-  pages.push(`<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo III')}${pdfTitle('III', 'Cómo se hablan', '')}
-    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:24px;">
-      ${pdfCard(`<div style="${CAV}font-size:44px;line-height:1;color:#C8102E;">${escapeHtml(stats.avgReplyFormatted)}</div><div style="font-size:12px;line-height:1.45;margin-top:6px;">tardan en contestarse<br><span style="color:#C8102E;">${escapeHtml(firstName(A.name))} ${A.replyLabel}</span> · <span style="color:#1F3A93;">${escapeHtml(firstName(B.name))} ${B.replyLabel}</span></div>`, 'transform:rotate(-1.5deg);')}
-      ${pdfCard(`<div style="${CAV}font-size:44px;line-height:1;">${audTot.toLocaleString('es-MX')}</div><div style="font-size:12px;line-height:1.45;margin-top:6px;">audios${audTot ? '<br>' + Math.round(audA / audTot * 100) + '% de ' + escapeHtml(firstName(A.name)) : ''}</div>`, 'transform:rotate(1deg);')}
-      ${pdfCard(`<div style="${CAV}font-size:44px;line-height:1;">${visTot.toLocaleString('es-MX')}</div><div style="font-size:12px;line-height:1.45;margin-top:6px;">fotos, videos y stickers${visTot ? '<br>' + Math.round(visA / visTot * 100) + '% de ' + escapeHtml(firstName(A.name)) : ''}</div>`, 'transform:rotate(-0.5deg);')}
+  chapter('III', 'Cómo se hablan', n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo III')}${pdfTitle('III', 'Cómo se hablan', '')}
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:22px;">
+      ${pdfCard(`<div style="${CAV}font-size:42px;line-height:1;color:${RED};">${T(stats.avgReplyFormatted)}</div><div style="font-size:12px;line-height:1.45;margin-top:6px;">tardan en contestarse<br><span style="color:${RED};">${T(nA)} ${A.replyLabel}</span> · <span style="color:${BLUE};">${T(nB)} ${B.replyLabel}</span></div>`, 'transform:rotate(-1.5deg);')}
+      ${pdfCard(`<div style="${CAV}font-size:42px;line-height:1;">${audTot.toLocaleString('es-MX')}</div><div style="font-size:12px;line-height:1.45;margin-top:6px;">audios${audTot ? '<br>' + Math.round(audA / audTot * 100) + '% de ' + T(nA) : ''}</div>`, 'transform:rotate(1deg);')}
+      ${pdfCard(`<div style="${CAV}font-size:42px;line-height:1;">${visTot.toLocaleString('es-MX')}</div><div style="font-size:12px;line-height:1.45;margin-top:6px;">fotos, videos y stickers${visTot ? '<br>' + Math.round(visA / visTot * 100) + '% de ' + T(nA) : ''}</div>`, 'transform:rotate(-0.5deg);')}
     </div>
-    <div style="margin-top:30px;${CAV}font-size:34px;line-height:40px;">¿A qué hora hablan?</div>
+    ${pdfH2('¿A qué hora hablan?', 'margin-top:28px;')}
     <div style="margin-top:12px;">${pdfBars(hours, peakH, 150)}</div>
     <div style="margin-top:6px;display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#7A4B52;"><span>0 h</span><span>6 h</span><span>12 h</span><span>18 h</span><span>23 h</span></div>
-    <div style="margin-top:8px;${CAV}font-size:24px;color:#C8102E;">su hora: las ${peakH}</div>
-    <div style="margin-top:18px;${CAV}font-size:34px;line-height:40px;">Sus silencios</div>
+    <div style="margin-top:6px;${CAV}font-size:24px;color:${RED};">su hora: las ${peakH}</div>
+    ${pdfH2('Sus silencios', 'margin-top:14px;')}
     <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:8px;">
-      <div style="background:#F7DDD8;padding:18px 16px;transform:rotate(-1.5deg);"><div style="${MUTED}">El más largo</div><div style="${CAV}font-size:44px;line-height:1;color:#C8102E;">${sil.longest ? (sil.longest.hours >= 48 ? Math.round(sil.longest.hours / 24) + ' días' : sil.longest.hours + ' h') : 'ninguno'}</div><div style="font-size:13px;line-height:1.5;margin-top:6px;">${sil.longest ? fmtShort(sil.longest.start) + ' → ' + fmtShort(sil.longest.end) + '. Lo rompió ' + escapeHtml(firstName(sil.longest.brokeBy)) + '.' : 'Nunca pasaron 48 horas sin hablar.'}</div></div>
+      ${pdfNote(`<div style="${MUTED}">El más largo</div><div style="${CAV}font-size:42px;line-height:1;color:${RED};">${sil.longest ? (sil.longest.hours >= 48 ? Math.round(sil.longest.hours / 24) + ' días' : sil.longest.hours + ' h') : 'ninguno'}</div><div style="font-size:13px;line-height:1.5;margin-top:6px;">${sil.longest ? fmtShort(sil.longest.start) + ' → ' + fmtShort(sil.longest.end) + '. Lo rompió ' + T(firstName(sil.longest.brokeBy)) + '.' : 'Nunca pasaron 48 horas sin hablar.'}</div>`, 'transform:rotate(-1.5deg);')}
       <div style="font-size:14px;line-height:1.5;">
         <div style="padding:6px 0;border-bottom:1px dashed #E6BDB6;"><b>${sil.total}</b> silencios de más de 48 horas</div>
-        ${breakers.length ? `<div style="padding:6px 0;border-bottom:1px dashed #E6BDB6;">Quien más rompe el hielo: <b>${escapeHtml(firstName(breakers[0][0]))} (${breakers[0][1]} de ${sil.total})</b></div>` : ''}
-        <div style="padding:6px 0;">${escapeHtml(firstName(A.name))} inicia el <b>${A.initiatesPct}%</b> de las conversaciones</div>
+        ${breakers.length ? `<div style="padding:6px 0;border-bottom:1px dashed #E6BDB6;">Quien más rompe el hielo: <b>${T(firstName(breakers[0][0]))} (${breakers[0][1]} de ${sil.total})</b></div>` : ''}
+        <div style="padding:6px 0;">${T(nA)} inicia el <b>${A.initiatesPct}%</b> de las conversaciones</div>
       </div>
     </div>
-    ${pdfFoot(4)}</div>`);
+    ${pdfFoot(n)}</div>`);
 
-  // IV. Compatibilidad
+  // ── III (cont.) Cuándo contestan rápido, mensajes sin respuesta, eliminados ──
+  const CATS = [['confesion', 'Cuando le dicen algo bonito'], ['relacional', 'Preguntas sobre la relación'], ['emocional', 'Cuando la otra persona está mal'], ['pregunta_directa', 'Preguntas directas'], ['casual', 'Conversación del día a día']];
+  const ghostCard = (data, color) => data ? pdfCard(`<div style="${CAV}font-size:30px;line-height:1;color:${color};">${T(firstName(data.responderName))} contesta…</div>
+      <div style="margin-top:8px;">${CATS.filter(([k]) => data.categories && data.categories[k] && data.categories[k].count > 0).map(([k, label]) => pdfRow(label, fmtMinutes(data.categories[k].median))).join('')}</div>
+      ${data.ratio && isFinite(data.ratio) && data.ratio >= 1.5 ? `<div style="margin-top:8px;font-size:12px;line-height:1.5;">Tarda <b>${data.ratio} veces más</b> en lo emocional que en lo cotidiano.</div>` : ''}`) : '';
+  const dtCount = name => (dt[name] || []).length;
+  const dtMax = name => (dt[name] || []).reduce((a, b) => Math.max(a, b), 0);
+  chapter('III', 'Cómo se hablan · cuándo contestan', n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo III')}${pdfTitle('III', 'Cuándo contestan rápido', 'y cuándo lo dejan para después.')}
+    ${ghost ? `<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;margin-top:22px;">${ghostCard(ghost.personA, colorOf(ghost.personA && ghost.personA.responderName))}${ghostCard(ghost.personB, colorOf(ghost.personB && ghost.personB.responderName))}</div>` : pdfEmpty('Hace falta más chat para medir esto con justicia.')}
+    ${pdfH2('Mensajes sin respuesta', 'margin-top:26px;')}
+    <div style="font-size:13px;line-height:1.5;margin-top:2px;">Veces que alguien escribió cinco mensajes o más seguidos sin que le contestaran.</div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;margin-top:10px;">
+      ${[A, B].map((p, i) => pdfCard(`<div style="${CAV}font-size:42px;line-height:1;color:${i ? BLUE : RED};">${dtCount(p.name)}</div><div style="font-size:12px;margin-top:4px;">veces · ${T(firstName(p.name))}${dtMax(p.name) ? ' · récord: ' + dtMax(p.name) + ' seguidos' : ''}</div>`, `transform:rotate(${i ? 1 : -1}deg);`)).join('')}
+    </div>
+    ${pdfH2('Mensajes que se borraron', 'margin-top:26px;')}
+    <div style="font-size:14px;line-height:1.6;margin-top:4px;">${del.total ? `${del.total.toLocaleString('es-MX')} mensajes eliminados: ${Object.entries(del.deleted).map(([k, v]) => T(firstName(k)) + ' ' + v).join(' · ')}.` : 'Ninguno de los dos ha borrado mensajes.'}</div>
+    ${pdfFoot(n)}</div>`);
+
+  // ── III (cont.) Cómo ha cambiado su forma de hablarse ──
+  const langCard = (p, color) => {
+    if (!p) return '';
+    const rates = [p.p1, p.p2, p.p3].map(x => (x && x.affectRate) || 0);
+    const max = Math.max(...rates, 1);
+    return pdfCard(`<div style="${CAV}font-size:30px;line-height:1;color:${color};">${T(firstName(p.personName))}</div>
+      <div style="${MUTED}margin-top:10px;">Cariño en sus palabras</div>
+      <div style="display:flex;align-items:flex-end;gap:10px;height:90px;margin-top:8px;border-bottom:2px solid ${INK};">${rates.map((r, i) => `<div style="flex:1;height:${Math.max(4, Math.round(r / max * 84))}px;background:${i === 2 ? color : '#F0A7B1'};border-radius:4px 4px 0 0;"></div>`).join('')}</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);font-size:10px;color:#7A4B52;margin-top:4px;">${(p.periodLabels || []).map(l => `<span style="text-align:center;">${T(l)}</span>`).join('')}</div>
+      ${pdfRow('largo de sus mensajes', (p.p1 ? p.p1.avgLength : 0) + ' → ' + (p.p3 ? p.p3.avgLength : 0) + ' letras', 'margin-top:8px;')}
+      ${pdfRow('respuestas cortantes', (p.p1 ? p.p1.coldPct : 0) + '% → ' + (p.p3 ? p.p3.coldPct : 0) + '%')}
+      ${p.disappearedAffective && p.disappearedAffective.length ? `<div style="font-size:12px;line-height:1.5;margin-top:8px;">Ya casi no dice: <b>${T(p.disappearedAffective.slice(0, 3).join(', '))}</b></div>` : ''}`);
+  };
+  const isWarm = w => w && /(te quiero|te amo|te adoro|te extraño|mi amor|contigo|me encantas|me haces)/i.test(w.text || '');
+  const warm = lang && [lang.personAData && lang.personAData.warmestMsg, lang.personBData && lang.personBData.warmestMsg].find(isWarm);
+  chapter('III', 'Cómo se hablan · sus palabras', n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo III')}${pdfTitle('III', 'Sus palabras', 'cómo ha cambiado su forma de hablarse.')}
+    ${lang && (lang.personAData || lang.personBData) ? `<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;margin-top:22px;">${langCard(lang.personAData, colorOf(lang.personAData && lang.personAData.personName))}${langCard(lang.personBData, colorOf(lang.personBData && lang.personBData.personName))}</div>` : pdfEmpty('Hace falta más chat para comparar cómo se hablaban al principio y ahora.')}
+    ${warm ? `<div style="margin-top:34px;">${pdfH2('Así se escribían al principio')}<div style="margin-top:12px;">${pdfQuote(warm.text, T(firstName(warm.sender)) + ' · ' + fmtDay(warm.date), 28)}</div></div>` : ''}
+    ${pdfFoot(n)}</div>`);
+
+  // ── IV. Compatibilidad ──
   const c = d.compatibility || {};
   const LL = [['palabras', 'Palabras de afirmación'], ['tiempo', 'Tiempo de calidad'], ['servicio', 'Actos de servicio'], ['contacto', 'Contacto físico'], ['regalos', 'Regalos']];
   const llA = (c.loveLanguages && c.loveLanguages.A) || {}, llB = (c.loveLanguages && c.loveLanguages.B) || {};
-  const w = v => Math.max(3, Math.min(100, Number(v) || 0));
-  pages.push(`<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo IV')}${pdfTitle('IV', 'Compatibilidad', '')}
+  chapter('IV', 'Compatibilidad', n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo IV')}${pdfTitle('IV', 'Compatibilidad', '')}
     <div style="margin-top:20px;display:flex;gap:36px;align-items:center;">
-      <div style="position:relative;flex-shrink:0;padding:18px 34px;${CAV}font-size:84px;line-height:1;color:#C8102E;">${c.percent != null ? Math.round(c.percent) + '%' : '—'}<div style="position:absolute;inset:0;border:3px solid #C8102E;border-radius:50%;transform:rotate(-4deg);"></div></div>
-      <div style="${CAV}font-weight:500;font-size:30px;line-height:40px;">${escapeHtml(c.summary || '')}</div>
+      <div style="position:relative;flex-shrink:0;padding:18px 34px;${CAV}font-size:84px;line-height:1;color:${RED};">${c.percent != null ? Math.round(c.percent) + '%' : '—'}<div style="position:absolute;inset:0;border:3px solid ${RED};border-radius:50%;transform:rotate(-4deg);"></div></div>
+      <div style="${CAVL}font-size:30px;line-height:40px;">${T(c.summary || '')}</div>
     </div>
-    <div style="margin-top:22px;display:flex;justify-content:space-between;align-items:baseline;"><div style="${CAV}font-size:34px;line-height:40px;">Su lenguaje del amor</div><div style="display:flex;gap:16px;${CAV}font-size:22px;"><span style="color:#C8102E;">— ${escapeHtml(firstName(A.name))}</span><span style="color:#1F3A93;">— ${escapeHtml(firstName(B.name))}</span></div></div>
-    <div style="margin-top:10px;display:flex;flex-direction:column;gap:14px;">${LL.map(([k, label]) => `<div style="display:grid;grid-template-columns:210px 1fr;gap:16px;align-items:center;"><div style="font-size:14px;font-weight:700;">${label}</div><div style="display:flex;flex-direction:column;gap:5px;"><div style="width:${w(llA[k])}%;height:10px;background:#C8102E;border-radius:6px;"></div><div style="width:${w(llB[k])}%;height:10px;background:#1F3A93;border-radius:6px;"></div></div></div>`).join('')}</div>
-    <div style="margin-top:8px;font-size:12px;font-style:italic;color:#7A4B52;">Estimado por IA a partir de cómo se escriben.</div>
+    <div style="margin-top:22px;display:flex;justify-content:space-between;align-items:baseline;">${pdfH2('Su lenguaje del amor')}<div style="display:flex;gap:16px;${CAV}font-size:22px;"><span style="color:${RED};">— ${T(nA)}</span><span style="color:${BLUE};">— ${T(nB)}</span></div></div>
+    <div style="margin-top:10px;display:flex;flex-direction:column;gap:14px;">${LL.map(([k, label]) => `<div style="display:grid;grid-template-columns:210px 1fr;gap:16px;align-items:center;"><div style="font-size:14px;font-weight:700;">${label}</div><div style="display:flex;flex-direction:column;gap:5px;"><div style="width:${pct(llA[k])}%;height:10px;background:${RED};border-radius:6px;"></div><div style="width:${pct(llB[k])}%;height:10px;background:${BLUE};border-radius:6px;"></div></div></div>`).join('')}</div>
+    <div style="margin-top:8px;font-size:12px;font-style:italic;color:#7A4B52;">Estimado a partir de cómo se escriben.</div>
     <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:24px;">
-      ${pdfCard(`<div style="${CAV}font-size:30px;line-height:1;color:#C8102E;">Lo que les sale bien</div><div style="margin-top:10px;">${pdfList(c.strengths, '✓')}</div>`, 'transform:rotate(-1deg);')}
-      ${pdfCard(`<div style="${CAV}font-size:30px;line-height:1;">Lo que pueden trabajar</div><div style="margin-top:10px;">${pdfList(c.toWork, '→')}</div>`, 'transform:rotate(1deg);')}
+      ${pdfCard(`<div style="${CAV}font-size:30px;line-height:1;color:${RED};">Lo que les sale bien</div><div style="margin-top:10px;">${pdfList(c.strengths, '+')}</div>`, 'transform:rotate(-1deg);')}
+      ${pdfCard(`<div style="${CAV}font-size:30px;line-height:1;">Lo que pueden trabajar</div><div style="margin-top:10px;">${pdfList(c.toWork, '·')}</div>`, 'transform:rotate(1deg);')}
     </div>
-    ${pdfFoot(5)}</div>`);
+    ${pdfFoot(n)}</div>`);
 
-  // V. Las señales
+  // ── V. Las señales ──
   const sig = d.signals || {};
-  const ai0 = window.lastAIAnalysis || {};
   const toWatch = sig.toWatch && sig.toWatch.length ? sig.toWatch : (ai0.redFlags || []).map(t => ({ title: t, detail: '', level: 'a vigilar' }));
   const green = sig.greenFlags && sig.greenFlags.length ? sig.greenFlags : (ai0.greenFlags || []);
-  pages.push(`<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo V')}${pdfTitle('V', 'Las señales', 'no es para acusar a nadie: son patrones que vimos en sus mensajes.')}
-    <div style="margin-top:18px;${CAV}font-size:34px;line-height:40px;color:#C8102E;">A cuidar</div>
-    <div style="display:flex;flex-direction:column;gap:18px;margin-top:10px;">${(toWatch.length ? toWatch.slice(0, 3) : [{ title: 'Nada que nos preocupe', detail: 'No encontramos patrones que merezca la pena señalar.', level: 'bien' }]).map((s, i) => `
-      <div style="background:#F7DDD8;padding:16px 18px;transform:rotate(${i % 2 ? 0.6 : -0.8}deg);display:grid;grid-template-columns:1fr 104px;gap:16px;align-items:start;">
-        <div><div style="${CAV}font-size:30px;line-height:1.05;">${escapeHtml(s.title)}</div><div style="margin-top:6px;font-size:13px;line-height:1.55;">${escapeHtml(s.detail || '')}</div></div>
-        <div style="text-align:center;border:2px solid #C8102E;border-radius:999px;padding:6px 0;font-size:11px;font-weight:700;letter-spacing:1px;color:#C8102E;transform:rotate(6deg);">${escapeHtml(String(s.level || '').toUpperCase())}</div></div>`).join('')}</div>
-    <div style="margin-top:28px;${CAV}font-size:34px;line-height:40px;">Green flags</div>
-    ${pdfCard(pdfList(green.slice(0, 4), '✓'), 'margin-top:6px;transform:rotate(0.5deg);')}
-    ${pdfFoot(6)}</div>`);
+  chapter('V', 'Las señales', n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo V')}${pdfTitle('V', 'Las señales', 'no es para acusar a nadie: son patrones que vimos en sus mensajes.')}
+    ${pdfH2('A cuidar', 'margin-top:16px;color:' + RED + ';')}
+    <div style="display:flex;flex-direction:column;gap:18px;margin-top:10px;">${(toWatch.length ? toWatch.slice(0, 3) : [{ title: 'Nada que nos preocupe', detail: 'No encontramos patrones que merezca la pena señalar.', level: 'bien' }]).map((s, i) => pdfNote(`
+        <div style="display:grid;grid-template-columns:1fr 104px;gap:16px;align-items:start;">
+        <div><div style="${CAV}font-size:30px;line-height:1.05;">${T(s.title)}</div><div style="margin-top:6px;font-size:13px;line-height:1.55;">${T(s.detail || '')}</div></div>
+        <div style="text-align:center;border:2px solid ${RED};border-radius:999px;padding:6px 0;font-size:11px;font-weight:700;letter-spacing:1px;color:${RED};transform:rotate(6deg);">${T(String(s.level || '').toUpperCase())}</div></div>`, `transform:rotate(${i % 2 ? 0.6 : -0.8}deg);`)).join('')}</div>
+    ${pdfH2('Lo que ya hacen bien', 'margin-top:26px;')}
+    ${pdfCard(pdfList(green.slice(0, 4), '+'), 'margin-top:6px;transform:rotate(0.5deg);')}
+    ${pdfFoot(n)}</div>`);
 
-  // VI. ¿Van a durar?
+  // ── VI. ¿Van a durar? ──
   const f = d.forecast || {};
-  const pos = Math.max(4, Math.min(96, typeof f.position === 'number' ? f.position : levelPosition(f.level)));
-  pages.push(`<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo VI')}${pdfTitle('VI', '¿Van a durar?', '')}
-    <div style="margin-top:24px;${MUTED}">Nuestro pronóstico</div>
-    <div style="margin-top:4px;${CAV}font-size:56px;line-height:1.05;">${escapeHtml(f.headline || '')}</div>
+  const posMap = { fragil: 12, 'frágil': 12, inestable: 37, estable: 62, solida: 87, 'sólida': 87 };
+  const pos = Math.max(4, Math.min(96, typeof f.position === 'number' ? f.position : (posMap[String(f.level || '').toLowerCase()] ?? 62)));
+  chapter('VI', '¿Van a durar?', n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo VI')}${pdfTitle('VI', '¿Van a durar?', '')}
+    <div style="margin-top:22px;${MUTED}">Nuestro pronóstico</div>
+    <div style="margin-top:4px;${CAV}font-size:54px;line-height:1.05;">${T(f.headline || '')}</div>
     <div style="position:relative;margin-top:50px;height:90px;">
-      <div style="position:absolute;left:0;right:0;top:30px;height:3px;background:#3B0A12;border-radius:2px;"></div>
-      ${[0, 33.3, 66.6, 100].map(x => `<div style="position:absolute;left:${x}%;top:20px;width:2.5px;height:22px;margin-left:-1px;background:#3B0A12;"></div>`).join('')}
-      <div style="position:absolute;left:${pos}%;top:4px;width:56px;height:56px;margin-left:-28px;border:3px solid #C8102E;border-radius:50%;transform:rotate(-8deg);"></div>
-      <div style="position:absolute;left:${pos}%;top:-34px;margin-left:-40px;${CAV}font-size:26px;color:#C8102E;">ustedes ↓</div>
+      <div style="position:absolute;left:0;right:0;top:30px;height:3px;background:${INK};border-radius:2px;"></div>
+      ${[0, 33.3, 66.6, 100].map(x => `<div style="position:absolute;left:${x}%;top:20px;width:2.5px;height:22px;margin-left:-1px;background:${INK};"></div>`).join('')}
+      <div style="position:absolute;left:${pos}%;top:4px;width:56px;height:56px;margin-left:-28px;border:3px solid ${RED};border-radius:50%;transform:rotate(-8deg);"></div>
+      <div style="position:absolute;left:${pos}%;top:-34px;margin-left:-40px;${CAV}font-size:26px;color:${RED};">ustedes ↓</div>
       <div style="position:absolute;left:0;right:0;top:64px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));${CAV}font-size:24px;"><span>frágil</span><span>inestable</span><span>estable</span><span style="text-align:right;">sólida</span></div>
     </div>
-    <div style="margin-top:28px;font-size:15px;line-height:1.7;">${escapeHtml(f.explanation || '')}</div>
-    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:24px;">
-      ${pdfCard(`<div style="${CAV}font-size:30px;line-height:1;color:#1F3A93;">A su favor</div><div style="margin-top:10px;">${pdfList(f.pros, '+')}</div>`, 'transform:rotate(-1deg);')}
-      ${pdfCard(`<div style="${CAV}font-size:30px;line-height:1;color:#C8102E;">En contra</div><div style="margin-top:10px;">${pdfList(f.cons, '−')}</div>`, 'transform:rotate(1deg);')}
+    <div style="margin-top:26px;font-size:15px;line-height:1.7;">${T(f.explanation || '')}</div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:22px;">
+      ${pdfCard(`<div style="${CAV}font-size:30px;line-height:1;color:${BLUE};">A su favor</div><div style="margin-top:10px;">${pdfList(f.pros, '+')}</div>`, 'transform:rotate(-1deg);')}
+      ${pdfCard(`<div style="${CAV}font-size:30px;line-height:1;color:${RED};">En contra</div><div style="margin-top:10px;">${pdfList(f.cons, '−')}</div>`, 'transform:rotate(1deg);')}
     </div>
-    ${f.condition ? `<div style="position:relative;margin-top:28px;background:#F7DDD8;padding:20px;transform:rotate(-1deg);">${pdfTape('left:44%;top:-12px;transform:rotate(4deg);')}<div style="${MUTED}">La condición</div><div style="margin-top:4px;${CAV}font-size:32px;line-height:1.1;">${escapeHtml(f.condition)}</div></div>` : ''}
-    ${pdfFoot(7)}</div>`);
+    ${f.condition ? pdfNote(`${pdfTape('left:44%;top:-12px;transform:rotate(4deg);')}<div style="${MUTED}">La condición</div><div style="margin-top:4px;${CAV}font-size:32px;line-height:1.1;">${T(f.condition)}</div>`, 'margin-top:26px;transform:rotate(-1deg);') : ''}
+    ${pdfFoot(n)}</div>`);
 
-  // VII. Consejos
-  pages.push(`<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo VII')}${pdfTitle('VII', 'Consejos para ustedes', 'cosas que pueden hacer desde hoy.')}
+  // ── VII. Consejos ──
+  chapter('VII', 'Consejos para ustedes', n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo VII')}${pdfTitle('VII', 'Consejos para ustedes', 'cosas que pueden hacer desde hoy.')}
     <div style="display:flex;flex-direction:column;gap:22px;margin-top:22px;">${(d.advice || []).slice(0, 5).map(a => `
-      <div style="display:flex;gap:16px;"><div style="flex-shrink:0;width:24px;height:24px;margin-top:6px;border:2.2px solid #3B0A12;border-radius:3px;"></div>
-      <div><div style="${CAV}font-size:32px;line-height:1.1;">${escapeHtml(a.title)}</div><div style="margin-top:4px;font-size:14px;line-height:1.6;">${escapeHtml(a.text || '')}</div></div></div>`).join('')}</div>
-    <div style="margin-top:28px;align-self:flex-end;${CAV}font-size:30px;color:#C8102E;transform:rotate(-3deg);">tachen uno cada semana ✓</div>
-    ${pdfFoot(8)}</div>`);
+      <div style="display:flex;gap:16px;"><div style="flex-shrink:0;width:24px;height:24px;margin-top:6px;border:2.2px solid ${INK};border-radius:3px;"></div>
+      <div><div style="${CAV}font-size:32px;line-height:1.1;">${T(a.title)}</div><div style="margin-top:4px;font-size:14px;line-height:1.6;">${T(a.text || '')}</div></div></div>`).join('')}</div>
+    <div style="margin-top:28px;align-self:flex-end;${CAV}font-size:30px;color:${RED};transform:rotate(-3deg);">tachen uno cada semana</div>
+    ${pdfFoot(n)}</div>`);
 
-  // VIII. El mensaje
-  const best = window.lastBestMessage || findBestMessage(d, messages);
-  pages.push(`<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo VIII')}${pdfTitle('VIII', 'El mensaje', 'de todos sus mensajes, este es el que elegimos para cerrar.')}
-    ${best ? `<div style="position:relative;margin-top:56px;align-self:center;width:520px;background:#fff;padding:44px 40px 36px;border:1px solid #EAD0CB;transform:rotate(-2deg);">
-      ${pdfTape('left:-20px;top:-14px;transform:rotate(-12deg);')}${pdfTape('right:-20px;top:-10px;transform:rotate(10deg);')}
-      <div style="${CAV}font-size:${best.text.length > 120 ? 38 : 50}px;line-height:1.1;">«${escapeHtml(best.text)}»</div>
-      <div style="margin-top:22px;font-size:13px;color:#7A4B52;"><b>${escapeHtml(firstName(best.sender))}</b> · ${fmtDay(best.date)} · ${fmtHour(best.date)}</div></div>` : ''}
-    <div style="margin-top:60px;${CAV}font-weight:500;font-size:34px;line-height:40px;max-width:520px;">Gracias por dejarnos leer su historia. Ojalá este diario les sirva para seguir escribiéndola.</div>
-    <div style="margin-top:20px;${CAV}font-size:44px;line-height:40px;color:#C8102E;">Con cariño, YaLoSabía</div>
+  // ── VIII. El mensaje ──
+  chapter('VIII', 'El mensaje', n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo VIII')}${pdfTitle('VIII', 'El mensaje', 'de todos sus mensajes, este es el que elegimos para cerrar.')}
+    ${best ? `<div style="margin-top:56px;align-self:center;width:520px;">${pdfQuote(best.text, '<b>' + T(firstName(best.sender)) + '</b> · ' + fmtDay(best.date) + ' · ' + fmtHour(best.date), stripEmoji(best.text).length > 120 ? 38 : 50)}</div>` : ''}
+    <div style="margin-top:60px;${CAVL}font-size:34px;line-height:40px;max-width:520px;">Gracias por dejarnos leer su historia. Ojalá este diario les sirva para seguir escribiéndola.</div>
+    <div style="margin-top:20px;${CAV}font-size:44px;line-height:40px;color:${RED};">Con cariño, YaLoSabía</div>
     <div style="margin-top:auto;font-size:11px;line-height:1.6;color:#7A4B52;">Este diario es una lectura de sus mensajes hecha con ayuda de IA, no un diagnóstico. Úsenlo para conversar, no para acusar. Su chat no se guardó en ningún servidor.</div>
-    <div style="margin-top:14px;">${pdfFoot(9)}</div></div>`);
+    ${pdfFoot(n)}</div>`);
 
-  return pages;
+  return pages.map((build, i) => build(i + 1));
 }
 
 async function generatePDF() {
@@ -7309,19 +7100,20 @@ async function generatePDF() {
   if (!isPremiumUser()) { openPayModal(); return; }
   const btn = document.getElementById('pdfDownloadBtn');
   const original = btn ? btn.textContent : '';
-  if (btn) { btn.disabled = true; btn.textContent = 'Escribiendo tu diario…'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Escribiendo su diario…'; }
   const host = document.createElement('div');
   host.style.cssText = 'position:absolute;left:-10000px;top:0;width:794px;';
   document.body.appendChild(host);
   try {
     const diary = await loadDiaryAI(lastMessages, lastStats);
+    if (!diary) throw new Error('No pudimos escribir los capítulos con IA. Inténtalo de nuevo en un momento.');
     if (document.fonts && document.fonts.ready) await document.fonts.ready;
     const pages = buildDiaryPages(lastMessages, lastStats, diary);
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
     const W = pdf.internal.pageSize.getWidth(), H = pdf.internal.pageSize.getHeight();
     for (let i = 0; i < pages.length; i++) {
-      if (btn) btn.textContent = `Escribiendo tu diario… ${i + 1}/${pages.length}`;
+      if (btn) btn.textContent = `Escribiendo su diario… ${i + 1}/${pages.length}`;
       host.innerHTML = pages[i];
       const page = host.firstElementChild;
       addPaperLines(page, 40, 1, '#F0C9C6');
@@ -7333,7 +7125,7 @@ async function generatePDF() {
     pdf.save(`diario-${slug || 'yalosabia'}.pdf`);
   } catch (err) {
     console.error('[PDF] Error:', err);
-    alert('No se pudo generar el PDF: ' + err.message);
+    alert(err.message || 'No se pudo generar el PDF.');
   } finally {
     host.remove();
     if (btn) { btn.disabled = false; btn.textContent = original; }
