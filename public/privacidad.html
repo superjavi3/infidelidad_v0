@@ -140,7 +140,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 
 <div class="container legal-wrap">
   <h1>Política de Privacidad</h1>
-  <p class="legal-date">Última actualización: febrero de 2026</p>
+  <p class="legal-date">Última actualización: septiembre de 2026</p>
 
   <p>En YaLoSabía.com nos tomamos en serio la privacidad de nuestros usuarios. Esta política explica qué datos recogemos, cómo los tratamos y cuáles son tus derechos.</p>
 
@@ -154,14 +154,21 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   <p>Solo se recoge cuando el usuario procede al pago. Se envía directamente a Stripe para generar el checkout. YaLoSabía no almacena emails en ninguna base de datos propia.</p>
 
   <h3>b) Archivo de chat de WhatsApp</h3>
-  <p>El archivo .txt que el usuario sube se procesa <strong>íntegramente en el navegador</strong> (client-side) para generar las estadísticas básicas. El archivo nunca abandona el dispositivo del usuario para este procesamiento.</p>
-  <p>Para el análisis con inteligencia artificial, se envía una muestra de <strong>hasta 300 mensajes</strong> a la API de Google Gemini. Esta muestra se utiliza exclusivamente para generar el análisis y <strong>no se almacena</strong> ni por YaLoSabía ni por Google Gemini después del procesamiento.</p>
+  <p>El archivo (.txt o .zip) que el usuario sube se procesa <strong>en el navegador</strong> (client-side). El adelanto gratuito se calcula en el dispositivo del usuario: para verlo, el chat no se envía a ningún servidor.</p>
+  <p>Justo antes de ir a pagar, el chat se guarda de forma temporal en el propio navegador (IndexedDB) para no tener que subirlo otra vez al volver de Stripe; se borra en cuanto se recupera.</p>
+  <p>Solo después del pago, al generar el diario completo, los mensajes de texto del chat se envían a nuestro servidor para comprobar que corresponden a la conversación pagada. Del servidor, una <strong>muestra de unos 300 mensajes</strong> (más los mensajes de algunos días destacados) se envía a la API de Google Gemini para que escriba parte de los textos del diario. YaLoSabía <strong>no almacena</strong> el chat ni el diario: el PDF se genera en el navegador del usuario.</p>
 
-  <h3>c) Datos de navegación (cookies)</h3>
+  <h3>c) Datos guardados en el navegador</h3>
+  <p>Para recordar qué diarios se han pagado, el navegador guarda en su almacenamiento local (localStorage) el identificador de la sesión de pago de Stripe, una huella del chat (un código calculado a partir de los mensajes que no permite reconstruirlos) y el email usado en la compra. Estos datos se quedan en el dispositivo del usuario y se pueden borrar limpiando los datos del sitio en el navegador.</p>
+
+  <h3>d) Datos de navegación (cookies)</h3>
   <p>Meta Pixel (Facebook) recoge datos de navegación y cookies con fines de marketing y remarketing. Consulta nuestra <a href="/cookies.html">Política de Cookies</a> para más detalles.</p>
 
-  <h3>d) Datos de pago</h3>
-  <p>Los pagos se gestionan íntegramente por Stripe, Inc. YaLoSabía <strong>no almacena</strong> datos de tarjetas de crédito o débito en ningún momento.</p>
+  <h3>e) Datos de pago</h3>
+  <p>Los pagos se gestionan íntegramente por Stripe, Inc. YaLoSabía <strong>no almacena</strong> datos de tarjetas de crédito o débito en ningún momento. Junto con la sesión de pago, Stripe guarda la huella del chat descrita arriba para que cada pago valga para un solo diario.</p>
+
+  <h3>f) Enlaces compartidos antiguos</h3>
+  <p>Versiones anteriores del sitio permitían crear un enlace para compartir un análisis. La web ya no crea estos enlaces. Los que se crearon entonces se conservan en Supabase para que sigan abriendo; si quieres que se borre alguno, escríbenos a <a href="mailto:contacto@yalosabia.com">contacto@yalosabia.com</a>.</p>
 
   <h2>2. Finalidad del tratamiento</h2>
   <table>
@@ -172,7 +179,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     </tr>
     <tr>
       <td>Archivo de chat</td>
-      <td>Prestación del servicio de análisis</td>
+      <td>Generación del adelanto y del diario en PDF</td>
       <td>Consentimiento (art. 6.1.a)</td>
     </tr>
     <tr>
@@ -219,6 +226,12 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
       <td>EE.UU.</td>
       <td>EU-US Data Privacy Framework</td>
     </tr>
+    <tr>
+      <td>Supabase, Inc.</td>
+      <td>Base de datos de los enlaces compartidos antiguos</td>
+      <td>EE.UU.</td>
+      <td>EU-US Data Privacy Framework</td>
+    </tr>
   </table>
 
   <h2>4. Transferencias internacionales</h2>
@@ -226,7 +239,9 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 
   <h2>5. Conservación de los datos</h2>
   <ul>
-    <li><strong>Chats de WhatsApp:</strong> No se almacenan. Se procesan en tiempo real y se descartan.</li>
+    <li><strong>Chats de WhatsApp y diarios:</strong> No se almacenan en nuestros servidores. Se procesan en el momento y se descartan.</li>
+    <li><strong>Datos en el navegador:</strong> Permanecen en el dispositivo del usuario hasta que los borre.</li>
+    <li><strong>Enlaces compartidos antiguos:</strong> Se conservan mientras sigan disponibles o hasta que el usuario pida su borrado.</li>
     <li><strong>Email:</strong> Se conserva en Stripe mientras sea necesario para la relación comercial y las obligaciones legales derivadas.</li>
     <li><strong>Cookies de Meta Pixel:</strong> Según la política de retención de Meta. Consulta <a href="/cookies.html">nuestra política de cookies</a>.</li>
   </ul>
@@ -259,12 +274,12 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   <h3>Datos personales recabados</h3>
   <ul>
     <li><strong>Email:</strong> recabado únicamente durante el proceso de pago (checkout con Stripe).</li>
-    <li><strong>Contenido parcial del chat:</strong> hasta 300 mensajes enviados a la API de Google Gemini para el análisis con IA. Estos datos no se almacenan después del procesamiento.</li>
+    <li><strong>Contenido del chat:</strong> solo después del pago, los mensajes de texto se envían a nuestro servidor para comprobar que corresponden al chat pagado, y una muestra de unos 300 mensajes (más los de algunos días destacados) se envía a la API de Google Gemini para escribir parte del diario. YaLoSabía no almacena estos datos después del procesamiento.</li>
   </ul>
 
   <h3>Finalidades primarias (necesarias para el servicio)</h3>
   <ul>
-    <li>Prestación del servicio de análisis de conversaciones de WhatsApp.</li>
+    <li>Generación del adelanto gratuito y del diario en PDF a partir de la conversación de WhatsApp.</li>
     <li>Procesamiento de pagos a través de Stripe.</li>
   </ul>
 
@@ -290,6 +305,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
     <li><strong>Stripe, Inc.</strong> — procesamiento de pagos.</li>
     <li><strong>Meta Platforms, Inc.</strong> — marketing y remarketing.</li>
     <li><strong>Vercel, Inc.</strong> — hosting del sitio web.</li>
+    <li><strong>Supabase, Inc.</strong> — base de datos de los enlaces compartidos creados con versiones anteriores del sitio.</li>
   </ul>
 
   <h3>Cambios al aviso de privacidad</h3>
@@ -300,7 +316,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
 <footer>
   <div class="container">
     <a href="/" class="logo">YaLo<span>Sabía</span>.com</a>
-    <p>Hecho con 🔍 y un poco de drama</p>
+    <p>Con cariño, YaLoSabía</p>
     <div class="footer-links">
       <a href="/aviso-legal.html">Aviso legal</a>
       <a href="/privacidad.html">Política de privacidad</a>
@@ -308,7 +324,7 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
       <a href="/cookies.html">Cookies</a>
       <a href="mailto:contacto@yalosabia.com">Contacto</a>
     </div>
-    <p style="margin-top: 20px; opacity: 0.4; font-size: 0.8rem;">Este análisis es entretenimiento y no sustituye asesoría profesional.</p>
+    <p style="margin-top: 20px; opacity: 0.4; font-size: 0.8rem;">Este diario es entretenimiento y no sustituye asesoría profesional.</p>
   </div>
 </footer>
 
