@@ -2213,9 +2213,14 @@ function showResults(s) {
   });
 }
 
-async function htmlToCanvasWithTimeout(element, options, timeoutMs = 15000) {
+// html2canvas copia todo el documento en un iframe oculto y espera a que carguen sus imágenes.
+// En iPhone las imágenes con loading="lazy" de la landing no cargan en ese iframe y se quedaba
+// esperando hasta el timeout. Solo se copian el elemento, sus ancestros y lo del <head> (estilos, fuentes).
+const H2C_KEEP_TAGS = ['HEAD', 'STYLE', 'LINK', 'META', 'TITLE'];
+async function htmlToCanvasWithTimeout(element, options, timeoutMs = 30000) {
+  const ignoreElements = el => !(el === element || el.contains(element) || element.contains(el) || H2C_KEEP_TAGS.includes(el.tagName) || (el.closest && el.closest('head')));
   return Promise.race([
-    html2canvas(element, options),
+    html2canvas(element, { ignoreElements, ...options }),
     new Promise((_, reject) =>
       setTimeout(() => reject(new Error('html2canvas timeout después de ' + timeoutMs + 'ms')), timeoutMs)
     )
