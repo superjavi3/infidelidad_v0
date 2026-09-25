@@ -46,7 +46,7 @@ const DIARY = {
 createServer(async (req, res) => {
   const url = decodeURIComponent(req.url.split('?')[0]);
   const json = (status, body) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)); };
-  if (url === '/api/pricing') return json(200, { country: 'MX', currency: 'mxn', symbol: '$', label: 'MXN', premium: 12900, premiumFormatted: '$129', isZeroDecimal: false });
+  if (url === '/api/pricing') return json(200, { country: 'MX', currency: 'mxn', symbol: '$', label: 'MXN', premium: 19900, premiumFormatted: '$199', isZeroDecimal: false });
   if (url === '/api/analyze') return json(200, { success: true, diary: DIARY });
   if (url.startsWith('/api/')) return json(503, { success: false, error: 'API no disponible en el preview estático' });
 

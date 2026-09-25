@@ -1235,7 +1235,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   "brand": { "@type": "Brand", "name": "YaLoSabía" },
   "offers": {
     "@type": "Offer",
-    "price": "129",
+    "price": "199",
     "priceCurrency": "MXN",
     "availability": "https://schema.org/InStock",
     "url": "https://www.yalosabia.com/#precios"
@@ -1359,7 +1359,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <div class="diary-price" style="margin-top: 44px;">
       <div class="tape"></div>
       <div style="font-family:var(--font-display);font-weight:700;font-size:2.2rem;line-height:1;">Su diario completo</div>
-      <div class="diary-price-amount" style="margin-top:12px;"><span class="precio-symbol">$</span><span class="precio-premium-numero">129</span></div>
+      <div class="diary-price-amount" style="margin-top:12px;"><span class="precio-symbol">$</span><span class="precio-premium-numero">199</span></div>
       <div class="diary-price-sub"><span class="precio-moneda-label">MXN</span> · pago único</div>
       <ul>
         <li>Un PDF de 14 páginas, escrito a partir de su chat</li>
@@ -1521,7 +1521,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     </div>
     <div class="diary-price reveal">
       <div class="tape"></div>
-      <div class="diary-price-amount"><span class="precio-symbol">$</span><span class="precio-premium-numero">129</span></div>
+      <div class="diary-price-amount"><span class="precio-symbol">$</span><span class="precio-premium-numero">199</span></div>
       <div class="diary-price-sub"><span class="precio-moneda-label">MXN</span> · pago único, sin suscripción</div>
       <div class="diary-price-context">menos que una cena para dos</div>
       <ul>
@@ -1965,6 +1965,17 @@ function generateChatFingerprint(messages) {
   return Math.abs(hash).toString(36);
 }
 
+// Precio para los eventos de Meta: el que devuelve /api/pricing (según país) o el de México
+function priceValue() {
+  const lp = window.localPricing;
+  if (lp && lp.premium) return lp.isZeroDecimal ? lp.premium : lp.premium / 100;
+  return 199;
+}
+function priceCurrency() {
+  const lp = window.localPricing;
+  return lp && lp.currency ? lp.currency.toUpperCase() : 'MXN';
+}
+
 // ── Embudo (PostHog): landing → chat subido → adelanto → pago ──
 function trackFunnel(event, props) {
   try { if (window.posthog && posthog.capture) posthog.capture(event, props || {}); } catch (e) {}
@@ -2088,7 +2099,7 @@ async function processChat(text) {
 function showResults(s) {
   if (!window.isDemoMode) {
     trackFunnel('preview_shown', { messages: s.total });
-    if (typeof fbq !== 'undefined') fbq('track', 'ViewContent', { content_name: 'adelanto', value: 129, currency: 'MXN' });
+    if (typeof fbq !== 'undefined') fbq('track', 'ViewContent', { content_name: 'adelanto', value: priceValue(), currency: priceCurrency() });
   }
   document.querySelectorAll('[data-price-cta]').forEach(b => { b.textContent = 'Quiero mi diario'; });
   processingState.classList.remove('active');
@@ -3249,7 +3260,7 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     <button onclick="closePayModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#7A4B52;font-size:1.5rem;cursor:pointer;">&times;</button>
     <div id="payModalIcon" style="display:none;"></div>
     <h3 id="payModalTitle" style="color:#3B0A12;margin-bottom:4px;font-family:var(--font-display);font-size:2.4rem;line-height:1;">Tu diario completo</h3>
-    <p id="payModalPrice" class="precio-premium" style="color:#7A4B52;margin-bottom:24px;">$129 MXN — pago único</p>
+    <p id="payModalPrice" class="precio-premium" style="color:#7A4B52;margin-bottom:24px;">$199 MXN — pago único</p>
     <input id="payEmail" type="email" name="email" autocomplete="email" inputmode="email" placeholder="¿A qué correo te lo mando?" style="width:100%;padding:12px;border-radius:4px;border:2px solid #3B0A12;background:#FFFFFF;font-family:var(--font-body);color:#3B0A12;margin-bottom:16px;box-sizing:border-box;font-size:1rem;">
     <label style="display:flex;align-items:flex-start;gap:10px;text-align:left;margin-bottom:16px;cursor:pointer;">
       <input type="checkbox" id="acceptTerms" onchange="document.getElementById('goToCheckout').disabled=!this.checked;document.getElementById('goToCheckout').style.opacity=this.checked?'1':'0.5'" style="margin-top:3px;accent-color:#C8102E;min-width:18px;min-height:18px;cursor:pointer;">
@@ -3427,7 +3438,7 @@ function openPayModal() {
   }
 
   const lp = window.localPricing;
-  const price = (lp ? lp.premiumFormatted : '$129 MXN') + ' — pago único';
+  const price = (lp ? lp.premiumFormatted : '$199 MXN') + ' — pago único';
 
   document.getElementById('payModalIcon').textContent = '';
   document.getElementById('payModalTitle').textContent = 'Tu diario completo';
@@ -3531,7 +3542,7 @@ async function checkPaymentSuccess() {
 
         if (typeof fbq !== 'undefined') {
           fbq('track', 'Purchase', {
-            value: data.value || 129,
+            value: data.value || priceValue(),
             currency: (data.currency || 'mxn').toUpperCase(),
             content_name: 'premium'
           });
@@ -4374,7 +4385,7 @@ async function generatePDF() {
     <div class="exit-score" id="exitScore">72</div>
     <p style="color:#3B0A12; font-size: 0.95rem; margin-bottom: 4px;">Su índice: <strong><span id="exitScoreText">72</span>/100</strong></p>
     <p style="color: var(--text-muted); font-size: 0.85rem;">Faltan siete capítulos: quién es quién, compatibilidad, pronóstico…</p>
-    <button class="exit-cta" onclick="closeExitIntent(); openPayModal();">Quiero mi diario — <span class="precio-premium">$129 MXN</span></button>
+    <button class="exit-cta" onclick="closeExitIntent(); openPayModal();">Quiero mi diario — <span class="precio-premium">$199 MXN</span></button>
     <button class="exit-dismiss" onclick="closeExitIntent()">Ahora no</button>
   </div>
 </div>
