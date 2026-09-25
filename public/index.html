@@ -6155,7 +6155,7 @@ async function revalidateStoredPayment() {
   } catch (e) {}
 }
 
-/ ── Blur overlay system ──
+// ── Blur overlay system ──
 // Idempotent: recomputes lock state from isPremiumUser()
 function applyBlurOverlays() {
   const premium = isPremiumUser();
