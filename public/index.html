@@ -2698,9 +2698,11 @@ const TEMPORAL_WORDS = new Set([
   "veces","tiempo","fecha","pronto"
 ]);
 const _normKw = w => w.replace(/[áà]/g,'a').replace(/[éè]/g,'e').replace(/[íì]/g,'i').replace(/[óò]/g,'o').replace(/[úùü]/g,'u').replace(/ñ/g,'n');
+const URL_RE = /https?:\/\/\S+|www\.\S+/gi;
 function isStopword(word, extraNames) {
   const n = _normKw(word.toLowerCase());
   if (n.length < 4) return true;
+  if (/^(https?|www|html?|php|com|net|org)$/.test(n)) return true;
   if (STOPWORDS.has(n)) return true;
   if (TEMPORAL_WORDS.has(n)) return true;
   if (extraNames) {
@@ -2723,7 +2725,7 @@ function extractKeywords(msgs, topN, participantNames) {
   const msgCount = {};
   msgs.forEach(m => {
     const seen = new Set();
-    const words = (m.text || '').toLowerCase().match(/[a-záéíóúüñ]{4,}/g) || [];
+    const words = (m.text || '').replace(URL_RE, ' ').toLowerCase().match(/[a-záéíóúüñ]{4,}/g) || [];
     words.forEach(w => {
       const n = _normKw(w);
       if (!isStopword(n, names) && !seen.has(n) && !MEDIA_BLACKLIST.has(n)) {
@@ -3781,7 +3783,7 @@ async function chatFingerprint(messages) {
 }
 // Avisos automáticos de WhatsApp que llegan con remitente (sobre todo en exports de iPhone):
 // cifrado, llamadas, mensajes temporales, cambios de número, bloqueos.
-const WA_SYSTEM_RE = /cifrad[oa]s? de extremo a extremo|end-to-end encrypted|mensajes temporales|disappearing messages|cambió su número|changed (their|his|her) phone number|bloqueaste a este contacto|desbloqueaste a este contacto|you (un)?blocked this contact|^(llamada|videollamada)( de (voz|video))?( perdida)?\b.{0,30}$|^(missed )?(voice|video) call\b.{0,30}$/i;
+const WA_SYSTEM_RE = /^.{1,60} es un contacto\.?$|^.{1,60} is a contact\.?$|cifrad[oa]s? de extremo a extremo|end-to-end encrypted|mensajes temporales|disappearing messages|cambió su número|changed (their|his|her) phone number|bloqueaste a este contacto|desbloqueaste a este contacto|you (un)?blocked this contact|^(llamada|videollamada)( de (voz|video))?( perdida)?\b.{0,30}$|^(missed )?(voice|video) call\b.{0,30}$/i;
 function isWaSystem(m) {
   return !!m.text && WA_SYSTEM_RE.test(m.text.trim());
 }
@@ -3906,10 +3908,26 @@ function computeMoments(messages) {
 }
 
 // Una cita de la IA solo se usa si existe tal cual en el chat (y, si se pide, de esa persona)
+// Recorta un texto a max caracteres terminando en una frase completa (o en una palabra, con «…»)
+function clipText(t, max) {
+  t = String(t || '').trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max);
+  let end = -1;
+  const re = /[.!?…](?=\s|$)/g;
+  let m;
+  while ((m = re.exec(cut))) end = m.index;
+  if (end >= max * 0.45) return cut.slice(0, end + 1);
+  const sp = cut.lastIndexOf(' ');
+  return (sp > 0 ? cut.slice(0, sp) : cut).replace(/[,;:\s]+$/, '') + '…';
+}
+const fmtClock = t => { const m = String(t || '').match(/^(\d{1,2}):(\d{2})/); return m ? m[1] + ':' + m[2] : ''; };
+
 function verifyQuote(q, messages, sender) {
   if (!q || !q.text) return null;
   const want = String(q.text).trim();
   if (stripEmoji(want).length < 4) return null;
+  if (/https?:\/\/|www\./i.test(want)) return null; // un enlace no sirve de ejemplo
   const hit = messages.find(m => m.text && m.text.trim() === want && (!sender || m.sender === sender));
   return hit ? { sender: hit.sender, text: hit.text, date: diaryDate(hit), time: hit.time } : null;
 }
@@ -3934,7 +3952,7 @@ function computePeople(messages, stats) {
       if (mins >= 0 && mins <= 2880) p.replies.push(mins);
     }
     if (isRealText(m)) {
-      m.text.toLowerCase().split(/[^a-záéíóúñü]+/i).forEach(w => {
+      m.text.replace(URL_RE, ' ').toLowerCase().split(/[^a-záéíóúñü]+/i).forEach(w => {
         if (w && !isStopword(w, names)) p.words[w] = (p.words[w] || 0) + 1;
       });
     }
@@ -4103,6 +4121,23 @@ function pendingChatStore(op, value) {
 })();
 
 // ═══ Líneas de libreta (html2canvas no pinta bien los degradados repetidos) ═══
+// Las páginas son columnas flex de alto fijo: si el contenido no cabe, los bloques se encogían
+// y lo posicionado en absoluto se montaba encima. Ahora no se encoge nada y, si no cabe,
+// el contenido se escala entero (hasta 0.72) para que entre en el A4.
+function fitPdfPage(page) {
+  [...page.children].forEach(c => { c.style.flexShrink = '0'; });
+  const avail = page.clientHeight;
+  if (page.scrollHeight <= avail + 1) return;
+  const cs = getComputedStyle(page);
+  const padT = parseFloat(cs.paddingTop) || 0, padB = parseFloat(cs.paddingBottom) || 0;
+  const inner = avail - padT - padB;
+  const scale = Math.max(0.72, inner / (page.scrollHeight - padT - padB));
+  const wrap = document.createElement('div');
+  [...page.childNodes].forEach(n => { if (!(n.nodeType === 1 && n.style.position === 'absolute')) wrap.appendChild(n); });
+  wrap.style.cssText = 'display:flex;flex-direction:column;flex:0 0 auto;width:' + (100 / scale) + '%;height:' + (inner / scale) + 'px;transform:scale(' + scale + ');transform-origin:top left;';
+  page.appendChild(wrap);
+}
+
 function addPaperLines(el, step, width, color) {
   if (el.querySelector(':scope > .paper-lines')) return;
   const wrap = document.createElement('div');
@@ -4229,7 +4264,7 @@ function buildDiaryPages(messages, stats, diary) {
   const momentText = id => { const mo = (d.moments || []).find(x => x && x.id === id); return mo && mo.text ? mo.text : ''; };
   const bubble = m => {
     const isA = m.sender === A.name;
-    return `<div style="align-self:${isA ? 'flex-start' : 'flex-end'};max-width:86%;background:${isA ? '#FFFFFF' : '#E4E9F6'};border:1px solid ${isA ? LINE : '#C9D2EC'};border-radius:${isA ? '12px 12px 12px 3px' : '12px 12px 3px 12px'};padding:6px 10px;font-size:11.5px;line-height:1.4;"><b style="display:block;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:${isA ? RED : BLUE};">${T(firstName(m.sender))}${m.time ? ' · ' + T(String(m.time).slice(0, 5)) : ''}</b>${T(String(m.text).slice(0, 140))}</div>`;
+    return `<div style="align-self:${isA ? 'flex-start' : 'flex-end'};max-width:86%;background:${isA ? '#FFFFFF' : '#E4E9F6'};border:1px solid ${isA ? LINE : '#C9D2EC'};border-radius:${isA ? '12px 12px 12px 3px' : '12px 12px 3px 12px'};padding:6px 10px;font-size:11.5px;line-height:1.4;"><b style="display:block;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:${isA ? RED : BLUE};">${T(firstName(m.sender))}${fmtClock(m.time) ? ' · ' + T(fmtClock(m.time)) : ''}</b>${T(clipText(String(m.text).replace(URL_RE, "(enlace)"), 120))}</div>`;
   };
   const quoteLine = (q, prefix) => q ? `<div style="margin-top:8px;font-size:12px;line-height:1.5;color:#5C2A32;">${prefix || ''}«${T(String(q.text).slice(0, 150))}» <span style="color:#7A4B52;">— ${T(firstName(q.sender))}, ${fmtShort(q.date)}</span></div>` : '';
 
@@ -4263,7 +4298,7 @@ function buildDiaryPages(messages, stats, diary) {
   pages.push(n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Índice')}
     ${pdfTitle('', 'Índice', 'ocho capítulos sobre ustedes dos.')}
     <div style="margin-top:22px;">${toc.map(([num, title, page]) => `<div style="display:flex;align-items:baseline;gap:14px;${CAV}font-size:30px;line-height:44px;border-bottom:1px solid #E0707F;"><span style="color:${RED};min-width:64px;">${num}</span><span>${title}</span><span style="margin-left:auto;font-family:'Courier Prime',monospace;font-weight:700;font-size:14px;color:#7A4B52;">${page}</span></div>`).join('')}</div>
-    <div style="margin-top:30px;${CAVL}font-size:24px;line-height:34px;max-width:560px;">${d.opening ? T(String(d.opening).slice(0, 460)) : 'Las cifras salen de sus mensajes. Los perfiles, el pronóstico y los consejos los escribimos a partir de ellos.'}</div>
+    <div style="margin-top:30px;${CAVL}font-size:24px;line-height:34px;max-width:560px;">${d.opening ? T(clipText(d.opening, 460)) : 'Las cifras salen de sus mensajes. Los perfiles, el pronóstico y los consejos los escribimos a partir de ellos.'}</div>
     ${pdfFoot(n)}</div>`);
   const chapter = (num, title, builder) => { if (!title.includes('·')) toc.push([num + '.', title, pages.length + 1]); pages.push(builder); };
 
@@ -4302,7 +4337,7 @@ function buildDiaryPages(messages, stats, diary) {
       ${i === 0 ? pdfTape('left:30%;top:-14px;transform:rotate(-5deg);') : ''}
       <div style="${CAV}font-size:30px;line-height:1;color:${RED};">${fmtShort(mo.dateObj)}</div>
       <div style="${MUTED}margin-top:4px;letter-spacing:1px;">${T(mo.label)}</div>
-      ${momentText(mo.id) ? `<div style="margin-top:8px;${CAVL}font-size:21px;line-height:1.15;">${T(String(momentText(mo.id)).slice(0, 220))}</div>` : ''}
+      ${momentText(mo.id) ? `<div style="margin-top:8px;${CAVL}font-size:21px;line-height:1.15;">${T(clipText(momentText(mo.id), 200))}</div>` : ''}
       ${mo.id === 'lastLove' && mo.daysAfter ? `<div style="margin-top:6px;font-size:11.5px;line-height:1.5;color:#5C2A32;">Después siguieron ${mo.daysAfter} días escribiéndose sin volver a decírselo.</div>` : ''}
       <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;">${mo.messages.slice(0, 3).map(bubble).join('')}</div>`,
       `transform:rotate(${i % 2 ? 0.8 : -0.8}deg);`)).join('')}</div>
@@ -4503,7 +4538,7 @@ function buildDiaryPages(messages, stats, diary) {
   chapter('VIII', 'El mensaje', n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo VIII')}${pdfTitle('VIII', 'El mensaje', 'de todos sus mensajes, este es el que elegimos para cerrar.')}
     ${best ? `<div style="margin-top:34px;align-self:center;width:520px;">${pdfQuote(best.text, '<b>' + T(firstName(best.sender)) + '</b> · ' + fmtDay(best.date) + ' · ' + fmtHour(best.date), stripEmoji(best.text).length > 120 ? 34 : 44)}</div>` : ''}
     ${keep.length ? `<div style="margin-top:30px;">${pdfH2('Otras frases para guardar')}<div style="display:grid;grid-template-columns:repeat(${keep.length},minmax(0,1fr));gap:14px;margin-top:10px;">${keep.map((q, i) => pdfNote(`<div style="${CAVL}font-size:21px;line-height:1.15;">«${T(String(q.text).slice(0, 120))}»</div><div style="margin-top:6px;font-size:10.5px;color:#7A4B52;">${T(firstName(q.sender))} · ${fmtShort(q.date)}</div>`, `transform:rotate(${i % 2 ? 0.8 : -0.8}deg);padding:12px 14px;`)).join('')}</div></div>` : ''}
-    <div style="margin-top:30px;${CAVL}font-size:28px;line-height:36px;max-width:560px;">${T(d.closing ? String(d.closing).slice(0, 380) : 'Gracias por dejarnos leer su historia. Ojalá este diario les sirva para seguir escribiéndola.')}</div>
+    <div style="margin-top:30px;${CAVL}font-size:28px;line-height:36px;max-width:560px;">${T(d.closing ? clipText(d.closing, 380) : 'Gracias por dejarnos leer su historia. Ojalá este diario les sirva para seguir escribiéndola.')}</div>
     <div style="margin-top:20px;${CAV}font-size:44px;line-height:40px;color:${RED};">Con cariño, YaLoSabía</div>
     <div style="margin-top:auto;font-size:11px;line-height:1.6;color:#7A4B52;">Este diario es una lectura de sus mensajes hecha con ayuda de IA, no un diagnóstico. Úsenlo para conversar, no para acusar. Su chat no se guardó en ningún servidor.</div>
     ${pdfFoot(n)}</div>`);
@@ -4535,6 +4570,7 @@ async function generatePDF() {
       if (btn) btn.textContent = `Escribiendo su diario… ${i + 1}/${pages.length}`;
       host.innerHTML = pages[i];
       const page = host.firstElementChild;
+      fitPdfPage(page);
       addPaperLines(page, 40, 1, '#F0C9C6');
       const canvas = await htmlToCanvasWithTimeout(page, { width: 794, height: 1123, scale: 2, useCORS: true, logging: false, backgroundColor: '#FFF8F6' });
       if (i > 0) pdf.addPage();

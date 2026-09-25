@@ -46,13 +46,16 @@ export async function POST(req: NextRequest) {
     const momentsBlock = moments.length
       ? moments.map((mo: any) => `- [${mo.id}] ${mo.date} — ${mo.label}:\n${(mo.messages || []).slice(0, 6).map((m: any) => `    ${m.sender}: «${String(m.text || '').substring(0, 200)}»`).join('\n')}`).join('\n')
       : '(sin momentos)';
-    const nameA = p.A?.name || stats?.personA;
-    const nameB = p.B?.name || stats?.personB;
+    // Solo el nombre de pila: «Conrado», no «Conrado Escobar»
+    const firstName = (n: any) => String(n || '').trim().split(/\s+/)[0] || String(n || '');
+    const nameA = firstName(p.A?.name || stats?.personA);
+    const nameB = firstName(p.B?.name || stats?.personB);
 
     const diaryPrompt = `Vas a escribir «el diario» de una pareja a partir de su chat de WhatsApp. Lo van a leer los dos, quizá juntos, quizá uno a escondidas. Escribe como alguien que ha leído cada mensaje y les tiene cariño: cercano, íntimo, concreto, con un punto de nostalgia. Que emocione. Que al leerlo piensen «esto somos nosotros» y les den ganas de escribirse.
 
 CÓMO ESCRIBIR
-- Español de México. Háblales de «ustedes» y llámalos por su nombre (${nameA} y ${nameB}). Nunca «vosotros».
+- Español de México. Háblales de «ustedes» y llámalos solo por su nombre de pila (${nameA} y ${nameB}), nunca con apellido. Nunca «vosotros» ni «usted»: cuando hables de uno solo, hazlo en tercera persona («${nameA} suele…»).
+- No comentes enlaces, URLs ni palabras técnicas del chat.
 - Concreto siempre: menciona fechas, palabras y mensajes reales de su chat. Mejor «el día que ${nameA} escribió "ya llegué, te extrañé"» que «muestran afecto».
 - Cita sus mensajes entre comillas cuando ayude. Nada de estadísticas en frío si puedes contarlas como una historia.
 - Puedes tocar la fibra: recordarles cómo se hablaban al principio, lo que se echan de menos, lo que se están dejando de decir. Pero sin crueldad, sin culpar y sin hablar nunca de infidelidad ni de diagnósticos.
@@ -74,12 +77,12 @@ ${diarySample.map((m: any) => `[${m.date} ${m.time}] ${m.sender}: ${String(m.tex
 
 RESPONDE SOLO CON JSON VÁLIDO con esta estructura exacta:
 {
-  "opening": "3-4 frases para abrir el diario, como el principio de una carta a los dos. Menciona algo muy concreto de su historia.",
+  "opening": "3-4 frases (máximo 400 caracteres) para abrir el diario, como el principio de una carta a los dos. Menciona algo muy concreto de su historia.",
   "profiles": {
     "A": { "archetype": "cómo es en la relación, 2-5 palabras, p. ej. «la que siempre escribe primero»", "description": "2-3 frases con cariño y con un ejemplo real de su forma de escribir", "traits": ["rasgo", "rasgo", "rasgo"], "quote": { "text": "COPIA LITERAL de un mensaje de A que lo retrate" } },
     "B": { "archetype": "...", "description": "...", "traits": ["...", "...", "..."], "quote": { "text": "COPIA LITERAL de un mensaje de B que lo retrate" } }
   },
-  "moments": [{ "id": "el id del momento", "text": "2 frases sobre ese día, como si se lo recordaras: qué pasó, qué se dijeron, por qué importa" }],
+  "moments": [{ "id": "el id del momento", "text": "2 frases cortas (máximo 170 caracteres en total) sobre ese día, como si se lo recordaras: qué pasó, qué se dijeron, por qué importa" }],
   "compatibility": {
     "percent": 0-100,
     "summary": "2 frases: en qué se entienden y en qué chocan, con un ejemplo real",
@@ -106,7 +109,7 @@ RESPONDE SOLO CON JSON VÁLIDO con esta estructura exacta:
   "advice": [{ "title": "consejo corto en imperativo", "text": "2 frases: qué hacer y por qué, apoyado en algo real de su chat; puede ir dirigido a una persona por su nombre" }],
   "bestMessage": { "sender": "nombre exacto", "text": "COPIA LITERAL del mensaje más bonito de la muestra" },
   "quotesToKeep": [{ "sender": "nombre exacto", "text": "COPIA LITERAL de un mensaje bonito, gracioso o tierno de la muestra" }],
-  "closing": "3 frases para cerrar el diario, dirigidas a los dos. Que emocione y les deje con ganas de escribirse."
+  "closing": "3 frases (máximo 330 caracteres) para cerrar el diario, dirigidas a los dos. Que emocione y les deje con ganas de escribirse."
 }
 
 REGLAS
@@ -151,7 +154,7 @@ REGLAS
 
 // Función para samplear mensajes inteligentemente
 // Igual que WA_SYSTEM_RE en public/index.html
-const WA_SYSTEM_RE = /cifrad[oa]s? de extremo a extremo|end-to-end encrypted|mensajes temporales|disappearing messages|cambió su número|changed (their|his|her) phone number|bloqueaste a este contacto|desbloqueaste a este contacto|you (un)?blocked this contact|^(llamada|videollamada)( de (voz|video))?( perdida)?\b.{0,30}$|^(missed )?(voice|video) call\b.{0,30}$/i;
+const WA_SYSTEM_RE = /^.{1,60} es un contacto\.?$|^.{1,60} is a contact\.?$|cifrad[oa]s? de extremo a extremo|end-to-end encrypted|mensajes temporales|disappearing messages|cambió su número|changed (their|his|her) phone number|bloqueaste a este contacto|desbloqueaste a este contacto|you (un)?blocked this contact|^(llamada|videollamada)( de (voz|video))?( perdida)?\b.{0,30}$|^(missed )?(voice|video) call\b.{0,30}$/i;
 
 function sampleMessages(messages: any[], maxMessages: number) {
   if (messages.length <= maxMessages) return messages;
