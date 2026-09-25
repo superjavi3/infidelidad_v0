@@ -48,6 +48,8 @@ createServer(async (req, res) => {
   const json = (status, body) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)); };
   if (url === '/api/pricing') return json(200, { country: 'MX', currency: 'mxn', symbol: '$', label: 'MXN', premium: 19900, premiumFormatted: '$199', isZeroDecimal: false });
   if (url === '/api/analyze') return json(200, { success: true, diary: DIARY });
+  // Oferta de bienvenida falsa (el token no vale para Stripe; solo para ver la barra y el precio)
+  if (url === '/api/offer') return json(200, { enabled: true, code: 'YLS-PRUEB', expiresAt: Date.now() + 30 * 60000, percent: 15, token: 'preview.preview' });
   if (url.startsWith('/api/')) return json(503, { success: false, error: 'API no disponible en el preview estático' });
 
   const file = join(root, url === '/' ? 'index.html' : url);

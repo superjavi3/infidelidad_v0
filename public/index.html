@@ -1156,6 +1156,20 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .diary-price .tape { top: -13px; left: 50%; margin-left: -48px; transform: rotate(3deg); }
 .diary-price-amount { font-size: 4.2rem; font-weight: 700; color: var(--pink); line-height: 1; }
 .diary-price-sub { font-weight: 700; margin: 6px 0 18px; }
+/* Oferta de bienvenida */
+.offer-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 101; height: 38px; display: flex; align-items: center; justify-content: center; gap: 18px; padding: 0 12px; background: var(--pink); color: #FFF4EF; font-family: var(--font-body); font-size: 0.85rem; cursor: pointer; }
+.offer-bar[hidden] { display: none; }
+.offer-bar b { font-weight: 700; letter-spacing: 1px; }
+.offer-bar .offer-time { font-variant-numeric: tabular-nums; background: rgba(255,255,255,0.18); border-radius: 4px; padding: 2px 8px; }
+body.has-offer { padding-top: 38px; }
+body.has-offer nav { top: 38px; }
+.offer-price { margin: -8px 0 16px; font-size: 0.95rem; }
+.offer-price[hidden], .offer-line[hidden] { display: none; }
+.offer-price s { color: var(--text-muted); }
+.offer-price b { color: var(--pink); font-size: 1.15rem; }
+.offer-line { margin: -14px 0 20px; font-size: 0.9rem; color: var(--text); }
+.offer-line b { color: var(--pink); }
+@media (max-width: 560px) { .offer-bar { gap: 10px; font-size: 0.78rem; } .offer-bar .offer-code { display: none; } }
 .diary-price ul { text-align: left; list-style: none; margin: 0 0 22px; }
 .diary-price li { padding: 6px 0; border-bottom: 1px dashed var(--paper-line); font-size: 0.92rem; }
 .diary-price li::before { content: '— '; color: var(--pink); font-weight: 700; }
@@ -1256,6 +1270,11 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 </script>
 </head>
 <body>
+<div class="offer-bar" id="offerBar" hidden onclick="offerBarClick()">
+  <span><b>15% de descuento</b> de bienvenida</span>
+  <span class="offer-code">tu código <b id="offerCode"></b></span>
+  <span>termina en <span class="offer-time" id="offerTime">30:00</span></span>
+</div>
 
 <!-- ── NAV ── -->
 <nav>
@@ -1361,6 +1380,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <div style="font-family:var(--font-display);font-weight:700;font-size:2.2rem;line-height:1;">Su diario completo</div>
       <div class="diary-price-amount" style="margin-top:12px;"><span class="precio-symbol">$</span><span class="precio-premium-numero">199</span></div>
       <div class="diary-price-sub"><span class="precio-moneda-label">MXN</span> · pago único</div>
+      <div class="offer-price" data-offer-price hidden></div>
       <ul>
         <li>Un PDF de 14 páginas, escrito a partir de su chat</li>
         <li>Para guardarlo, leerlo juntos o regalarlo</li>
@@ -1523,6 +1543,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <div class="tape"></div>
       <div class="diary-price-amount"><span class="precio-symbol">$</span><span class="precio-premium-numero">199</span></div>
       <div class="diary-price-sub"><span class="precio-moneda-label">MXN</span> · pago único, sin suscripción</div>
+      <div class="offer-price" data-offer-price hidden></div>
       <div class="diary-price-context">menos que una cena para dos</div>
       <ul>
         <li>Un PDF de 14 páginas con los 8 capítulos</li>
@@ -3261,6 +3282,7 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     <div id="payModalIcon" style="display:none;"></div>
     <h3 id="payModalTitle" style="color:#3B0A12;margin-bottom:4px;font-family:var(--font-display);font-size:2.4rem;line-height:1;">Tu diario completo</h3>
     <p id="payModalPrice" class="precio-premium" style="color:#7A4B52;margin-bottom:24px;">$199 MXN — pago único</p>
+    <p id="payOfferLine" class="offer-line" hidden></p>
     <input id="payEmail" type="email" name="email" autocomplete="email" inputmode="email" placeholder="¿A qué correo te lo mando?" style="width:100%;padding:12px;border-radius:4px;border:2px solid #3B0A12;background:#FFFFFF;font-family:var(--font-body);color:#3B0A12;margin-bottom:16px;box-sizing:border-box;font-size:1rem;">
     <label style="display:flex;align-items:flex-start;gap:10px;text-align:left;margin-bottom:16px;cursor:pointer;">
       <input type="checkbox" id="acceptTerms" onchange="document.getElementById('goToCheckout').disabled=!this.checked;document.getElementById('goToCheckout').style.opacity=this.checked?'1':'0.5'" style="margin-top:3px;accent-color:#C8102E;min-width:18px;min-height:18px;cursor:pointer;">
@@ -3322,6 +3344,84 @@ async function loadLocalPricing() {
 
 // Llamar al cargar
 loadLocalPricing();
+
+// ─── OFERTA DE BIENVENIDA (ver lib/offer.ts) ───────────────────
+// 15% durante 30 minutos desde la primera visita, con un código de un solo uso por visitante.
+// El plazo es real: al acabarse, el servidor ya no aplica el descuento.
+const OFFER_KEY = 'yalosabia_offer';
+window.activeOffer = null;
+
+function offerActive() {
+  const o = window.activeOffer;
+  return !!(o && o.token && !o.used && o.expiresAt > Date.now() && !isPremiumUser());
+}
+function saveOffer(o) {
+  try { localStorage.setItem(OFFER_KEY, JSON.stringify(o)); } catch (e) {}
+}
+function markOfferUsed() {
+  if (!window.activeOffer) return;
+  window.activeOffer.used = true;
+  saveOffer(window.activeOffer);
+  renderOffer();
+}
+function offerBarClick() {
+  trackFunnel('offer_bar_click');
+  if (lastMessages && window.currentChatFp) openPayModal();
+  else goToUpload('offer');
+}
+function offerMoney(v) {
+  const lp = window.localPricing;
+  const n = v.toLocaleString('es-MX', { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 });
+  return (lp ? lp.symbol : '$') + n + ' ' + (lp ? lp.label : 'MXN');
+}
+function renderOffer() {
+  const on = offerActive();
+  document.body.classList.toggle('has-offer', on);
+  const bar = document.getElementById('offerBar');
+  if (bar) bar.hidden = !on;
+  const line = document.getElementById('payOfferLine');
+  if (!on) {
+    clearInterval(window.offerTimer);
+    document.querySelectorAll('[data-offer-price]').forEach(el => { el.hidden = true; });
+    if (line) line.hidden = true;
+    return;
+  }
+  const o = window.activeOffer;
+  const left = Math.max(0, o.expiresAt - Date.now());
+  document.getElementById('offerTime').textContent = String(Math.floor(left / 60000)).padStart(2, '0') + ':' + String(Math.floor(left / 1000) % 60).padStart(2, '0');
+  document.getElementById('offerCode').textContent = o.code;
+  // Mismo cálculo que Stripe: el porcentaje sobre el importe en centavos, redondeado
+  const lp = window.localPricing;
+  const minor = lp && lp.premium ? lp.premium : 19900;
+  const div = lp && lp.isZeroDecimal ? 1 : 100;
+  const base = minor / div;
+  const disc = Math.round(minor * (100 - o.percent) / 100) / div;
+  document.querySelectorAll('[data-offer-price]').forEach(el => {
+    el.hidden = false;
+    el.innerHTML = '<s>' + offerMoney(base) + '</s> <b>' + offerMoney(disc) + '</b> con tu ' + o.percent + '% de bienvenida';
+  });
+  if (line) {
+    line.hidden = false;
+    line.innerHTML = 'Con tu código <b>' + o.code + '</b>: <b>' + offerMoney(disc) + '</b>. Se aplica solo al pagar.';
+  }
+}
+async function initOffer() {
+  let o = null;
+  try { o = JSON.parse(localStorage.getItem(OFFER_KEY) || 'null'); } catch (e) {}
+  if (!o) {
+    try {
+      const data = await fetch('/api/offer', { method: 'POST' }).then(r => r.json());
+      if (!data.enabled) return;
+      o = { code: data.code, expiresAt: data.expiresAt, percent: data.percent, token: data.token };
+      saveOffer(o);
+      trackFunnel('offer_shown', { percent: o.percent });
+    } catch (e) { return; }
+  }
+  window.activeOffer = o;
+  renderOffer();
+  if (offerActive()) window.offerTimer = setInterval(renderOffer, 1000);
+}
+initOffer();
 // ────────────────────────────────────────────────────────────────
 
 function isPremiumUser() {
@@ -3485,7 +3585,7 @@ async function goToStripeCheckout() {
     const res = await fetch('/api/create-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, plan: 'premium', chatFp: window.currentChatFp })
+      body: JSON.stringify({ email, plan: 'premium', chatFp: window.currentChatFp, offer: offerActive() ? window.activeOffer.token : undefined })
     });
 
     const data = await res.json();
@@ -3537,6 +3637,7 @@ async function checkPaymentSuccess() {
         console.log('[Paywall] Payment verified! Premium unlocked.');
 
         rememberPurchase(sessionId, data.chatFp, data.email);
+        markOfferUsed();
 
         window.isPremium = true;
 
