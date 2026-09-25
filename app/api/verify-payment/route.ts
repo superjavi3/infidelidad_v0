@@ -1,47 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
-
-function getStripe() {
-  return new Stripe(process.env.STRIPE_SECRET_KEY || '');
-}
+import { checkSessionPayment, isValidSessionId } from '@/lib/payments';
 
 export async function GET(req: NextRequest) {
   const sessionId = req.nextUrl.searchParams.get('session_id');
 
-  if (!sessionId) {
-    return NextResponse.json(
-      { error: 'session_id is required' },
-      { status: 400 }
-    );
+  if (!isValidSessionId(sessionId)) {
+    return NextResponse.json({ paid: false, reason: 'invalid' }, { status: 400 });
   }
 
-  try {
-    const stripe = getStripe();
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-
-    if (session.status === 'complete') {
-      // amount_total is in smallest currency unit (cents for MXN/USD, whole units for COP/CLP etc.)
-      const amountTotal = session.amount_total ?? 0;
-      const currency = (session.currency || 'mxn').toLowerCase();
-      const zeroDecimal = ['cop', 'ars', 'clp', 'pyg'].includes(currency);
-      const value = zeroDecimal ? amountTotal : amountTotal / 100;
-
-      return NextResponse.json({
-        paid: true,
-        email: session.metadata?.email || session.customer_email || '',
-        plan: 'premium',
-        value,
-        currency,
-      });
-    }
-
-    return NextResponse.json({ paid: false });
-  } catch (error: unknown) {
-    console.error('Verify payment error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json(
-      { error: 'Error verificando pago', details: message },
-      { status: 500 }
-    );
+  const check = await checkSessionPayment(sessionId);
+  if (check.reason === 'error') {
+    return NextResponse.json({ paid: false, reason: 'error' }, { status: 503 });
   }
+  if (!check.paid) {
+    return NextResponse.json({ paid: false, reason: check.reason });
+  }
+
+  // amount_total viene en la unidad mínima (centavos en MXN/USD, unidades en COP/CLP…)
+  const currency = check.currency || 'mxn';
+  const zeroDecimal = ['cop', 'ars', 'clp', 'pyg'].includes(currency);
+  const value = zeroDecimal ? check.amountTotal ?? 0 : (check.amountTotal ?? 0) / 100;
+
+  return NextResponse.json({
+    paid: true,
+    email: check.email || '',
+    plan: 'premium',
+    value,
+    currency,
+  });
 }

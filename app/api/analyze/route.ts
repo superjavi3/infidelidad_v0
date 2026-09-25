@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { gunzipSync } from 'zlib';
+import { checkSessionPayment } from '@/lib/payments';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
@@ -17,6 +18,15 @@ export async function POST(req: NextRequest) {
     const { mode, question, chatHistory, stats, messages } = body;
 
     console.log('API /analyze called - mode:', mode || 'analysis');
+
+    // Los modos de pago solo responden con una sesión de Stripe pagada y sin reembolso
+    if (mode === 'diary' || mode === 'chat' || mode === 'summary') {
+      const payment = await checkSessionPayment(body.sessionId);
+      if (!payment.paid) {
+        const status = payment.reason === 'error' ? 503 : 402;
+        return NextResponse.json({ success: false, error: 'payment_required', reason: payment.reason }, { status });
+      }
+    }
 
     // ===== MODO SUMMARY - PDF REPORT =====
     if (mode === 'summary') {

@@ -6105,57 +6105,57 @@ function hasPlanAccess() {
   return isPremiumUser();
 }
 
-// ── Load premium state with migration ──
+/// ── Estado de pago ──
+// El navegador solo guarda el session_id de Stripe. El servidor lo comprueba contra Stripe
+// antes de escribir el diario (lib/payments.ts), así que editar localStorage no da acceso.
+const STRIPE_SESSION_RE = /^cs_(live|test)_[A-Za-z0-9]{10,}$/;
+
+function getStoredSessionId() {
+  try {
+    const data = JSON.parse(localStorage.getItem('yalosabia_plan_v2') || 'null');
+    return data && STRIPE_SESSION_RE.test(data.sessionId || '') ? data.sessionId : null;
+  } catch (e) { return null; }
+}
+
 function loadPremiumState() {
   try {
-    // New format first
-    const v2 = localStorage.getItem('yalosabia_plan_v2');
-    if (v2) {
-      const data = JSON.parse(v2);
-      if (data.sessionId === 'admin-bypass') { localStorage.removeItem('yalosabia_plan_v2'); return false; }
-      if (data.premium) return true;
-    }
-    // Migrate from old couple plans (detective/obsesivo)
-    const oldCouple = localStorage.getItem('losabia_plan');
-    if (oldCouple) {
-      const data = JSON.parse(oldCouple);
-      if (data.plan === 'detective' || data.plan === 'obsesivo') {
+    // Formatos antiguos: solo se conservan si traen un session_id real de Stripe
+    if (!localStorage.getItem('yalosabia_plan_v2')) {
+      const legacy = ['losabia_plan', 'yalosabia_group_premium']
+        .map(k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } })
+        .find(d => d && STRIPE_SESSION_RE.test(d.sessionId || ''));
+      if (legacy) {
         localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
-          premium: true, sessionId: data.sessionId || 'migrated',
-          email: data.email || '', paidAt: data.paidAt || new Date().toISOString()
+          premium: true, sessionId: legacy.sessionId, email: legacy.email || '', paidAt: legacy.paidAt || new Date().toISOString()
         }));
-        return true;
       }
     }
-    // Migrate from old group plan
-    const oldGroup = localStorage.getItem('yalosabia_group_premium');
-    if (oldGroup) {
-      const data = JSON.parse(oldGroup);
-      if (data.plan === 'completo') {
-        localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
-          premium: true, sessionId: data.sessionId || 'migrated',
-          email: data.email || '', paidAt: data.paidAt || new Date().toISOString()
-        }));
-        return true;
-      }
-    }
-    // Legacy fallback
-    const legacy = localStorage.getItem('losabia_premium');
-    if (legacy) {
-      const data = JSON.parse(legacy);
-      if (data.paid === true) {
-        localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
-          premium: true, sessionId: 'migrated',
-          email: data.email || '', paidAt: new Date().toISOString()
-        }));
-        return true;
-      }
-    }
-  } catch(e) {}
+    if (getStoredSessionId()) return true;
+    localStorage.removeItem('yalosabia_plan_v2'); // sin session_id verificable no hay acceso
+  } catch (e) {}
   return false;
 }
 
-// ── Blur overlay system ──
+function revokePremium(reason) {
+  console.warn('[Paywall] Acceso retirado:', reason);
+  try { localStorage.removeItem('yalosabia_plan_v2'); } catch (e) {}
+  window.isPremium = false;
+  if (typeof updatePlanUI === 'function') updatePlanUI();
+}
+
+// Revalida en segundo plano el pago guardado (reembolsos, disputas, sesiones inventadas)
+async function revalidateStoredPayment() {
+  const sessionId = getStoredSessionId();
+  if (!sessionId) return;
+  try {
+    const res = await fetch('/api/verify-payment?session_id=' + encodeURIComponent(sessionId));
+    if (res.status === 503) return; // Stripe no respondió: no quitamos nada por un fallo puntual
+    const data = await res.json();
+    if (!data.paid) revokePremium(data.reason || 'unpaid');
+  } catch (e) {}
+}
+
+/ ── Blur overlay system ──
 // Idempotent: recomputes lock state from isPremiumUser()
 function applyBlurOverlays() {
   const premium = isPremiumUser();
@@ -6405,6 +6405,7 @@ async function checkPaymentSuccess() {
   // Load stored premium state (with migration)
   window.isPremium = loadPremiumState();
   console.log('[Paywall] Page load — isPremium:', window.isPremium);
+  revalidateStoredPayment();
   updatePlanBadge();
   applyBlurOverlays();
 }
@@ -6639,10 +6640,15 @@ async function loadDiaryAI(messages, stats) {
     try {
       const res = await gzipFetch('/api/analyze', {
         mode: 'diary',
+        sessionId: getStoredSessionId(),
         messages: messages.filter(isRealText).map(m => ({ date: m.date, time: m.time, sender: m.sender, text: m.text })),
         stats,
         people: { A: slim(people.A), B: slim(people.B) }
       });
+      if (res.status === 402) {
+        revokePremium('diary_402');
+        throw new Error('payment_required');
+      }
       const data = await res.json();
       if (!data.success || !data.diary) throw new Error(data.error || 'sin diario');
       window.lastDiary = data.diary;
@@ -7068,7 +7074,10 @@ async function generatePDF() {
   document.body.appendChild(host);
   try {
     const diary = await loadDiaryAI(lastMessages, lastStats);
-    if (!diary) throw new Error('No pudimos escribir los capítulos con IA. Inténtalo de nuevo en un momento.');
+    if (!diary) {
+      if (!isPremiumUser()) throw new Error('No encontramos un pago válido para este diario. Si pagaste y ves este mensaje, escríbenos a contacto@yalosabia.com.');
+      throw new Error('No pudimos escribir los capítulos con IA. Inténtalo de nuevo en un momento.');
+    }
     if (document.fonts && document.fonts.ready) await document.fonts.ready;
     const pages = buildDiaryPages(lastMessages, lastStats, diary);
     const { jsPDF } = window.jspdf;
