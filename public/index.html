@@ -7057,7 +7057,12 @@ function buildDiaryPages(messages, stats, diary) {
   // ── VI. ¿Van a durar? ──
   const f = d.forecast || {};
   const posMap = { fragil: 12, 'frágil': 12, inestable: 37, estable: 62, solida: 87, 'sólida': 87 };
-  const pos = Math.max(4, Math.min(96, typeof f.position === 'number' ? f.position : (posMap[String(f.level || '').toLowerCase()] ?? 62)));
+  // El marcador siempre cae dentro de la franja de la etiqueta que dio la IA
+  const bands = { fragil: [4, 24], 'frágil': [4, 24], inestable: [28, 47], estable: [53, 72], solida: [78, 96], 'sólida': [78, 96] };
+  const band = bands[String(f.level || '').toLowerCase()];
+  let pos = typeof f.position === 'number' ? f.position : (posMap[String(f.level || '').toLowerCase()] ?? 62);
+  if (band) pos = Math.max(band[0], Math.min(band[1], pos));
+  pos = Math.max(4, Math.min(96, pos));
   chapter('VI', '¿Van a durar?', n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Capítulo VI')}${pdfTitle('VI', '¿Van a durar?', '')}
     <div style="margin-top:22px;${MUTED}">Nuestro pronóstico</div>
     <div style="margin-top:4px;${CAV}font-size:54px;line-height:1.05;">${T(f.headline || '')}</div>
