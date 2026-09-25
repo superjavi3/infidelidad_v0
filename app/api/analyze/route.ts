@@ -236,99 +236,90 @@ Basándome en el análisis de ${stats?.total || 0} mensajes entre ${stats?.perso
       return NextResponse.json({ success: true, answer });
     }
 
-    // ===== MODO GROUP-ANALYSIS — Fun fact del grupo =====
-    if (mode === 'group-analysis') {
-      const memberList = (stats?.members || []).slice(0, 8).map((m: any) => `${m.name}: ${m.msgCount} msgs (${m.pct}%)`).join(', ');
+    // ===== MODO DIARY - CAPÍTULOS IA DEL DIARIO (perfiles, compatibilidad, señales, pronóstico, consejos, mensaje) =====
+    if (mode === 'diary') {
+      const diarySample = sampleMessages(messages || [], 320);
+      const p = body.people || {};
+      const personLine = (key: 'A' | 'B') => {
+        const d = p[key] || {};
+        return `- ${d.name}: ${d.msgs} mensajes, inicia el ${d.initiatesPct}% de las conversaciones, contesta en ${d.replyLabel} (mediana), hora favorita ${d.peakHour}h, ${d.audios} audios, palabras frecuentes: ${(d.topWords || []).join(', ')}`;
+      };
 
-      const groupPrompt = `Genera UN dato curioso corto y divertido sobre este grupo de WhatsApp.
+      const diaryPrompt = `Eres quien escribe «el diario» de una relación a partir de su chat de WhatsApp. Tono: cercano, cálido, honesto, en español de México (usa "ustedes", nunca "vosotros"). Nada de diagnósticos clínicos ni de acusar a nadie de infidelidad.
 
-REGLAS ESTRICTAS:
-- MÁXIMO 1-2 frases. Nunca más de 30 palabras.
-- Usa UN dato numérico concreto, no varios.
-- Menciona solo 1-2 nombres de personas, no más.
-- El dato debe hacer reír o sorprender. Tono: como contarle algo gracioso a un amigo.
-- NO hagas comparaciones complicadas con múltiples personas.
-- NO menciones porcentajes ni datos técnicos.
-- NO inventes datos que no estén abajo.
+DATOS REALES (no los contradigas):
+- ${stats?.total} mensajes en ${stats?.uniqueDays} días. Índice de la relación: ${stats?.score}/100.
+${personLine('A')}
+${personLine('B')}
+- Silencios de más de 48 h: ${stats?.silencesCount ?? 'N/D'}. Emojis de amor: ${stats?.loveCount ?? 'N/D'}. Mensajes de madrugada: ${stats?.nightPct ?? 'N/D'}%.
 
-Buenos ejemplos del tono que quiero:
-- "Carlos ha mandado más audios que palabras escritas. Literalmente habla más de lo que escribe."
-- "Si María cobrara $1 por cada 'jajaja', ya habría pagado la renta de un año."
-- "Pedro lleva 1,283 días sin hablar. Ni para felicitar cumpleaños."
-- "El grupo tiene 16 miembros pero solo 4 hablan. Los otros 12 son espectadores."
+MUESTRA DE MENSAJES (formato [fecha hora] nombre: texto):
+${diarySample.map((m: any) => `[${m.date} ${m.time}] ${m.sender}: ${String(m.text || '').substring(0, 220)}`).join('\n')}
 
-DATOS DEL GRUPO:
-- ${stats?.totalMessages || 0} mensajes, ${stats?.members?.length || 0} miembros, ${stats?.uniqueDays || 0} días
-- Miembros: ${memberList}
+RESPONDE SOLO CON JSON VÁLIDO con esta estructura exacta:
+{
+  "profiles": {
+    "A": { "archetype": "«la que inicia» o similar, 2-5 palabras", "description": "2 frases sobre cómo se comunica", "traits": ["rasgo", "rasgo", "rasgo"] },
+    "B": { "archetype": "...", "description": "...", "traits": ["...", "...", "..."] }
+  },
+  "compatibility": {
+    "percent": 0-100,
+    "summary": "1-2 frases: en qué se entienden y en qué chocan",
+    "loveLanguages": {
+      "A": { "palabras": 0-100, "tiempo": 0-100, "servicio": 0-100, "contacto": 0-100, "regalos": 0-100 },
+      "B": { "palabras": 0-100, "tiempo": 0-100, "servicio": 0-100, "contacto": 0-100, "regalos": 0-100 }
+    },
+    "strengths": ["3-4 cosas que les salen bien, frases cortas"],
+    "toWork": ["3-4 cosas que pueden trabajar, frases cortas"]
+  },
+  "signals": {
+    "toWatch": [{ "title": "título corto", "detail": "1-2 frases con datos del chat", "level": "importante|a vigilar|detalle" }],
+    "greenFlags": ["2-3 cosas buenas concretas"]
+  },
+  "forecast": {
+    "level": "fragil|inestable|estable|solida",
+    "position": 0-100,
+    "headline": "frase corta, p. ej. «Buen rumbo, con una condición.»",
+    "explanation": "3-4 frases honestas",
+    "pros": ["3-4 frases cortas"],
+    "cons": ["2-3 frases cortas"],
+    "condition": "la condición para que sigan bien, 1 frase (o vacío si no hay)"
+  },
+  "advice": [{ "title": "consejo corto", "text": "1-2 frases concretas; puede ir dirigido a una persona por su nombre" }],
+  "bestMessage": { "sender": "nombre exacto", "date": "fecha tal cual aparece", "time": "hora tal cual aparece", "text": "COPIA LITERAL de un mensaje cariñoso de la muestra" }
+}
 
-Responde en JSON: { "funInsight": "tu dato curioso aquí" }`;
+REGLAS:
+- "A" es ${p.A?.name || stats?.personA} y "B" es ${p.B?.name || stats?.personB}.
+- Máximo 3 elementos en signals.toWatch y exactamente 5 en advice.
+- bestMessage.text debe ser un mensaje copiado palabra por palabra de la muestra; si no hay ninguno cariñoso, usa null en bestMessage.
+- No inventes hechos que no estén en los datos o la muestra.
+- No uses emojis ni símbolos decorativos en ningún texto. Escribe como una persona, sin frases hechas de IA (nada de «en resumen», «es importante destacar», «sin duda»).`;
 
-      const response = await fetch(
+      const diaryRes = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: groupPrompt }] }],
-            generationConfig: { temperature: 0.8, maxOutputTokens: 300, thinkingConfig: { thinkingBudget: 0 } }
+            contents: [{ parts: [{ text: diaryPrompt }] }],
+            generationConfig: {
+              temperature: 0.6,
+              maxOutputTokens: 3000,
+              responseMimeType: 'application/json',
+              thinkingConfig: { thinkingBudget: 0 }
+            }
           })
         }
       );
-      const data = await response.json();
-      if (!data.candidates?.[0]) {
-        return NextResponse.json({ success: true, analysis: { funInsight: 'No pudimos generar un dato curioso para este grupo.' } });
+      const diaryData = await diaryRes.json();
+      const diaryText = diaryData.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!diaryText) {
+        return NextResponse.json({ success: false, error: 'Sin respuesta del modelo' }, { status: 502 });
       }
-      const text = data.candidates[0].content.parts[0].text;
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      const analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : { funInsight: text.replace(/```/g, '').trim() };
-      return NextResponse.json({ success: true, analysis });
-    }
-
-    // ===== MODO GROUP-AUTOPSY — Momentos clave del grupo =====
-    if (mode === 'group-autopsy') {
-      const memberList = (stats?.members || []).slice(0, 15).map((m: any) => `${m.name}: ${m.msgCount} msgs`).join(', ');
-      const monthlyData = (stats?.monthlyActivity || []).map((m: any) => `${m.month}: ${m.total} msgs`).join(', ');
-      const events = (stats?.systemEvents || []).slice(0, 30).map((e: any) => `${e.date} - ${e.type}: ${e.actor}${e.target ? ' → ' + e.target : ''}${e.detail ? ' (' + e.detail + ')' : ''}`).join('\n');
-      const sampleMsgs = (messages || []).slice(-100).map((m: any) => `[${m.date}] ${m.sender}: ${(m.text || '').substring(0, 60)}`).join('\n');
-
-      const autopsyPrompt = `Eres un analista forense de grupos de WhatsApp. Identifica los 3-5 momentos clave donde la dinámica del grupo cambió.
-
-DATOS:
-- ${stats?.totalMessages || 0} msgs de ${stats?.members?.length || 0} miembros
-- Miembros: ${memberList}
-
-ACTIVIDAD MENSUAL: ${monthlyData}
-
-EVENTOS DEL GRUPO:
-${events || 'No se detectaron eventos de sistema'}
-
-MUESTRA DE MENSAJES:
-${sampleMsgs}
-
-Responde en JSON array:
-[{"date":"Mes Año","title":"Título corto","description":"Qué pasó (con nombres)","impact":"Cómo cambió el grupo","severity":"high|medium|low"}]
-
-Máximo 5 momentos. Sé específico con nombres y datos.`;
-
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: autopsyPrompt }] }],
-            generationConfig: { temperature: 0.7, maxOutputTokens: 2000, thinkingConfig: { thinkingBudget: 0 } }
-          })
-        }
-      );
-      const data = await response.json();
-      if (!data.candidates?.[0]) {
-        return NextResponse.json({ success: true, autopsy: [] });
-      }
-      const text = data.candidates[0].content.parts[0].text;
-      const jsonMatch = text.match(/\[[\s\S]*\]/);
-      const autopsy = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
-      return NextResponse.json({ success: true, autopsy });
+      const diaryJson = diaryText.match(/\{[\s\S]*\}/);
+      const diary = JSON.parse(diaryJson ? diaryJson[0] : diaryText);
+      return NextResponse.json({ success: true, diary });
     }
 
     // ===== MODO ANALYSIS - ORIGINAL =====

@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
           price_data: {
             currency: cur,
             product_data: {
-              name: 'Plan Premium — YaLoSabía',
+              name: 'Su diario completo — YaLoSabía',
             },
             unit_amount: amt,
           },
