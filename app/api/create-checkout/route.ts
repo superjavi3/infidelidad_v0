@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getPricingForCountry } from '../pricing/route';
 import { CHAT_FP_RE } from '@/lib/payments';
+import { offerEnabled, promotionCodeFor, verifyOffer } from '@/lib/offer';
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY || '');
@@ -9,7 +10,7 @@ function getStripe() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, plan, chatFp } = await req.json();
+    const { email, plan, chatFp, offer } = await req.json();
 
     if (!email) {
       return NextResponse.json(
@@ -43,6 +44,17 @@ export async function POST(req: NextRequest) {
     const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://yalosabia.com';
     const stripe = getStripe();
 
+    // Oferta de bienvenida: su código de un solo uso, si sigue vigente. Si algo falla, se cobra el precio normal.
+    let promotionCode: string | null = null;
+    const validOffer = offerEnabled() ? verifyOffer(offer) : null;
+    if (validOffer) {
+      try {
+        promotionCode = await promotionCodeFor(stripe, validOffer);
+      } catch (err: unknown) {
+        console.warn('[offer] sin descuento:', err instanceof Error ? err.message : err);
+      }
+    }
+
     async function createSession(cur: string, amt: number) {
       return stripe.checkout.sessions.create({
         customer_email: email,
@@ -57,7 +69,8 @@ export async function POST(req: NextRequest) {
           quantity: 1,
         }],
         mode: 'payment',
-        allow_promotion_codes: true,
+        // Stripe no deja combinar un descuento aplicado con el campo para escribir códigos
+        ...(promotionCode ? { discounts: [{ promotion_code: promotionCode }] } : { allow_promotion_codes: true }),
         success_url: `${origin}/#results?payment=success&session_id={CHECKOUT_SESSION_ID}&plan=premium`,
         cancel_url: `${origin}/#pricing`,
         metadata: {
@@ -65,6 +78,7 @@ export async function POST(req: NextRequest) {
           chat_fp: chatFp,
           country,
           currency: cur,
+          ...(promotionCode && validOffer ? { offer_code: validOffer.code } : {}),
         },
       });
     }

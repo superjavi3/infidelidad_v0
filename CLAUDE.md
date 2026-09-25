@@ -43,6 +43,13 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 - `verifyQuote`: toda cita que devuelve la IA (perfiles, señales, frases para guardar, mensaje final) solo se pinta si existe **tal cual** en el chat. Si no, se omite.
 - `isWaSystem` / `WA_SYSTEM_RE`: avisos automáticos de WhatsApp (cifrado, llamadas, mensajes temporales…). Se excluyen de todo lo que se pinta; el servidor tiene la misma regex para la muestra de la IA.
 
+## Oferta de bienvenida (15%)
+
+- Barra fija arriba con un contador de **30 minutos desde la primera visita** y un **código de un solo uso por visitante** (`YLS-XXXXX`). El plazo es real: al acabarse, el servidor ya no aplica el descuento (nada de contadores que se reinician: sería publicidad engañosa).
+- `lib/offer.ts`: `/api/offer` firma `{código, caducidad}` con HMAC (clave: `OFFER_SECRET` o, si no existe, derivada de `STRIPE_SECRET_KEY`). Al pagar, `create-checkout` verifica la firma y crea en Stripe el código (`max_redemptions: 1`, `expires_at`) sobre el cupón `YLS15` (15%, lo crea solo si no existe) y lo aplica con `discounts`. Si algo falla, cobra el precio normal.
+- En el navegador: `localStorage.yalosabia_offer` (una oferta por navegador; se marca usada al pagar).
+- **Apagarla:** `OFFER_DISABLED=1` en Vercel y redeploy. Duración y porcentaje: constantes en `lib/offer.ts` (el texto «15%» de la barra está en `index.html`).
+
 ## Medición
 
 - Píxel de Meta: `PageView`, `ChatUploaded` (custom), `ViewContent` (adelanto visto), `InitiateCheckout`, `Purchase`.
