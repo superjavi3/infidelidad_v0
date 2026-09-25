@@ -40,7 +40,7 @@ const PRICING: Record<string, CountryPricing> = {
   VE: { currency: 'usd', symbol: '$', label: 'USD', premium: 599, isZeroDecimal: false },
 
   // México
-  MX: { currency: 'mxn', symbol: '$', label: 'MXN', premium: 9900, isZeroDecimal: false },
+  MX: { currency: 'mxn', symbol: '$', label: 'MXN', premium: 12900, isZeroDecimal: false },
 
   // Colombia (zero-decimal en Stripe)
   CO: { currency: 'cop', symbol: '$', label: 'COP', premium: 1990000, isZeroDecimal: true },
