@@ -10,100 +10,14 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-:root {
-  --bg-deep: #0d0d0d;
-  --bg-card: #1a1a2e;
-  --pink: #FF2D78;
-  --orange: #FF6B35;
-  --text: #FAFAFA;
-  --text-muted: #a0a0b8;
-  --font-display: 'Dela Gothic One', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
-}
-html { scroll-behavior: smooth; }
-body {
-  font-family: var(--font-body);
-  background: var(--bg-deep);
-  color: var(--text);
-  -webkit-font-smoothing: antialiased;
-  line-height: 1.7;
-}
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  padding: 18px 32px;
-  display: flex; justify-content: space-between; align-items: center;
-  backdrop-filter: blur(20px);
-  background: rgba(13,13,13,0.7);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.logo {
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  letter-spacing: -0.5px;
-  text-decoration: none;
-  color: var(--text);
-}
-.logo span { color: var(--pink); }
-nav a.back-link {
-  color: var(--text-muted);
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: color .2s;
-}
-nav a.back-link:hover { color: var(--text); }
-.container { max-width: 800px; margin: 0 auto; padding: 0 24px; }
-.legal-wrap { padding: 120px 0 60px; }
-.legal-wrap h1 {
-  font-family: var(--font-display);
-  font-size: 2rem;
-  margin-bottom: 8px;
-}
-.legal-date { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 40px; }
-.legal-wrap h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-top: 36px;
-  margin-bottom: 12px;
-  color: var(--text);
-}
-.legal-wrap p, .legal-wrap li {
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  margin-bottom: 12px;
-}
-.legal-wrap ul { padding-left: 24px; margin-bottom: 16px; }
-.legal-wrap a { color: var(--pink); text-decoration: none; }
-.legal-wrap a:hover { text-decoration: underline; }
-footer {
-  border-top: 1px solid rgba(255,255,255,0.06);
-  padding: 40px 0;
-  text-align: center;
-}
-footer .logo { margin-bottom: 12px; font-size: 1.2rem; }
-footer p { color: var(--text-muted); font-size: 0.85rem; }
-.footer-links { display: flex; gap: 24px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
-.footer-links a {
-  color: var(--text-muted);
-  text-decoration: none;
-  font-size: 0.85rem;
-  transition: color .2s;
-}
-.footer-links a:hover { color: var(--text); }
-@media (max-width: 600px) {
-  .legal-wrap h1 { font-size: 1.5rem; }
-  nav { padding: 14px 16px; }
-  .logo { font-size: 1.1rem; }
-}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/legal.css">
 </head>
 <body>
 
 <nav>
-  <a href="/" class="logo">YaLo<span>Sabía</span>.com</a>
-  <a href="/" class="back-link">← Volver al inicio</a>
+  <a href="/" class="logo">YaLoSabía</a>
+  <a href="/" class="back-link">Volver al inicio</a>
 </nav>
 
 <div class="container legal-wrap">
@@ -134,22 +48,21 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   <h2>5. Legislación aplicable y jurisdicción</h2>
   <p>El presente aviso legal se rige por la legislación española. Para cualquier controversia derivada del uso de este sitio web, ambas partes se someten a la jurisdicción de los tribunales de Madrid, España, con renuncia expresa a cualquier otro fuero que pudiera corresponderles.</p>
 
-  <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:48px 0 24px;">
+  <hr>
   <p><strong>Javier Negro Vadillo</strong> · NIF 05446227B<br>Calle Infanta María Teresa 4, 28016 Madrid, España<br><a href="mailto:contacto@yalosabia.com">contacto@yalosabia.com</a></p>
 </div>
 
 <footer>
   <div class="container">
-    <a href="/" class="logo">YaLo<span>Sabía</span>.com</a>
-    <p>Con cariño, YaLoSabía</p>
+    <a href="/" class="logo">Con cariño, YaLoSabía</a>
     <div class="footer-links">
-      <a href="/aviso-legal.html">Aviso legal</a>
-      <a href="/privacidad.html">Política de privacidad</a>
-      <a href="/terminos.html">Términos de uso</a>
+      <a href="/aviso-legal.html" aria-current="page">Aviso legal</a>
+      <a href="/privacidad.html">Privacidad</a>
+      <a href="/terminos.html">Términos</a>
       <a href="/cookies.html">Cookies</a>
       <a href="mailto:contacto@yalosabia.com">Contacto</a>
     </div>
-    <p style="margin-top: 20px; opacity: 0.4; font-size: 0.8rem;">Este diario es entretenimiento y no sustituye asesoría profesional.</p>
+    <p class="footer-note">Una lectura de sus mensajes para conversar, no un diagnóstico.</p>
   </div>
 </footer>
 
