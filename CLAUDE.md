@@ -32,6 +32,7 @@ Web que convierte un chat de WhatsApp de pareja en **«su diario»**: un PDF de 
 | `lib/payments.ts` | `checkSessionPayment()` (Stripe como fuente de verdad, caché 10 min) y `chatFingerprint()`. |
 | `app/api/share`, `app/a/[id]` | Links compartidos **antiguos** (Supabase). La web ya no crea links; se mantienen para que los viejos abran. |
 | `app/api/track` | Eventos a Supabase. |
+| `public/diario/*.jpg`, `public/og-image.jpg` | Páginas de un diario de ejemplo (chat demo «Laura & Carlos») para el hero y «Así es su diario», e imagen para compartir (1200×630). Si cambia el diseño del PDF, hay que regenerarlas: `buildDiaryPages` + html2canvas a escala 0.8. |
 | `public/mockup-studio.html`, `mockup-capture.html` | Herramientas internas de mockups, sin enlazar desde la web. |
 
 ### Dentro de `public/index.html` (script principal, por orden)
@@ -41,6 +42,11 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 - `computeMoments`: hasta 4 «días que recordar» (primer mensaje, primer «te quiero», día con más mensajes, último «te quiero» o vuelta tras el silencio más largo) con sus mensajes reales; se envían a Gemini para que escriba un texto por momento.
 - `verifyQuote`: toda cita que devuelve la IA (perfiles, señales, frases para guardar, mensaje final) solo se pinta si existe **tal cual** en el chat. Si no, se omite.
 - `isWaSystem` / `WA_SYSTEM_RE`: avisos automáticos de WhatsApp (cifrado, llamadas, mensajes temporales…). Se excluyen de todo lo que se pinta; el servidor tiene la misma regex para la muestra de la IA.
+
+## Medición
+
+- Píxel de Meta: `PageView`, `ChatUploaded` (custom), `ViewContent` (adelanto visto), `InitiateCheckout`, `Purchase`.
+- PostHog (`trackFunnel`): `chat_uploaded`, `preview_shown`, `cta_upload_click` (`from`: price/sticky), `sample_page_open`. Con esto se ve en qué paso se cae la gente.
 
 ## Seguridad del pago (importante)
 

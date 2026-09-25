@@ -3,25 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>YaLoSabía — Analiza tu chat de WhatsApp con IA</title>
-<meta name="description" content="Sube tu chat de WhatsApp y descubre qué dicen tus mensajes sobre tu relación. Score, patrones, silencios y red flags analizados con inteligencia artificial.">
-<meta name="keywords" content="analizar chat whatsapp, análisis relación IA, red flags whatsapp, infidelidad whatsapp, estadísticas chat pareja">
+<title>YaLoSabía — El diario de su relación, escrito con su chat de WhatsApp</title>
+<meta name="description" content="Sube su chat de WhatsApp y recibe un diario de 14 páginas sobre ustedes dos: cómo empezó, quién es quién, qué tan compatibles son y si van a durar. El adelanto es gratis.">
+<meta name="keywords" content="chat whatsapp pareja, diario de pareja, regalo aniversario, historia de amor whatsapp, compatibilidad de pareja, analizar chat whatsapp">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://www.yalosabia.com/">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.yalosabia.com/">
-<meta property="og:title" content="YaLoSabía — Analiza tu chat de WhatsApp con IA">
-<meta property="og:description" content="Descubre qué dicen tus conversaciones de WhatsApp sobre tu relación. Análisis con IA en segundos.">
+<meta property="og:title" content="Querido diario: hoy descubrí la historia completa de nosotros dos">
+<meta property="og:description" content="Su historia, escrita con sus propios mensajes: un diario de 14 páginas sobre ustedes dos. El adelanto es gratis.">
 <meta property="og:image" content="https://www.yalosabia.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Páginas de ejemplo del diario de YaLoSabía">
 <meta property="og:locale" content="es_MX">
 <meta property="og:site_name" content="YaLoSabía">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="YaLoSabía — Analiza tu chat de WhatsApp con IA">
-<meta name="twitter:description" content="Descubre qué dicen tus conversaciones de WhatsApp sobre tu relación.">
+<meta name="twitter:title" content="Querido diario: hoy descubrí la historia completa de nosotros dos">
+<meta name="twitter:description" content="Su historia, escrita con sus propios mensajes: un diario de 14 páginas sobre ustedes dos. El adelanto es gratis.">
 <meta name="twitter:image" content="https://www.yalosabia.com/og-image.jpg">
 
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -1020,6 +1023,51 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .hero-note { position: absolute; right: 4px; top: 170px; width: 100px; font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; line-height: 1.05; color: var(--pink); transform: rotate(6deg); }
 .hero-note::after { content: ''; position: absolute; inset: -14px -10px; border: 2px solid var(--pink); border-radius: 50%; transform: rotate(-4deg); }
 .hero-example { font-size: 0.72rem; font-style: italic; color: var(--text-muted); margin-top: -24px; margin-bottom: 24px; }
+/* Hero: dos páginas del diario de ejemplo */
+.hero-pages { position: relative; width: 330px; height: 300px; margin: 0 auto 36px; }
+.hero-pages img { position: absolute; width: 180px; height: auto; background: #fff; border: 1px solid var(--margin-line); box-shadow: var(--shadow); }
+.hero-pages .hp-back { right: 18px; top: 4px; transform: rotate(6deg); }
+.hero-pages .hp-front { left: 18px; top: 22px; transform: rotate(-5deg); }
+.hero-pages .tape { left: 70px; top: 10px; transform: rotate(-8deg); z-index: 2; }
+.hero-pages .hero-note { right: -6px; top: 236px; width: 120px; z-index: 3; }
+@media (max-width: 480px) {
+  .hero-pages { width: 290px; height: 236px; margin-bottom: 30px; }
+  .hero-pages img { width: 148px; }
+  .hero-pages .hp-back { right: 14px; }
+  .hero-pages .hp-front { left: 14px; }
+  .hero-pages .hero-note { top: 184px; right: -4px; font-size: 1.2rem; width: 104px; }
+}
+/* Páginas de ejemplo */
+.sample-strip { display: flex; gap: 22px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 14px 6px 22px; margin: 0 -6px 30px; -webkit-overflow-scrolling: touch; }
+.sample-strip figure { flex: 0 0 220px; scroll-snap-align: center; margin: 0; text-align: center; }
+.sample-strip button { display: block; width: 100%; padding: 0; border: 1px solid var(--margin-line); background: #fff; box-shadow: var(--shadow); cursor: zoom-in; }
+.sample-strip figure:nth-child(odd) button { transform: rotate(-1.5deg); }
+.sample-strip figure:nth-child(even) button { transform: rotate(1.5deg); }
+.sample-strip img { display: block; width: 100%; height: auto; }
+.sample-strip figcaption { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; margin-top: 10px; }
+.sample-note { text-align: center; font-size: 0.75rem; font-style: italic; color: var(--text-muted); margin: -18px 0 34px; }
+.sample-lightbox { position: fixed; inset: 0; z-index: 10000; background: rgba(59, 10, 18, 0.82); display: none; align-items: center; justify-content: center; padding: 16px; cursor: zoom-out; }
+.sample-lightbox.open { display: flex; }
+.sample-lightbox img { max-width: 100%; max-height: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+/* Para quién es */
+.uses { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; max-width: 900px; margin: 0 auto; }
+.use-card { background: #fff; border: 1px solid var(--margin-line); box-shadow: var(--shadow); padding: 24px 22px; }
+.use-card:nth-child(1) { transform: rotate(-1deg); }
+.use-card:nth-child(3) { transform: rotate(1deg); }
+.use-card h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.7rem; line-height: 1.1; color: var(--pink); margin-bottom: 8px; }
+.use-card p { font-size: 0.92rem; line-height: 1.6; }
+@media (max-width: 768px) { .uses { grid-template-columns: 1fr; } }
+/* Precio */
+.diary-price-context { font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; color: var(--text); margin: -8px 0 16px; transform: rotate(-2deg); }
+.diary-price-help { margin-top: 6px !important; }
+.diary-price-help a { color: var(--pink); }
+/* Botón fijo en móvil */
+.sticky-cta { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 9990; display: none; }
+.sticky-cta.show { display: block; }
+.sticky-cta button { width: 100%; padding: 15px 18px; border: none; border-radius: 10px; background: var(--pink); color: #FFF4EF; font-family: var(--font-body); font-weight: 700; font-size: 0.95rem; letter-spacing: 0.5px; box-shadow: 0 6px 20px rgba(200, 16, 46, 0.35); cursor: pointer; }
+.sticky-cta small { display: block; font-weight: 400; font-size: 0.72rem; opacity: 0.9; margin-top: 2px; }
+.upload-zone.flash { animation: uploadFlash 1.4s ease 2; }
+@keyframes uploadFlash { 0%, 100% { box-shadow: none; } 50% { box-shadow: 0 0 0 6px rgba(200, 16, 46, 0.25); } }
 
 /* Mode toggle */
 .mode-toggle { background: #fff; border: 2px solid var(--text); border-radius: 4px; }
@@ -1175,27 +1223,19 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "YaLoSabía",
+  "@type": "Product",
+  "name": "Su diario — YaLoSabía",
   "url": "https://www.yalosabia.com",
-  "description": "Analiza tu chat de WhatsApp con inteligencia artificial. Descubre patrones, silencios, red flags y el score de tu relación.",
-  "applicationCategory": "LifestyleApplication",
-  "operatingSystem": "Web",
-  "inLanguage": "es",
-  "offers": [
-    {
-      "@type": "Offer",
-      "name": "Plan Gratuito",
-      "price": "0",
-      "priceCurrency": "MXN"
-    },
-    {
-      "@type": "Offer",
-      "name": "Plan Premium",
-      "price": "99",
-      "priceCurrency": "MXN"
-    }
-  ]
+  "image": "https://www.yalosabia.com/og-image.jpg",
+  "description": "Sube su chat de WhatsApp y recibe un diario de 14 páginas sobre ustedes dos: cómo empezó, quién es quién, qué tan compatibles son y si van a durar. El adelanto es gratis.",
+  "brand": { "@type": "Brand", "name": "YaLoSabía" },
+  "offers": {
+    "@type": "Offer",
+    "price": "129",
+    "priceCurrency": "MXN",
+    "availability": "https://schema.org/InStock",
+    "url": "https://www.yalosabia.com/#precios"
+  }
 }
 </script>
 
@@ -1228,20 +1268,14 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 <section class="hero" id="top">
   <div class="hero-kicker">Querido diario:</div>
   <h1>hoy descubrí la historia completa de <em>nosotros dos</em>.</h1>
-  <p>Sube tu chat de WhatsApp y te lo contamos todo, como en un diario: cómo empezó, quiénes son, qué tan compatibles son y hacia dónde van.</p>
-  <div class="hero-polaroid-wrap" aria-hidden="true">
-    <div class="tape" style="left: 60px; top: 6px; transform: rotate(-8deg); z-index: 2;"></div>
-    <div class="hero-polaroid">
-      <div class="hero-polaroid-inner">
-        <div class="bubble-in">¿Tú eres la del cumple de Sofi?</div>
-        <div class="bubble-out">jajaja sí</div>
-        <small>14 mar 2023 · 23:41</small>
-      </div>
-      <div class="hero-polaroid-caption">Ana &amp; Diego</div>
-    </div>
-    <div class="hero-note">«te quiero» el día 80</div>
+  <p>Sube su chat de WhatsApp y recibe su historia en un diario de 14 páginas: cómo empezó, quién es quién, qué tan compatibles son y si van a durar. El adelanto es gratis.</p>
+  <div class="hero-pages" aria-hidden="true">
+    <img class="hp-back" src="/diario/dias-que-recordar.jpg" width="635" height="898" alt="">
+    <img class="hp-front" src="/diario/portada.jpg" width="635" height="898" alt="">
+    <div class="tape"></div>
+    <div class="hero-note">su diario en PDF</div>
   </div>
-  <div class="hero-example">(ejemplo)</div>
+  <div class="hero-example">(páginas de un diario de ejemplo)</div>
   <!-- Upload Zone -->
   <div class="upload-zone" id="uploadZone">
     <div class="upload-icon" id="uploadIcon"></div>
@@ -1425,9 +1459,18 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 <section class="section" id="indice">
   <div class="container">
     <div class="reveal">
-      <h2 class="section-title">Páginas del diario</h2>
-      <p class="section-subtitle">Ocho capítulos sobre ustedes dos.</p>
+      <h2 class="section-title">Así es su diario</h2>
+      <p class="section-subtitle">Ocho capítulos y 14 páginas sobre ustedes dos, escritos con sus propios mensajes.</p>
     </div>
+    <div class="sample-strip reveal" id="sampleStrip">
+      <figure><button type="button" data-full="/diario/portada.jpg" aria-label="Ver la página «La portada» en grande"><img src="/diario/portada.jpg" width="635" height="898" loading="lazy" alt="Página de ejemplo: La portada"></button><figcaption>La portada</figcaption></figure>
+      <figure><button type="button" data-full="/diario/dias-que-recordar.jpg" aria-label="Ver la página «Días que recordar» en grande"><img src="/diario/dias-que-recordar.jpg" width="635" height="898" loading="lazy" alt="Página de ejemplo: Días que recordar"></button><figcaption>Días que recordar</figcaption></figure>
+      <figure><button type="button" data-full="/diario/quien-es-quien.jpg" aria-label="Ver la página «Quién es quién» en grande"><img src="/diario/quien-es-quien.jpg" width="635" height="898" loading="lazy" alt="Página de ejemplo: Quién es quién"></button><figcaption>Quién es quién</figcaption></figure>
+      <figure><button type="button" data-full="/diario/compatibilidad.jpg" aria-label="Ver la página «Compatibilidad» en grande"><img src="/diario/compatibilidad.jpg" width="635" height="898" loading="lazy" alt="Página de ejemplo: Compatibilidad"></button><figcaption>Compatibilidad</figcaption></figure>
+      <figure><button type="button" data-full="/diario/van-a-durar.jpg" aria-label="Ver la página «¿Van a durar?» en grande"><img src="/diario/van-a-durar.jpg" width="635" height="898" loading="lazy" alt="Página de ejemplo: ¿Van a durar?"></button><figcaption>¿Van a durar?</figcaption></figure>
+      <figure><button type="button" data-full="/diario/consejos.jpg" aria-label="Ver la página «Consejos para ustedes» en grande"><img src="/diario/consejos.jpg" width="635" height="898" loading="lazy" alt="Página de ejemplo: Consejos para ustedes"></button><figcaption>Consejos para ustedes</figcaption></figure>
+    </div>
+    <p class="sample-note">Ejemplo hecho con un chat de prueba. El suyo sale con sus nombres, sus fechas y sus mensajes.</p>
     <ol class="diary-index reveal">
       <li><b>I.</b> Cómo empezó todo <span>primer mensaje, línea de vida</span></li>
       <li><b>II.</b> Quién es quién <span>el perfil de cada uno</span></li>
@@ -1441,24 +1484,52 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   </div>
 </section>
 
+<!-- ── PARA QUIÉN ES ── -->
+<section class="section" id="para-quien">
+  <div class="container">
+    <div class="reveal">
+      <h2 class="section-title">Para qué es</h2>
+      <p class="section-subtitle">Cada pareja lo usa a su manera.</p>
+    </div>
+    <div class="uses reveal">
+      <div class="use-card">
+        <h3>Para leerlo juntos</h3>
+        <p>Una noche, página por página. Se van a reír y se van a acordar de cosas que ya habían olvidado, como su primer mensaje.</p>
+      </div>
+      <div class="use-card">
+        <h3>Para regalar</h3>
+        <p>Un aniversario, un 14 de febrero o un «porque sí». Mándaselo en PDF o imprímelo y dáselo en papel.</p>
+      </div>
+      <div class="use-card">
+        <h3>Para entenderse</h3>
+        <p>Si últimamente se hablan menos, aquí van a ver desde cuándo, qué cambió y qué pueden hacer esta semana.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ── PRECIO ── -->
 <section class="section" id="precios">
   <div class="container">
     <div class="reveal">
       <h2 class="section-title">El diario completo</h2>
-      <p class="section-subtitle">La primera página es gratis. El resto, un solo pago.</p>
+      <p class="section-subtitle">Primero ven su adelanto gratis: su índice, tres datos y un dato curioso. Si les gusta, desbloquean el diario completo.</p>
     </div>
     <div class="diary-price reveal">
       <div class="tape"></div>
       <div class="diary-price-amount"><span class="precio-symbol">$</span><span class="precio-premium-numero">129</span></div>
-      <div class="diary-price-sub"><span class="precio-moneda-label">MXN</span> · pago único</div>
+      <div class="diary-price-sub"><span class="precio-moneda-label">MXN</span> · pago único, sin suscripción</div>
+      <div class="diary-price-context">menos que una cena para dos</div>
       <ul>
         <li>Un PDF de 14 páginas con los 8 capítulos</li>
+        <li>Sus días que recordar, con sus mensajes</li>
         <li>Perfil de cada uno y compatibilidad</li>
         <li>Señales, pronóstico y consejos</li>
+        <li>Lo descargas al momento y es tuyo</li>
       </ul>
-      <button class="price-btn price-btn-primary" onclick="openPayModal()">Quiero mi diario</button>
-      <small>Pago seguro con Stripe</small>
+      <button class="price-btn price-btn-primary" data-price-cta onclick="openPayModal()">Empezar con su chat · es gratis</button>
+      <small>Pago con tarjeta, seguro con Stripe. No guardamos tus datos de pago.</small>
+      <small class="diary-price-help">¿Dudas? Escríbenos a <a href="mailto:contacto@yalosabia.com">contacto@yalosabia.com</a></small>
     </div>
   </div>
 </section>
@@ -1479,8 +1550,24 @@ if (localStorage.getItem('cookieConsent') === 'all') {
         <div class="faq-a"><p>No. Exportar un chat es una función de WhatsApp que no envía ningún aviso.</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">¿Sirve para cualquier relación?</button>
-        <div class="faq-a"><p>Pareja, ex, mejor amigo: cualquier chat entre dos personas.</p></div>
+        <button class="faq-q">¿Sirve para cualquier chat?</button>
+        <div class="faq-a"><p>Está hecho para parejas: novios, esposos o lo que ustedes sean. Con amigos o familia no tiene mucho sentido, porque el diario habla de «te quiero», compatibilidad y si van a durar. Los chats de grupo no funcionan.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿Cuánto tarda?</button>
+        <div class="faq-a"><p>El adelanto sale en unos segundos. Después del pago, el diario completo se escribe en uno o dos minutos y se descarga en PDF.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿Y si nuestro chat es corto?</button>
+        <div class="faq-a"><p>Sale mejor con varias semanas de conversación. Con pocos mensajes algunas páginas quedan más cortas, pero con el adelanto gratis puedes ver antes de pagar si vale la pena.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿Puedo volver a descargarlo?</button>
+        <div class="faq-a"><p>Sí. Desde el mismo teléfono o computadora con el que pagaste, vuelve a subir el mismo archivo del chat y lo descargas otra vez sin pagar. Cada pago vale para un chat.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿Y si no me gusta?</button>
+        <div class="faq-a"><p>Escríbenos a <a href="mailto:contacto@yalosabia.com">contacto@yalosabia.com</a> y lo vemos caso por caso.</p></div>
       </div>
       <div class="faq-item">
         <button class="faq-q">¿Qué tan preciso es?</button>
@@ -1489,6 +1576,9 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     </div>
   </div>
 </section>
+
+<div class="sticky-cta" id="stickyCta"><button type="button" onclick="goToUpload('sticky')">Sube su chat<small>el adelanto es gratis</small></button></div>
+<div class="sample-lightbox" id="sampleLightbox" onclick="this.classList.remove('open')"><img alt="Página de ejemplo del diario"></div>
 
 <!-- ── FOOTER ── -->
 <footer>
@@ -1871,8 +1961,61 @@ function generateChatFingerprint(messages) {
   return Math.abs(hash).toString(36);
 }
 
+// ── Embudo (PostHog): landing → chat subido → adelanto → pago ──
+function trackFunnel(event, props) {
+  try { if (window.posthog && posthog.capture) posthog.capture(event, props || {}); } catch (e) {}
+}
+
+// Lleva a la zona de subida (desde el botón del precio o el botón fijo en móvil)
+function goToUpload(from) {
+  trackFunnel('cta_upload_click', { from });
+  const zone = document.getElementById('uploadZone');
+  if (!zone || zone.style.display === 'none') { document.getElementById('top').scrollIntoView({ behavior: 'smooth' }); return; }
+  zone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  zone.classList.remove('flash'); void zone.offsetWidth; zone.classList.add('flash');
+}
+
+// Botón fijo en móvil: solo antes de subir un chat y cuando la zona de subida no se ve
+(function () {
+  const cta = document.getElementById('stickyCta');
+  const zone = document.getElementById('uploadZone');
+  if (!cta || !zone || !('IntersectionObserver' in window)) return;
+  let zoneVisible = true, footerVisible = false;
+  const update = () => {
+    const cookie = document.getElementById('cookieBanner');
+    const cookieOpen = cookie && cookie.style.display === 'block';
+    const show = window.innerWidth <= 768 && !lastMessages && zone.style.display !== 'none' && !zoneVisible && !footerVisible && !cookieOpen;
+    cta.classList.toggle('show', show);
+  };
+  new IntersectionObserver(e => { zoneVisible = e[0].isIntersecting; update(); }).observe(zone);
+  // Se esconde también donde ya hay otro botón que hace lo mismo (precio) y en el pie
+  const covers = [document.querySelector('footer'), document.querySelector('#precios .diary-price')].filter(Boolean);
+  const seen = new Set();
+  const io = new IntersectionObserver(entries => { entries.forEach(en => en.isIntersecting ? seen.add(en.target) : seen.delete(en.target)); footerVisible = seen.size > 0; update(); });
+  covers.forEach(el => io.observe(el));
+  window.addEventListener('resize', update);
+  window.addEventListener('scroll', update, { passive: true });
+})();
+
+// Páginas de ejemplo: tocar una la abre en grande
+(function () {
+  const strip = document.getElementById('sampleStrip');
+  const box = document.getElementById('sampleLightbox');
+  if (!strip || !box) return;
+  strip.addEventListener('click', e => {
+    const b = e.target.closest('button[data-full]');
+    if (!b) return;
+    box.querySelector('img').src = b.dataset.full;
+    box.classList.add('open');
+    trackFunnel('sample_page_open', { page: b.dataset.full });
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') box.classList.remove('open'); });
+})();
+
 // ── PROCESS FLOW ──
 async function processChat(text) {
+  trackFunnel('chat_uploaded');
+  if (typeof fbq !== 'undefined') fbq('trackCustom', 'ChatUploaded');
   window.isDemoMode = false;
   document.getElementById('demoBanner').style.display = 'none';
   uploadZone.style.display = 'none';
@@ -1939,6 +2082,11 @@ async function processChat(text) {
 
 
 function showResults(s) {
+  if (!window.isDemoMode) {
+    trackFunnel('preview_shown', { messages: s.total });
+    if (typeof fbq !== 'undefined') fbq('track', 'ViewContent', { content_name: 'adelanto', value: 129, currency: 'MXN' });
+  }
+  document.querySelectorAll('[data-price-cta]').forEach(b => { b.textContent = 'Quiero mi diario'; });
   processingState.classList.remove('active');
   processingState.style.display = 'none';
   window.diaryPromise = null;
@@ -3257,8 +3405,7 @@ function switchOsTab(os, btn) {
 function openPayModal() {
   // El pago se ata a un chat concreto: sin chat subido no hay nada que comprar todavía
   if (!lastMessages || !window.currentChatFp) {
-    alert('Primero sube su chat: el diario se escribe para una conversación concreta.');
-    document.getElementById('top').scrollIntoView({ behavior: 'smooth' });
+    goToUpload('price');
     return;
   }
 
@@ -3407,19 +3554,8 @@ async function checkPaymentSuccess() {
 // Run on page load
 document.addEventListener('DOMContentLoaded', checkPaymentSuccess);
 
-// ── Defensive: ensure pricing buttons ALWAYS work ──
+// ── Botones del adelanto (el de #precios ya lleva onclick) ──
 document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('#precios .price-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      if (typeof openPayModal === 'function') {
-        openPayModal();
-      } else {
-        var m = document.getElementById('payModal');
-        if (m) m.style.display = 'flex';
-      }
-    });
-  });
-
   var resultsEl = document.getElementById('resultsSection');
   if (resultsEl) {
     resultsEl.addEventListener('click', function(e) {
