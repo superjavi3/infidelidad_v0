@@ -1407,26 +1407,58 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <button class="btn-secondary" onclick="shareToStories()" style="width: 100%; max-width: 480px; padding: 16px 32px;">Compartir en Stories</button>
   </div>
 
-  <!-- Hidden container for Stories image (1080x1920) — estilo diario -->
+  <!-- Imagen para Stories (1080x1920), estilo diario. La rellena shareToStories().
+       Instagram tapa ~250px arriba y abajo: lo importante va entre 250 y 1650. -->
   <div id="storiesContainer" style="position: absolute; left: -9999px; top: 0;">
-    <div id="storiesCard" style="position: relative; width: 1080px; height: 1920px; box-sizing: border-box; overflow: hidden; background-color: #FFF8F6; background-image: repeating-linear-gradient(180deg, transparent 0 89px, #F0C9C6 89px 92px); color: #3B0A12; font-family: 'Courier Prime', 'Courier New', monospace; padding: 150px 80px 90px 150px; display: flex; flex-direction: column;">
+    <div id="storiesCard" style="position: relative; width: 1080px; height: 1920px; box-sizing: border-box; overflow: hidden; background-color: #FFF8F6; color: #3B0A12; font-family: 'Courier Prime', 'Courier New', monospace;">
       <div style="position: absolute; left: 96px; top: 0; bottom: 0; width: 5px; background: #E0707F;"></div>
-      <div style="position: absolute; right: 100px; top: 70px; width: 270px; height: 72px; background: rgba(224,112,127,0.45); transform: rotate(8deg);"></div>
-      <div style="font-family: 'Caveat', cursive; font-weight: 700; font-size: 92px; line-height: 92px; color: #C8102E;">Querido diario:</div>
-      <div id="storiesNames" style="font-family: 'Caveat', cursive; font-weight: 700; font-size: 150px; line-height: 1.02;">Persona 1 &amp; Persona 2</div>
-      <div style="position: relative; margin-top: 60px; align-self: flex-start; font-family: 'Caveat', cursive; font-weight: 700; font-size: 260px; line-height: 1; color: #C8102E; padding: 0 60px;">
-        <span id="storiesScore">72</span><span style="font-size: 84px; color: #3B0A12;">/100</span>
-        <div style="position: absolute; inset: 10px -20px -10px; border: 8px solid #C8102E; border-radius: 50%; transform: rotate(-4deg);"></div>
+
+      <!-- Cabecera -->
+      <div style="position: absolute; left: 150px; right: 80px; top: 190px; display: flex; justify-content: space-between; font-size: 28px; font-weight: 700; letter-spacing: 5px; text-transform: uppercase; color: #7A4B52;"><span>YaLoSabía · Diario Nº 01</span><span id="storiesSince"></span></div>
+      <div style="position: absolute; left: 150px; top: 250px; font-family: 'Caveat', cursive; font-weight: 700; font-size: 88px; line-height: 1; color: #C8102E;">Querido diario:</div>
+      <div id="storiesNames" style="position: absolute; left: 150px; right: 70px; top: 330px; font-family: 'Caveat', cursive; font-weight: 700; font-size: 150px; line-height: 1.02; white-space: nowrap;">Persona 1 &amp; Persona 2</div>
+
+      <!-- Polaroid del primer mensaje -->
+      <div id="storiesPolaroid" style="position: absolute; left: 140px; top: 560px; width: 540px; background: #FFFFFF; border: 2px solid #EAD0CB; padding: 30px 30px 110px; transform: rotate(-4deg);">
+        <div style="height: 430px; background: #F7DDD8; padding: 34px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px;">
+          <div id="storiesFirstMsg" style="align-self: flex-start; max-width: 88%; background: #FFFFFF; border-radius: 30px 30px 30px 8px; padding: 20px 26px; font-size: 34px; line-height: 1.3;"></div>
+          <div id="storiesFirstReply" style="align-self: flex-end; max-width: 80%; background: #C8102E; color: #FFF4EF; border-radius: 30px 30px 8px 30px; padding: 20px 26px; font-size: 34px; line-height: 1.3;"></div>
+          <div id="storiesFirstDate" style="margin-top: auto; font-size: 26px; color: #7A4B52;"></div>
+        </div>
+        <div style="position: absolute; left: 0; right: 0; bottom: 26px; text-align: center; font-family: 'Caveat', cursive; font-weight: 700; font-size: 62px; line-height: 1;">el primer mensaje</div>
       </div>
-      <div style="margin-top: 70px; font-family: 'Caveat', cursive; font-size: 78px; line-height: 92px;">
-        <div><span id="storiesMsgs">0</span> mensajes</div>
-        <div><span id="storiesDays">0</span> días hablando</div>
-        <div id="storiesLoveLine">«te quiero» el día <span id="storiesLoveDay">—</span></div>
+      <div style="position: absolute; left: 300px; top: 530px; width: 230px; height: 64px; background: rgba(224,112,127,0.5); transform: rotate(-9deg);"></div>
+
+      <!-- Índice -->
+      <div style="position: absolute; left: 700px; top: 600px; width: 300px; text-align: center;">
+        <div style="position: relative; display: inline-block; padding: 26px 30px 14px; font-family: 'Caveat', cursive; font-weight: 700; line-height: 1; color: #C8102E;">
+          <span id="storiesScore" style="font-size: 190px;">72</span><span style="font-size: 60px; color: #3B0A12;">/100</span>
+          <div style="position: absolute; inset: 0 -20px -6px -8px; border: 7px solid #C8102E; border-radius: 50%; transform: rotate(-5deg);"></div>
+        </div>
+        <div style="margin-top: 26px; font-family: 'Caveat', cursive; font-weight: 700; font-size: 50px; line-height: 1.05;">índice de<br>la relación</div>
       </div>
-      <div id="storiesVerdict" style="margin-top: 70px; background: #FFFFFF; padding: 40px 44px; border: 2px solid #EAD0CB; transform: rotate(-2deg); font-size: 44px; line-height: 1.4;">«Una relación sólida.»</div>
-      <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end;">
-        <div style="font-family: 'Caveat', cursive; font-weight: 700; font-size: 84px; line-height: 1;">¿y la tuya?</div>
-        <div style="font-size: 40px; font-weight: 700;">yalosabia.com</div>
+      <div id="storiesVerdict" style="position: absolute; left: 700px; right: 60px; top: 1030px; font-family: 'Caveat', cursive; font-weight: 700; font-size: 60px; line-height: 1.05; color: #C8102E; text-align: center; transform: rotate(3deg);">Una relación sólida.</div>
+
+      <!-- Cifras en notas -->
+      <div style="position: absolute; left: 140px; right: 60px; top: 1210px; display: flex; gap: 34px;">
+        <div style="flex: 1; position: relative; background: #FFFFFF; border: 2px solid #EAD0CB; padding: 34px 20px 28px; text-align: center; transform: rotate(-2deg);">
+          <div style="position: absolute; left: 50%; top: -22px; margin-left: -70px; width: 140px; height: 42px; background: rgba(224,112,127,0.45); transform: rotate(4deg);"></div>
+          <div id="storiesMsgs" style="font-family: 'Caveat', cursive; font-weight: 700; font-size: 84px; line-height: 1;">0</div><div style="font-size: 28px; margin-top: 10px;">mensajes</div>
+        </div>
+        <div style="flex: 1; position: relative; background: #FFFFFF; border: 2px solid #EAD0CB; padding: 34px 20px 28px; text-align: center; transform: rotate(1.5deg);">
+          <div style="position: absolute; left: 50%; top: -22px; margin-left: -70px; width: 140px; height: 42px; background: rgba(224,112,127,0.45); transform: rotate(-5deg);"></div>
+          <div id="storiesDays" style="font-family: 'Caveat', cursive; font-weight: 700; font-size: 84px; line-height: 1;">0</div><div style="font-size: 28px; margin-top: 10px;">días hablando</div>
+        </div>
+        <div id="storiesLoveLine" style="flex: 1; position: relative; background: #F7DDD8; padding: 34px 20px 28px; text-align: center; transform: rotate(-1deg);">
+          <div style="position: absolute; left: 50%; top: -22px; margin-left: -70px; width: 140px; height: 42px; background: rgba(224,112,127,0.45); transform: rotate(3deg);"></div>
+          <div style="font-family: 'Caveat', cursive; font-weight: 700; font-size: 84px; line-height: 1; color: #C8102E;">día <span id="storiesLoveDay">—</span></div><div style="font-size: 28px; margin-top: 10px;">primer «te quiero»</div>
+        </div>
+      </div>
+
+      <!-- Llamada a la acción -->
+      <div style="position: absolute; left: 150px; right: 80px; top: 1470px; display: flex; align-items: center; justify-content: space-between; gap: 30px;">
+        <div style="font-family: 'Caveat', cursive; font-weight: 700; font-size: 96px; line-height: 1;">¿y la tuya?</div>
+        <div style="background: #C8102E; color: #FFF4EF; padding: 22px 34px; font-size: 38px; font-weight: 700; transform: rotate(-2deg);">yalosabia.com</div>
       </div>
     </div>
   </div>
@@ -4093,10 +4125,27 @@ async function shareToStories() {
   const loveLine = document.getElementById('storiesLoveLine');
   if (ms.love) { document.getElementById('storiesLoveDay').textContent = ms.love.day; loveLine.style.display = ''; }
   else loveLine.style.display = 'none';
-  document.getElementById('storiesVerdict').textContent = '«' + stripEmoji(s.verdict) + '»';
+  document.getElementById('storiesVerdict').textContent = stripEmoji(s.verdict).replace(/[.!]*$/, '.');
+  // Nombres largos: letra más pequeña para que quepan en una línea
+  const names = firstName(s.personA) + ' & ' + firstName(s.personB);
+  document.getElementById('storiesNames').style.fontSize = (names.length > 18 ? 104 : names.length > 14 ? 124 : 150) + 'px';
+  document.getElementById('storiesSince').textContent = ms.start ? 'desde ' + ms.start.getFullYear() : '';
+  // Polaroid: el primer mensaje y la respuesta (o se oculta si no hay)
+  const pol = document.getElementById('storiesPolaroid');
+  if (ms.first) {
+    const clip = (t, n) => { t = stripEmoji(t || '').trim(); return t.length > n ? t.slice(0, n - 1).trim() + '…' : t; };
+    document.getElementById('storiesFirstMsg').textContent = clip(ms.first.text, 90);
+    const rep = document.getElementById('storiesFirstReply');
+    rep.textContent = ms.firstReply ? clip(ms.firstReply.text, 60) : '';
+    rep.style.display = ms.firstReply ? '' : 'none';
+    document.getElementById('storiesFirstDate').textContent = fmtShort(ms.firstDate) + ' · ' + fmtHour(ms.firstDate);
+    pol.style.display = '';
+  } else {
+    pol.style.display = 'none';
+  }
 
   const card = document.getElementById('storiesCard');
-  addPaperLines(card, 92, 3, '#F0C9C6');
+  if (!card.dataset.lines) { addPaperLines(card, 92, 3, '#F0C9C6'); card.dataset.lines = '1'; }
   try {
     if (document.fonts && document.fonts.ready) await document.fonts.ready;
     const canvas = await htmlToCanvasWithTimeout(card, {
