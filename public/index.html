@@ -3298,12 +3298,6 @@ function analyzeMessages(messages) {
 
 // ── Plan resolution on chat load ──
 function onNewChatLoaded(messages) {
-  if (window._adminBypass) {
-    window.isPremium = true;
-    console.log('[Plan] Admin bypass → premium');
-    updatePlanBadge();
-    return;
-  }
   window.isPremium = loadPremiumState();
   console.log('[Plan] isPremium:', window.isPremium);
   updatePlanBadge();
@@ -6102,38 +6096,8 @@ async function loadLocalPricing() {
 loadLocalPricing();
 // ────────────────────────────────────────────────────────────────
 
-// ── Secret admin bypass ──
-window._adminBypass = false;
-(function checkAdminBypass() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('admin') === 'losabia2026') {
-    window._adminBypass = true;
-    window.isPremium = true;
-    localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
-      premium: true,
-      sessionId: 'admin-bypass',
-      email: 'admin@yalosabia.com',
-      paidAt: new Date().toISOString()
-    }));
-    const clean = window.location.origin + window.location.pathname + window.location.hash;
-    window.history.replaceState(null, '', clean);
-    console.log('[Admin] Full access granted via URL bypass');
-  }
-})();
-// Console shortcut
-window.adminUnlock = function() {
-  window._adminBypass = true;
-  window.isPremium = true;
-  localStorage.setItem('yalosabia_plan_v2', JSON.stringify({
-    premium: true, sessionId: 'admin-bypass',
-    email: 'admin@yalosabia.com', paidAt: new Date().toISOString()
-  }));
-  if (typeof updatePlanUI === 'function') updatePlanUI();
-  console.log('[Admin] Full access granted. Reload if needed.');
-};
-
 function isPremiumUser() {
-  return window._adminBypass || window.isPremium === true;
+  return window.isPremium === true;
 }
 
 // Legacy compat alias
@@ -6148,6 +6112,7 @@ function loadPremiumState() {
     const v2 = localStorage.getItem('yalosabia_plan_v2');
     if (v2) {
       const data = JSON.parse(v2);
+      if (data.sessionId === 'admin-bypass') { localStorage.removeItem('yalosabia_plan_v2'); return false; }
       if (data.premium) return true;
     }
     // Migrate from old couple plans (detective/obsesivo)
@@ -6435,14 +6400,6 @@ async function checkPaymentSuccess() {
     } catch (err) {
       console.error('Payment verification error:', err);
     }
-  }
-
-  // Admin bypass — don't overwrite
-  if (window._adminBypass) {
-    console.log('[Paywall] Admin bypass active — keeping premium');
-    updatePlanBadge();
-    applyBlurOverlays();
-    return;
   }
 
   // Load stored premium state (with migration)
