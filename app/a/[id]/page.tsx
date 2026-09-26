@@ -4,6 +4,22 @@ import { supabaseAdmin } from '@/lib/supabase';
 type Stats = Record<string, unknown>;
 type Premium = Record<string, string | null>;
 type ChartImages = Record<string, string>;
+
+// Los links antiguos guardan HTML que venía del navegador: solo se pintan etiquetas de texto sin atributos,
+// y las gráficas solo como data:image png/jpeg/webp (un SVG podría llevar scripts).
+const SAFE_TAGS = new Set(['p', 'br', 'b', 'strong', 'i', 'em', 'u', 'ul', 'ol', 'li', 'div', 'span', 'h3', 'h4', 'small']);
+const SAFE_IMG = /^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/;
+function safeHtml(html: unknown): string {
+  return String(html ?? '')
+    .replace(/<(script|style|iframe|object|embed|svg|math|template|noscript|textarea|form)\b[\s\S]*?<\/\1\s*>/gi, '')
+    .replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>/gi, (m, tag: string) => {
+      const t = tag.toLowerCase();
+      if (!SAFE_TAGS.has(t)) return '';
+      return m.startsWith('</') ? `</${t}>` : `<${t}>`;
+    })
+    .replace(/<(?!\/?(?:p|br|b|strong|i|em|u|ul|ol|li|div|span|h3|h4|small)>)/gi, '&lt;');
+}
+
 interface SharedAnalysis {
   id: string;
   alias: string | null;
@@ -520,8 +536,8 @@ export default async function SharedAnalysisPage({ params }: PageProps) {
 
   const a = data as SharedAnalysis;
   const s = a.stats || {};
-  const premium = (s.premium as Premium) || {};
-  const chartImages = (s.chartImages as ChartImages) || {};
+  const premium = Object.fromEntries(Object.entries((s.premium as Premium) || {}).map(([k, v]) => [k, safeHtml(v)])) as Premium;
+  const chartImages = Object.fromEntries(Object.entries((s.chartImages as ChartImages) || {}).filter(([, v]) => typeof v === 'string' && SAFE_IMG.test(v))) as ChartImages;
   const isGroup = s.type === 'group';
   const n = (key: string): number => Number(s[key]) || 0;
   const v = (key: string): string => String(s[key] ?? '');

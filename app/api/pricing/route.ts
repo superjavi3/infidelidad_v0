@@ -42,11 +42,11 @@ const PRICING: Record<string, CountryPricing> = {
   // México
   MX: { currency: 'mxn', symbol: '$', label: 'MXN', premium: 19900, isZeroDecimal: false },
 
-  // Colombia (zero-decimal en Stripe)
-  CO: { currency: 'cop', symbol: '$', label: 'COP', premium: 1990000, isZeroDecimal: true },
+  // Colombia (COP lleva 2 decimales en Stripe: 1990000 = $19,900)
+  CO: { currency: 'cop', symbol: '$', label: 'COP', premium: 1990000, isZeroDecimal: false },
 
-  // Argentina (zero-decimal en Stripe)
-  AR: { currency: 'ars', symbol: '$', label: 'ARS', premium: 590000, isZeroDecimal: true },
+  // Argentina (ARS lleva 2 decimales en Stripe: 590000 = $5,900)
+  AR: { currency: 'ars', symbol: '$', label: 'ARS', premium: 590000, isZeroDecimal: false },
 
   // Chile (zero-decimal en Stripe)
   CL: { currency: 'clp', symbol: '$', label: 'CLP', premium: 5990, isZeroDecimal: true },
@@ -58,25 +58,25 @@ const PRICING: Record<string, CountryPricing> = {
   BO: { currency: 'bob', symbol: 'Bs', label: 'BOB', premium: 4990, isZeroDecimal: false },
 
   // Paraguay (zero-decimal en Stripe)
-  PY: { currency: 'pyg', symbol: '₲', label: 'PYG', premium: 4990000, isZeroDecimal: true },
+  PY: { currency: 'pyg', symbol: '₲', label: 'PYG', premium: 49900, isZeroDecimal: true },
 
   // Uruguay
   UY: { currency: 'uyu', symbol: '$', label: 'UYU', premium: 27900, isZeroDecimal: false },
 
   // República Dominicana
-  DO: { currency: 'dop', symbol: 'RD$', label: 'DOP', premium: 3990, isZeroDecimal: false },
+  DO: { currency: 'dop', symbol: 'RD$', label: 'DOP', premium: 39900, isZeroDecimal: false },
 
   // Costa Rica
-  CR: { currency: 'crc', symbol: '₡', label: 'CRC', premium: 34900, isZeroDecimal: false },
+  CR: { currency: 'crc', symbol: '₡', label: 'CRC', premium: 349000, isZeroDecimal: false },
 
   // Guatemala
-  GT: { currency: 'gtq', symbol: 'Q', label: 'GTQ', premium: 499, isZeroDecimal: false },
+  GT: { currency: 'gtq', symbol: 'Q', label: 'GTQ', premium: 4990, isZeroDecimal: false },
 
   // Honduras
-  HN: { currency: 'hnl', symbol: 'L', label: 'HNL', premium: 1690, isZeroDecimal: false },
+  HN: { currency: 'hnl', symbol: 'L', label: 'HNL', premium: 16900, isZeroDecimal: false },
 
   // Nicaragua
-  NI: { currency: 'nio', symbol: 'C$', label: 'NIO', premium: 2490, isZeroDecimal: false },
+  NI: { currency: 'nio', symbol: 'C$', label: 'NIO', premium: 24900, isZeroDecimal: false },
 }
 
 const DEFAULT_PRICING: CountryPricing = {

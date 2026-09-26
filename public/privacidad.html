@@ -37,7 +37,7 @@
 
   <h3>b) Archivo de chat de WhatsApp</h3>
   <p>El archivo (.txt o .zip) que el usuario sube se procesa <strong>en el navegador</strong> (client-side). El adelanto gratuito se calcula en el dispositivo del usuario: para verlo, el chat no se envía a ningún servidor.</p>
-  <p>Justo antes de ir a pagar, el chat se guarda de forma temporal en el propio navegador (IndexedDB) para no tener que subirlo otra vez al volver de Stripe; se borra en cuanto se recupera.</p>
+  <p>Justo antes de ir a pagar, el chat se guarda de forma temporal en el propio navegador (IndexedDB) para no tener que subirlo otra vez al volver de Stripe; se borra en cuanto se confirma el pago y se recupera el chat, y en todo caso a las 6 horas.</p>
   <p>Solo después del pago, al generar el diario completo, los mensajes de texto del chat se envían a nuestro servidor para comprobar que corresponden a la conversación pagada. Del servidor, una <strong>muestra de unos 300 mensajes</strong> (más los mensajes de algunos días destacados) se envía a la API de Google Gemini para que escriba parte de los textos del diario. YaLoSabía <strong>no almacena</strong> el chat ni el diario: el PDF se genera en el navegador del usuario.</p>
 
   <h3>c) Datos guardados en el navegador</h3>
