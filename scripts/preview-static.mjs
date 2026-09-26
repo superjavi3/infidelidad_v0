@@ -50,6 +50,21 @@ createServer(async (req, res) => {
   if (url === '/api/analyze') return json(200, { success: true, diary: DIARY });
   // Oferta de bienvenida falsa (el token no vale para Stripe; solo para ver la barra y el precio)
   if (url === '/api/offer') return json(200, { enabled: true, code: 'YLS-PRUEB', expiresAt: Date.now() + 30 * 60000, percent: 15, token: 'preview.preview' });
+  // Panel interno con datos inventados (clave: «preview»), para ver el diseño sin claves
+  if (url === '/api/panel') {
+    if (req.headers['x-panel-key'] !== 'preview') return json(401, { error: 'Clave incorrecta (en el preview es «preview»)' });
+    const days = 14, d = i => new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    const daily = [], bySource = [];
+    const ev = ['$pageview', 'chat_uploaded', 'preview_shown', 'checkout_started', 'purchase'];
+    for (let i = days - 1; i >= 0; i--) { const v = 60 + ((i * 37) % 90); [v, v * 0.3, v * 0.22, v * 0.05, v * 0.02].forEach((n, j) => daily.push({ date: d(i), event: ev[j], users: Math.round(n) })); }
+    [['meta', 900], ['directo', 300], ['pinterest', 120], ['sin dato', 250]].forEach(([s, v]) => [v, v * 0.3, v * 0.22, v * 0.05, v * 0.02].forEach((n, j) => bySource.push({ event: ev[j], source: s, users: Math.round(n) })));
+    return json(200, {
+      days, generatedAt: new Date().toISOString(),
+      stripe: { configured: true, checkoutsStarted: 60, sales: [{ date: d(9), amount: 169.15, currency: 'MXN', source: 'sin dato', campaign: '', offer: true, refunded: false }, { date: d(3), amount: 199, currency: 'MXN', source: 'meta', campaign: 'trafico_mx', offer: false, refunded: false }, { date: d(1), amount: 169.15, currency: 'MXN', source: 'pinterest', campaign: 'q4_20', offer: true, refunded: false }] },
+      posthog: { configured: true, bySource, daily, devices: [{ device: 'Mobile', users: 1300 }, { device: 'Desktop', users: 270 }] },
+      meta: { configured: false },
+    });
+  }
   if (url.startsWith('/api/')) return json(503, { success: false, error: 'API no disponible en el preview estático' });
 
   const file = join(root, url === '/' ? 'index.html' : url);
