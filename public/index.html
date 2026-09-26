@@ -909,6 +909,14 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .sample-strip img { display: block; width: 100%; height: auto; }
 .sample-strip figcaption { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; margin-top: 10px; }
 .sample-note { text-align: center; font-size: 0.75rem; font-style: italic; color: var(--text-muted); margin: -18px 0 34px; }
+.paywall-sample { max-width: 440px; margin: 40px auto 0; text-align: center; }
+.paywall-sample-title { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; line-height: 1.1; }
+.paywall-sample-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+.paywall-sample-row { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
+.paywall-sample-row button { flex: 1 1 0; max-width: 132px; padding: 0; border: 1px solid var(--margin-line); background: #fff; box-shadow: var(--shadow); cursor: zoom-in; }
+.paywall-sample-row button:nth-child(odd) { transform: rotate(-2deg); }
+.paywall-sample-row button:nth-child(even) { transform: rotate(2deg); }
+.paywall-sample-row img { display: block; width: 100%; height: auto; }
 .sample-lightbox { position: fixed; inset: 0; z-index: 10000; background: rgba(59, 10, 18, 0.82); display: none; align-items: center; justify-content: center; padding: 16px; cursor: zoom-out; }
 .sample-lightbox.open { display: flex; }
 .sample-lightbox img { max-width: 100%; max-height: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
@@ -1235,6 +1243,16 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <div class="diary-chapter-sub">Ya leímos todo su chat. El resto está en su diario:</div>
     </div>
     <ol class="locked-index" id="lockedIndex"></ol>
+
+    <div class="paywall-sample" data-sample="paywall">
+      <div class="paywall-sample-title">Así se ve un diario por dentro</div>
+      <div class="paywall-sample-sub">Páginas reales de un diario de ejemplo. Toca una para verla en grande.</div>
+      <div class="paywall-sample-row">
+        <button type="button" data-full="/diario/portada.jpg" aria-label="Ver la portada de ejemplo en grande"><img src="/diario/portada.jpg" width="635" height="898" loading="lazy" alt="Página de ejemplo: la portada"></button>
+        <button type="button" data-full="/diario/van-a-durar.jpg" aria-label="Ver la página «¿Van a durar?» en grande"><img src="/diario/van-a-durar.jpg" width="635" height="898" loading="lazy" alt="Página de ejemplo: ¿Van a durar?"></button>
+        <button type="button" data-full="/diario/consejos.jpg" aria-label="Ver la página «Consejos para ustedes» en grande"><img src="/diario/consejos.jpg" width="635" height="898" loading="lazy" alt="Página de ejemplo: Consejos para ustedes"></button>
+      </div>
+    </div>
 
     <div class="diary-price" style="margin-top: 44px;">
       <div class="tape"></div>
@@ -1955,15 +1973,15 @@ function goToUpload(from) {
 
 // Páginas de ejemplo: tocar una la abre en grande
 (function () {
-  const strip = document.getElementById('sampleStrip');
   const box = document.getElementById('sampleLightbox');
-  if (!strip || !box) return;
-  strip.addEventListener('click', e => {
-    const b = e.target.closest('button[data-full]');
+  if (!box) return;
+  // Tira de ejemplo de la portada (#sampleStrip) y la del muro de pago (data-sample="paywall")
+  document.addEventListener('click', e => {
+    const b = e.target.closest('#sampleStrip button[data-full], [data-sample] button[data-full]');
     if (!b) return;
     box.querySelector('img').src = b.dataset.full;
     box.classList.add('open');
-    trackFunnel('sample_page_open', { page: b.dataset.full });
+    trackFunnel('sample_page_open', { page: b.dataset.full, from: b.closest('[data-sample]') ? 'paywall' : 'landing' });
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') box.classList.remove('open'); });
 })();
@@ -2007,11 +2025,11 @@ async function processChat(text) {
   const steps = processingState.querySelectorAll('.step');
 
   for (let i = 0; i < steps.length; i++) {
-    await sleep(800 + Math.random() * 600);
+    await sleep(350);
     if (i > 0) { steps[i-1].classList.remove('active'); steps[i-1].classList.add('done'); }
     steps[i].classList.add('active');
   }
-  await sleep(1000);
+  await sleep(300);
   steps[steps.length-1].classList.remove('active');
   steps[steps.length-1].classList.add('done');
 
@@ -2283,11 +2301,11 @@ async function loadDemo() {
 
   const steps = processingState.querySelectorAll('.step');
   for (let i = 0; i < steps.length; i++) {
-    await sleep(800 + Math.random() * 600);
+    await sleep(350);
     if (i > 0) { steps[i-1].classList.remove('active'); steps[i-1].classList.add('done'); }
     steps[i].classList.add('active');
   }
-  await sleep(1000);
+  await sleep(300);
   steps[steps.length-1].classList.remove('active');
   steps[steps.length-1].classList.add('done');
 

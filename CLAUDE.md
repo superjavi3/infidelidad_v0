@@ -56,7 +56,7 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 ## Medición
 
 - Píxel de Meta: `PageView`, `ChatUploaded` (custom), `ViewContent` (adelanto visto), `InitiateCheckout`, `Purchase`.
-- PostHog (`trackFunnel`): `chat_uploaded`, `preview_shown`, `checkout_started`, `purchase`, `cta_upload_click` (`from`: price/sticky), `sample_page_open`, `offer_shown`, `offer_bar_click`. Con esto se ve en qué paso se cae la gente.
+- PostHog (`trackFunnel`): `chat_uploaded`, `preview_shown`, `checkout_started`, `purchase`, `cta_upload_click` (`from`: price/sticky), `sample_page_open` (`from`: landing/paywall), `offer_shown`, `offer_bar_click`. Con esto se ve en qué paso se cae la gente.
 - **Origen de cada visita** (`firstTouch`): en la primera visita se guarda `localStorage.yalosabia_src` (utm_source/medium/campaign/content, `fbclid` → «facebook», o la web de origen; si no, «directo»). Va a PostHog como `first_source`/`first_campaign` y a Stripe en la metadata de la sesión (`src_source`, `src_medium`, `src_campaign`, `src_ad`, `src_referrer`, `src_first_visit`).
 - **API de conversiones** (`lib/meta-capi.ts`): al volver de Stripe, si la persona aceptó «todas» las cookies, `/api/verify-payment?track=1` manda la compra a Meta desde el servidor (píxel «Market data», `event_id` = id de la sesión, el mismo `eventID` que el píxel del navegador, así Meta no la cuenta dos veces). Sin la variable `META_CAPI_TOKEN` en Vercel no hace nada. `META_CAPI_TEST_CODE` para probar en «Eventos de prueba».
 - Ojo: el píxel de Meta solo carga si aceptan «todas» las cookies, así que Meta no ve a quien pulsa «Solo necesarias» y atribuye menos compras de las reales.
@@ -114,7 +114,7 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 3. Cambiar el nombre público de la cuenta de Stripe («LoSabía» → «YaLoSabía»).
 4. El acceso vive en el navegador donde se pagó: en otro dispositivo hay que volver al enlace de éxito de Stripe (no hay «recuperar mi diario» por email).
 5. Ideas pendientes: `/api/share` y `/a/[id]` usan la estética antigua; valorar retirarlos del todo.
-6. Decisiones abiertas de la revisión: PostHog sin consentimiento de cookies (el banner dice lo contrario), espera artificial de 4-7 s antes del adelanto, rate limiting (Vercel Firewall).
+6. Decisiones abiertas de la revisión: PostHog sin consentimiento de cookies (el banner dice lo contrario), rate limiting (Vercel Firewall).
 
 ## Historial
 
