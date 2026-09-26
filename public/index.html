@@ -2323,7 +2323,16 @@ function detectDateOrder(messages) {
     }
     return n;
   };
-  return backwards('MDY') < backwards('DMY') ? 'MDY' : 'DMY';
+  const bM = backwards('MDY'), bD = backwards('DMY');
+  if (bM !== bD) return bM < bD ? 'MDY' : 'DMY';
+  // Empate (p. ej. un chat del 1 al 10 de enero): el mes cambia mucho menos que el día entre mensajes seguidos
+  let changes0 = 0, changes1 = 0, prev = null;
+  for (const m of messages) {
+    const p = String(m.date || '').split('/');
+    if (prev) { if (p[0] !== prev[0]) changes0++; if (p[1] !== prev[1]) changes1++; }
+    prev = p;
+  }
+  return changes0 < changes1 ? 'MDY' : 'DMY';
 }
 
 function parseMessageDate(dateStr, timeStr, ampm) {
@@ -3681,9 +3690,11 @@ async function chatFingerprint(messages) {
 }
 // Avisos automáticos de WhatsApp que llegan con remitente (sobre todo en exports de iPhone):
 // cifrado, llamadas, mensajes temporales, cambios de número, bloqueos.
-const WA_SYSTEM_RE = /^.{1,60} es un contacto\.?$|^.{1,60} is a contact\.?$|cifrad[oa]s? de extremo a extremo|end-to-end encrypted|mensajes temporales|disappearing messages|cambió su número|changed (their|his|her) phone number|bloqueaste a este contacto|desbloqueaste a este contacto|you (un)?blocked this contact|^(llamada|videollamada)( de (voz|video))?( perdida)?\b.{0,30}$|^(missed )?(voice|video) call\b.{0,30}$/i;
+const WA_SYSTEM_RE = /^.{1,60} es un contacto\.?$|^.{1,60} is a contact\.?$|cifrad[oa]s? de extremo a extremo|end-to-end encrypted|mensajes temporales|disappearing messages|cambió su número|changed (their|his|her) phone number|bloqueaste a este contacto|desbloqueaste a este contacto|you (un)?blocked this contact|^(llamada|videollamada)( de (voz|video))?( perdida)?\b.{0,30}$|^(missed )?(voice|video) call\b.{0,30}$|código de seguridad|security code|toca para (obtener más información|cambiar|ver)|tap to (learn more|change|view)|^ubicaci[oó]n( en tiempo real)?:|^location:|^live location|^contacto:|^contact card|\.vcf\b|esperando (este|el) mensaje|waiting for this message|eliminaste este mensaje|you deleted this message|cuenta de empresa|business account|^(encuesta|poll):/i;
+// Respuestas del asistente de WhatsApp (@Meta AI) dentro del chat: no son de la pareja
+const WA_BOT_SENDER_RE = /^meta\s*(ai|ia)$/i;
 function isWaSystem(m) {
-  return !!m.text && WA_SYSTEM_RE.test(m.text.trim());
+  return (!!m.text && WA_SYSTEM_RE.test(m.text.trim())) || (!!m.sender && WA_BOT_SENDER_RE.test(m.sender.trim()));
 }
 function isRealText(m) {
   return isRealTextV1(m) && !isWaSystem(m);

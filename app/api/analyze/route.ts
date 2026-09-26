@@ -46,7 +46,8 @@ export async function POST(req: NextRequest) {
 
     // ===== DIARIO: perfiles, compatibilidad, señales, pronóstico, consejos y mensaje =====
     // La huella se calcula sobre la lista tal cual; a la IA le llega sin los avisos automáticos de WhatsApp
-    const chatMessages = (messages || []).filter((m: any) => !WA_SYSTEM_RE.test(String(m?.text || '').trim()));
+    // (tampoco las respuestas de @Meta AI: la IA podría citarlas como si fueran de la pareja)
+    const chatMessages = (messages || []).filter((m: any) => !WA_SYSTEM_RE.test(String(m?.text || '').trim()) && !/^meta\s*(ai|ia)$/i.test(String(m?.sender || '').trim()));
     const diarySample = sampleMessages(chatMessages, 320);
     const p = body.people || {};
     const personLine = (key: 'A' | 'B') => {
@@ -176,7 +177,7 @@ REGLAS
 
 // Función para samplear mensajes inteligentemente
 // Igual que WA_SYSTEM_RE en public/index.html
-const WA_SYSTEM_RE = /^.{1,60} es un contacto\.?$|^.{1,60} is a contact\.?$|cifrad[oa]s? de extremo a extremo|end-to-end encrypted|mensajes temporales|disappearing messages|cambió su número|changed (their|his|her) phone number|bloqueaste a este contacto|desbloqueaste a este contacto|you (un)?blocked this contact|^(llamada|videollamada)( de (voz|video))?( perdida)?\b.{0,30}$|^(missed )?(voice|video) call\b.{0,30}$/i;
+const WA_SYSTEM_RE = /^.{1,60} es un contacto\.?$|^.{1,60} is a contact\.?$|cifrad[oa]s? de extremo a extremo|end-to-end encrypted|mensajes temporales|disappearing messages|cambió su número|changed (their|his|her) phone number|bloqueaste a este contacto|desbloqueaste a este contacto|you (un)?blocked this contact|^(llamada|videollamada)( de (voz|video))?( perdida)?\b.{0,30}$|^(missed )?(voice|video) call\b.{0,30}$|código de seguridad|security code|toca para (obtener más información|cambiar|ver)|tap to (learn more|change|view)|^ubicaci[oó]n( en tiempo real)?:|^location:|^live location|^contacto:|^contact card|\.vcf\b|esperando (este|el) mensaje|waiting for this message|eliminaste este mensaje|you deleted this message|cuenta de empresa|business account|^(encuesta|poll):/i;
 
 function sampleMessages(messages: any[], maxMessages: number) {
   if (messages.length <= maxMessages) return messages;
