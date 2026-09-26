@@ -10,6 +10,7 @@ Web que convierte un chat de WhatsApp de pareja en **«su diario»**: un PDF de 
 - **Un solo precio:** $199 MXN (antes $129; subido el 25 sep 2026), pago único (otros países: `app/api/pricing/route.ts`).
 - **Un pago = un diario:** cada pago vale para el chat con el que se pagó.
 - **Solo parejas:** un chat con 3+ personas muestra un aviso. El modo grupo se eliminó.
+- **Chats cortos:** con menos de 300 mensajes de texto (`DIARY_MIN_MSGS`, cuenta `isRealText`) se enseña el adelanto pero no se vende el diario (`#diaryTooShort`, `openPayModal` no abre); entre 300 y 1.000 (`DIARY_SHORT_MSGS`) se vende con aviso de que algunos capítulos saldrán breves. Evento `chat_short`. Con menos de 10 mensajes ni siquiera hay adelanto.
 - **Estética «diario íntimo»:** papel rayado rosa, margen rojo, Caveat (a mano) + Courier Prime, rojo boli `#C8102E` (persona A) y tinta azul `#1F3A93` (persona B), polaroids, cinta washi.
 - **Sin emojis ni tono «de IA»** en la web ni en el PDF (Javi lo pidió expresamente). Todo texto de IA o del chat pasa por `stripEmoji()`; el prompt lo prohíbe.
 - Nada de cifras o testimonios de relleno (se quitaron «+12,000 chats», contador aleatorio, percentiles inventados).

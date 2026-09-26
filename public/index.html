@@ -943,6 +943,11 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .tut-title { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; margin: 0 34px 10px 2px; line-height: 1.1; }
 .tut-close { position: absolute; top: 6px; right: 8px; width: 36px; height: 36px; border: none; background: none; font-size: 1.8rem; line-height: 1; color: var(--text); cursor: pointer; }
 .tut-box .tut-go { display: block; width: 100%; margin-top: 12px; padding: 14px; border: none; background: var(--pink); color: #fff; font-family: inherit; font-weight: 700; font-size: 1rem; cursor: pointer; }
+.diary-short { max-width: 440px; margin: 44px auto 0; background: #fff; box-shadow: var(--shadow); padding: 30px 26px; text-align: center; }
+.diary-short[hidden], .diary-short-warn[hidden] { display: none; }
+.diary-short-title { font-family: var(--font-display); font-weight: 700; font-size: 2rem; line-height: 1.05; margin-bottom: 12px; }
+.diary-short p { font-size: 0.92rem; line-height: 1.55; }
+.diary-short-warn { margin: -6px 0 16px; padding: 10px 12px; background: var(--rose, #F8E1E4); font-size: 0.82rem; line-height: 1.45; text-align: left; }
 .paywall-sample { max-width: 440px; margin: 40px auto 0; text-align: center; }
 .paywall-sample-title { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; line-height: 1.1; }
 .paywall-sample-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
@@ -1295,12 +1300,18 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       </div>
     </div>
 
-    <div class="diary-price" style="margin-top: 44px;">
+    <div class="diary-short" id="diaryTooShort" hidden>
+      <div class="diary-short-title">Su chat todavía es corto para un diario</div>
+      <p>Tiene <b id="diaryShortCount">pocos</b> mensajes, y para escribir 14 páginas de su historia hacen falta al menos <b>300</b>. No les vamos a cobrar por un diario casi vacío.</p>
+      <p style="margin-top:10px;">Prueben con el chat donde más se escriben, o vuelvan cuando tengan más historia juntos. El adelanto de arriba es suyo, gratis.</p>
+    </div>
+    <div class="diary-price" id="paywallPrice" style="margin-top: 44px;">
       <div class="tape"></div>
       <div style="font-family:var(--font-display);font-weight:700;font-size:2.2rem;line-height:1;">Su diario completo</div>
       <div class="diary-price-amount" style="margin-top:12px;"><span class="precio-symbol">$</span><span class="precio-premium-numero">199</span></div>
       <div class="diary-price-sub"><span class="precio-moneda-label">MXN</span> · pago único</div>
       <div class="offer-price" data-offer-price hidden></div>
+      <div class="diary-short-warn" id="diaryShortWarn" hidden>Su chat es corto (<b id="diaryWarnCount"></b> mensajes): el diario saldrá completo, pero algunos capítulos serán breves.</div>
       <ul>
         <li>Un PDF de 14 páginas, escrito a partir de su chat</li>
         <li>Para guardarlo, leerlo juntos o regalarlo</li>
@@ -2100,7 +2111,9 @@ async function processChat(text) {
 
   if (messages.length < 10) {
     trackUploadFail('pocos_mensajes', { parsed: messages.length, lines: text.split(/\n/).length, shape: chatShape(text) });
-    alert('No se pudieron detectar suficientes mensajes. Asegúrate de exportar el chat de WhatsApp como archivo .txt sin media.');
+    alert(messages.length > 0
+      ? `Este chat solo tiene ${messages.length} mensaje${messages.length === 1 ? '' : 's'}. Para su diario hace falta una conversación más larga: prueben con el chat donde más se escriben.`
+      : 'No reconocimos este archivo como un chat de WhatsApp. En el teléfono: abran el chat › Exportar chat › Sin archivos, y suban ese archivo (.txt o .zip).');
     resetUpload();
     return;
   }
@@ -2112,7 +2125,7 @@ async function processChat(text) {
   const _uniqueSenders = _clean.senders;
   if (_uniqueSenders.length > 2) {
     trackUploadFail('grupo', { people: _uniqueSenders.length });
-    alert('Este chat tiene más de dos personas. YaLoSabía analiza chats de pareja: sube la conversación entre tú y la otra persona.');
+    alert(`Este chat es de un grupo (${_uniqueSenders.length} personas). YaLoSabía escribe el diario de una pareja: suban el chat entre ustedes dos.`);
     resetUpload();
     return;
   }
@@ -2171,6 +2184,7 @@ function showResults(s) {
     ff.textContent = `${firstName(s.personA)} escribió ${s.msgsA.toLocaleString('es-MX')} mensajes y ${firstName(s.personB)}, ${s.msgsB.toLocaleString('es-MX')}.`;
   }
   renderLockedIndex(s);
+  applyChatSizeLimits();
   refreshDiaryState();
 
   resultsSection.classList.add('active');
@@ -3652,10 +3666,36 @@ function switchOsTab(os, btn) {
 }
 
 // ── Payment modal ──
+// Chats cortos: con menos de DIARY_MIN_MSGS mensajes de texto no se vende el diario (saldría casi vacío);
+// hasta DIARY_SHORT_MSGS se vende con aviso. Cuenta solo mensajes de texto reales (sin avisos ni multimedia).
+const DIARY_MIN_MSGS = 300, DIARY_SHORT_MSGS = 1000;
+function chatTextCount() {
+  return lastMessages ? lastMessages.filter(isRealText).length : 0;
+}
+function applyChatSizeLimits() {
+  const n = chatTextCount(), fmt = n.toLocaleString('es-MX');
+  const tooShort = !window.isDemoMode && n < DIARY_MIN_MSGS;
+  const short = !window.isDemoMode && !tooShort && n < DIARY_SHORT_MSGS;
+  const box = document.getElementById('diaryTooShort'), price = document.getElementById('paywallPrice'), warn = document.getElementById('diaryShortWarn');
+  if (box) box.hidden = !tooShort;
+  if (price) price.style.display = tooShort ? 'none' : '';
+  if (warn) warn.hidden = !short;
+  const c1 = document.getElementById('diaryShortCount'), c2 = document.getElementById('diaryWarnCount');
+  if (c1) c1.textContent = fmt;
+  if (c2) c2.textContent = fmt;
+  if (tooShort || short) trackFunnel('chat_short', { messages: n, blocked: tooShort });
+}
+
 function openPayModal() {
   // El pago se ata a un chat concreto: sin chat subido no hay nada que comprar todavía
   if (!lastMessages || !window.currentChatFp) {
     goToUpload('price');
+    return;
+  }
+  // Chat demasiado corto para un diario: no se vende
+  if (!window.isDemoMode && chatTextCount() < DIARY_MIN_MSGS && !isPremiumUser()) {
+    const box = document.getElementById('diaryTooShort');
+    if (box) { box.hidden = false; box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
     return;
   }
 
