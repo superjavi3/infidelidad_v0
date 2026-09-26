@@ -1,5 +1,7 @@
 # YaLoSabía — contexto del proyecto
 
+> Guía de negocio (servicios, recorrido del cliente, marketing, pendientes): `docs/GUIA-YALOSABIA.md`.
+
 Web que convierte un chat de WhatsApp de pareja en **«su diario»**: un PDF de 14 páginas con la historia de la relación. Público: México (español de México, «ustedes», nunca «vosotros»). Producción: https://www.yalosabia.com (repo `superjavi3/infidelidad_v0`; «el proyecto de infidelidad» para el dueño, Javi).
 
 ## El producto (decidido en septiembre de 2026)
