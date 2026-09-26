@@ -58,6 +58,12 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 - **API de conversiones** (`lib/meta-capi.ts`): al volver de Stripe, si la persona aceptó «todas» las cookies, `/api/verify-payment?track=1` manda la compra a Meta desde el servidor (píxel «Market data», `event_id` = id de la sesión, el mismo `eventID` que el píxel del navegador, así Meta no la cuenta dos veces). Sin la variable `META_CAPI_TOKEN` en Vercel no hace nada. `META_CAPI_TEST_CODE` para probar en «Eventos de prueba».
 - Ojo: el píxel de Meta solo carga si aceptan «todas» las cookies, así que Meta no ve a quien pulsa «Solo necesarias» y atribuye menos compras de las reales.
 
+## Panel interno
+
+- `yalosabia.com/panel.html` (noindex) + `/api/panel` (`lib/panel.ts`): ventas y origen (Stripe), embudo por origen y visitas diarias (PostHog, HogQL), gasto/clics de Meta. Protegido con la variable `PANEL_KEY` (cabecera `x-panel-key`; el navegador la guarda en `localStorage.panelKey`).
+- Cada fuente es opcional; si falta su clave el panel lo dice: `POSTHOG_PERSONAL_API_KEY` + `POSTHOG_PROJECT_ID`, `META_ADS_TOKEN` (ads_read; `META_AD_ACCOUNT_ID` por defecto 788285070542304).
+- En el preview estático, `/api/panel` devuelve datos inventados con la clave «preview».
+
 ## Seguridad del pago (importante)
 
 - **Stripe es la única fuente de verdad.** No hay tabla de compras. El navegador solo guarda `session_id`s (`localStorage`: `yalosabia_plan_v2` y `yalosabia_diaries` = `{huella: session_id}`).

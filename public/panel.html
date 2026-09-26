@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Panel YaLoSabía</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--pink:#C8102E;--blue:#1F3A93;--text:#3B0A12;--muted:#7A4B52;--paper:#FFF8F6;--line:#F0C9C6;--rose:#F7DDD8;--ok:#1F7A4A}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Courier Prime',monospace;color:var(--text);background:var(--paper);background-image:linear-gradient(180deg,transparent 31px,var(--line) 31px);background-size:100% 32px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 60px}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.logo{font-family:'Caveat',cursive;font-weight:700;font-size:44px;color:var(--pink);line-height:1}
+.logo small{font-family:'Courier Prime',monospace;font-size:14px;color:var(--muted);letter-spacing:2px;margin-left:10px}
+.ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button,select,input{font-family:inherit;font-size:14px}
+.seg button{border:1px solid var(--line);background:#fff;padding:8px 12px;cursor:pointer;color:var(--text)}
+.seg button.on{background:var(--pink);color:#fff;border-color:var(--pink)}
+.btn{background:var(--text);color:#fff;border:0;padding:9px 14px;cursor:pointer}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+@media (max-width:520px){.kpis{grid-template-columns:1fr 1fr;gap:10px}.card{padding:14px}.kpi .v{font-size:36px}.funnel .step{grid-template-columns:110px 1fr 54px}}
+.scroll{overflow-x:auto}
+.card{background:#fff;border:1px solid var(--line);padding:18px 20px}
+.card h2{font-family:'Caveat',cursive;font-size:30px;color:var(--pink);font-weight:700;margin-bottom:10px}
+.kpi .v{font-family:'Caveat',cursive;font-size:46px;font-weight:700;line-height:1}
+.kpi .l{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.kpi .s{font-size:13px;color:var(--muted);margin-top:4px}
+.two{grid-template-columns:1.3fr 1fr}
+@media (max-width:860px){.two{grid-template-columns:1fr}}
+.funnel .step{display:grid;grid-template-columns:170px 1fr 70px;gap:10px;align-items:center;margin:8px 0}
+.funnel .bar{height:30px;background:var(--rose);position:relative}
+.funnel .bar i{position:absolute;inset:0 auto 0 0;background:var(--pink)}
+.funnel .n{text-align:right;font-weight:700}
+.funnel .drop{grid-column:2/4;font-size:12px;color:var(--muted);margin:-4px 0 2px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding:6px 6px}
+td{padding:7px 6px;border-bottom:1px dashed var(--line)}
+td.r,th.r{text-align:right}
+.note{font-size:13px;color:var(--muted);line-height:1.5}
+.warn{background:var(--rose);padding:12px 14px;font-size:13px;line-height:1.5;margin-top:10px}
+.bad{color:var(--pink);font-weight:700}.good{color:var(--ok);font-weight:700}
+svg text{font-family:'Courier Prime',monospace;font-size:11px;fill:var(--muted)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin-top:6px}
+.legend span::before{content:'';display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+#login{max-width:380px;margin:18vh auto;background:#fff;border:1px solid var(--line);padding:28px}
+#login input{width:100%;padding:10px;border:1px solid var(--line);margin:12px 0}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div id="login" class="hide">
+  <div class="logo">YaLoSabía <small>PANEL</small></div>
+  <p class="note" style="margin-top:12px">Clave del panel (variable PANEL_KEY en Vercel).</p>
+  <input id="key" type="password" autocomplete="current-password">
+  <button class="btn" onclick="login()">Entrar</button>
+  <p id="loginErr" class="bad" style="margin-top:10px"></p>
+</div>
+
+<div class="wrap hide" id="app">
+  <header>
+    <div class="logo">YaLoSabía <small>PANEL</small></div>
+    <div class="ctrl">
+      <div class="seg" id="range"><button data-d="7">7 días</button><button data-d="14" class="on">14 días</button><button data-d="30">30 días</button><button data-d="90">90 días</button></div>
+      <button class="btn" onclick="load()">Actualizar</button>
+    </div>
+  </header>
+
+  <div class="grid kpis" id="kpis"></div>
+
+  <div class="grid two" style="margin-top:16px">
+    <div class="card funnel"><h2>Embudo</h2><div id="funnel"></div><p class="note" id="funnelNote"></p></div>
+    <div class="card"><h2>De dónde vienen</h2><div id="sources"></div></div>
+  </div>
+
+  <div class="card" style="margin-top:16px"><h2>Día a día</h2><div id="chart"></div>
+    <div class="legend"><span style="--c:#F0C9C6">visitas</span><span style="--c:#1F3A93">adelantos vistos</span><span style="--c:#C8102E">ventas</span><span style="--c:#7A4B52">gasto Meta (MX$)</span></div>
+  </div>
+
+  <div class="grid two" style="margin-top:16px">
+    <div class="card"><h2>Ventas</h2><div id="sales"></div></div>
+    <div class="card"><h2>Anuncios de Meta</h2><div id="meta"></div></div>
+  </div>
+  <p class="note" style="margin-top:18px" id="gen"></p>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+let KEY = store.get('panelKey') || '';
+let DAYS = +(store.get('panelDays') || 14);
+const STEPS = [['$pageview', 'Visitan la web'], ['chat_uploaded', 'Suben un chat'], ['preview_shown', 'Ven su adelanto'], ['checkout_started', 'Van a pagar'], ['purchase', 'Pagan']];
+const fmt = (n, d = 0) => (n == null || isNaN(n)) ? '—' : n.toLocaleString('es-MX', { maximumFractionDigits: d, minimumFractionDigits: d });
+const pct = (a, b) => b ? fmt(100 * a / b, 1) + '%' : '—';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function login() { KEY = $('key').value.trim(); store.set('panelKey', KEY); load(); }
+document.querySelectorAll('#range button').forEach(b => {
+  if (+b.dataset.d === DAYS) { document.querySelectorAll('#range button').forEach(x => x.classList.remove('on')); b.classList.add('on'); }
+  b.onclick = () => { DAYS = +b.dataset.d; store.set('panelDays', DAYS); document.querySelectorAll('#range button').forEach(x => x.classList.toggle('on', x === b)); load(); };
+});
+
+async function load() {
+  if (!KEY) { $('login').classList.remove('hide'); $('app').classList.add('hide'); return; }
+  $('gen').textContent = 'Cargando…';
+  const res = await fetch('/api/panel?days=' + DAYS, { headers: { 'x-panel-key': KEY } });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) { $('login').classList.remove('hide'); $('app').classList.add('hide'); $('loginErr').textContent = data.error || 'Error ' + res.status; return; }
+  $('login').classList.add('hide'); $('app').classList.remove('hide');
+  render(data);
+}
+
+function missing(name, how) { return `<div class="warn"><b>${name} sin conectar.</b> ${how}</div>`; }
+
+function render(d) {
+  const st = d.stripe, ph = d.posthog, mt = d.meta;
+  const sales = st.configured && !st.error ? st.sales.filter(s => !s.refunded) : [];
+  const revenue = sales.reduce((a, s) => a + s.amount, 0);
+  const refunds = st.configured && !st.error ? st.sales.filter(s => s.refunded).length : 0;
+  const spend = mt.configured && !mt.error ? mt.daily.reduce((a, r) => a + r.spend, 0) : null;
+  const clicks = mt.configured && !mt.error ? mt.daily.reduce((a, r) => a + r.clicks, 0) : null;
+  const metaSales = sales.filter(s => /meta|facebook|instagram|fb|ig/i.test(s.source)).length;
+
+  // Personas por paso (todas las fuentes)
+  const step = {};
+  if (ph.configured && !ph.error) for (const r of ph.bySource) step[r.event] = (step[r.event] || 0) + r.users;
+  const visits = step['$pageview'];
+
+  $('kpis').innerHTML = [
+    ['Ventas', fmt(sales.length), refunds ? `${refunds} reembolsada(s)` : 'sin reembolsos'],
+    ['Ingresos', 'MX$' + fmt(revenue), sales.length ? 'ticket medio MX$' + fmt(revenue / sales.length) : ''],
+    ['Visitas', fmt(visits), ph.configured ? '' : 'falta PostHog'],
+    ['Conversión', visits ? pct(sales.length, visits) : '—', 'visita → venta'],
+    ['Gasto Meta', spend == null ? '—' : 'MX$' + fmt(spend), clicks == null ? 'falta token de Meta' : fmt(clicks) + ' clics · CPC MX$' + fmt(clicks ? spend / clicks : null, 2)],
+    ['Costo por venta', spend == null ? '—' : metaSales ? 'MX$' + fmt(spend / metaSales) : 'sin ventas de Meta', metaSales ? `${metaSales} venta(s) con origen Meta` : ''],
+  ].map(([l, v, s]) => `<div class="card kpi"><div class="v">${v}</div><div class="l">${l}</div><div class="s">${s || '&nbsp;'}</div></div>`).join('');
+
+  // Embudo
+  if (!ph.configured) $('funnel').innerHTML = missing('PostHog', 'En Vercel añade POSTHOG_PERSONAL_API_KEY (PostHog › Settings › Personal API keys, permiso «Query: read») y POSTHOG_PROJECT_ID (el número de la URL del proyecto).');
+  else if (ph.error) $('funnel').innerHTML = `<div class="warn">PostHog: ${esc(ph.error)}</div>`;
+  else {
+    const top = step['$pageview'] || 1;
+    $('funnel').innerHTML = STEPS.map(([e, label], i) => {
+      const n = step[e] || 0, prev = i ? (step[STEPS[i - 1][0]] || 0) : null;
+      return `<div class="step"><div>${label}</div><div class="bar"><i style="width:${Math.max(1, 100 * n / top)}%"></i></div><div class="n">${fmt(n)}</div>${i ? `<div class="drop">${pct(n, prev)} del paso anterior</div>` : ''}</div>`;
+    }).join('');
+    $('funnelNote').textContent = 'Personas únicas por paso en el periodo. «Pagan» cuenta a quien vuelve de Stripe a la web; las ventas reales están en Stripe.';
+  }
+
+  // Orígenes: embudo por fuente + ventas de Stripe por fuente
+  const srcs = {};
+  if (ph.configured && !ph.error) for (const r of ph.bySource) { (srcs[r.source] = srcs[r.source] || {})[r.event] = r.users; }
+  for (const s of sales) { (srcs[s.source] = srcs[s.source] || {}).sales = (srcs[s.source].sales || 0) + 1; }
+  const rows = Object.entries(srcs).sort((a, b) => (b[1]['$pageview'] || 0) - (a[1]['$pageview'] || 0));
+  $('sources').innerHTML = rows.length ? `<div class="scroll"><table><tr><th>Origen</th><th class="r">Visitas</th><th class="r">Chat</th><th class="r">Adelanto</th><th class="r">Ventas</th><th class="r">Conv.</th></tr>` +
+    rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="r">${fmt(v['$pageview'] || 0)}</td><td class="r">${fmt(v.chat_uploaded || 0)}</td><td class="r">${fmt(v.preview_shown || 0)}</td><td class="r"><b>${fmt(v.sales || 0)}</b></td><td class="r">${pct(v.sales || 0, v['$pageview'] || 0)}</td></tr>`).join('') + '</table></div>' +
+    '<p class="note" style="margin-top:8px">El origen se guarda desde el 26-sep-2026; lo anterior sale como «sin dato».</p>' : '<p class="note">Sin datos todavía.</p>';
+
+  // Ventas
+  if (!st.configured) $('sales').innerHTML = missing('Stripe', 'Falta STRIPE_SECRET_KEY.');
+  else if (st.error) $('sales').innerHTML = `<div class="warn">Stripe: ${esc(st.error)}</div>`;
+  else $('sales').innerHTML = `<p class="note">${fmt(st.checkoutsStarted)} pagos iniciados · ${fmt(st.sales.length)} pagados (${pct(st.sales.length, st.checkoutsStarted)})</p>` +
+    (st.sales.length ? `<table style="margin-top:8px"><tr><th>Fecha</th><th>Origen</th><th class="r">Importe</th></tr>` + st.sales.slice().reverse().map(s => `<tr><td>${s.date}</td><td>${esc(s.source)}${s.campaign ? ' · ' + esc(s.campaign) : ''}${s.offer ? ' · 15%' : ''}${s.refunded ? ' <span class="bad">reembolsada</span>' : ''}</td><td class="r">${s.currency} ${fmt(s.amount, 2)}</td></tr>`).join('') + '</table>' : '<p class="note">Sin ventas en el periodo.</p>');
+
+  // Meta
+  if (!mt.configured) $('meta').innerHTML = missing('Meta', 'En Vercel añade META_ADS_TOKEN (un token con permiso ads_read de la cuenta MVP). Mientras, el gasto se ve en el Administrador de anuncios.');
+  else if (mt.error) $('meta').innerHTML = `<div class="warn">Meta: ${esc(mt.error)}</div>`;
+  else {
+    const imp = mt.daily.reduce((a, r) => a + r.impressions, 0);
+    $('meta').innerHTML = `<table><tr><th>Gasto</th><th class="r">Impresiones</th><th class="r">Clics</th><th class="r">CTR</th><th class="r">CPC</th></tr><tr><td>MX$${fmt(spend, 2)}</td><td class="r">${fmt(imp)}</td><td class="r">${fmt(clicks)}</td><td class="r">${pct(clicks, imp)}</td><td class="r">MX$${fmt(clicks ? spend / clicks : null, 2)}</td></tr></table>` +
+      `<p class="note" style="margin-top:10px">${metaSales ? `Costo por venta con origen Meta: <b>MX$${fmt(spend / metaSales)}</b> (el margen por venta es ~MX$150).` : 'Todavía ninguna venta con origen Meta en Stripe.'}</p>`;
+  }
+
+  chart(d, sales);
+  $('gen').textContent = 'Actualizado ' + new Date(d.generatedAt).toLocaleString('es-MX') + ' · últimos ' + d.days + ' días';
+}
+
+function chart(d, sales) {
+  const days = [];
+  for (let i = d.days - 1; i >= 0; i--) days.push(new Date(Date.now() - i * 86400000).toISOString().slice(0, 10));
+  const get = (ev) => { const m = {}; if (d.posthog.configured && !d.posthog.error) for (const r of d.posthog.daily) if (r.event === ev) m[r.date] = r.users; return m; };
+  const visits = get('$pageview'), previews = get('preview_shown');
+  const salesBy = {}; for (const s of sales) salesBy[s.date] = (salesBy[s.date] || 0) + 1;
+  const spendBy = {}; if (d.meta.configured && !d.meta.error) for (const r of d.meta.daily) spendBy[r.date] = r.spend;
+  const W = 1100, H = 240, P = 34, bw = (W - 2 * P) / days.length;
+  const maxV = Math.max(1, ...days.map(k => visits[k] || 0));
+  const maxS = Math.max(1, ...days.map(k => spendBy[k] || 0));
+  const maxN = Math.max(1, ...days.map(k => Math.max(previews[k] || 0, salesBy[k] || 0)));
+  const y = (v, m) => H - P - (H - 2 * P) * v / m;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Actividad diaria">`;
+  days.forEach((k, i) => {
+    const x = P + i * bw;
+    svg += `<rect x="${x + 2}" y="${y(visits[k] || 0, maxV)}" width="${bw - 4}" height="${H - P - y(visits[k] || 0, maxV)}" fill="#F0C9C6"><title>${k}: ${visits[k] || 0} visitas</title></rect>`;
+    if (i % Math.ceil(days.length / 10) === 0) svg += `<text x="${x + bw / 2}" y="${H - 12}" text-anchor="middle">${k.slice(5)}</text>`;
+  });
+  const line = (m, max, color, dash) => `<polyline fill="none" stroke="${color}" stroke-width="2.5" ${dash ? 'stroke-dasharray="6 5"' : ''} points="${days.map((k, i) => `${P + i * bw + bw / 2},${y(m[k] || 0, max)}`).join(' ')}"/>`;
+  const hasMeta = d.meta.configured && !d.meta.error;
+  svg += line(previews, maxN, '#1F3A93') + (hasMeta ? line(spendBy, maxS, '#7A4B52', true) : '');
+  days.forEach((k, i) => { if (salesBy[k]) svg += `<circle cx="${P + i * bw + bw / 2}" cy="${y(salesBy[k], maxN)}" r="7" fill="#C8102E"><title>${k}: ${salesBy[k]} venta(s)</title></circle>`; });
+  svg += `<text x="${P}" y="14">visitas máx. ${fmt(maxV)}${hasMeta ? ' · gasto máx. MX$' + fmt(maxS) : ''}</text></svg>`;
+  $('chart').innerHTML = svg;
+}
+load();
+</script>
+</body>
+</html>
