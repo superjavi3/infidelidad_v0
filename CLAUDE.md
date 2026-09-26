@@ -1,5 +1,7 @@
 # YaLoSabía — contexto del proyecto
 
+> Guía de negocio (servicios, recorrido del cliente, marketing, pendientes): `docs/GUIA-YALOSABIA.md`.
+
 Web que convierte un chat de WhatsApp de pareja en **«su diario»**: un PDF de 14 páginas con la historia de la relación. Público: México (español de México, «ustedes», nunca «vosotros»). Producción: https://www.yalosabia.com (repo `superjavi3/infidelidad_v0`; «el proyecto de infidelidad» para el dueño, Javi).
 
 ## El producto (decidido en septiembre de 2026)
@@ -30,10 +32,11 @@ Web que convierte un chat de WhatsApp de pareja en **«su diario»**: un PDF de 
 | `app/api/stripe-webhook/route.ts` | Solo invalida la caché de pagos en `charge.refunded` / `charge.dispute.created`. |
 | `app/api/pricing/route.ts` | Precio por país (cabecera `x-vercel-ip-country`). MX = 19900 centavos. |
 | `lib/payments.ts` | `checkSessionPayment()` (Stripe como fuente de verdad, caché 10 min) y `chatFingerprint()`. |
-| `app/api/share`, `app/a/[id]` | Links compartidos **antiguos** (Supabase). La web ya no crea links; se mantienen para que los viejos abran. |
-| `app/api/track` | Eventos a Supabase. |
+| `app/api/share`, `app/a/[id]` | Links compartidos **antiguos** (Supabase). Solo lectura: el POST devuelve 410 (aceptaba HTML de cualquiera → XSS). `/a/[id]` limpia el HTML guardado (`safeHtml`) y solo acepta imágenes png/jpeg/webp. |
+| `lib/money.ts` | `toMajorUnits`/`isZeroDecimal`: única lista de monedas sin decimales de Stripe (CLP, PYG…; COP y ARS **sí** llevan 2 decimales). |
 | `public/diario/*.jpg`, `public/og-image.jpg` | Páginas de un diario de ejemplo (chat demo «Laura & Carlos») para el hero y «Así es su diario», e imagen para compartir (1200×630). Si cambia el diseño del PDF, hay que regenerarlas: `buildDiaryPages` + html2canvas a escala 0.8. |
-| `public/mockup-studio.html`, `mockup-capture.html` | Herramientas internas de mockups, sin enlazar desde la web. |
+| `tools/mockup-studio.html`, `tools/mockup-capture.html` | Herramientas internas de mockups (ya no se publican). Para usarlas: `node scripts/preview-static.mjs tools 5180`. |
+| `next.config.ts` | `/` se sirve como `/index.html` (rewrite, sin redirección), cabeceras de seguridad (nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy) y caché de 1 día para imágenes. |
 
 ### Dentro de `public/index.html` (script principal, por orden)
 Parser de WhatsApp (`parseWhatsApp`) → `analyzeMessages` (índice 0-100, `verdict`) → `processChat` → `showResults` (adelanto) → análisis que usa el PDF (`analyzeRelationshipTimeline`, `analyzeSilences`, `analyzeDoubleTexting`, `analyzeMultimedia`, `analyzeDeletedMessages`, `analyzeForensicReconstruction`, `analyzeBeforeVsNow`, `analyzeSelectiveGhosting`, `analyzeLanguageChanges`) → modo demo (`loadDemo`, `generateDemoMessages`).
@@ -72,6 +75,16 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 - Las compras anteriores a «un pago = un diario» no tienen huella y valen para cualquier chat.
 - Ya no existe ninguna clave de admin. Para probar con acceso usa el preview estático (abajo) o un pago real reembolsado.
 
+## Reglas que salieron de la revisión de código (sep 2026)
+
+- **La huella del pago no depende solo de `isRealTextV1`**: también de `parseWhatsApp`, `dropPastedLines`, `stripEmoji` y `DIARY_MEDIA_RE`. Cambiar cualquiera hace que chats ya pagados den 403.
+- `/api/analyze`: descompresión limitada a 30 MB, pago comprobado **sin caché** (un reembolso quita el acceso al momento), timeout de 55 s a Gemini y la clave va en cabecera, no en la URL. Los errores al cliente son genéricos (`server_error`, `model_error`).
+- `/api/create-checkout`: valida el email; si falla el código de descuento reintenta sin descuento en la misma moneda (antes cobraba en USD).
+- La compra solo se cuenta una vez (PostHog, píxel y CAPI) aunque se vuelva a abrir el enlace de éxito de Stripe.
+- PostHog: `disable_session_recording` y `ph-no-capture` en el adelanto (nombres y mensajes del chat).
+- Las librerías pesadas (JSZip, html2canvas, jsPDF) van con `defer`.
+- El chat guardado para la vuelta de Stripe solo se borra cuando el pago está confirmado (o a las 6 h).
+
 ## Probar
 
 - **Preview sin Stripe ni Gemini:** `npm run preview:static` → http://localhost:5173 (o la config `yalosabia-static` de `.claude/launch.json`). Simula `/api/pricing` y `/api/analyze`. Instrucciones de consola en `scripts/preview-static.mjs`.
@@ -94,7 +107,8 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 2. En Stripe → Webhooks, añadir `charge.refunded` y `charge.dispute.created` a `/api/stripe-webhook` (sin eso, un reembolso tarda hasta 10 min en quitar el acceso).
 3. Cambiar el nombre público de la cuenta de Stripe («LoSabía» → «YaLoSabía»).
 4. El acceso vive en el navegador donde se pagó: en otro dispositivo hay que volver al enlace de éxito de Stripe (no hay «recuperar mi diario» por email).
-5. Ideas pendientes: `/api/share` y `/a/[id]` usan la estética antigua; valorar retirarlos.
+5. Ideas pendientes: `/api/share` y `/a/[id]` usan la estética antigua; valorar retirarlos del todo.
+6. Decisiones abiertas de la revisión: PostHog sin consentimiento de cookies (el banner dice lo contrario), fechas en formato mes/día (móviles en inglés: el PDF sale con fechas mal), espera artificial de 4-7 s antes del adelanto, límite de diarios por pago (hoy ilimitado), rate limiting (Vercel Firewall).
 
 ## Historial
 

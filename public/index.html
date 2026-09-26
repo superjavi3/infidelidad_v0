@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-MX">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,12 +33,13 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <!-- JSZip para procesar archivos ZIP -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <!-- html2canvas para generar imagen de Stories -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -509,22 +510,6 @@ nav a:hover { color: var(--text); }
   line-height: 1.8;
 }
 
-/* ── EXAMPLES PREVIEW ── */
-.example-card {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 32px;
-  border: 1px solid rgba(59,10,18,0.06);
-}
-
-/* ── PRICING ── */
-.pricing-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  align-items: stretch;
-}
-
 /* ── Preview button in pricing cards ── */
 .preview-btn {
   background: transparent;
@@ -551,11 +536,6 @@ nav a:hover { color: var(--text); }
   backdrop-filter: blur(4px);
 }
 
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.95) translateY(10px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-
 .price-btn {
   width: 100%;
   padding: 14px;
@@ -572,18 +552,6 @@ nav a:hover { color: var(--text); }
   color: white;
 }
 .price-btn-primary:hover { box-shadow: 0 6px 24px rgba(200,16,46,0.3); transform: translateY(-1px); }
-
-@keyframes pulse-badge {
-  0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
-  50% { opacity: 0.75; transform: translateX(-50%) scale(1.05); }
-}
-
-/* ── TESTIMONIALS ── */
-.testimonials-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
 
 /* ── EXIT INTENT ── */
 .exit-overlay {
@@ -737,35 +705,11 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   transform: translateY(0);
 }
 
-/* ── FEATURE CARDS ── */
-.premium-feature-card {
-  background: var(--bg-card);
-  border: 1px solid rgba(59,10,18,0.06);
-  border-radius: var(--radius);
-  margin-bottom: 20px;
-  position: relative;
-  overflow: hidden;
-}
-
 /* ── PLAN TIER SECTIONS ── */
 .plan-section {
   position: relative;
   padding-top: 20px;
   animation: fadeInUp .6s ease both;
-}
-
-/* Plan divider line */
-.plan-divider {
-  height: 2px;
-  border: none;
-  margin: 0;
-  border-radius: 2px;
-}
-
-/* Plan header */
-.plan-header {
-  text-align: center;
-  padding: 32px 0 28px;
 }
 
 /* Detective section wrapper */
@@ -786,69 +730,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   padding: 0 4px 4px;
   margin-top: 80px;
   position: relative;
-}
-
-/* ── Blur overlay / paywall system ── */
-/* Header always visible; only .pf-body gets blurred */
-.premium-feature-card.plan-locked .pf-body {
-  filter: blur(8px);
-  pointer-events: none;
-  opacity: 0.3;
-  user-select: none;
-  min-height: 80px;
-  transition: filter 0.4s ease, opacity 0.4s ease;
-}
-
-/* Overlay sits over the body area only */
-.body-unlock-overlay {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 18px 16px;
-  text-align: center;
-  margin-top: -8px;
-}
-
-.unlock-overlay-btn {
-  padding: 12px 28px;
-  border: none;
-  border-radius: 10px;
-  color: #fff;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-.unlock-overlay-btn:hover { transform: scale(1.04); }
-
-/* Section-level CTA button */
-.section-cta-btn {
-  display: block;
-  width: 100%;
-  max-width: 480px;
-  margin: 32px auto 0;
-  padding: 18px 32px;
-  border: none;
-  border-radius: 14px;
-  color: #fff;
-  font-weight: 700;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-.section-cta-btn:hover { transform: scale(1.03); }
-
-/* Plan badge shown in results */
-.user-plan-badge {
-  display: inline-block;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  margin-top: 12px;
 }
 
 /* Silence timeline visuals */
@@ -919,21 +800,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   margin-bottom: 10px;
 }
 
-/* ── CHATBOT TERAPEUTA ── */
-.chatbot-trigger {
-  background: linear-gradient(135deg, rgba(200,16,46,0.08), rgba(31,58,147,0.08));
-  border: 1px solid rgba(200,16,46,0.2);
-  border-radius: var(--radius);
-  padding: 36px 32px;
-  text-align: center;
-  margin-top: 20px;
-}
-
-@keyframes typingBounce {
-  0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-8px); }
-}
-
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
   .nav-links a:not(.nav-cta) { display: none; }
@@ -963,18 +829,6 @@ footer p { color: var(--text-muted); font-size: 0.85rem; }
   .nav-links { gap: 12px; }
   .nav-cta { font-size: 0.8rem; padding: 7px 14px; white-space: nowrap; }
   nav a { font-size: 0.8rem; }
-}
-
-/* ── Leaderboard Section ── */
-.leaderboard-card {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  border: 1px solid rgba(59,10,18,0.06);
-  padding: 32px 28px;
-  margin: 36px 0 48px;
-  max-width: 680px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1123,7 +977,7 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .fun-fact strong { color: var(--pink); }
 
 /* Buttons */
-.btn-primary, .price-btn-primary, .exit-cta, .section-cta-btn, .section-cta-btn.detective-cta, .unlock-overlay-btn, .unlock-overlay-btn.detective-btn {
+.btn-primary, .price-btn-primary, .exit-cta {
   background: var(--pink); color: #FFF4EF; border-radius: 4px; box-shadow: none;
   font-family: var(--font-body); font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
 }
@@ -1180,9 +1034,6 @@ body.has-offer nav { top: 38px; }
 
 /* Tarjetas internas de features */
 .silence-stat, .deleted-stat-card, .mm-ratio-card, .lb-stat, .bvn-person, .lang-change-card, .ghosting-category { background: var(--paper); border-radius: 0; border: 1px dashed var(--paper-line); }
-
-/* Leaderboard */
-.leaderboard-card { background: #fff; border: none; border-radius: 0; box-shadow: var(--shadow); }
 
 /* FAQ + footer */
 .faq-item { border-bottom: 1px solid var(--margin-line); }
@@ -1268,7 +1119,9 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     person_profiles: 'identified_only',
     autocapture: true,
     capture_pageview: true,
-    capture_pageleave: true
+    capture_pageleave: true,
+    // Nunca grabar sesiones: el adelanto muestra nombres y mensajes del chat
+    disable_session_recording: true
   });
 </script>
 </head>
@@ -1330,7 +1183,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 
   <div class="privacy-badge">
     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-    Tu chat se lee en tu teléfono y no se guarda.
+    El adelanto se hace en tu teléfono y tu chat no se guarda.
   </div>
 </section>
 
@@ -1347,7 +1200,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     </button>
   </div>
 </div>
-<section class="results-section container" id="resultsSection">
+<section class="results-section container ph-no-capture" id="resultsSection">
   <div class="results-header">
     <div class="results-kicker">Querido diario:</div>
     <h2><span class="personA">Persona 1</span> <span style="color:var(--pink)">&amp;</span> <span class="personB">Persona 2</span></h2>
@@ -1603,7 +1456,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <div class="faq-list reveal">
       <div class="faq-item">
         <button class="faq-q">¿Guardan mi conversación?</button>
-        <div class="faq-a"><p>No. El chat se procesa en tu teléfono y solo una muestra de mensajes pasa por la IA para escribir el análisis. No la guardamos.</p></div>
+        <div class="faq-a"><p>No. El adelanto gratis se calcula en tu teléfono, sin enviar nada. Para escribir el diario completo, los mensajes de texto pasan por nuestro servidor y la IA lee solo una muestra. No se guardan en ningún sitio: ni el chat ni el diario.</p></div>
       </div>
       <div class="faq-item">
         <button class="faq-q">¿La otra persona se entera?</button>
@@ -1659,6 +1512,9 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 // ── GZIP HELPER ──
 async function gzipFetch(url, data, options = {}) {
   const jsonStr = JSON.stringify(data);
+  if (typeof CompressionStream === 'undefined') {
+    return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: jsonStr, ...options });
+  }
   const encoder = new TextEncoder();
   const stream = new Blob([encoder.encode(jsonStr)]).stream().pipeThrough(new CompressionStream('gzip'));
   const compressedBlob = await new Response(stream).blob();
@@ -1681,7 +1537,7 @@ const resultsSection = document.getElementById('resultsSection');
 let lastStats = null;
 let lastMessages = null;
 
-uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('click', e => { if (e.target !== fileInput) fileInput.click(); });
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
 uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
 uploadZone.addEventListener('drop', e => {
@@ -1696,7 +1552,7 @@ async function handleFile(file) {
   
   try {
     // Si es ZIP, extraer el texto
-    if (file.name.endsWith('.zip')) {
+    if (file.name.toLowerCase().endsWith('.zip')) {
       if (typeof JSZip === 'undefined') {
         alert('Error: JSZip no está cargado. Recarga la página.');
         return;
@@ -1724,7 +1580,7 @@ async function handleFile(file) {
       chatText = await chatFile.async('text');
     } 
     // Si es TXT, leer directamente
-    else if (file.name.endsWith('.txt')) {
+    else if (file.name.toLowerCase().endsWith('.txt')) {
       const reader = new FileReader();
       chatText = await new Promise((resolve, reject) => {
         reader.onload = e => resolve(e.target.result);
@@ -2008,18 +1864,6 @@ function onNewChatLoaded(messages) {
   window.isPremium = loadPremiumState(); // depende de window.currentChatFp: un pago = un diario
 }
 
-function generateChatFingerprint(messages) {
-  const first20 = messages.slice(0, 20).map(m => m.timestamp + m.sender).join('|');
-  const last20 = messages.slice(-20).map(m => m.timestamp + m.sender).join('|');
-  const total = messages.length;
-  const raw = `${total}:${first20}:${last20}`;
-  let hash = 5381;
-  for (let i = 0; i < raw.length; i++) {
-    hash = ((hash << 5) + hash) + raw.charCodeAt(i);
-    hash = hash & hash;
-  }
-  return Math.abs(hash).toString(36);
-}
 
 // Precio para los eventos de Meta: el que devuelve /api/pricing (según país) o el de México
 function priceValue() {
@@ -2193,8 +2037,6 @@ async function processChat(text) {
   lastMessages = messages;
 
   // Generate fingerprint BEFORE deciding plan access
-  window.currentChatFingerprint = generateChatFingerprint(messages);
-  console.log('[Fingerprint] Chat fingerprint:', window.currentChatFingerprint);
 
   // Resolve plan access now that we have the fingerprint
   onNewChatLoaded(messages);
@@ -2267,6 +2109,7 @@ function resetUpload() {
   processingState.querySelectorAll('.step').forEach(s => { s.classList.remove('active','done'); });
   processingState.querySelector('.step').classList.add('active');
   uploadZone.style.display = '';
+  fileInput.value = ''; // para poder elegir el mismo archivo otra vez tras un error
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -3667,13 +3510,6 @@ async function goToStripeCheckout() {
   errorEl.style.display = 'none';
 
   try {
-    // Save analysis state before redirect
-    if (lastStats && lastMessages) {
-      try {
-        sessionStorage.setItem('losabia_stats', JSON.stringify(lastStats));
-      } catch(e) {}
-    }
-
     if (typeof fbq !== 'undefined') fbq('track', 'InitiateCheckout');
     trackFunnel('checkout_started', { value: priceValue(), offer: offerActive() });
 
@@ -3735,19 +3571,21 @@ async function checkPaymentSuccess() {
 
   if (sessionId) {
     try {
-      const res = await fetch('/api/verify-payment?session_id=' + encodeURIComponent(sessionId) + capiParams());
+      // Si ya se había guardado esta compra (se volvió a abrir el enlace de Stripe), no se cuenta otra venta
+      const seenBefore = Object.values(storedDiaries()).includes(sessionId) || (readStored('yalosabia_plan_v2') || {}).sessionId === sessionId;
+      const res = await fetch('/api/verify-payment?session_id=' + encodeURIComponent(sessionId) + (seenBefore ? '' : capiParams()));
       const data = await res.json();
 
       if (data.paid) {
         console.log('[Paywall] Payment verified! Premium unlocked.');
 
         rememberPurchase(sessionId, data.chatFp, data.email);
-        trackFunnel('purchase', { value: data.value, currency: data.currency });
+        if (!seenBefore) trackFunnel('purchase', { value: data.value, currency: data.currency });
         markOfferUsed();
 
         window.isPremium = true;
 
-        if (typeof fbq !== 'undefined') {
+        if (!seenBefore && typeof fbq !== 'undefined') {
           fbq('track', 'Purchase', {
             value: data.value || priceValue(),
             currency: (data.currency || 'mxn').toUpperCase(),
@@ -3776,22 +3614,6 @@ async function checkPaymentSuccess() {
 // Run on page load
 document.addEventListener('DOMContentLoaded', checkPaymentSuccess);
 
-// ── Botones del adelanto (el de #precios ya lleva onclick) ──
-document.addEventListener('DOMContentLoaded', function() {
-  var resultsEl = document.getElementById('resultsSection');
-  if (resultsEl) {
-    resultsEl.addEventListener('click', function(e) {
-      var btn = e.target.closest('.unlock-overlay-btn, .section-cta-btn');
-      if (!btn) return;
-      if (typeof openPayModal === 'function') {
-        openPayModal();
-      } else {
-        var m = document.getElementById('payModal');
-        if (m) m.style.display = 'flex';
-      }
-    });
-  }
-});
 </script>
 
 <script>
@@ -4066,7 +3888,7 @@ function findBestMessage(diary, messages) {
 
 async function loadDiaryAI(messages, stats) {
   if (window.diaryPromise) return window.diaryPromise;
-  const key = 'yls_diary_' + (window.currentChatFingerprint || '');
+  const key = 'yls_diary_' + (window.currentChatFp || '');
   try {
     const cached = sessionStorage.getItem(key);
     if (cached) {
@@ -4161,7 +3983,10 @@ function pendingChatStore(op, value) {
     // Espera a que checkPaymentSuccess confirme el pago (máx. 8 s)
     const t0 = Date.now();
     while (href.includes('payment=success') && !isPremiumUser() && Date.now() - t0 < 8000) await sleep(250);
-    try { await pendingChatStore('delete'); } catch (e) {}
+    // Si el pago aún no se ha confirmado, el chat se queda guardado (caduca a las 6 h): al recargar no hay que subirlo otra vez
+    if (!href.includes('payment=success') || isPremiumUser()) {
+      try { await pendingChatStore('delete'); } catch (e) {}
+    }
     processChat(saved.text);
   });
 })();

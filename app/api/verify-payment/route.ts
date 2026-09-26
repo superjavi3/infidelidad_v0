@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { checkSessionPayment, isValidSessionId } from '@/lib/payments';
 import { capiEnabled, sendPurchase } from '@/lib/meta-capi';
+import { toMajorUnits } from '@/lib/money';
 
 export async function GET(req: NextRequest) {
   const sessionId = req.nextUrl.searchParams.get('session_id');
@@ -17,15 +18,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ paid: false, reason: check.reason });
   }
 
-  // amount_total viene en la unidad mínima (centavos en MXN/USD, unidades en COP/CLP…)
+  // amount_total viene en la unidad mínima (centavos en MXN/USD/COP/ARS, unidades en CLP/PYG)
   const currency = check.currency || 'mxn';
-  const zeroDecimal = ['cop', 'ars', 'clp', 'pyg'].includes(currency);
-  const value = zeroDecimal ? check.amountTotal ?? 0 : (check.amountTotal ?? 0) / 100;
+  const value = toMajorUnits(check.amountTotal ?? 0, currency);
 
   // Vuelta de Stripe con cookies aceptadas: la compra también va a Meta desde el servidor (ver lib/meta-capi.ts)
   const q = req.nextUrl.searchParams;
   if (q.get('track') === '1' && capiEnabled()) {
-    await sendPurchase({
+    // Se manda después de responder: el navegador no espera a Meta
+    const purchase = {
       eventId: sessionId,
       email: check.email,
       value,
@@ -35,7 +36,8 @@ export async function GET(req: NextRequest) {
       fbp: q.get('fbp'),
       fbc: q.get('fbc'),
       url: req.headers.get('referer') || undefined,
-    });
+    };
+    after(() => sendPurchase(purchase));
   }
 
   return NextResponse.json({

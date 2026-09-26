@@ -12,9 +12,10 @@ export async function POST(req: NextRequest) {
   try {
     const { email, plan, chatFp, offer, src } = await req.json();
 
-    if (!email) {
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (typeof email !== 'string' || email.length > 200 || !EMAIL_RE.test(email.trim())) {
       return NextResponse.json(
-        { error: 'Email es requerido' },
+        { error: 'Escribe un email válido' },
         { status: 400 }
       );
     }
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
 
     async function createSession(cur: string, amt: number) {
       return stripe.checkout.sessions.create({
-        customer_email: email,
+        customer_email: email.trim(),
         line_items: [{
           price_data: {
             currency: cur,
@@ -100,6 +101,15 @@ export async function POST(req: NextRequest) {
     try {
       session = await createSession(currency, amount);
     } catch (err: unknown) {
+      // Solo se cambia a USD si Stripe rechaza la moneda; con cualquier otro error (p. ej. el código de
+      // descuento) se reintenta en la misma moneda sin descuento, para no cobrar en dólares a quien paga en pesos.
+      const msg = err instanceof Error ? err.message : String(err);
+      if (promotionCode && !/currenc/i.test(msg)) {
+        console.warn('[checkout] reintento sin descuento:', msg);
+        promotionCode = null;
+        session = await createSession(currency, amount);
+        return NextResponse.json({ url: session.url });
+      }
       // Fallback silencioso a USD si la moneda local no está habilitada en Stripe
       console.warn(`Stripe rejected currency ${currency} for country ${country}, falling back to USD:`, err instanceof Error ? err.message : err);
       const fallback = getPricingForCountry('US');
@@ -109,9 +119,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: session.url });
   } catch (error: unknown) {
     console.error('Checkout error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Error creando sesión de pago', details: message },
+      { error: 'No se pudo abrir el pago. Inténtalo de nuevo en un momento.' },
       { status: 500 }
     );
   }

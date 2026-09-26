@@ -4,13 +4,18 @@ import { checkSessionPayment, chatFingerprint } from '@/lib/payments';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
+// Gemini tarda entre 10 y 40 s; sin esto Vercel puede cortar antes
+export const maxDuration = 60;
+// Un chat enorme cabe de sobra en 30 MB descomprimidos; más es un abuso (gzip bomb)
+const MAX_BODY_BYTES = 30 * 1024 * 1024;
+
 export async function POST(req: NextRequest) {
   try {
     let body;
     const contentEncoding = req.headers.get('content-encoding');
     if (contentEncoding === 'gzip') {
       const compressed = Buffer.from(await req.arrayBuffer());
-      const decompressed = gunzipSync(compressed);
+      const decompressed = gunzipSync(compressed, { maxOutputLength: MAX_BODY_BYTES });
       body = JSON.parse(decompressed.toString('utf-8'));
     } else {
       body = await req.json();
@@ -21,7 +26,8 @@ export async function POST(req: NextRequest) {
     if (mode !== 'diary') {
       return NextResponse.json({ success: false, error: 'unknown_mode' }, { status: 400 });
     }
-    const payment = await checkSessionPayment(body.sessionId);
+    // Sin caché: un reembolso o una disputa tienen que quitar el acceso al momento (la caché es por instancia)
+    const payment = await checkSessionPayment(body.sessionId, { fresh: true });
     if (!payment.paid) {
       const status = payment.reason === 'error' ? 503 : 402;
       return NextResponse.json({ success: false, error: 'payment_required', reason: payment.reason }, { status });
@@ -119,10 +125,11 @@ REGLAS
 - Todo campo que diga COPIA LITERAL tiene que ser un mensaje copiado palabra por palabra de la muestra o de los momentos. Si no hay uno adecuado, pon null.`;
 
     const diaryRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
+        signal: AbortSignal.timeout(55_000),
         body: JSON.stringify({
           contents: [{ parts: [{ text: diaryPrompt }] }],
           generationConfig: {
@@ -134,6 +141,10 @@ REGLAS
         })
       }
     );
+    if (!diaryRes.ok) {
+      console.error('Gemini', diaryRes.status, (await diaryRes.text()).slice(0, 300));
+      return NextResponse.json({ success: false, error: 'model_error' }, { status: 502 });
+    }
     const diaryData = await diaryRes.json();
     const diaryText = diaryData.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!diaryText) {
@@ -146,7 +157,7 @@ REGLAS
   } catch (error: any) {
     console.error('Error:', error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: 'server_error' },
       { status: 500 }
     );
   }

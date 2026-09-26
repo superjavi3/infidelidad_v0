@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import { toMajorUnits } from './money';
 
 // Datos del panel interno (/panel.html). Cada fuente es opcional: si falta su clave, se devuelve
 // { configured: false } y el panel lo dice, en vez de romperse.
@@ -21,10 +22,9 @@ export async function stripeStats(days: number) {
     if (s.payment_status !== 'paid') continue;
     const pi = s.payment_intent as Stripe.PaymentIntent | null;
     const ch = pi && typeof pi.latest_charge === 'object' ? (pi.latest_charge as Stripe.Charge | null) : null;
-    const zero = ['cop', 'clp', 'pyg'].includes(s.currency || '');
     sales.push({
       date: day(new Date(s.created * 1000)),
-      amount: zero ? s.amount_total ?? 0 : (s.amount_total ?? 0) / 100,
+      amount: toMajorUnits(s.amount_total ?? 0, s.currency || 'mxn'),
       currency: (s.currency || 'mxn').toUpperCase(),
       source: s.metadata?.src_source || 'sin dato',
       campaign: s.metadata?.src_campaign || '',
