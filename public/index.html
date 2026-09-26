@@ -3711,6 +3711,16 @@ function updatePlanUI() {
 }
 
 // ── Payment verification on page load ──
+// Con cookies aceptadas, el servidor también manda la compra a Meta (API de conversiones).
+// Se le pasan las cookies del píxel para que Meta sepa qué clic de anuncio fue.
+function capiParams() {
+  try {
+    if (localStorage.getItem('cookieConsent') !== 'all') return '';
+    const ck = n => (document.cookie.match(new RegExp('(?:^|; )' + n + '=([^;]*)')) || [])[1] || '';
+    return '&track=1&fbp=' + encodeURIComponent(ck('_fbp')) + '&fbc=' + encodeURIComponent(ck('_fbc'));
+  } catch (e) { return ''; }
+}
+
 async function checkPaymentSuccess() {
   console.log('[Paywall] checkPaymentSuccess() called');
 
@@ -3725,7 +3735,7 @@ async function checkPaymentSuccess() {
 
   if (sessionId) {
     try {
-      const res = await fetch('/api/verify-payment?session_id=' + encodeURIComponent(sessionId));
+      const res = await fetch('/api/verify-payment?session_id=' + encodeURIComponent(sessionId) + capiParams());
       const data = await res.json();
 
       if (data.paid) {
@@ -3742,7 +3752,7 @@ async function checkPaymentSuccess() {
             value: data.value || priceValue(),
             currency: (data.currency || 'mxn').toUpperCase(),
             content_name: 'premium'
-          });
+          }, { eventID: sessionId });
         }
 
         updatePlanUI();

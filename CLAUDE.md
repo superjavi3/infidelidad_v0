@@ -55,6 +55,7 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 - Píxel de Meta: `PageView`, `ChatUploaded` (custom), `ViewContent` (adelanto visto), `InitiateCheckout`, `Purchase`.
 - PostHog (`trackFunnel`): `chat_uploaded`, `preview_shown`, `checkout_started`, `purchase`, `cta_upload_click` (`from`: price/sticky), `sample_page_open`, `offer_shown`, `offer_bar_click`. Con esto se ve en qué paso se cae la gente.
 - **Origen de cada visita** (`firstTouch`): en la primera visita se guarda `localStorage.yalosabia_src` (utm_source/medium/campaign/content, `fbclid` → «facebook», o la web de origen; si no, «directo»). Va a PostHog como `first_source`/`first_campaign` y a Stripe en la metadata de la sesión (`src_source`, `src_medium`, `src_campaign`, `src_ad`, `src_referrer`, `src_first_visit`).
+- **API de conversiones** (`lib/meta-capi.ts`): al volver de Stripe, si la persona aceptó «todas» las cookies, `/api/verify-payment?track=1` manda la compra a Meta desde el servidor (píxel «Market data», `event_id` = id de la sesión, el mismo `eventID` que el píxel del navegador, así Meta no la cuenta dos veces). Sin la variable `META_CAPI_TOKEN` en Vercel no hace nada. `META_CAPI_TEST_CODE` para probar en «Eventos de prueba».
 - Ojo: el píxel de Meta solo carga si aceptan «todas» las cookies, así que Meta no ve a quien pulsa «Solo necesarias» y atribuye menos compras de las reales.
 
 ## Seguridad del pago (importante)
