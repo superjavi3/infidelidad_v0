@@ -77,6 +77,7 @@ Anuncio / post / pin / TikTok (con UTM)
 
 - **Stripe es la única fuente de verdad.** No hay base de datos de compras: el navegador guarda el `session_id` y el servidor lo comprueba siempre contra Stripe.
 - **Huella del chat.** Al pagar se guarda en Stripe una huella SHA-256 de los mensajes. El servidor solo escribe el diario si la huella de los mensajes que recibe coincide con la de ese pago. Así, pagar una vez no sirve para cualquier chat.
+- **Un pago = un PDF.** La IA escribe el diario una sola vez por pago (con 15 minutos para reintentar si algo falla). El PDF se puede volver a descargar en el mismo navegador sin gastar otro. Si alguien lo pierde, soporte borra el contador `diary_count` del pago en Stripe.
 - **Reembolsos y disputas.** Si una sesión tiene un reembolso (aunque sea parcial) o una disputa, se niega el diario (402/403) y no se llama a Gemini.
 - **Qué no se puede tocar.** Nada que cambie cómo se calcula esa huella: si no, los chats ya pagados dejan de funcionar. `CLAUDE.md` tiene la lista exacta de funciones congeladas.
 
@@ -191,6 +192,7 @@ Se revisaron el código, la web publicada y la seguridad. Arreglado en el PR «R
 - PostHog no graba sesiones ni lee el adelanto.
 - El texto de privacidad decía que el chat nunca sale del teléfono; el diario completo sí pasa por el servidor, aunque no se guarda. Corregido.
 - ~200 líneas de código muerto y 3 dependencias sin usar fuera.
+- **Un pago = un PDF** (contador en Stripe) y **chats de móviles en inglés** (fechas mes/día bien leídas; «I love you» cuenta como «te quiero»).
 
 ---
 
@@ -225,9 +227,7 @@ Se revisaron el código, la web publicada y la seguridad. Arreglado en el PR «R
 11. Revisar la campaña nueva a los 5 días.
 
 ### Producto y web (decisiones abiertas)
-12. **Fechas en formato mes/día** (móviles en inglés): hoy el PDF sale con fechas mal para esos chats.
 13. **Espera artificial de 4-7 s** antes del adelanto: probar a quitarla.
-14. **Límite de diarios por pago:** hoy uno pagado puede pedir el diario del mismo chat sin límite.
 15. **Rate limiting** (Vercel Firewall) en checkout, oferta y panel.
 16. **La oferta del 15%** se puede reiniciar en incógnito: valorar una cookie o suavizar el texto.
 17. **Recuperar mi diario por email** (otro dispositivo).

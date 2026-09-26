@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { gunzipSync } from 'zlib';
-import { checkSessionPayment, chatFingerprint } from '@/lib/payments';
+import { checkSessionPayment, chatFingerprint, markDiaryWritten } from '@/lib/payments';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
@@ -8,6 +8,9 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 export const maxDuration = 60;
 // Un chat enorme cabe de sobra en 30 MB descomprimidos; más es un abuso (gzip bomb)
 const MAX_BODY_BYTES = 30 * 1024 * 1024;
+// Un pago = un PDF: la IA escribe el diario una vez. Durante 15 min desde la primera se deja reintentar
+// (si falló la descarga o se cortó la conexión); después, el navegador usa el diario que ya guardó.
+const RETRY_WINDOW_MS = 15 * 60 * 1000;
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,10 +40,14 @@ export async function POST(req: NextRequest) {
     if (payment.chatFp && chatFingerprint(messages || []) !== payment.chatFp) {
       return NextResponse.json({ success: false, error: 'payment_required', reason: 'other_chat' }, { status: 403 });
     }
+    if ((payment.diaryCount || 0) >= 1 && Date.now() - (payment.diaryAt || 0) > RETRY_WINDOW_MS) {
+      return NextResponse.json({ success: false, error: 'already_generated' }, { status: 409 });
+    }
 
     // ===== DIARIO: perfiles, compatibilidad, señales, pronóstico, consejos y mensaje =====
     // La huella se calcula sobre la lista tal cual; a la IA le llega sin los avisos automáticos de WhatsApp
-    const chatMessages = (messages || []).filter((m: any) => !WA_SYSTEM_RE.test(String(m?.text || '').trim()));
+    // (tampoco las respuestas de @Meta AI: la IA podría citarlas como si fueran de la pareja)
+    const chatMessages = (messages || []).filter((m: any) => !WA_SYSTEM_RE.test(String(m?.text || '').trim()) && !/^meta\s*(ai|ia)$/i.test(String(m?.sender || '').trim()));
     const diarySample = sampleMessages(chatMessages, 320);
     const p = body.people || {};
     const personLine = (key: 'A' | 'B') => {
@@ -152,6 +159,11 @@ REGLAS
     }
     const diaryJson = diaryText.match(/\{[\s\S]*\}/);
     const diary = JSON.parse(diaryJson ? diaryJson[0] : diaryText);
+    try {
+      await markDiaryWritten(body.sessionId, payment);
+    } catch (err: unknown) {
+      console.error('[diary] no se pudo marcar el diario como escrito:', err instanceof Error ? err.message : err);
+    }
     return NextResponse.json({ success: true, diary });
 
   } catch (error: any) {
@@ -165,7 +177,7 @@ REGLAS
 
 // Función para samplear mensajes inteligentemente
 // Igual que WA_SYSTEM_RE en public/index.html
-const WA_SYSTEM_RE = /^.{1,60} es un contacto\.?$|^.{1,60} is a contact\.?$|cifrad[oa]s? de extremo a extremo|end-to-end encrypted|mensajes temporales|disappearing messages|cambió su número|changed (their|his|her) phone number|bloqueaste a este contacto|desbloqueaste a este contacto|you (un)?blocked this contact|^(llamada|videollamada)( de (voz|video))?( perdida)?\b.{0,30}$|^(missed )?(voice|video) call\b.{0,30}$/i;
+const WA_SYSTEM_RE = /^.{1,60} es un contacto\.?$|^.{1,60} is a contact\.?$|cifrad[oa]s? de extremo a extremo|end-to-end encrypted|mensajes temporales|disappearing messages|cambió su número|changed (their|his|her) phone number|bloqueaste a este contacto|desbloqueaste a este contacto|you (un)?blocked this contact|^(llamada|videollamada)( de (voz|video))?( perdida)?\b.{0,30}$|^(missed )?(voice|video) call\b.{0,30}$|código de seguridad|security code|toca para (obtener más información|cambiar|ver)|tap to (learn more|change|view)|^ubicaci[oó]n( en tiempo real)?:|^location:|^live location|^contacto:|^contact card|\.vcf\b|esperando (este|el) mensaje|waiting for this message|eliminaste este mensaje|you deleted this message|cuenta de empresa|business account|^(encuesta|poll):/i;
 
 function sampleMessages(messages: any[], maxMessages: number) {
   if (messages.length <= maxMessages) return messages;

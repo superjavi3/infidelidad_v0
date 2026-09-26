@@ -2017,6 +2017,7 @@ async function processChat(text) {
   // Check for group chats (>2 participants)
   const _clean = dropPastedLines(messages);
   messages = _clean.messages;
+  CHAT_DATE_ORDER = detectDateOrder(messages);
   const _uniqueSenders = _clean.senders;
   if (_uniqueSenders.length > 2) {
     alert('Este chat tiene más de dos personas. YaLoSabía analiza chats de pareja: sube la conversación entre tú y la otra persona.');
@@ -2240,6 +2241,7 @@ function generateDemoMessages() {
 
 async function loadDemo() {
   window.isDemoMode = true;
+  CHAT_DATE_ORDER = 'DMY';
 
   // Generate demo messages
   const demoMessages = generateDemoMessages();
@@ -2296,10 +2298,47 @@ async function loadDemo() {
 // ── PREMIUM FEATURES: ANALYSIS & RENDERING ──
 // ══════════════════════════════════════════════
 
+// Los móviles en inglés (EE. UU.) exportan las fechas como mes/día/año. Se detecta una vez por chat:
+// si algún primer número pasa de 12 es día/mes; si pasa el segundo, mes/día; si nada lo decide,
+// gana el orden en el que las fechas avanzan en el tiempo. Solo cambia cómo se leen las fechas,
+// no los mensajes (la huella del pago no se toca).
+let CHAT_DATE_ORDER = 'DMY';
+function detectDateOrder(messages) {
+  let firstBig = 0, secondBig = 0;
+  for (const m of messages) {
+    const p = String(m.date || '').split('/');
+    if (+p[0] > 12) firstBig++;
+    if (+p[1] > 12) secondBig++;
+  }
+  if (firstBig && !secondBig) return 'DMY';
+  if (secondBig && !firstBig) return 'MDY';
+  const backwards = order => {
+    let prev = 0, n = 0;
+    for (const m of messages) {
+      const p = String(m.date || '').split('/').map(Number);
+      const y = p[2] < 100 ? p[2] + 2000 : p[2];
+      const key = y * 10000 + (order === 'MDY' ? p[0] * 100 + p[1] : p[1] * 100 + p[0]);
+      if (key < prev) n++;
+      prev = key;
+    }
+    return n;
+  };
+  const bM = backwards('MDY'), bD = backwards('DMY');
+  if (bM !== bD) return bM < bD ? 'MDY' : 'DMY';
+  // Empate (p. ej. un chat del 1 al 10 de enero): el mes cambia mucho menos que el día entre mensajes seguidos
+  let changes0 = 0, changes1 = 0, prev = null;
+  for (const m of messages) {
+    const p = String(m.date || '').split('/');
+    if (prev) { if (p[0] !== prev[0]) changes0++; if (p[1] !== prev[1]) changes1++; }
+    prev = p;
+  }
+  return changes0 < changes1 ? 'MDY' : 'DMY';
+}
+
 function parseMessageDate(dateStr, timeStr, ampm) {
   const parts = dateStr.split('/');
-  let day = parseInt(parts[0]);
-  let month = parseInt(parts[1]);
+  let day = parseInt(parts[CHAT_DATE_ORDER === 'MDY' ? 1 : 0]);
+  let month = parseInt(parts[CHAT_DATE_ORDER === 'MDY' ? 0 : 1]);
   let year = parseInt(parts[2]);
   if (year < 100) year += 2000;
   const timeParts = timeStr.split(':');
@@ -3635,7 +3674,7 @@ function firstName(name) { return stripEmoji(String(name || '')).split(' ')[0]; 
 
 const DIARY_MEDIA_RE = /omitid|omitted|<adjunto|adjunto:|multimedia|\.(jpe?g|png|webp|opus|mp4|pdf|vcf)\b|sticker|eliminaste este mensaje|se eliminó este mensaje|este mensaje fue eliminado|this message was deleted|null$/i;
 const DIARY_AUDIO_RE = /audio|\.opus|ptt-/i;
-const DIARY_LOVE_RE = /\bte\s+(quiero|amo|adoro)\b/i;
+const DIARY_LOVE_RE = /\bte\s+(quiero|amo|adoro)\b|\bi\s+love\s+(you|u)\b/i;
 
 function diaryDate(m) { return parseMessageDate(m.date, m.time, m.ampm); }
 
@@ -3651,9 +3690,11 @@ async function chatFingerprint(messages) {
 }
 // Avisos automáticos de WhatsApp que llegan con remitente (sobre todo en exports de iPhone):
 // cifrado, llamadas, mensajes temporales, cambios de número, bloqueos.
-const WA_SYSTEM_RE = /^.{1,60} es un contacto\.?$|^.{1,60} is a contact\.?$|cifrad[oa]s? de extremo a extremo|end-to-end encrypted|mensajes temporales|disappearing messages|cambió su número|changed (their|his|her) phone number|bloqueaste a este contacto|desbloqueaste a este contacto|you (un)?blocked this contact|^(llamada|videollamada)( de (voz|video))?( perdida)?\b.{0,30}$|^(missed )?(voice|video) call\b.{0,30}$/i;
+const WA_SYSTEM_RE = /^.{1,60} es un contacto\.?$|^.{1,60} is a contact\.?$|cifrad[oa]s? de extremo a extremo|end-to-end encrypted|mensajes temporales|disappearing messages|cambió su número|changed (their|his|her) phone number|bloqueaste a este contacto|desbloqueaste a este contacto|you (un)?blocked this contact|^(llamada|videollamada)( de (voz|video))?( perdida)?\b.{0,30}$|^(missed )?(voice|video) call\b.{0,30}$|código de seguridad|security code|toca para (obtener más información|cambiar|ver)|tap to (learn more|change|view)|^ubicaci[oó]n( en tiempo real)?:|^location:|^live location|^contacto:|^contact card|\.vcf\b|esperando (este|el) mensaje|waiting for this message|eliminaste este mensaje|you deleted this message|cuenta de empresa|business account|^(encuesta|poll):/i;
+// Respuestas del asistente de WhatsApp (@Meta AI) dentro del chat: no son de la pareja
+const WA_BOT_SENDER_RE = /^meta\s*(ai|ia)$/i;
 function isWaSystem(m) {
-  return !!m.text && WA_SYSTEM_RE.test(m.text.trim());
+  return (!!m.text && WA_SYSTEM_RE.test(m.text.trim())) || (!!m.sender && WA_BOT_SENDER_RE.test(m.sender.trim()));
 }
 function isRealText(m) {
   return isRealTextV1(m) && !isWaSystem(m);
@@ -3889,8 +3930,9 @@ function findBestMessage(diary, messages) {
 async function loadDiaryAI(messages, stats) {
   if (window.diaryPromise) return window.diaryPromise;
   const key = 'yls_diary_' + (window.currentChatFp || '');
+  // Un pago = un PDF: el diario que escribió la IA se guarda en este navegador para poder volver a descargarlo
   try {
-    const cached = sessionStorage.getItem(key);
+    const cached = localStorage.getItem(key) || sessionStorage.getItem(key);
     if (cached) {
       window.lastDiary = JSON.parse(cached);
       window.diaryPromise = Promise.resolve(window.lastDiary);
@@ -3913,6 +3955,10 @@ async function loadDiaryAI(messages, stats) {
         revokePremium('diary_402');
         throw new Error('payment_required');
       }
+      if (res.status === 409) { // este pago ya se usó para escribir el diario
+        window.lastDiaryError = 'already_generated';
+        throw new Error('already_generated');
+      }
       if (res.status === 403) { // el pago es de otro chat
         window.isPremium = false;
         refreshDiaryState();
@@ -3921,7 +3967,10 @@ async function loadDiaryAI(messages, stats) {
       const data = await res.json();
       if (!data.success || !data.diary) throw new Error(data.error || 'sin diario');
       window.lastDiary = data.diary;
-      try { sessionStorage.setItem(key, JSON.stringify(data.diary)); } catch (e) {}
+      window.lastDiaryError = null;
+      try { localStorage.setItem(key, JSON.stringify(data.diary)); } catch (e) {
+        try { sessionStorage.setItem(key, JSON.stringify(data.diary)); } catch (e2) {}
+      }
     } catch (err) {
       console.error('[Diario] Error IA:', err);
       window.lastDiary = null;
@@ -4430,6 +4479,7 @@ async function generatePDF() {
     const diary = await loadDiaryAI(lastMessages, lastStats);
     if (!diary) {
       if (!isPremiumUser()) throw new Error('Cada pago es para el diario de un chat. No encontramos un pago para este chat: si pagaste por él y ves este mensaje, escríbenos a contacto@yalosabia.com.');
+      if (window.lastDiaryError === 'already_generated') throw new Error('Este pago ya se usó para escribir su diario (cada pago es un diario). Si perdiste el PDF, escríbenos a contacto@yalosabia.com con el email de tu compra y lo resolvemos.');
       throw new Error('No pudimos escribir los capítulos con IA. Inténtalo de nuevo en un momento.');
     }
     if (document.fonts && document.fonts.ready) await document.fonts.ready;

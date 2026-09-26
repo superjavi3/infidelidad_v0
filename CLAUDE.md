@@ -80,6 +80,11 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 - **La huella del pago no depende solo de `isRealTextV1`**: también de `parseWhatsApp`, `dropPastedLines`, `stripEmoji` y `DIARY_MEDIA_RE`. Cambiar cualquiera hace que chats ya pagados den 403.
 - `/api/analyze`: descompresión limitada a 30 MB, pago comprobado **sin caché** (un reembolso quita el acceso al momento), timeout de 55 s a Gemini y la clave va en cabecera, no en la URL. Los errores al cliente son genéricos (`server_error`, `model_error`).
 - `/api/create-checkout`: valida el email; si falla el código de descuento reintenta sin descuento en la misma moneda (antes cobraba en USD).
+- **Un pago = un PDF**: tras escribir el diario, `/api/analyze` guarda `diary_count`/`diary_at` en la metadata del PaymentIntent (o de la sesión) con `markDiaryWritten`. Otra petición con el mismo pago da **409 `already_generated`** pasados 15 min (margen para reintentar si falló la descarga). El navegador guarda el diario en `localStorage` (`yls_diary_<huella>`) y lo reutiliza para volver a descargar sin llamar a la IA. Soporte: para dejar escribir otro, borra `diary_count` en Stripe.
+- **Avisos de WhatsApp** (`WA_SYSTEM_RE`, igual en `index.html` y `app/api/analyze/route.ts`): cifrado, «X es un contacto», código de seguridad, «toca para…», ubicación, tarjetas de contacto, mensajes eliminados, «esperando este mensaje», llamadas, encuestas, cuentas de empresa… en español e inglés. En iPhone salen con el nombre del contacto como remitente: por eso el primer mensaje del diario salía como «Conrado es un contacto». No afecta a la huella.
+- **Nombres cambiados**: si se edita un nombre o se vuelve a exportar más tarde, la huella cambia y cuenta como otro chat (a propósito: evita reutilizar un pago).
+- **Meta AI**: las respuestas de @Meta AI salen en el export como un remitente más. `isWaSystem` las trata como aviso (no cuentan como persona ni entran en los textos del PDF) y el servidor las quita de la muestra para Gemini. **No** se quitan de la lista que se envía (la huella del pago se calcula sobre ella).
+- **Fechas mes/día**: `detectDateOrder` decide por chat si las fechas son día/mes (español) o mes/día (móviles en inglés) y lo guarda en `CHAT_DATE_ORDER`; `parseMessageDate` lo usa. No toca la huella. `DIARY_LOVE_RE` también reconoce «I love you».
 - La compra solo se cuenta una vez (PostHog, píxel y CAPI) aunque se vuelva a abrir el enlace de éxito de Stripe.
 - PostHog: `disable_session_recording` y `ph-no-capture` en el adelanto (nombres y mensajes del chat).
 - Las librerías pesadas (JSZip, html2canvas, jsPDF) van con `defer`.
@@ -88,6 +93,7 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 ## Probar
 
 - **Preview sin Stripe ni Gemini:** `npm run preview:static` → http://localhost:5173 (o la config `yalosabia-static` de `.claude/launch.json`). Simula `/api/pricing` y `/api/analyze`. Instrucciones de consola en `scripts/preview-static.mjs`.
+- **Pruebas con chats generados:** `scripts/chat-test-harness.js` (formatos Android/iPhone, ES/EN, 12h/24h, 10 a 100.000 mensajes, grupos, Meta AI…). Sírvelo con `node scripts/preview-static.mjs scripts 5190`, cárgalo en el preview y usa `runCase(nombre, {n, fmt, lang, people})` y `runPdf()`. Resultados de sep 2026: 100.000 mensajes → 1 s de proceso, 7,4 MB de datos (0,7 MB comprimidos), PDF en 4 s.
 - **Sintaxis del JS de `index.html`:** `npm run check:html`. Ejecútalo siempre después de tocar el archivo.
 - **App completa:** `npm install`, `vercel env pull .env.local`, `npm run dev`. Variables: `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`.
 - **Cada push crea una preview en Vercel**; `main` despliega a producción. Trabajar en ramas y PRs; no hacer push a `main` sin que Javi lo pida.
@@ -108,7 +114,7 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 3. Cambiar el nombre público de la cuenta de Stripe («LoSabía» → «YaLoSabía»).
 4. El acceso vive en el navegador donde se pagó: en otro dispositivo hay que volver al enlace de éxito de Stripe (no hay «recuperar mi diario» por email).
 5. Ideas pendientes: `/api/share` y `/a/[id]` usan la estética antigua; valorar retirarlos del todo.
-6. Decisiones abiertas de la revisión: PostHog sin consentimiento de cookies (el banner dice lo contrario), fechas en formato mes/día (móviles en inglés: el PDF sale con fechas mal), espera artificial de 4-7 s antes del adelanto, límite de diarios por pago (hoy ilimitado), rate limiting (Vercel Firewall).
+6. Decisiones abiertas de la revisión: PostHog sin consentimiento de cookies (el banner dice lo contrario), espera artificial de 4-7 s antes del adelanto, rate limiting (Vercel Firewall).
 
 ## Historial
 
