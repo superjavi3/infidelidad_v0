@@ -2037,6 +2037,37 @@ function trackFunnel(event, props) {
   try { if (window.posthog && posthog.capture) posthog.capture(event, props || {}); } catch (e) {}
 }
 
+// De dónde llegó esta persona la primera vez (utm, fbclid o web de origen). Se guarda una vez por navegador,
+// se manda a PostHog con cada evento y a Stripe con el pago, para saber qué canal trae ventas.
+const firstTouch = (function () {
+  const KEY = 'yalosabia_src';
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (saved && saved.s) return saved;
+  } catch (e) {}
+  const q = new URLSearchParams(location.search);
+  let ref = '';
+  try { ref = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, '') : ''; } catch (e) {}
+  if (ref === location.hostname.replace(/^www\./, '') || /yalosabia\.com$|stripe\.com$/.test(ref)) ref = '';
+  const fb = q.has('fbclid');
+  const src = {
+    s: q.get('utm_source') || (fb ? 'facebook' : '') || ref || 'directo',
+    m: q.get('utm_medium') || (fb ? 'fbclid' : ref ? 'referral' : ''),
+    c: q.get('utm_campaign') || '',
+    ad: q.get('utm_content') || '',
+    ref,
+    fb: fb ? 1 : 0,
+    t: new Date().toISOString(),
+  };
+  // Si llega el regreso de Stripe sin nada guardado (otro navegador), no se inventa un origen
+  if (/payment=success/.test(location.href)) return { s: 'desconocido' };
+  try { localStorage.setItem(KEY, JSON.stringify(src)); } catch (e) {}
+  return src;
+})();
+try {
+  if (window.posthog && posthog.register) posthog.register({ first_source: firstTouch.s, first_medium: firstTouch.m || '', first_campaign: firstTouch.c || '', first_ad: firstTouch.ad || '' });
+} catch (e) {}
+
 // Lleva a la zona de subida (desde el botón del precio o el botón fijo en móvil)
 function goToUpload(from) {
   trackFunnel('cta_upload_click', { from });
@@ -3644,11 +3675,12 @@ async function goToStripeCheckout() {
     }
 
     if (typeof fbq !== 'undefined') fbq('track', 'InitiateCheckout');
+    trackFunnel('checkout_started', { value: priceValue(), offer: offerActive() });
 
     const res = await fetch('/api/create-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, plan: 'premium', chatFp: window.currentChatFp, offer: offerActive() ? window.activeOffer.token : undefined })
+      body: JSON.stringify({ email, plan: 'premium', chatFp: window.currentChatFp, offer: offerActive() ? window.activeOffer.token : undefined, src: firstTouch })
     });
 
     const data = await res.json();
@@ -3700,6 +3732,7 @@ async function checkPaymentSuccess() {
         console.log('[Paywall] Payment verified! Premium unlocked.');
 
         rememberPurchase(sessionId, data.chatFp, data.email);
+        trackFunnel('purchase', { value: data.value, currency: data.currency });
         markOfferUsed();
 
         window.isPremium = true;

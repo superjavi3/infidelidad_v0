@@ -10,7 +10,7 @@ function getStripe() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, plan, chatFp, offer } = await req.json();
+    const { email, plan, chatFp, offer, src } = await req.json();
 
     if (!email) {
       return NextResponse.json(
@@ -55,6 +55,18 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // De dónde llegó (primera visita): queda en la sesión de Stripe para ver qué canal trae ventas
+    const clean = (v: unknown) => (typeof v === 'string' ? v.replace(/[^\w.:\- ]/g, '').slice(0, 80) : '');
+    const firstVisit = src && typeof src === 'object' ? src : {};
+    const attribution = Object.fromEntries(Object.entries({
+      src_source: clean(firstVisit.s),
+      src_medium: clean(firstVisit.m),
+      src_campaign: clean(firstVisit.c),
+      src_ad: clean(firstVisit.ad),
+      src_referrer: clean(firstVisit.ref),
+      src_first_visit: clean(firstVisit.t),
+    }).filter(([, v]) => v));
+
     async function createSession(cur: string, amt: number) {
       return stripe.checkout.sessions.create({
         customer_email: email,
@@ -79,6 +91,7 @@ export async function POST(req: NextRequest) {
           country,
           currency: cur,
           ...(promotionCode && validOffer ? { offer_code: validOffer.code } : {}),
+          ...attribution,
         },
       });
     }
