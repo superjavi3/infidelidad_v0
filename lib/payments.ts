@@ -20,6 +20,10 @@ export interface PaymentCheck {
   amountTotal?: number;
   currency?: string;
   chatFp?: string | null; // huella del chat al que está atado el pago (null en compras antiguas)
+  // Un pago = un diario: cuántas veces la IA ya escribió el diario de este pago y cuándo fue la primera (ms)
+  diaryCount?: number;
+  diaryAt?: number;
+  paymentIntentId?: string | null;
 }
 
 const SESSION_ID_RE = /^cs_(live|test)_[A-Za-z0-9]{10,}$/;
@@ -56,6 +60,9 @@ export async function checkSessionPayment(sessionId: unknown, { fresh = false } 
         amountTotal: session.amount_total ?? 0,
         currency: (session.currency || '').toLowerCase(),
         chatFp: session.metadata?.chat_fp || null,
+        diaryCount: Number(pi?.metadata?.diary_count || session.metadata?.diary_count || 0),
+        diaryAt: Number(pi?.metadata?.diary_at || session.metadata?.diary_at || 0),
+        paymentIntentId: pi?.id || null,
       };
       if (charge && (charge.refunded || charge.amount_refunded > 0)) result = { paid: false, reason: 'refunded', ...base };
       else if (charge && charge.disputed) result = { paid: false, reason: 'disputed', ...base };
@@ -76,4 +83,17 @@ export async function checkSessionPayment(sessionId: unknown, { fresh = false } 
 
 export function forgetSession(sessionId: string) {
   cache.delete(sessionId);
+}
+
+// Deja constancia en Stripe de que la IA ya escribió el diario de este pago (en el PaymentIntent;
+// si no hay, en la propia sesión). Stripe sigue siendo la única fuente de verdad: no hay base de datos.
+export async function markDiaryWritten(sessionId: string, check: PaymentCheck) {
+  const metadata = {
+    diary_count: String((check.diaryCount || 0) + 1),
+    diary_at: String(check.diaryAt || Date.now()),
+  };
+  const stripe = getStripe();
+  if (check.paymentIntentId) await stripe.paymentIntents.update(check.paymentIntentId, { metadata });
+  else await stripe.checkout.sessions.update(sessionId, { metadata });
+  forgetSession(sessionId);
 }

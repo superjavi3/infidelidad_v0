@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { gunzipSync } from 'zlib';
-import { checkSessionPayment, chatFingerprint } from '@/lib/payments';
+import { checkSessionPayment, chatFingerprint, markDiaryWritten } from '@/lib/payments';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
@@ -8,6 +8,9 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 export const maxDuration = 60;
 // Un chat enorme cabe de sobra en 30 MB descomprimidos; más es un abuso (gzip bomb)
 const MAX_BODY_BYTES = 30 * 1024 * 1024;
+// Un pago = un PDF: la IA escribe el diario una vez. Durante 15 min desde la primera se deja reintentar
+// (si falló la descarga o se cortó la conexión); después, el navegador usa el diario que ya guardó.
+const RETRY_WINDOW_MS = 15 * 60 * 1000;
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,6 +39,9 @@ export async function POST(req: NextRequest) {
     // (Las compras anteriores a este cambio no traen huella y siguen valiendo para cualquier chat.)
     if (payment.chatFp && chatFingerprint(messages || []) !== payment.chatFp) {
       return NextResponse.json({ success: false, error: 'payment_required', reason: 'other_chat' }, { status: 403 });
+    }
+    if ((payment.diaryCount || 0) >= 1 && Date.now() - (payment.diaryAt || 0) > RETRY_WINDOW_MS) {
+      return NextResponse.json({ success: false, error: 'already_generated' }, { status: 409 });
     }
 
     // ===== DIARIO: perfiles, compatibilidad, señales, pronóstico, consejos y mensaje =====
@@ -152,6 +158,11 @@ REGLAS
     }
     const diaryJson = diaryText.match(/\{[\s\S]*\}/);
     const diary = JSON.parse(diaryJson ? diaryJson[0] : diaryText);
+    try {
+      await markDiaryWritten(body.sessionId, payment);
+    } catch (err: unknown) {
+      console.error('[diary] no se pudo marcar el diario como escrito:', err instanceof Error ? err.message : err);
+    }
     return NextResponse.json({ success: true, diary });
 
   } catch (error: any) {

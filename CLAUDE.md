@@ -80,6 +80,8 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 - **La huella del pago no depende solo de `isRealTextV1`**: también de `parseWhatsApp`, `dropPastedLines`, `stripEmoji` y `DIARY_MEDIA_RE`. Cambiar cualquiera hace que chats ya pagados den 403.
 - `/api/analyze`: descompresión limitada a 30 MB, pago comprobado **sin caché** (un reembolso quita el acceso al momento), timeout de 55 s a Gemini y la clave va en cabecera, no en la URL. Los errores al cliente son genéricos (`server_error`, `model_error`).
 - `/api/create-checkout`: valida el email; si falla el código de descuento reintenta sin descuento en la misma moneda (antes cobraba en USD).
+- **Un pago = un PDF**: tras escribir el diario, `/api/analyze` guarda `diary_count`/`diary_at` en la metadata del PaymentIntent (o de la sesión) con `markDiaryWritten`. Otra petición con el mismo pago da **409 `already_generated`** pasados 15 min (margen para reintentar si falló la descarga). El navegador guarda el diario en `localStorage` (`yls_diary_<huella>`) y lo reutiliza para volver a descargar sin llamar a la IA. Soporte: para dejar escribir otro, borra `diary_count` en Stripe.
+- **Fechas mes/día**: `detectDateOrder` decide por chat si las fechas son día/mes (español) o mes/día (móviles en inglés) y lo guarda en `CHAT_DATE_ORDER`; `parseMessageDate` lo usa. No toca la huella. `DIARY_LOVE_RE` también reconoce «I love you».
 - La compra solo se cuenta una vez (PostHog, píxel y CAPI) aunque se vuelva a abrir el enlace de éxito de Stripe.
 - PostHog: `disable_session_recording` y `ph-no-capture` en el adelanto (nombres y mensajes del chat).
 - Las librerías pesadas (JSZip, html2canvas, jsPDF) van con `defer`.
@@ -108,7 +110,7 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 3. Cambiar el nombre público de la cuenta de Stripe («LoSabía» → «YaLoSabía»).
 4. El acceso vive en el navegador donde se pagó: en otro dispositivo hay que volver al enlace de éxito de Stripe (no hay «recuperar mi diario» por email).
 5. Ideas pendientes: `/api/share` y `/a/[id]` usan la estética antigua; valorar retirarlos del todo.
-6. Decisiones abiertas de la revisión: PostHog sin consentimiento de cookies (el banner dice lo contrario), fechas en formato mes/día (móviles en inglés: el PDF sale con fechas mal), espera artificial de 4-7 s antes del adelanto, límite de diarios por pago (hoy ilimitado), rate limiting (Vercel Firewall).
+6. Decisiones abiertas de la revisión: PostHog sin consentimiento de cookies (el banner dice lo contrario), espera artificial de 4-7 s antes del adelanto, rate limiting (Vercel Firewall).
 
 ## Historial
 
