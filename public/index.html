@@ -1658,7 +1658,16 @@ uploadZone.addEventListener('drop', e => {
   uploadZone.classList.remove('drag-over');
   if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
 });
-fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
+fileInput.addEventListener('change', e => {
+  if (e.target.files.length) {
+    const fl = e.target.files[0];
+    trackFunnel('file_selected', { ext: (fl.name.split('.').pop() || '').toLowerCase().slice(0, 8), size_kb: Math.round(fl.size / 1024) });
+    handleFile(fl);
+  }
+});
+// El selector de archivos se abre (también cuando lo abre un botón con fileInput.click()) o se cierra sin elegir nada
+fileInput.addEventListener('click', () => trackFunnel('file_picker_open'));
+fileInput.addEventListener('cancel', () => trackFunnel('file_picker_cancel'));
 
 // Por qué no se pudo leer un chat (a PostHog, sin nada del contenido): para arreglar lo que falla de verdad
 function trackUploadFail(reason, props) {
@@ -3738,6 +3747,43 @@ async function revalidateStoredPayment() {
   }), { threshold: 0.35 }).observe(v);
 })();
 
+// Cuánto se ve el vídeo «De principio a fin» (una vez por hito y visita)
+(function () {
+  const v = document.getElementById('flowVideo');
+  if (!v) return;
+  const done = {};
+  v.addEventListener('timeupdate', () => {
+    if (!v.duration) return;
+    const pct = v.currentTime / v.duration * 100;
+    [25, 50, 75, 95].forEach(m => { if (pct >= m && !done[m]) { done[m] = 1; trackFunnel('flow_video_progress', { pct: m === 95 ? 100 : m }); } });
+  });
+})();
+
+// Hasta dónde baja la gente: una vez por sección y visita (portada) o por adelanto (resultados)
+(function () {
+  if (!('IntersectionObserver' in window)) return;
+  const seen = {};
+  const watch = (el, name, prop) => {
+    if (!el) return;
+    new IntersectionObserver((entries, obs) => entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const key = prop + ':' + name + ':' + (prop === 'part' ? (window.currentChatFp || '') : '');
+      if (seen[key]) return;
+      if (prop === 'part' && !lastStats) return;
+      seen[key] = 1;
+      trackFunnel(prop === 'part' ? 'preview_reached' : 'section_view', { [prop]: name });
+    }), { threshold: 0.4 }).observe(el);
+  };
+  watch(document.getElementById('uploadZone'), 'subir', 'section');
+  watch(document.getElementById('de-principio-a-fin'), 'video', 'section');
+  watch(document.getElementById('como-funciona'), 'pasos', 'section');
+  watch(document.getElementById('indice'), 'ejemplo', 'section');
+  watch(document.getElementById('precios'), 'precios', 'section');
+  watch(document.getElementById('faq'), 'faq', 'section');
+  watch(document.getElementById('lockedIndex'), 'indice', 'part');
+  watch(document.getElementById('paywallPrice'), 'precio', 'part');
+})();
+
 function heroUpload(from) {
   trackFunnel('cta_upload_click', { from: from || 'hero_m' });
   fileInput.click();
@@ -3858,6 +3904,7 @@ function openPayModal() {
     if (box) { box.hidden = false; box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
     return;
   }
+  trackFunnel('pay_modal_open', { messages: chatTextCount() });
 
   // If already premium, just unlock
   if (isPremiumUser()) {
@@ -4453,6 +4500,7 @@ function addPaperLines(el, step, width, color) {
 async function shareToStories() {
   const s = lastStats;
   if (!s) { alert('Primero sube un chat.'); return; }
+  trackFunnel('stories_share', { paid: isPremiumUser() });
   const ms = window.lastMilestones || (lastMessages ? analyzeMilestones(lastMessages) : {});
   document.getElementById('storiesNames').textContent = firstName(s.personA) + ' & ' + firstName(s.personB);
   document.getElementById('storiesScore').textContent = s.score;
@@ -4875,6 +4923,7 @@ async function generatePDF() {
     }
     const slug = (firstName(lastStats.personA) + '-' + firstName(lastStats.personB)).toLowerCase().normalize('NFD').replace(/[^a-z0-9-]/g, '');
     pdf.save(`diario-${slug || 'yalosabia'}.pdf`);
+    trackFunnel('pdf_download', { pages: pages.length });
   } catch (err) {
     console.error('[PDF] Error:', err);
     alert(err.message || 'No se pudo generar el PDF.');
@@ -4913,6 +4962,7 @@ function showExitIntent() {
   document.getElementById('exitScoreText').textContent = lastStats.score;
   document.getElementById('exitOverlay').classList.add('active');
   sessionStorage.setItem('exitShown', 'true');
+  trackFunnel('exit_intent_shown', { score: lastStats.score });
 }
 
 document.addEventListener('mouseleave', function(e) {
