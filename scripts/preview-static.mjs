@@ -50,6 +50,8 @@ createServer(async (req, res) => {
   if (url === '/api/analyze') return json(200, { success: true, diary: DIARY });
   // Oferta de bienvenida falsa (el token no vale para Stripe; solo para ver la barra y el precio)
   if (url === '/api/offer') return json(200, { enabled: true, code: 'YLS-PRUEB', expiresAt: Date.now() + 30 * 60000, percent: 15, token: 'preview.preview' });
+  // Código de influencer falso: cualquier código que empiece por PRUEBA vale un 20%
+  if (url === '/api/ref') { const c = (new URL(req.url, 'http://x').searchParams.get('c') || '').toUpperCase(); return json(200, /^PRUEBA/.test(c) ? { valid: true, code: c, percent: 20 } : { valid: false }); }
   // Panel interno con datos inventados (clave: «preview»), para ver el diseño sin claves
   if (url === '/api/panel') {
     if (req.headers['x-panel-key'] !== 'preview') return json(401, { error: 'Clave incorrecta (en el preview es «preview»)' });
@@ -60,7 +62,7 @@ createServer(async (req, res) => {
     [['meta', 900], ['directo', 300], ['pinterest', 120], ['sin dato', 250]].forEach(([s, v]) => [v, v * 0.3, v * 0.22, v * 0.05, v * 0.02].forEach((n, j) => bySource.push({ event: ev[j], source: s, users: Math.round(n) })));
     return json(200, {
       days, generatedAt: new Date().toISOString(),
-      stripe: { configured: true, checkoutsStarted: 60, sales: [{ date: d(9), amount: 169.15, currency: 'MXN', source: 'sin dato', campaign: '', offer: true, refunded: false }, { date: d(3), amount: 199, currency: 'MXN', source: 'meta', campaign: 'trafico_mx', offer: false, refunded: false }, { date: d(1), amount: 169.15, currency: 'MXN', source: 'pinterest', campaign: 'q4_20', offer: true, refunded: false }] },
+      stripe: { configured: true, checkoutsStarted: 60, sales: [{ date: d(9), amount: 169.15, currency: 'MXN', source: 'sin dato', campaign: '', offer: true, refunded: false }, { date: d(3), amount: 199, currency: 'MXN', source: 'meta', campaign: 'trafico_mx', offer: false, refunded: false }, { date: d(1), amount: 169.15, currency: 'MXN', source: 'pinterest', campaign: 'q4_20', offer: true, refunded: false }, { date: d(0), amount: 159.2, currency: 'MXN', source: 'instagram', campaign: 'sofi', offer: false, ref: 'SOFI20', commission: 50, refunded: false }] },
       posthog: { configured: true, bySource, daily, devices: [{ device: 'Mobile', users: 1300 }, { device: 'Desktop', users: 270 }] },
       meta: { configured: false },
     });

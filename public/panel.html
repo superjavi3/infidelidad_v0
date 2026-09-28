@@ -163,7 +163,11 @@ function render(d) {
   if (!st.configured) $('sales').innerHTML = missing('Stripe', 'Falta STRIPE_SECRET_KEY.');
   else if (st.error) $('sales').innerHTML = `<div class="warn">Stripe: ${esc(st.error)}</div>`;
   else $('sales').innerHTML = `<p class="note">${fmt(st.checkoutsStarted)} pagos iniciados · ${fmt(st.sales.length)} pagados (${pct(st.sales.length, st.checkoutsStarted)})</p>` +
-    (st.sales.length ? `<table style="margin-top:8px"><tr><th>Fecha</th><th>Origen</th><th class="r">Importe</th></tr>` + st.sales.slice().reverse().map(s => `<tr><td>${s.date}</td><td>${esc(s.source)}${s.campaign ? ' · ' + esc(s.campaign) : ''}${s.offer ? ' · 15%' : ''}${s.refunded ? ' <span class="bad">reembolsada</span>' : ''}</td><td class="r">${s.currency} ${fmt(s.amount, 2)}</td></tr>`).join('') + '</table>' : '<p class="note">Sin ventas en el periodo.</p>');
+    (st.sales.length ? `<table style="margin-top:8px"><tr><th>Fecha</th><th>Origen</th><th class="r">Importe</th></tr>` + st.sales.slice().reverse().map(s => `<tr><td>${s.date}</td><td>${esc(s.source)}${s.campaign ? ' · ' + esc(s.campaign) : ''}${s.offer ? ' · 15%' : ''}${s.ref ? ' · código ' + esc(s.ref) : ''}${s.refunded ? ' <span class="bad">reembolsada</span>' : ''}</td><td class="r">${s.currency} ${fmt(s.amount, 2)}</td></tr>`).join('') + '</table>' : '<p class="note">Sin ventas en el periodo.</p>');
+  // Influencers: ventas no reembolsadas por código y comisión a pagar (la comisión se guarda al crear el pago)
+  const refs = {}; for (const s of sales) if (s.ref) { const r = refs[s.ref] = refs[s.ref] || { n: 0, c: 0 }; r.n++; r.c += s.commission || 0; }
+  if (Object.keys(refs).length) $('sales').innerHTML += `<table style="margin-top:12px"><tr><th>Código</th><th class="r">Ventas</th><th class="r">Comisión</th></tr>` +
+    Object.entries(refs).sort((a, b) => b[1].n - a[1].n).map(([k, r]) => `<tr><td>${esc(k)}</td><td class="r">${r.n}</td><td class="r">MX$ ${fmt(r.c)}</td></tr>`).join('') + '</table>';
 
   // Meta
   if (!mt.configured) $('meta').innerHTML = missing('Meta', 'En Vercel añade META_ADS_TOKEN (un token con permiso ads_read de la cuenta MVP). Mientras, el gasto se ve en el Administrador de anuncios.');
