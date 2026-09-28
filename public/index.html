@@ -914,6 +914,9 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .sample-note { text-align: center; font-size: 0.75rem; font-style: italic; color: var(--text-muted); margin: -18px 0 34px; }
 /* Portada en móvil: botón de subir y ayuda en la primera pantalla */
 .hero-sub-m, .hero-mcta { display: none; }
+.flow-video { max-width: 360px; margin: 26px auto 0; background: #fff; padding: 10px 10px 34px; box-shadow: var(--shadow); transform: rotate(-1deg); position: relative; }
+.flow-video:before { content: ''; position: absolute; top: -12px; left: 50%; margin-left: -48px; width: 96px; height: 26px; background: rgba(232,144,158,.55); transform: rotate(3deg); z-index: 1; }
+.flow-video video { display: block; width: 100%; aspect-ratio: 9 / 16; background: #FFF8F6; }
 .tutorial-link { display: inline-block; margin-top: 14px; background: none; border: none; padding: 4px; font-family: inherit; font-size: 0.85rem; font-weight: 700; color: var(--pink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .hero-install { display: block; width: 100%; margin-top: 12px; padding: 12px 14px; background: #fff; border: 1.5px dashed var(--pink); color: var(--text); font-family: inherit; font-size: 0.85rem; line-height: 1.35; cursor: pointer; }
 .hero-install[hidden] { display: none; }
@@ -1404,6 +1407,18 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 </section>
 
 <!-- ── CÓMO FUNCIONA ── -->
+<section class="section flow-video-section" id="de-principio-a-fin">
+  <div class="container">
+    <div class="reveal">
+      <h2 class="section-title">De principio a fin</h2>
+      <p class="section-subtitle">Del chat de WhatsApp a su diario en PDF, en un minuto y medio.</p>
+    </div>
+    <div class="flow-video reveal">
+      <video id="flowVideo" src="/flujo.mp4" poster="/flujo-portada.jpg" muted loop playsinline preload="none" disablepictureinpicture aria-label="Vídeo: cómo se exporta el chat de WhatsApp, se sube a YaLoSabía y se descarga el diario en PDF"></video>
+    </div>
+  </div>
+</section>
+
 <section class="section" id="como-funciona">
   <div class="container">
     <div class="reveal">
@@ -3703,6 +3718,18 @@ async function revalidateStoredPayment() {
 
 
 // ── Subir desde la portada en móvil ──
+(function () {
+  const v = document.getElementById('flowVideo');
+  if (!v || !('IntersectionObserver' in window)) return;
+  let seen = false;
+  new IntersectionObserver(entries => entries.forEach(e => {
+    if (e.isIntersecting) {
+      if (!seen) { seen = true; trackFunnel('flow_video_view'); }
+      const p = v.play(); if (p && p.catch) p.catch(() => {});
+    } else v.pause();
+  }), { threshold: 0.35 }).observe(v);
+})();
+
 function heroUpload(from) {
   trackFunnel('cta_upload_click', { from: from || 'hero_m' });
   fileInput.click();
