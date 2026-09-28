@@ -2,6 +2,7 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import { checkSessionPayment, isValidSessionId } from '@/lib/payments';
 import { capiEnabled, sendPurchase } from '@/lib/meta-capi';
 import { toMajorUnits } from '@/lib/money';
+import { markBuyer } from '@/lib/brevo';
 
 export async function GET(req: NextRequest) {
   const sessionId = req.nextUrl.searchParams.get('session_id');
@@ -40,6 +41,9 @@ export async function GET(req: NextRequest) {
     };
     after(() => sendPurchase(purchase));
   }
+
+  // Si pidió el enlace por correo, deja de recibir recordatorios
+  if (check.email) after(() => markBuyer(check.email as string));
 
   return NextResponse.json({
     paid: true,

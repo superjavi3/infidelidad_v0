@@ -917,6 +917,23 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .flow-video { max-width: 360px; margin: 26px auto 0; background: #fff; padding: 10px 10px 34px; box-shadow: var(--shadow); transform: rotate(-1deg); position: relative; }
 .flow-video:before { content: ''; position: absolute; top: -12px; left: 50%; margin-left: -48px; width: 96px; height: 26px; background: rgba(232,144,158,.55); transform: rotate(3deg); z-index: 1; }
 .flow-video video { display: block; width: 100%; aspect-ratio: 9 / 16; background: #FFF8F6; }
+/* «Hacerlo luego»: el enlace por correo */
+.lead-box { max-width: 560px; margin: 14px auto 0; text-align: center; }
+.upload-zone[style*="none"] + .lead-box { display: none; }
+.lead-toggle { background: none; border: none; padding: 4px; font-family: inherit; font-size: 0.88rem; color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.lead-form { margin-top: 10px; background: #fff; border: 1.5px solid var(--paper-line); border-radius: 6px; padding: 16px; text-align: left; }
+.lead-form p { margin: 0 0 10px; font-size: 0.9rem; line-height: 1.5; }
+.lead-row { display: flex; gap: 8px; }
+.lead-row input { flex: 1; min-width: 0; font-family: inherit; font-size: 16px; padding: 10px 12px; border: 1.5px solid var(--paper-line); border-radius: 4px; background: var(--paper); color: var(--text); }
+.lead-row button { font-family: inherit; font-weight: 700; font-size: 0.9rem; padding: 10px 14px; border: none; border-radius: 4px; background: var(--pink); color: #FFF4EF; cursor: pointer; white-space: nowrap; }
+.lead-row button:disabled { opacity: 0.6; cursor: default; }
+.lead-consent { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; font-size: 0.8rem; line-height: 1.45; color: var(--text-muted); cursor: pointer; }
+.lead-consent input { margin-top: 3px; accent-color: var(--pink); }
+.lead-consent a { color: inherit; }
+.lead-msg { margin-top: 10px; font-size: 0.88rem; min-height: 1em; }
+.lead-msg.ok { color: var(--green); font-weight: 700; }
+.lead-msg.err { color: var(--pink); }
+@media (max-width: 480px) { .lead-row { flex-direction: column; } }
 .tutorial-link { display: inline-block; margin-top: 14px; background: none; border: none; padding: 4px; font-family: inherit; font-size: 0.85rem; font-weight: 700; color: var(--pink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .hero-install { display: block; width: 100%; margin-top: 12px; padding: 12px 14px; background: #fff; border: 1.5px dashed var(--pink); color: var(--text); font-family: inherit; font-size: 0.85rem; line-height: 1.35; cursor: pointer; }
 .hero-install[hidden] { display: none; }
@@ -1218,6 +1235,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <div class="hero-mcta-chips"><span>adelanto gratis</span><span>sin registrarse</span><span>se lee en tu teléfono</span></div>
     <button type="button" class="tutorial-link" onclick="openTutorial('hero')">¿Cómo exporto el chat? Mira el tutorial</button>
     <button type="button" class="demo-link" onclick="loadDemo('hero')">o vean un ejemplo sin subir nada</button>
+    <button type="button" class="demo-link" onclick="openLead('hero')">¿No tienen el chat a mano? Se lo mandamos por correo</button>
   </div>
   <div class="hero-pages" aria-hidden="true">
     <img class="hp-back" src="/diario/dias-que-recordar.jpg" width="635" height="898" alt="">
@@ -1238,6 +1256,18 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     </div>
     <button type="button" class="tutorial-link" onclick="event.stopPropagation(); openTutorial('upload')">¿No te queda claro? Mira el tutorial</button>
     <button class="demo-btn" id="demoBtn" onclick="event.stopPropagation(); loadDemo('upload')">Ver un ejemplo sin subir nada</button>
+  </div>
+  <div class="lead-box ph-no-capture" id="leadBox">
+    <button type="button" class="lead-toggle" id="leadToggle" onclick="openLead('upload')">¿Ahora no pueden? Háganlo luego: les mandamos el enlace por correo</button>
+    <form class="lead-form" id="leadForm" hidden onsubmit="submitLead(event)">
+      <p>Les mandamos el enlace y los pasos para exportar el chat. Cuando tengan un minuto, lo hacen desde el teléfono.</p>
+      <div class="lead-row">
+        <input type="email" id="leadEmail" placeholder="tu@correo.com" autocomplete="email" required maxlength="200">
+        <button type="submit" id="leadBtn">Mandármelo</button>
+      </div>
+      <label class="lead-consent"><input type="checkbox" id="leadConsent"> <span>Acepto recibir correos de YaLoSabía sobre mi diario (máximo 4; me puedo dar de baja cuando quiera). <a href="/privacidad.html" target="_blank" rel="noopener">Aviso de privacidad</a>.</span></label>
+      <div class="lead-msg" id="leadMsg" role="status"></div>
+    </form>
   </div>
 
   <!-- Processing State -->
@@ -3795,7 +3825,50 @@ if (window.matchMedia && matchMedia('(pointer: coarse)').matches) {
   if (p) p.textContent = 'el archivo .txt o .zip que te dio WhatsApp';
 }
 
+// ── «Hacerlo luego»: el enlace por correo (Brevo, /api/lead) ──
+function openLead(from) {
+  const form = document.getElementById('leadForm');
+  if (!form) return;
+  const wasHidden = form.hidden;
+  form.hidden = false;
+  document.getElementById('leadToggle').hidden = true;
+  document.getElementById('leadBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => { try { document.getElementById('leadEmail').focus({ preventScroll: true }); } catch (e) {} }, 400);
+  if (wasHidden) trackFunnel('lead_form_open', { from: from || '' });
+}
+async function submitLead(e) {
+  e.preventDefault();
+  const email = document.getElementById('leadEmail').value.trim();
+  const consent = document.getElementById('leadConsent').checked;
+  const msg = document.getElementById('leadMsg'), btn = document.getElementById('leadBtn');
+  const say = (t, cls) => { msg.textContent = t; msg.className = 'lead-msg ' + (cls || ''); };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { say('Revisa el correo, parece que le falta algo.', 'err'); return; }
+  if (!consent) { say('Marca la casilla para que podamos mandarte el correo.', 'err'); return; }
+  btn.disabled = true; say('Enviando...');
+  try {
+    const r = await fetch('/api/lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, consent: true, from: 'web', source: (firstTouch && firstTouch.s) || '' }) });
+    if (!r.ok) throw new Error(String(r.status));
+    say('Listo. Revisa tu correo (y la carpeta de spam, por si acaso).', 'ok');
+    document.querySelector('#leadForm .lead-row').hidden = true;
+    document.querySelector('#leadForm .lead-consent').hidden = true;
+    trackFunnel('lead_captured', { source: (firstTouch && firstTouch.s) || '' });
+    if (typeof fbq !== 'undefined') fbq('track', 'Lead');
+  } catch (err) {
+    btn.disabled = false;
+    say('No pudimos mandarlo ahora. Inténtalo de nuevo en un momento.', 'err');
+    trackFunnel('lead_failed', { status: String(err && err.message || '') });
+  }
+}
+
 // ── Tutorial en vídeo ──
+// ?tutorial=1 (enlace del correo) abre el tutorial al cargar
+window.addEventListener('load', () => {
+  const q = new URLSearchParams(location.search);
+  if (q.get('tutorial') !== '1') return;
+  q.delete('tutorial');
+  history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash);
+  openTutorial('email');
+});
 function openTutorial(from) {
   const m = document.getElementById('tutModal'), v = document.getElementById('tutVideo');
   m.hidden = false;
