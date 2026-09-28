@@ -63,6 +63,15 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 - `lib/ref.ts`: vale cualquier código de promoción activo (porcentaje o importe fijo) menos los `YLS-XXXXX` de la oferta; los de influencers llevan `metadata.influencer` y `commission_mxn`.
 - Crear, listar y pausar: `node scripts/influencer-code.mjs crear SOFI20 sofi.y.tomas --pct 20 --comision 50` (cupón `YLSINF20`, multiuso; Stripe live). En el preview, cualquier código `PRUEBA…` vale un 20%.
 
+## Correo: «Háganlo luego» (Brevo)
+
+- Debajo de la zona de subida (y un enlace en la portada móvil) hay un formulario para quien no tiene el chat a mano: correo + casilla de consentimiento (sin marcar). `/api/lead` → `lib/brevo.ts`: guarda el contacto en la lista «Leads web» (la crea si no existe; o `BREVO_LIST_ID`) con `FUENTE`, `ORIGEN`, `CONSENTIMIENTO` y manda al momento el E0 (enlace + tutorial). Sin `BREVO_API_KEY` en Vercel devuelve 503 y la web dice que lo intenten luego.
+- Secuencia E1 (día 1), E2 (día 3), E3 (día 6): plantillas en `scripts/brevo-plantillas.mjs` (`node scripts/brevo-plantillas.mjs` las crea/actualiza y crea los atributos). Las manda una automatización de Brevo (contacto añadido a la lista → esperas → correo, comprobando que sigue en la lista).
+- Quien paga sale de la lista: `/api/verify-payment` llama a `markBuyer` (atributo `COMPRADO`).
+- `?tutorial=1` abre el tutorial al cargar (enlace de los correos). Eventos: `lead_form_open`, `lead_captured` (+ `Lead` del píxel), `lead_failed`.
+- Carrito abandonado de Stripe: `create-checkout` pide `consent_collection.promotions: 'auto'` y `after_expiration.recovery`; si Stripe lo rechaza, crea la sesión sin eso. Hay que activar los correos de recuperación en el Dashboard de Stripe.
+- DNS (Namecheap): Brevo autenticado (`brevo-code`, DKIM `brevo1/brevo2._domainkey`, DMARC, marca `em`), correo de Namecheap Private Email (MX/SPF/DKIM `privateemail`). Remitente: contacto@yalosabia.com.
+
 ## Medición
 
 - Píxel de Meta: `PageView`, `ChatUploaded` (custom), `ViewContent` (adelanto visto), `InitiateCheckout`, `Purchase`.

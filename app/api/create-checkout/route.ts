@@ -82,8 +82,29 @@ export async function POST(req: NextRequest) {
       src_first_visit: clean(firstVisit.t),
     }).filter(([, v]) => v));
 
+    // Carrito abandonado: si la sesión caduca sin pagar, Stripe crea un enlace de recuperación y, si la persona
+    // aceptó correos promocionales en el checkout, le manda el recordatorio (hay que activarlo en el Dashboard:
+    // Configuración > Checkout > «Correos de recuperación de carritos abandonados»). La sesión caduca a las 24 h.
+    let recovery = true;
     async function createSession(cur: string, amt: number) {
+      if (!recovery) return createSessionWith(cur, amt, false);
+      try {
+        return await createSessionWith(cur, amt, true);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (!/consent|recovery|after_expiration|promotions/i.test(msg)) throw err;
+        console.warn('[checkout] sin recuperación de carrito:', msg);
+        recovery = false;
+        return createSessionWith(cur, amt, false);
+      }
+    }
+
+    async function createSessionWith(cur: string, amt: number, withRecovery: boolean) {
       return stripe.checkout.sessions.create({
+        ...(withRecovery ? {
+          consent_collection: { promotions: 'auto' as const },
+          after_expiration: { recovery: { enabled: true, allow_promotion_codes: !promotionCode } },
+        } : {}),
         customer_email: email.trim(),
         line_items: [{
           price_data: {
