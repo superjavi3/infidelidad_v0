@@ -237,6 +237,7 @@ nav a:hover { color: var(--text); }
   cursor: pointer;
   transition: all 0.2s;
 }
+.demo-link { display: block; margin: 6px auto 0; background: none; border: none; padding: 4px; font-family: inherit; font-size: 0.85rem; color: var(--text-muted, #7A4B52); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .demo-btn:hover {
   color:#3B0A12;
   border-color: rgba(200,16,46,0.5);
@@ -1205,6 +1206,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <button type="button" class="hero-mcta-btn" onclick="heroUpload()">Subir nuestro chat</button>
     <div class="hero-mcta-chips"><span>adelanto gratis</span><span>sin registrarse</span><span>se lee en tu teléfono</span></div>
     <button type="button" class="tutorial-link" onclick="openTutorial('hero')">¿Cómo exporto el chat? Mira el tutorial</button>
+    <button type="button" class="demo-link" onclick="loadDemo('hero')">o vean un ejemplo sin subir nada</button>
   </div>
   <div class="hero-pages" aria-hidden="true">
     <img class="hp-back" src="/diario/dias-que-recordar.jpg" width="635" height="898" alt="">
@@ -1224,9 +1226,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <span class="format-tag">Hasta 40,000 mensajes</span>
     </div>
     <button type="button" class="tutorial-link" onclick="event.stopPropagation(); openTutorial('upload')">¿No te queda claro? Mira el tutorial</button>
-    <!-- DESACTIVADO: botón "Ver ejemplo" (modo demo gratuito). Para reactivarlo, descomenta esta línea. El código de loadDemo() sigue intacto más abajo.
-    <button class="demo-btn" id="demoBtn" onclick="event.stopPropagation(); loadDemo()">Ver un ejemplo sin subir nada</button>
-    -->
+    <button class="demo-btn" id="demoBtn" onclick="event.stopPropagation(); loadDemo('upload')">Ver un ejemplo sin subir nada</button>
   </div>
 
   <!-- Processing State -->
@@ -1251,11 +1251,11 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   <div style="background:rgba(183,121,31,0.1);border:1px solid rgba(183,121,31,0.3);
     border-radius:8px;padding:10px 16px;text-align:center;margin-bottom:16px;
     font-size:0.85rem;color:#B7791F">
-    Estás viendo un ejemplo —
-    <button onclick="document.getElementById('top').scrollIntoView({behavior:'smooth'})"
+    Están viendo un ejemplo (Laura y Carlos) —
+    <button onclick="exitDemo('banner')"
       style="background:none;border:none;color:#C8102E;cursor:pointer;
       font-weight:700;font-size:0.85rem">
-      Analiza tu propio chat →
+      Ahora con su chat
     </button>
   </div>
 </div>
@@ -1317,7 +1317,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
         <li>Para guardarlo, leerlo juntos o regalarlo</li>
         <li>Te llega al momento, sin volver a subir nada</li>
       </ul>
-      <button class="price-btn price-btn-primary" onclick="openPayModal()">Quiero mi diario</button>
+      <button class="price-btn price-btn-primary" id="paywallBtn" onclick="openPayModal()">Quiero mi diario</button>
       <small>Pago seguro con Stripe</small>
     </div>
   </div>
@@ -2346,8 +2346,12 @@ function generateDemoMessages() {
 }
 
 
-async function loadDemo() {
+// Ejemplo sin subir nada: el adelanto del chat de Laura y Carlos. No desbloquea nada ni se puede pagar:
+// el botón del precio lleva a subir su propio chat (exitDemo).
+async function loadDemo(from) {
+  trackFunnel('demo_open', { from: from || '' });
   window.isDemoMode = true;
+  window.currentChatFp = null;
   CHAT_DATE_ORDER = 'DMY';
 
   // Generate demo messages
@@ -2392,10 +2396,9 @@ async function loadDemo() {
   lastMessages = demoMessages;
   lastStats = demoStats;
 
-  // Unlock all sections for demo
-  window.isPremium = true;
-
   showResults(demoStats);
+  const pb = document.getElementById('paywallBtn');
+  if (pb) pb.textContent = 'Ahora con su chat';
 
   // Show demo banner
   document.getElementById('demoBanner').style.display = 'block';
@@ -3739,7 +3742,21 @@ function applyChatSizeLimits() {
   if (tooShort || short) trackFunnel('chat_short', { messages: n, blocked: tooShort });
 }
 
+// Salir del ejemplo: se recarga la página y se lleva a la zona de subida
+function exitDemo(from) {
+  trackFunnel('demo_exit', { from: from || '' });
+  location.hash = 'subir';
+  location.reload();
+}
+if (location.hash === '#subir') {
+  window.addEventListener('load', () => {
+    history.replaceState(null, '', location.pathname + location.search);
+    setTimeout(() => goToUpload('demo'), 300);
+  });
+}
+
 function openPayModal() {
+  if (window.isDemoMode) { exitDemo('price'); return; }
   // El pago se ata a un chat concreto: sin chat subido no hay nada que comprar todavía
   if (!lastMessages || !window.currentChatFp) {
     goToUpload('price');
