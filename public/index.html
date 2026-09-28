@@ -1362,10 +1362,10 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 
       <!-- Polaroid del primer mensaje -->
       <div id="storiesPolaroid" style="position: absolute; left: 140px; top: 560px; width: 540px; background: #FFFFFF; border: 2px solid #EAD0CB; padding: 30px 30px 110px; transform: rotate(-4deg);">
-        <div style="height: 430px; background: #F7DDD8; padding: 34px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px;">
-          <div id="storiesFirstMsg" style="align-self: flex-start; max-width: 88%; background: #FFFFFF; border-radius: 30px 30px 30px 8px; padding: 20px 26px; font-size: 34px; line-height: 1.3;"></div>
-          <div id="storiesFirstReply" style="align-self: flex-end; max-width: 80%; background: #C8102E; color: #FFF4EF; border-radius: 30px 30px 8px 30px; padding: 20px 26px; font-size: 34px; line-height: 1.3;"></div>
-          <div id="storiesFirstDate" style="margin-top: auto; font-size: 26px; color: #7A4B52;"></div>
+        <div style="position: relative; height: 430px; overflow: hidden; background: #F7DDD8; padding: 26px 34px 30px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px;">
+          <div id="storiesFirstDate" style="align-self: center; background: rgba(255,255,255,0.75); border-radius: 14px; padding: 6px 18px; font-size: 24px; color: #7A4B52;"></div>
+          <div id="storiesFirstMsg" style="align-self: flex-start; max-width: 88%; background: #FFFFFF; border-radius: 30px 30px 30px 8px; padding: 20px 26px; font-size: 30px; line-height: 1.3;"></div>
+          <div id="storiesFirstReply" style="align-self: flex-end; max-width: 80%; background: #C8102E; color: #FFF4EF; border-radius: 30px 30px 8px 30px; padding: 20px 26px; font-size: 30px; line-height: 1.3;"></div>
         </div>
         <div style="position: absolute; left: 0; right: 0; bottom: 26px; text-align: center; font-family: 'Caveat', cursive; font-weight: 700; font-size: 62px; line-height: 1;">el primer mensaje</div>
       </div>
@@ -4036,6 +4036,21 @@ function firstName(name) { return stripEmoji(String(name || '')).split(' ')[0]; 
 const DIARY_MEDIA_RE = /omitid|omitted|<adjunto|adjunto:|multimedia|\.(jpe?g|png|webp|opus|mp4|pdf|vcf)\b|sticker|eliminaste este mensaje|se eliminó este mensaje|este mensaje fue eliminado|this message was deleted|null$/i;
 const DIARY_AUDIO_RE = /audio|\.opus|ptt-/i;
 const DIARY_LOVE_RE = /\bte\s+(quiero|amo|adoro)\b|\bi\s+love\s+(you|u)\b/i;
+// ¿Es un «te quiero» de verdad? No cuentan «te quiero preguntar/comentar/pedir…» (quiero + infinitivo),
+// «te quiero que…», «no te quiero…» ni «te quiero ver». Se usa para el primer y el último «te quiero».
+const LOVE_NOT_AFTER = /^\s*(?:[a-záéíóúñ]+(?:ar|er|ir)(?:te|le|les|lo|la|los|las|me|nos|se)?|que|q|ver|dar)(?![a-záéíóúñ])/i;
+function isLoveText(text) {
+  const t = String(text || '');
+  if (/\bi\s+love\s+(you|u)\b/i.test(t)) return true;
+  const re = /(\bno\s+)?\bte\s+(quiero|amo|adoro)\b/gi;
+  let m;
+  while ((m = re.exec(t))) {
+    if (m[1]) continue;
+    if (LOVE_NOT_AFTER.test(t.slice(m.index + m[0].length))) continue;
+    return true;
+  }
+  return false;
+}
 
 function diaryDate(m) { return parseMessageDate(m.date, m.time, m.ampm); }
 
@@ -4108,7 +4123,7 @@ function analyzeMilestones(messages) {
   const firstReply = real.find(r => r.sender !== first.sender && diaryDate(r) >= firstDate) || null;
 
   let love = null;
-  const li = real.findIndex(m => DIARY_LOVE_RE.test(m.text));
+  const li = real.findIndex(m => isLoveText(m.text));
   if (li >= 0) {
     const m = real[li], d = diaryDate(m);
     const reply = real.slice(li + 1).find(r => r.sender !== m.sender);
@@ -4148,7 +4163,7 @@ function computeMoments(messages) {
     const i = real.indexOf(ms.first);
     out.push({ id: 'first', dateObj: ms.firstDate, label: 'El primer mensaje', messages: pick(real.slice(i, i + 3)) });
   }
-  const loveIdx = real.findIndex(m => DIARY_LOVE_RE.test(m.text));
+  const loveIdx = real.findIndex(m => isLoveText(m.text));
   if (loveIdx >= 0) {
     const reply = real.slice(loveIdx + 1).find(r => r.sender !== real[loveIdx].sender);
     out.push({ id: 'love', dateObj: diaryDate(real[loveIdx]), label: 'El primer «te quiero»', messages: pick([real[loveIdx - 1], real[loveIdx], reply]) });
@@ -4160,7 +4175,7 @@ function computeMoments(messages) {
     out.push({ id: 'busiest', dateObj: ms.busiest.date, label: 'El día que más se escribieron (' + ms.busiest.count.toLocaleString('es-MX') + ' mensajes)', messages: pick(day.filter(m => best.includes(m))) });
   }
   let lastIdx = -1;
-  for (let i = real.length - 1; i >= 0; i--) if (DIARY_LOVE_RE.test(real[i].text)) { lastIdx = i; break; }
+  for (let i = real.length - 1; i >= 0; i--) if (isLoveText(real[i].text)) { lastIdx = i; break; }
   const end = diaryDate(real[real.length - 1]);
   const lastDays = lastIdx >= 0 ? Math.round((end - diaryDate(real[lastIdx])) / 86400000) : null;
   if (lastIdx > loveIdx && lastDays >= 7) {
@@ -4282,7 +4297,7 @@ function findBestMessage(diary, messages) {
   let best = null;
   messages.forEach(m => {
     if (!isRealText(m) || m.text.length > 280) return;
-    const score = (DIARY_LOVE_RE.test(m.text) ? 50 : 0) + (/(contigo|juntos|extraño|mi amor|gracias por)/i.test(m.text) ? 30 : 0) + Math.min(m.text.length, 180) / 6;
+    const score = (isLoveText(m.text) ? 50 : 0) + (/(contigo|juntos|extraño|mi amor|gracias por)/i.test(m.text) ? 30 : 0) + Math.min(m.text.length, 180) / 6;
     if (score >= 50 && (!best || score > best.score)) best = { score, m };
   });
   return best ? { sender: best.m.sender, text: best.m.text, date: diaryDate(best.m) } : null;
@@ -4454,10 +4469,10 @@ async function shareToStories() {
   // Polaroid: el primer mensaje y la respuesta (o se oculta si no hay)
   const pol = document.getElementById('storiesPolaroid');
   if (ms.first) {
-    const clip = (t, n) => { t = stripEmoji(t || '').trim(); return t.length > n ? t.slice(0, n - 1).trim() + '…' : t; };
-    document.getElementById('storiesFirstMsg').textContent = clip(ms.first.text, 90);
+    const clip = (t, n) => { t = stripEmoji(t || '').trim(); return t.length > n ? t.slice(0, n - 1).replace(/\s+\S*$/, '').replace(/[,;:.\s]+$/, '') + '…' : t; };
+    document.getElementById('storiesFirstMsg').textContent = clip(ms.first.text, 46);
     const rep = document.getElementById('storiesFirstReply');
-    rep.textContent = ms.firstReply ? clip(ms.firstReply.text, 60) : '';
+    rep.textContent = ms.firstReply ? clip(ms.firstReply.text, 30) : '';
     rep.style.display = ms.firstReply ? '' : 'none';
     document.getElementById('storiesFirstDate').textContent = fmtShort(ms.firstDate) + ' · ' + fmtHour(ms.firstDate);
     pol.style.display = '';
