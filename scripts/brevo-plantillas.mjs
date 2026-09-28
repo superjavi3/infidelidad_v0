@@ -78,6 +78,16 @@ for (const name of ['FUENTE', 'ORIGEN', 'CONSENTIMIENTO', 'COMPRADO']) {
   catch { /* ya existe */ }
 }
 
+// Lista «Leads web» (la usa la automatización como disparador; /api/lead la crearía igual con el primer contacto)
+const lists = (await brevo('/contacts/lists?limit=50&offset=0')).lists || [];
+let list = lists.find(l => l.name === 'Leads web');
+if (!list) {
+  const folders = (await brevo('/contacts/folders?limit=10&offset=0')).folders || [];
+  const folderId = folders[0] ? folders[0].id : (await brevo('/contacts/folders', { method: 'POST', body: JSON.stringify({ name: 'YaLoSabía' }) })).id;
+  list = await brevo('/contacts/lists', { method: 'POST', body: JSON.stringify({ name: 'Leads web', folderId }) });
+  console.log(`lista creada #${list.id}  Leads web`);
+} else console.log(`lista ya existe #${list.id}  Leads web`);
+
 const existing = (await brevo('/smtp/templates?limit=100&offset=0')).templates || [];
 for (const t of TEMPLATES) {
   const body = { ...t, sender: SENDER, isActive: true, tag: 'lead-secuencia' };
