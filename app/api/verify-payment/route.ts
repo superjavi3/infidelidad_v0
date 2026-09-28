@@ -24,7 +24,8 @@ export async function GET(req: NextRequest) {
 
   // Vuelta de Stripe con cookies aceptadas: la compra también va a Meta desde el servidor (ver lib/meta-capi.ts)
   const q = req.nextUrl.searchParams;
-  if (q.get('track') === '1' && capiEnabled()) {
+  // Un diario gratis (código del 100%) no se manda como compra
+  if (q.get('track') === '1' && capiEnabled() && value > 0) {
     // Se manda después de responder: el navegador no espera a Meta
     const purchase = {
       eventId: sessionId,

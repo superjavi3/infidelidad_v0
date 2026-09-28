@@ -56,9 +56,11 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 
 ## Códigos de influencers
 
+- En la ventana de pago hay «¿Tienes un código de descuento?»: vale cualquier código de promoción activo de Stripe (también los creados a mano en el panel de Stripe) salvo los `YLS-XXXXX`. Stripe no deja aplicar un descuento y a la vez enseñar su propio campo de códigos, por eso el campo está en la web. Eventos `code_applied`/`code_invalid`; con código del 100% la vuelta de Stripe cuenta `free_diary` (no `purchase`) y no se manda a Meta.
+- **Códigos del 100%**: el total queda en 0, Stripe no pide tarjeta y la sesión termina con `payment_status = no_payment_required`, que `checkSessionPayment` acepta como pagada.
 - Enlace `yalosabia.com/?c=CODIGO`: el navegador guarda el código 30 días (`localStorage.yalosabia_ref`, manda el último enlace), `/api/ref` comprueba en Stripe que existe y la web enseña el precio con descuento en vez de la barra del 15%. Evento `ref_landing` y propiedad `ref_code` en PostHog.
 - `create-checkout` lo aplica antes que la oferta de bienvenida y guarda `ref_code`, `influencer` y `ref_commission_mxn` en la sesión. El panel suma ventas y comisión por código. También se puede escribir a mano en la página de pago de Stripe (sin que quede `ref_code`; se ve en los usos del código).
-- `lib/ref.ts`: solo valen códigos de promoción de Stripe con `metadata.influencer` (los `YLS-XXXXX` de la oferta no).
+- `lib/ref.ts`: vale cualquier código de promoción activo (porcentaje o importe fijo) menos los `YLS-XXXXX` de la oferta; los de influencers llevan `metadata.influencer` y `commission_mxn`.
 - Crear, listar y pausar: `node scripts/influencer-code.mjs crear SOFI20 sofi.y.tomas --pct 20 --comision 50` (cupón `YLSINF20`, multiuso; Stripe live). En el preview, cualquier código `PRUEBA…` vale un 20%.
 
 ## Medición

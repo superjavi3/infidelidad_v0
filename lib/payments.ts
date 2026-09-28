@@ -11,7 +11,8 @@ export function chatFingerprint(messages: ChatMessage[]): string {
 }
 
 // Stripe es la única fuente de verdad del acceso: una sesión de Checkout da acceso
-// si está pagada y su cargo no se ha reembolsado ni disputado.
+// si está pagada y su cargo no se ha reembolsado ni disputado. Con un código del 100% no hay cargo:
+// la sesión queda «complete» con payment_status «no_payment_required» y también da acceso.
 
 export interface PaymentCheck {
   paid: boolean;
@@ -50,7 +51,8 @@ export async function checkSessionPayment(sessionId: unknown, { fresh = false } 
       expand: ['payment_intent.latest_charge'],
     });
 
-    if (session.status !== 'complete' || session.payment_status !== 'paid') {
+    const settled = session.payment_status === 'paid' || session.payment_status === 'no_payment_required';
+    if (session.status !== 'complete' || !settled) {
       result = { paid: false, reason: 'unpaid' };
     } else {
       const pi = session.payment_intent as Stripe.PaymentIntent | null;
