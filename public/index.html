@@ -3394,6 +3394,7 @@ async function loadLocalPricing() {
     if (!res.ok) return;
     const data = await res.json();
     window.localPricing = data;
+    if (window.activeRef) renderOffer();
 
     // Precio premium formateado (para botones, badges, modal, exit intent)
     document.querySelectorAll('.precio-premium').forEach(el => {
@@ -3457,7 +3458,15 @@ function offerMoney(v) {
   const n = v.toLocaleString('es-MX', { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 });
   return (lp ? lp.symbol : '$') + n + ' ' + (lp ? lp.label : 'MXN');
 }
+// Precio con un porcentaje de descuento. Mismo cálculo que Stripe: el porcentaje sobre el importe en centavos, redondeado
+function discountedPrices(percent) {
+  const lp = window.localPricing;
+  const minor = lp && lp.premium ? lp.premium : 19900;
+  const div = lp && lp.isZeroDecimal ? 1 : 100;
+  return { base: minor / div, disc: Math.round(minor * (100 - percent) / 100) / div };
+}
 function renderOffer() {
+  if (window.activeRef) return renderRef();
   const on = offerActive();
   document.body.classList.toggle('has-offer', on);
   const bar = document.getElementById('offerBar');
@@ -3473,12 +3482,7 @@ function renderOffer() {
   const left = Math.max(0, o.expiresAt - Date.now());
   document.getElementById('offerTime').textContent = String(Math.floor(left / 60000)).padStart(2, '0') + ':' + String(Math.floor(left / 1000) % 60).padStart(2, '0');
   document.getElementById('offerCode').textContent = o.code;
-  // Mismo cálculo que Stripe: el porcentaje sobre el importe en centavos, redondeado
-  const lp = window.localPricing;
-  const minor = lp && lp.premium ? lp.premium : 19900;
-  const div = lp && lp.isZeroDecimal ? 1 : 100;
-  const base = minor / div;
-  const disc = Math.round(minor * (100 - o.percent) / 100) / div;
+  const { base, disc } = discountedPrices(o.percent);
   document.querySelectorAll('[data-offer-price]').forEach(el => {
     el.hidden = false;
     el.innerHTML = '<s>' + offerMoney(base) + '</s> <b>' + offerMoney(disc) + '</b> con tu ' + o.percent + '% de bienvenida';
@@ -3488,7 +3492,56 @@ function renderOffer() {
     line.innerHTML = 'Con tu código <b>' + o.code + '</b>: <b>' + offerMoney(disc) + '</b>. Se aplica solo al pagar.';
   }
 }
+// ─── CÓDIGOS DE INFLUENCERS (ver lib/ref.ts) ───────────────────
+// Enlace yalosabia.com/?c=CODIGO: el código se guarda 30 días (manda el último enlace) y va antes que la
+// oferta de bienvenida. El servidor comprueba en Stripe que existe y lo aplica al pagar.
+const REF_KEY = 'yalosabia_ref';
+window.activeRef = null;
+function renderRef() {
+  const r = window.activeRef, on = !!r && !isPremiumUser();
+  const bar = document.getElementById('offerBar');
+  if (bar) bar.hidden = true;
+  document.body.classList.remove('has-offer');
+  const line = document.getElementById('payOfferLine');
+  const p = on ? discountedPrices(r.percent) : null;
+  document.querySelectorAll('[data-offer-price]').forEach(el => {
+    el.hidden = !on;
+    if (on) el.innerHTML = '<s>' + offerMoney(p.base) + '</s> <b>' + offerMoney(p.disc) + '</b> con el código ' + r.code + ' (' + r.percent + '%)';
+  });
+  if (line) {
+    line.hidden = !on;
+    if (on) line.innerHTML = 'Con el código <b>' + r.code + '</b>: <b>' + offerMoney(p.disc) + '</b>. Se aplica solo al pagar.';
+  }
+}
+async function initRef() {
+  const fromUrl = (new URLSearchParams(location.search).get('c') || '').trim().toUpperCase();
+  let code = /^[A-Z0-9]{3,20}$/.test(fromUrl) ? fromUrl : '';
+  if (!code) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(REF_KEY) || 'null');
+      if (saved && saved.code && Date.now() - saved.t < 30 * 864e5) code = saved.code;
+    } catch (e) {}
+  }
+  if (!code) return false;
+  try {
+    const d = await fetch('/api/ref?c=' + encodeURIComponent(code)).then(r => r.json());
+    if (!d.valid) {
+      try { localStorage.removeItem(REF_KEY); } catch (e) {}
+      return false;
+    }
+    window.activeRef = { code: d.code, percent: d.percent };
+    if (code === fromUrl) {
+      try { localStorage.setItem(REF_KEY, JSON.stringify({ code: d.code, t: Date.now() })); } catch (e) {}
+      trackFunnel('ref_landing', { code: d.code });
+    }
+    try { if (window.posthog && posthog.register) posthog.register({ ref_code: d.code }); } catch (e) {}
+    renderRef();
+    return true;
+  } catch (e) { return false; }
+}
+
 async function initOffer() {
+  if (await initRef()) return;
   let o = null;
   try { o = JSON.parse(localStorage.getItem(OFFER_KEY) || 'null'); } catch (e) {}
   if (!o) {
@@ -3754,7 +3807,7 @@ async function goToStripeCheckout() {
     const res = await fetch('/api/create-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, plan: 'premium', chatFp: window.currentChatFp, offer: offerActive() ? window.activeOffer.token : undefined, src: firstTouch })
+      body: JSON.stringify({ email, plan: 'premium', chatFp: window.currentChatFp, offer: offerActive() ? window.activeOffer.token : undefined, ref: window.activeRef ? window.activeRef.code : undefined, src: firstTouch })
     });
 
     const data = await res.json();

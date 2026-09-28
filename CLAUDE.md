@@ -54,6 +54,13 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 - En el navegador: `localStorage.yalosabia_offer` (una oferta por navegador; se marca usada al pagar).
 - **Apagarla:** `OFFER_DISABLED=1` en Vercel y redeploy. Duración y porcentaje: constantes en `lib/offer.ts` (el texto «15%» de la barra está en `index.html`).
 
+## Códigos de influencers
+
+- Enlace `yalosabia.com/?c=CODIGO`: el navegador guarda el código 30 días (`localStorage.yalosabia_ref`, manda el último enlace), `/api/ref` comprueba en Stripe que existe y la web enseña el precio con descuento en vez de la barra del 15%. Evento `ref_landing` y propiedad `ref_code` en PostHog.
+- `create-checkout` lo aplica antes que la oferta de bienvenida y guarda `ref_code`, `influencer` y `ref_commission_mxn` en la sesión. El panel suma ventas y comisión por código. También se puede escribir a mano en la página de pago de Stripe (sin que quede `ref_code`; se ve en los usos del código).
+- `lib/ref.ts`: solo valen códigos de promoción de Stripe con `metadata.influencer` (los `YLS-XXXXX` de la oferta no).
+- Crear, listar y pausar: `node scripts/influencer-code.mjs crear SOFI20 sofi.y.tomas --pct 20 --comision 50` (cupón `YLSINF20`, multiuso; Stripe live). En el preview, cualquier código `PRUEBA…` vale un 20%.
+
 ## Medición
 
 - Píxel de Meta: `PageView`, `ChatUploaded` (custom), `ViewContent` (adelanto visto), `InitiateCheckout`, `Purchase`.

@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { getPricingForCountry } from '../pricing/route';
 import { CHAT_FP_RE } from '@/lib/payments';
 import { offerEnabled, promotionCodeFor, verifyOffer } from '@/lib/offer';
+import { findRefCode, type RefCode } from '@/lib/ref';
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY || '');
@@ -10,7 +11,7 @@ function getStripe() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, plan, chatFp, offer, src } = await req.json();
+    const { email, plan, chatFp, offer, src, ref } = await req.json();
 
     const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (typeof email !== 'string' || email.length > 200 || !EMAIL_RE.test(email.trim())) {
@@ -45,9 +46,21 @@ export async function POST(req: NextRequest) {
     const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://yalosabia.com';
     const stripe = getStripe();
 
-    // Oferta de bienvenida: su código de un solo uso, si sigue vigente. Si algo falla, se cobra el precio normal.
+    // Código de un influencer (enlace ?c=CODIGO): va antes que la oferta de bienvenida y queda en la sesión
+    // para su comisión. Si no vale, se sigue con la oferta o el precio normal.
     let promotionCode: string | null = null;
-    const validOffer = offerEnabled() ? verifyOffer(offer) : null;
+    let refCode: RefCode | null = null;
+    if (ref) {
+      try {
+        refCode = await findRefCode(stripe, ref);
+        if (refCode) promotionCode = refCode.id;
+      } catch (err: unknown) {
+        console.warn('[ref] sin código:', err instanceof Error ? err.message : err);
+      }
+    }
+
+    // Oferta de bienvenida: su código de un solo uso, si sigue vigente. Si algo falla, se cobra el precio normal.
+    const validOffer = !refCode && offerEnabled() ? verifyOffer(offer) : null;
     if (validOffer) {
       try {
         promotionCode = await promotionCodeFor(stripe, validOffer);
@@ -92,6 +105,7 @@ export async function POST(req: NextRequest) {
           country,
           currency: cur,
           ...(promotionCode && validOffer ? { offer_code: validOffer.code } : {}),
+          ...(promotionCode && refCode ? { ref_code: refCode.code, influencer: refCode.influencer, ref_commission_mxn: refCode.commission } : {}),
           ...attribution,
         },
       });

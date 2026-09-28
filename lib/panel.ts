@@ -9,7 +9,7 @@ import { toMajorUnits } from './money';
 
 const day = (d: Date) => d.toISOString().slice(0, 10);
 
-export type Sale = { date: string; amount: number; currency: string; source: string; campaign: string; offer: boolean; refunded: boolean };
+export type Sale = { date: string; amount: number; currency: string; source: string; campaign: string; offer: boolean; ref: string; commission: number; refunded: boolean };
 
 export async function stripeStats(days: number) {
   if (!process.env.STRIPE_SECRET_KEY) return { configured: false as const };
@@ -29,6 +29,8 @@ export async function stripeStats(days: number) {
       source: s.metadata?.src_source || 'sin dato',
       campaign: s.metadata?.src_campaign || '',
       offer: !!s.metadata?.offer_code,
+      ref: s.metadata?.ref_code || '',
+      commission: Number(s.metadata?.ref_commission_mxn) || 0,
       refunded: !!(ch && (ch.refunded || ch.amount_refunded > 0 || ch.disputed)),
     });
   }
