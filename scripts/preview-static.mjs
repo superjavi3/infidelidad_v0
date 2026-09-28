@@ -50,8 +50,8 @@ createServer(async (req, res) => {
   if (url === '/api/analyze') return json(200, { success: true, diary: DIARY });
   // Oferta de bienvenida falsa (el token no vale para Stripe; solo para ver la barra y el precio)
   if (url === '/api/offer') return json(200, { enabled: true, code: 'YLS-PRUEB', expiresAt: Date.now() + 30 * 60000, percent: 15, token: 'preview.preview' });
-  // Código de influencer falso: cualquier código que empiece por PRUEBA vale un 20%
-  if (url === '/api/ref') { const c = (new URL(req.url, 'http://x').searchParams.get('c') || '').toUpperCase(); return json(200, /^PRUEBA/.test(c) ? { valid: true, code: c, percent: 20 } : { valid: false }); }
+  // Códigos falsos: PRUEBA… vale un 20% y GRATIS… un 100%
+  if (url === '/api/ref') { const c = (new URL(req.url, 'http://x').searchParams.get('c') || '').toUpperCase(); return json(200, /^PRUEBA/.test(c) ? { valid: true, code: c, percent: 20 } : /^GRATIS/.test(c) ? { valid: true, code: c, percent: 100 } : { valid: false }); }
   // Panel interno con datos inventados (clave: «preview»), para ver el diseño sin claves
   if (url === '/api/panel') {
     if (req.headers['x-panel-key'] !== 'preview') return json(401, { error: 'Clave incorrecta (en el preview es «preview»)' });

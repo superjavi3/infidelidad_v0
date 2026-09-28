@@ -1,6 +1,7 @@
 // Códigos de descuento para influencers (ver lib/ref.ts). Usa STRIPE_SECRET_KEY (de .env.local o del entorno).
 //
-//   node scripts/influencer-code.mjs crear SOFI20 sofi.y.tomas [--pct 20] [--comision 50]
+//   node scripts/influencer-code.mjs crear SOFI20 sofi.y.tomas [--pct 20] [--comision 50] [--usos N]
+//   node scripts/influencer-code.mjs crear REGALO100 regalos --pct 100 --comision 0 --usos 10   (diario gratis)
 //   node scripts/influencer-code.mjs lista
 //   node scripts/influencer-code.mjs pausar SOFI20
 //
@@ -24,13 +25,14 @@ const opt = (name, def) => { const i = rest.indexOf('--' + name); return i >= 0 
 if (cmd === 'crear') {
   const c = String(code || '').toUpperCase();
   if (!/^[A-Z0-9]{3,20}$/.test(c) || !influencer) { console.error('Uso: crear CODIGO cuenta [--pct 20] [--comision 50]  (código: 3-20 letras/números)'); process.exit(1); }
-  const pct = opt('pct', 20), commission = opt('comision', 50);
+  const pct = opt('pct', 20), commission = opt('comision', 50), uses = opt('usos', 0);
   const couponId = 'YLSINF' + pct;
   try { await stripe.coupons.retrieve(couponId); }
   catch { await stripe.coupons.create({ id: couponId, percent_off: pct, duration: 'once', name: `Influencer ${pct}%` }); }
   const pc = await stripe.promotionCodes.create({
     promotion: { type: 'coupon', coupon: couponId },
     code: c,
+    ...(uses > 0 ? { max_redemptions: uses } : {}),
     metadata: { influencer, commission_mxn: String(commission) },
   });
   console.log(`Creado ${pc.code} (${pct}%, comisión MX$${commission}) para ${influencer}`);

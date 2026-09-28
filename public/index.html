@@ -1074,6 +1074,14 @@ body.has-offer nav { top: 38px; }
 .offer-price[hidden], .offer-line[hidden] { display: none; }
 .offer-price s { color: var(--text-muted); }
 .offer-price b { color: var(--pink); font-size: 1.15rem; }
+.code-box { margin: -8px 0 16px; text-align: left; }
+.code-toggle { background: none; border: none; padding: 2px 0; font-family: inherit; font-size: 0.82rem; color: var(--text-muted, #7A4B52); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.code-row { display: flex; gap: 8px; margin-top: 8px; }
+.code-row[hidden], .code-msg[hidden] { display: none; }
+.code-row input { flex: 1; min-width: 0; padding: 10px; border: 2px solid #3B0A12; border-radius: 4px; background: #fff; font-family: var(--font-body); font-size: 0.95rem; text-transform: uppercase; color: #3B0A12; }
+.code-row button { padding: 10px 14px; border: 2px solid #3B0A12; border-radius: 4px; background: #3B0A12; color: #FFF4EF; font-family: var(--font-body); font-weight: 700; cursor: pointer; }
+.code-msg { margin-top: 6px; font-size: 0.8rem; color: var(--text); }
+.code-msg.bad { color: #C8102E; }
 .offer-line { margin: -14px 0 20px; font-size: 0.9rem; color: var(--text); }
 .offer-line b { color: var(--pink); }
 @media (max-width: 560px) { .offer-bar { gap: 10px; font-size: 0.78rem; } .offer-bar .offer-code { display: none; } }
@@ -3370,6 +3378,14 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     <h3 id="payModalTitle" style="color:#3B0A12;margin-bottom:4px;font-family:var(--font-display);font-size:2.4rem;line-height:1;">Tu diario completo</h3>
     <p id="payModalPrice" class="precio-premium" style="color:#7A4B52;margin-bottom:24px;">$199 MXN — pago único</p>
     <p id="payOfferLine" class="offer-line" hidden></p>
+    <div class="code-box">
+      <button type="button" class="code-toggle" id="codeToggle" onclick="toggleCodeBox()">¿Tienes un código de descuento?</button>
+      <div class="code-row" id="codeRow" hidden>
+        <input id="codeInput" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="30" placeholder="CÓDIGO" onkeydown="if(event.key==='Enter'){event.preventDefault();applyCode();}">
+        <button type="button" id="codeApply" onclick="applyCode()">Aplicar</button>
+      </div>
+      <p class="code-msg" id="codeMsg" hidden></p>
+    </div>
     <input id="payEmail" type="email" name="email" autocomplete="email" inputmode="email" placeholder="¿A qué correo te lo mando?" style="width:100%;padding:12px;border-radius:4px;border:2px solid #3B0A12;background:#FFFFFF;font-family:var(--font-body);color:#3B0A12;margin-bottom:16px;box-sizing:border-box;font-size:1rem;">
     <label style="display:flex;align-items:flex-start;gap:10px;text-align:left;margin-bottom:16px;cursor:pointer;">
       <input type="checkbox" id="acceptTerms" onchange="document.getElementById('goToCheckout').disabled=!this.checked;document.getElementById('goToCheckout').style.opacity=this.checked?'1':'0.5'" style="margin-top:3px;accent-color:#C8102E;min-width:18px;min-height:18px;cursor:pointer;">
@@ -3501,25 +3517,68 @@ function renderOffer() {
 // oferta de bienvenida. El servidor comprueba en Stripe que existe y lo aplica al pagar.
 const REF_KEY = 'yalosabia_ref';
 window.activeRef = null;
+// Precio con el código activo: porcentaje, o importe fijo si el cupón está en la misma moneda
+function refPrices(r) {
+  if (r.percent) return discountedPrices(r.percent);
+  const lp = window.localPricing;
+  const minor = lp && lp.premium ? lp.premium : 19900;
+  const div = lp && lp.isZeroDecimal ? 1 : 100;
+  const cur = (lp && lp.currency) || 'mxn';
+  if (r.amountOff && (!r.currency || r.currency === cur)) return { base: minor / div, disc: Math.max(0, minor - r.amountOff) / div };
+  return null;
+}
 function renderRef() {
   const r = window.activeRef, on = !!r && !isPremiumUser();
   const bar = document.getElementById('offerBar');
   if (bar) bar.hidden = true;
   document.body.classList.remove('has-offer');
   const line = document.getElementById('payOfferLine');
-  const p = on ? discountedPrices(r.percent) : null;
+  const p = on ? refPrices(r) : null;
+  const free = !!(p && p.disc === 0);
   document.querySelectorAll('[data-offer-price]').forEach(el => {
     el.hidden = !on;
-    if (on) el.innerHTML = '<s>' + offerMoney(p.base) + '</s> <b>' + offerMoney(p.disc) + '</b> con el código ' + r.code + ' (' + r.percent + '%)';
+    if (on) el.innerHTML = p
+      ? '<s>' + offerMoney(p.base) + '</s> <b>' + (free ? 'gratis' : offerMoney(p.disc)) + '</b> con el código ' + r.code
+      : 'Código <b>' + r.code + '</b> aplicado';
   });
   if (line) {
     line.hidden = !on;
-    if (on) line.innerHTML = 'Con el código <b>' + r.code + '</b>: <b>' + offerMoney(p.disc) + '</b>. Se aplica solo al pagar.';
+    if (on) line.innerHTML = p
+      ? 'Con el código <b>' + r.code + '</b>: <b>' + (free ? 'gratis' : offerMoney(p.disc)) + '</b>. Se aplica solo al pagar.'
+      : 'Código <b>' + r.code + '</b> aplicado: el descuento se ve al pagar.';
   }
+  const go = document.getElementById('goToCheckout');
+  if (go) go.textContent = free ? 'Obtener mi diario' : 'Ir al pago';
+}
+// Guarda el código válido (30 días) y lo pinta en lugar de la oferta de bienvenida
+function setRef(d) {
+  window.activeRef = { code: d.code, percent: d.percent || null, amountOff: d.amountOff || null, currency: d.currency || null };
+  try { localStorage.setItem(REF_KEY, JSON.stringify({ code: d.code, t: Date.now() })); } catch (e) {}
+  try { if (window.posthog && posthog.register) posthog.register({ ref_code: d.code }); } catch (e) {}
+  renderRef();
+}
+// «¿Tienes un código?» en la ventana de pago
+function toggleCodeBox() {
+  const row = document.getElementById('codeRow');
+  row.hidden = !row.hidden;
+  if (!row.hidden) document.getElementById('codeInput').focus();
+}
+async function applyCode() {
+  const input = document.getElementById('codeInput'), msg = document.getElementById('codeMsg'), btn = document.getElementById('codeApply');
+  const code = (input.value || '').trim().toUpperCase();
+  const say = (t, bad) => { msg.hidden = false; msg.textContent = t; msg.classList.toggle('bad', !!bad); };
+  if (!/^[A-Z0-9][A-Z0-9_-]{2,29}$/.test(code) || code.startsWith('YLS-')) { say('Escribe el código tal como te lo dieron.', true); return; }
+  btn.disabled = true;
+  try {
+    const d = await fetch('/api/ref?c=' + encodeURIComponent(code)).then(r => r.json());
+    if (d.valid) { setRef(d); say('Código ' + d.code + ' aplicado.'); trackFunnel('code_applied', { code: d.code }); }
+    else { say('Ese código no existe o ya no está activo.', true); trackFunnel('code_invalid', {}); }
+  } catch (e) { say('No pudimos comprobar el código. Inténtalo de nuevo.', true); }
+  btn.disabled = false;
 }
 async function initRef() {
   const fromUrl = (new URLSearchParams(location.search).get('c') || '').trim().toUpperCase();
-  let code = /^[A-Z0-9]{3,20}$/.test(fromUrl) ? fromUrl : '';
+  let code = /^[A-Z0-9][A-Z0-9_-]{2,29}$/.test(fromUrl) && !fromUrl.startsWith('YLS-') ? fromUrl : '';
   if (!code) {
     try {
       const saved = JSON.parse(localStorage.getItem(REF_KEY) || 'null');
@@ -3533,13 +3592,8 @@ async function initRef() {
       try { localStorage.removeItem(REF_KEY); } catch (e) {}
       return false;
     }
-    window.activeRef = { code: d.code, percent: d.percent };
-    if (code === fromUrl) {
-      try { localStorage.setItem(REF_KEY, JSON.stringify({ code: d.code, t: Date.now() })); } catch (e) {}
-      trackFunnel('ref_landing', { code: d.code });
-    }
-    try { if (window.posthog && posthog.register) posthog.register({ ref_code: d.code }); } catch (e) {}
-    renderRef();
+    setRef(d);
+    if (code === fromUrl) trackFunnel('ref_landing', { code: d.code });
     return true;
   } catch (e) { return false; }
 }
@@ -3889,12 +3943,14 @@ async function checkPaymentSuccess() {
         console.log('[Paywall] Payment verified! Premium unlocked.');
 
         rememberPurchase(sessionId, data.chatFp, data.email);
-        if (!seenBefore) trackFunnel('purchase', { value: data.value, currency: data.currency });
+        // Un código del 100% no es una venta: va a PostHog como diario gratis y no se manda a Meta
+        const freeDiary = data.value === 0;
+        if (!seenBefore) trackFunnel(freeDiary ? 'free_diary' : 'purchase', { value: data.value, currency: data.currency });
         markOfferUsed();
 
         window.isPremium = true;
 
-        if (!seenBefore && typeof fbq !== 'undefined') {
+        if (!seenBefore && !freeDiary && typeof fbq !== 'undefined') {
           fbq('track', 'Purchase', {
             value: data.value || priceValue(),
             currency: (data.currency || 'mxn').toUpperCase(),

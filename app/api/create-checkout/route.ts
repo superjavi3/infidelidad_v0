@@ -46,8 +46,9 @@ export async function POST(req: NextRequest) {
     const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://yalosabia.com';
     const stripe = getStripe();
 
-    // Código de un influencer (enlace ?c=CODIGO): va antes que la oferta de bienvenida y queda en la sesión
-    // para su comisión. Si no vale, se sigue con la oferta o el precio normal.
+    // Código traído de fuera (enlace ?c=CODIGO de un influencer o escrito en la ventana de pago): va antes que
+    // la oferta de bienvenida y queda en la sesión (y la comisión, si es de un influencer). Si no vale, se sigue
+    // con la oferta o el precio normal. Un código del 100% deja el total en 0 y Stripe no pide tarjeta.
     let promotionCode: string | null = null;
     let refCode: RefCode | null = null;
     if (ref) {
@@ -105,7 +106,7 @@ export async function POST(req: NextRequest) {
           country,
           currency: cur,
           ...(promotionCode && validOffer ? { offer_code: validOffer.code } : {}),
-          ...(promotionCode && refCode ? { ref_code: refCode.code, influencer: refCode.influencer, ref_commission_mxn: refCode.commission } : {}),
+          ...(promotionCode && refCode ? { ref_code: refCode.code, ...(refCode.influencer ? { influencer: refCode.influencer, ref_commission_mxn: refCode.commission } : {}) } : {}),
           ...attribution,
         },
       });
