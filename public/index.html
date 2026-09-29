@@ -923,7 +923,6 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .upload-section .privacy-badge { display: flex; justify-content: center; margin: 18px auto 0; width: fit-content; }
 .upload-section:has(#uploadZone[style*="none"]) :is(.section-title, .section-subtitle) { display: none; }
 .lead-title { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; line-height: 1.1; color: var(--pink); margin-bottom: 4px; }
-@media (max-width: 700px) { #indice .diary-index { display: none; } }
 .sample-strip { display: flex; gap: 22px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 14px 6px 22px; margin: 0 -6px 30px; -webkit-overflow-scrolling: touch; }
 .sample-strip figure { flex: 0 0 220px; scroll-snap-align: center; margin: 0; text-align: center; }
 .sample-strip button { display: block; width: 100%; padding: 0; border: 1px solid var(--margin-line); background: #fff; box-shadow: var(--shadow); cursor: zoom-in; }
@@ -1093,10 +1092,6 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .os-tab.active { background: var(--text); border-color: var(--text); color: #FFF4EF; }
 
 /* Índice (landing) */
-.diary-index { max-width: 640px; margin: 0 auto; }
-.diary-index li { list-style: none; font-family: var(--font-display); font-size: 1.7rem; line-height: 44px; border-bottom: 1px solid var(--margin-line); display: flex; gap: 14px; }
-.diary-index li b { color: var(--pink); min-width: 44px; }
-.diary-index li span { font-family: var(--font-body); font-size: 0.85rem; color: var(--text-muted); margin-left: auto; }
 
 /* Precio (una sola tarjeta) */
 .diary-price { position: relative; max-width: 440px; margin: 0 auto; background: #fff; box-shadow: var(--shadow); padding: 36px 28px 28px; text-align: center; }
@@ -1290,16 +1285,6 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     </div>
     <p class="sample-note">Las 14 páginas de un diario de ejemplo, hecho con un chat de prueba. El suyo sale con sus nombres, sus fechas y sus mensajes.</p>
     <div class="sample-cta"><button type="button" class="hero-mcta-btn" onclick="goToUpload('sample')">Hacer el nuestro</button></div>
-    <ol class="diary-index reveal">
-      <li><b>I.</b> Cómo empezó todo <span>primer mensaje, línea de vida</span></li>
-      <li><b>II.</b> Quién es quién <span>el perfil de cada uno</span></li>
-      <li><b>III.</b> Cómo se hablan <span>tiempos, audios, silencios</span></li>
-      <li><b>IV.</b> Compatibilidad <span>su lenguaje del amor</span></li>
-      <li><b>V.</b> Las señales <span>a cuidar y green flags</span></li>
-      <li><b>VI.</b> ¿Van a durar? <span>nuestro pronóstico</span></li>
-      <li><b>VII.</b> Consejos para ustedes <span>para tachar cada semana</span></li>
-      <li><b>VIII.</b> El mensaje <span>el más bonito del chat</span></li>
-    </ol>
   </div>
 </section>
 
