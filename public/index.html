@@ -905,7 +905,11 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 }
 /* Páginas de ejemplo */
 .sample-cta { text-align: center; margin: -6px 0 34px; }
-.sample-cta .hero-mcta-btn { display: inline-block; width: auto; padding-left: 38px; padding-right: 38px; }
+.sample-cta .hero-mcta-btn { display: inline-block; width: auto; padding: 16px 44px; border: none; border-radius: 0; background: var(--pink); color: #fff; font-family: inherit; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px; box-shadow: 0 6px 0 #8E0B20; cursor: pointer; transition: transform .1s, box-shadow .1s; }
+.sample-cta .hero-mcta-btn:hover { transform: translateY(-1px); box-shadow: 0 7px 0 #8E0B20; }
+.sample-cta .hero-mcta-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #8E0B20; }
+.lead-bottom { padding-top: 10px; }
+.lead-bottom .lead-box { max-width: 620px; }
 .upload-section { padding-top: 40px; }
 .upload-section .section-title, .upload-section .section-subtitle { text-align: center; }
 .upload-section .upload-zone { max-width: 720px; margin-left: auto; margin-right: auto; }
@@ -1217,9 +1221,8 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 </head>
 <body>
 <div class="offer-bar" id="offerBar" hidden onclick="offerBarClick()">
-  <span><b>15% de descuento</b> de bienvenida</span>
-  <span class="offer-code">tu código <b id="offerCode"></b></span>
-  <span>termina en <span class="offer-time" id="offerTime">30:00</span></span>
+  <span><b>15% de descuento</b><span class="offer-code"> si les mandamos el enlace por correo</span></span>
+  <span class="offer-time">Quiero mi 15%</span>
 </div>
 
 <!-- ── NAV ── -->
@@ -1244,7 +1247,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <div class="hero-mcta-chips"><span>adelanto gratis</span><span>sin registrarse</span><span>se lee en tu teléfono</span></div>
     <button type="button" class="tutorial-link" onclick="openTutorial('hero')">¿Cómo exporto el chat? Mira el tutorial</button>
     <button type="button" class="demo-link" onclick="loadDemo('hero')">o vean un ejemplo sin subir nada</button>
-    <button type="button" class="demo-link" onclick="openLead('hero')">¿No tienen el chat a mano? Se lo mandamos por correo</button>
+    <button type="button" class="demo-link" onclick="openLead('hero')">¿No tienen el chat a mano? Les mandamos el enlace y un 15%</button>
   </div>
   <div class="hero-pages" aria-hidden="true">
     <img class="hp-back" src="/diario/dias-que-recordar.jpg" width="635" height="898" alt="">
@@ -1314,14 +1317,14 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <div class="lead-box ph-no-capture" id="leadBox">
       <button type="button" class="lead-toggle" id="leadToggle" hidden onclick="openLead('upload')">¿Ahora no pueden? Háganlo luego: les mandamos el enlace por correo</button>
       <form class="lead-form" id="leadForm" onsubmit="submitLead(event)">
-        <div class="lead-title">¿Ahora no pueden? Háganlo luego</div>
-        <p>Les mandamos el enlace y los pasos para exportar el chat. Cuando tengan un minuto, lo hacen desde el teléfono.</p>
+        <div class="lead-title">¿Ahora no pueden? Les mandamos el enlace y un 15%</div>
+        <p>Les mandamos el enlace, los pasos para exportar el chat y un <b>código del 15% de descuento</b> (vale 7 días). Cuando tengan un minuto, lo hacen desde el teléfono.</p>
         <div class="lead-row">
-          <input type="email" id="leadEmail" placeholder="tu@correo.com" autocomplete="email" required maxlength="200">
-          <button type="submit" id="leadBtn">Mandármelo</button>
+          <input type="email" class="lead-email" id="leadEmail" placeholder="tu@correo.com" autocomplete="email" required maxlength="200">
+          <button type="submit" class="lead-btn">Quiero mi 15%</button>
         </div>
-        <label class="lead-consent"><input type="checkbox" id="leadConsent"> <span>Acepto recibir correos de YaLoSabía sobre mi diario (máximo 3; me puedo dar de baja cuando quiera). <a href="/privacidad.html" target="_blank" rel="noopener">Aviso de privacidad</a>.</span></label>
-        <div class="lead-msg" id="leadMsg" role="status"></div>
+        <label class="lead-consent"><input type="checkbox" class="lead-check"> <span>Acepto recibir correos de YaLoSabía sobre mi diario (máximo 3; me puedo dar de baja cuando quiera). <a href="/privacidad.html" target="_blank" rel="noopener">Aviso de privacidad</a>.</span></label>
+        <div class="lead-msg" role="status"></div>
       </form>
     </div>
 
@@ -1648,6 +1651,24 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 
 <div class="sticky-cta" id="stickyCta"><button type="button" onclick="goToUpload('sticky')">Sube su chat<small>el adelanto es gratis</small></button></div>
 <div class="sample-lightbox" id="sampleLightbox" onclick="this.classList.remove('open')"><img alt="Página de ejemplo del diario"></div>
+
+<!-- ── CORREO (abajo del todo) ── -->
+<section class="section lead-bottom" id="correo">
+  <div class="container">
+    <div class="lead-box ph-no-capture">
+      <form class="lead-form" onsubmit="submitLead(event)">
+        <div class="lead-title">¿Ahora no pueden? Les mandamos el enlace y un 15%</div>
+        <p>Les mandamos el enlace, los pasos para exportar el chat y un <b>código del 15% de descuento</b> (vale 7 días). Cuando tengan un minuto, lo hacen desde el teléfono.</p>
+        <div class="lead-row">
+          <input type="email" class="lead-email" placeholder="tu@correo.com" autocomplete="email" required maxlength="200">
+          <button type="submit" class="lead-btn">Quiero mi 15%</button>
+        </div>
+        <label class="lead-consent"><input type="checkbox" class="lead-check"> <span>Acepto recibir correos de YaLoSabía sobre mi diario (máximo 3; me puedo dar de baja cuando quiera). <a href="/privacidad.html" target="_blank" rel="noopener">Aviso de privacidad</a>.</span></label>
+        <div class="lead-msg" role="status"></div>
+      </form>
+    </div>
+  </div>
+</section>
 
 <!-- ── FOOTER ── -->
 <footer>
@@ -3551,8 +3572,14 @@ function markOfferUsed() {
 }
 function offerBarClick() {
   trackFunnel('offer_bar_click');
-  if (lastMessages && window.currentChatFp) openPayModal();
-  else goToUpload('offer');
+  openLead('bar');
+}
+// La barra del 15% por correo sale hasta que la persona deja su correo, llega con un código (?c=) o paga
+const LEAD_KEY = 'yalosabia_lead';
+function leadBarOn() {
+  let done = false;
+  try { done = localStorage.getItem(LEAD_KEY) === '1'; } catch (e) {}
+  return !done && !window.activeRef && !isPremiumUser();
 }
 function offerMoney(v) {
   const lp = window.localPricing;
@@ -3569,9 +3596,10 @@ function discountedPrices(percent) {
 function renderOffer() {
   if (window.activeRef) return renderRef();
   const on = offerActive();
-  document.body.classList.toggle('has-offer', on);
+  const barOn = on || leadBarOn();
+  document.body.classList.toggle('has-offer', barOn);
   const bar = document.getElementById('offerBar');
-  if (bar) bar.hidden = !on;
+  if (bar) bar.hidden = !barOn;
   const line = document.getElementById('payOfferLine');
   if (!on) {
     clearInterval(window.offerTimer);
@@ -3581,8 +3609,8 @@ function renderOffer() {
   }
   const o = window.activeOffer;
   const left = Math.max(0, o.expiresAt - Date.now());
-  document.getElementById('offerTime').textContent = String(Math.floor(left / 60000)).padStart(2, '0') + ':' + String(Math.floor(left / 1000) % 60).padStart(2, '0');
-  document.getElementById('offerCode').textContent = o.code;
+  (document.getElementById('offerTime') || {}).textContent = String(Math.floor(left / 60000)).padStart(2, '0') + ':' + String(Math.floor(left / 1000) % 60).padStart(2, '0');
+  (document.getElementById('offerCode') || {}).textContent = o.code;
   const { base, disc } = discountedPrices(o.percent);
   document.querySelectorAll('[data-offer-price]').forEach(el => {
     el.hidden = false;
@@ -3681,20 +3709,10 @@ async function initRef() {
 
 async function initOffer() {
   if (await initRef()) return;
-  let o = null;
-  try { o = JSON.parse(localStorage.getItem(OFFER_KEY) || 'null'); } catch (e) {}
-  if (!o) {
-    try {
-      const data = await fetch('/api/offer', { method: 'POST' }).then(r => r.json());
-      if (!data.enabled) return;
-      o = { code: data.code, expiresAt: data.expiresAt, percent: data.percent, token: data.token };
-      saveOffer(o);
-      trackFunnel('offer_shown', { percent: o.percent });
-    } catch (e) { return; }
-  }
-  window.activeOffer = o;
+  // Desde sep 2026 el 15% solo llega por correo (/api/lead crea un código DIARIO-XXXXX y lo manda).
+  // La oferta de 30 minutos queda apagada (lib/offer.ts, OFFER_ENABLED).
   renderOffer();
-  if (offerActive()) window.offerTimer = setInterval(renderOffer, 1000);
+  if (leadBarOn()) trackFunnel('offer_shown', { percent: 15, kind: 'correo' });
 }
 initOffer();
 // ────────────────────────────────────────────────────────────────
@@ -3857,25 +3875,32 @@ function openLead(from) {
 }
 async function submitLead(e) {
   e.preventDefault();
-  const email = document.getElementById('leadEmail').value.trim();
-  const consent = document.getElementById('leadConsent').checked;
-  const msg = document.getElementById('leadMsg'), btn = document.getElementById('leadBtn');
+  const form = e.target;
+  const email = form.querySelector('.lead-email').value.trim();
+  const consent = form.querySelector('.lead-check').checked;
+  const msg = form.querySelector('.lead-msg'), btn = form.querySelector('.lead-btn');
+  const where = form.id === 'leadForm' ? 'subir' : 'abajo';
   const say = (t, cls) => { msg.textContent = t; msg.className = 'lead-msg ' + (cls || ''); };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { say('Revisa el correo, parece que le falta algo.', 'err'); return; }
   if (!consent) { say('Marca la casilla para que podamos mandarte el correo.', 'err'); return; }
   btn.disabled = true; say('Enviando...');
   try {
-    const r = await fetch('/api/lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, consent: true, from: 'web', source: (firstTouch && firstTouch.s) || '' }) });
+    const r = await fetch('/api/lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, consent: true, from: 'web-' + where, source: (firstTouch && firstTouch.s) || '' }) });
     if (!r.ok) throw new Error(String(r.status));
-    say('Listo. Revisa tu correo (y la carpeta de spam, por si acaso).', 'ok');
-    document.querySelector('#leadForm .lead-row').hidden = true;
-    document.querySelector('#leadForm .lead-consent').hidden = true;
-    trackFunnel('lead_captured', { source: (firstTouch && firstTouch.s) || '' });
+    const data = await r.json().catch(() => ({}));
+    say(data.discount
+      ? 'Listo. Les mandamos el enlace y su código del 15% a su correo (revisen también la carpeta de spam).'
+      : 'Listo. Revisa tu correo (y la carpeta de spam, por si acaso).', 'ok');
+    document.querySelectorAll('.lead-form .lead-row, .lead-form .lead-consent').forEach(el => { el.hidden = true; });
+    document.querySelectorAll('.lead-form .lead-msg').forEach(el => { if (el !== msg) { el.textContent = msg.textContent; el.className = msg.className; } });
+    try { localStorage.setItem(LEAD_KEY, '1'); } catch (err) {}
+    renderOffer();
+    trackFunnel('lead_captured', { source: (firstTouch && firstTouch.s) || '', where, discount: !!data.discount });
     if (typeof fbq !== 'undefined') fbq('track', 'Lead');
   } catch (err) {
     btn.disabled = false;
     say('No pudimos mandarlo ahora. Inténtalo de nuevo en un momento.', 'err');
-    trackFunnel('lead_failed', { status: String(err && err.message || '') });
+    trackFunnel('lead_failed', { status: String(err && err.message || ''), where });
   }
 }
 

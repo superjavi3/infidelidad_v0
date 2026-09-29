@@ -34,8 +34,19 @@ async function leadsListId(): Promise<number> {
   return (listIdCache = created.id);
 }
 
+// Atributos que usan las plantillas de Brevo ({{ contact.CODIGO }}); si ya existen, Brevo da error y se ignora
+let attrsReady = false;
+async function ensureAttributes() {
+  if (attrsReady) return;
+  for (const name of ['CODIGO', 'CODIGO_CADUCA']) {
+    try { await brevo(`/contacts/attributes/normal/${name}`, { method: 'POST', body: JSON.stringify({ type: 'text' }) }); } catch { /* ya existe */ }
+  }
+  attrsReady = true;
+}
+
 export async function addLead(email: string, attributes: Record<string, string>) {
   const listId = await leadsListId();
+  if (attributes.CODIGO) await ensureAttributes();
   try {
     await brevo('/contacts', { method: 'POST', body: JSON.stringify({ email, listIds: [listId], updateEnabled: true, attributes }) });
   } catch (err: unknown) {
