@@ -969,6 +969,56 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .sample-strip img { display: block; width: 100%; height: auto; }
 .sample-strip figcaption { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; margin-top: 10px; }
 .sample-note { text-align: center; font-size: 0.75rem; font-style: italic; color: var(--text-muted); margin: -18px 0 34px; }
+/* Portada: imagen grande del diario, titular corto y un botón */
+.hero.hero-v2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-areas: "text scene" "cta scene"; column-gap: 40px; align-items: center; max-width: 1080px; margin: 0 auto; padding: 120px 24px 56px; text-align: left; }
+.hv-text { grid-area: text; align-self: end; }
+.hv-scene { grid-area: scene; }
+.hv-cta { grid-area: cta; align-self: start; max-width: 420px; }
+.hero-v2 h1 { font-size: clamp(3rem, 6.4vw, 5.4rem); margin-bottom: 14px; }
+.hero-v2 .hv-sub { font-size: 1.2rem; line-height: 1.5; margin-bottom: 26px; max-width: 440px; }
+.hero-v2 .hv-sub b { color: var(--pink); }
+.hv-cta .hero-mcta-btn { display: block; width: 100%; padding: 18px 16px; border: none; background: var(--pink); color: #fff; font-family: inherit; font-weight: 700; font-size: 1.15rem; letter-spacing: 0.5px; box-shadow: 0 6px 0 #8E0B20; cursor: pointer; transition: transform .1s, box-shadow .1s; }
+.hv-cta .hero-mcta-btn:hover { transform: translateY(-1px); box-shadow: 0 7px 0 #8E0B20; }
+.hv-cta .hero-mcta-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #8E0B20; }
+.hv-chips { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 14px; font-size: 0.82rem; color: var(--text-muted); background: var(--paper); }
+.hv-chips span::before { content: '✓ '; color: var(--pink); font-weight: 700; }
+.hv-links { display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: center; margin-top: 8px; }
+.hv-links .tutorial-link { margin-top: 0; }
+.hv-more { font-size: 0.85rem; color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px; background: var(--paper); }
+.hv-scene { position: relative; height: 520px; }
+.hv-pg { position: absolute; width: 50%; height: auto; background: #fff; padding: 7px; border: 1px solid var(--margin-line); box-shadow: 0 22px 50px rgba(59,10,18,.2); }
+.hv-l { left: 0; top: 60px; transform: rotate(-9deg); }
+.hv-r { right: 0; top: 50px; transform: rotate(8deg); }
+.hv-c { left: 25%; top: 0; width: 54%; transform: rotate(-1deg); z-index: 2; box-shadow: 0 30px 60px rgba(59,10,18,.28); animation: hv-float 6s ease-in-out infinite; }
+.hv-tape { left: 42%; top: -12px; width: 110px; height: 28px; transform: rotate(-4deg); z-index: 3; }
+.hv-bub { position: absolute; z-index: 4; font-size: 0.9rem; line-height: 1.3; padding: 10px 14px; max-width: 200px; box-shadow: 0 10px 22px rgba(59,10,18,.16); background: #fff; border: 1px solid var(--paper-line); border-radius: 16px 16px 16px 4px; animation: hv-pop .5s ease-out both; }
+.hv-out { background: var(--pink); color: #FFF4EF; border: none; border-radius: 16px 16px 4px 16px; }
+.hv-b1 { left: -8px; top: 150px; animation-delay: .3s; }
+.hv-b2 { right: -6px; top: 250px; animation-delay: .8s; }
+.hv-note { position: absolute; z-index: 4; font-family: var(--font-display); font-weight: 700; font-size: 1.55rem; line-height: 1.05; color: var(--blue, #1F3A93); background: #FFF6C7; padding: 10px 14px 12px; box-shadow: 0 10px 20px rgba(59,10,18,.14); animation: hv-pop .5s ease-out both; }
+.hv-n1 { left: 2%; bottom: 40px; transform: rotate(-5deg); animation-delay: 1.2s; }
+.hv-n2 { right: 6%; bottom: 10px; transform: rotate(4deg); color: var(--pink); animation-delay: 1.5s; }
+.hv-stamp { position: absolute; z-index: 4; right: 8%; top: -10px; width: 108px; height: 108px; border-radius: 50%; border: 3px solid var(--pink); color: var(--pink); background: rgba(255,248,246,.92); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: 2.6rem; line-height: 1; transform: rotate(10deg); animation: hv-pop .5s ease-out 1.8s both; }
+.hv-stamp small { font-size: 1.1rem; margin-top: 12px; }
+@keyframes hv-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+@keyframes hv-pop { from { opacity: 0; scale: .8; } to { opacity: 1; scale: 1; } }
+@media (prefers-reduced-motion: reduce) { .hv-c, .hv-bub, .hv-note, .hv-stamp { animation: none; } }
+@media (max-width: 768px) {
+  .hero.hero-v2 { grid-template-columns: 1fr; grid-template-areas: "text" "scene" "cta"; padding: 86px 18px 40px; text-align: center; row-gap: 0; }
+  .hero-v2 h1 { font-size: 2.9rem; margin-bottom: 8px; }
+  .hero-v2 .hv-sub { font-size: 0.98rem; margin: 0 auto 10px; }
+  .hv-scene { width: 100%; max-width: 380px; height: 370px; margin: 6px auto 14px; }
+  .hv-bub { font-size: 0.78rem; padding: 8px 11px; max-width: 150px; }
+  .hv-b1 { top: 110px; left: -4px; }
+  .hv-b2 { top: 200px; right: -4px; }
+  .hv-note { font-size: 1.2rem; padding: 7px 10px 9px; }
+  .hv-n1 { bottom: 26px; }
+  .hv-n2 { bottom: -6px; }
+  .hv-stamp { width: 78px; height: 78px; font-size: 1.9rem; top: -14px; right: 2%; }
+  .hv-stamp small { font-size: 0.85rem; margin-top: 8px; }
+  .hv-cta { max-width: 420px; width: 100%; margin: 0 auto; }
+  .hv-chips, .hv-links { justify-content: center; }
+}
 /* Portada en móvil: botón de subir y ayuda en la primera pantalla */
 .hero-sub-m, .hero-mcta { display: none; }
 .flow-video { max-width: 360px; margin: 26px auto 0; background: #fff; padding: 10px 10px 34px; box-shadow: var(--shadow); transform: rotate(-1deg); position: relative; }
@@ -1278,25 +1328,30 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 </nav>
 
 <!-- ── HERO ── -->
-<section class="hero" id="top">
-  <div class="hero-kicker">Querido diario:</div>
-  <h1>hoy descubrí la historia completa de <em>nosotros dos</em>.</h1>
-  <p class="hero-sub-d">Sube su chat de WhatsApp y recibe su historia en un diario de 14 páginas: cómo empezó, quién es quién, qué tan compatibles son y si van a durar. El adelanto es gratis.</p>
-  <p class="hero-sub-m">Su chat de WhatsApp, convertido en el diario de su relación: 14 páginas. Vean su adelanto gratis en un minuto.</p>
-  <div class="hero-mcta">
-    <button type="button" class="hero-mcta-btn" onclick="heroUpload()">Subir nuestro chat</button>
-    <div class="hero-mcta-chips"><span>adelanto gratis</span><span>sin registrarse</span><span>se lee en tu teléfono</span></div>
-    <button type="button" class="tutorial-link" onclick="openTutorial('hero')">¿Cómo exporto el chat? Mira el tutorial</button>
-    <button type="button" class="demo-link" onclick="loadDemo('hero')">o vean un ejemplo sin subir nada</button>
-    <button type="button" class="demo-link" onclick="openLead('hero')">¿No tienen el chat a mano? Les mandamos el enlace y un 15% de descuento</button>
+<section class="hero hero-v2" id="top">
+  <div class="hv-text">
+    <h1>¿Qué tal va <em>su relación</em>?</h1>
+    <p class="hv-sub">Su chat de WhatsApp ya lo sabe. Lo convertimos en <b>el diario de su historia</b>.</p>
   </div>
-  <div class="hero-pages" aria-hidden="true">
-    <img class="hp-back" src="/diario/dias-que-recordar.jpg" width="635" height="898" alt="">
-    <img class="hp-front" src="/diario/portada.jpg" width="635" height="898" alt="">
-    <div class="tape"></div>
-    <div class="hero-note">su diario en PDF</div>
+  <div class="hv-scene" aria-hidden="true">
+    <img class="hv-pg hv-l" src="/diario/quien-es-quien.jpg" width="635" height="898" alt="" fetchpriority="high">
+    <img class="hv-pg hv-r" src="/diario/dias-que-recordar.jpg" width="635" height="898" alt="">
+    <img class="hv-pg hv-c" src="/diario/portada.jpg" width="635" height="898" alt="" fetchpriority="high">
+    <div class="tape hv-tape"></div>
+    <div class="hv-bub hv-b1">¿Quedamos mañana?</div>
+    <div class="hv-bub hv-out hv-b2">Eres lo mejor que me ha pasado</div>
+    <div class="hv-note hv-n1">¿quién escribe primero?</div>
+    <div class="hv-note hv-n2">¿van a durar?</div>
+    <div class="hv-stamp">97<small>/100</small></div>
   </div>
-  <div class="hero-example">(páginas de un diario de ejemplo)</div>
+  <div class="hv-cta">
+    <button type="button" class="hero-mcta-btn" onclick="heroUpload()">Ver nuestro adelanto gratis</button>
+    <div class="hv-chips"><span>gratis</span><span>1 minuto</span><span>sin registrarse</span></div>
+    <div class="hv-links">
+      <button type="button" class="tutorial-link" onclick="openTutorial('hero')">¿Cómo exporto el chat?</button>
+      <a href="#indice" class="hv-more" onclick="trackFunnel('hero_see_sample')">Ver cómo es el diario &darr;</a>
+    </div>
+  </div>
 </section>
 
 <!-- ── ÍNDICE ── -->
@@ -2206,7 +2261,7 @@ function goToUpload(from) {
   };
   new IntersectionObserver(e => { zoneVisible = e[0].isIntersecting; update(); }).observe(zone);
   // Se esconde también donde ya hay otro botón que hace lo mismo (precio) y en el pie
-  const covers = [document.querySelector('footer'), document.querySelector('#precios .diary-price')].filter(Boolean);
+  const covers = [document.querySelector('footer'), document.querySelector('#precios .diary-price'), document.querySelector('.hv-cta')].filter(Boolean);
   const seen = new Set();
   const io = new IntersectionObserver(entries => { entries.forEach(en => en.isIntersecting ? seen.add(en.target) : seen.delete(en.target)); footerVisible = seen.size > 0; update(); });
   covers.forEach(el => io.observe(el));
