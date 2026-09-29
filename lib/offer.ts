@@ -7,8 +7,11 @@ import { createHmac, randomInt, timingSafeEqual } from 'crypto';
 export const OFFER_PERCENT = 15;
 export const OFFER_MINUTES = 30;
 export const OFFER_COUPON_ID = 'YLS15';
-// Para apagar la oferta sin tocar código: OFFER_DISABLED=1 en Vercel
-export const offerEnabled = () => process.env.OFFER_DISABLED !== '1';
+// Desde sep 2026 el 15% solo se da a quien deja su correo (emailOfferCode, abajo). La oferta de 30 minutos
+// queda apagada; para volver a encenderla: OFFER_ENABLED=1 en Vercel.
+export const offerEnabled = () => process.env.OFFER_ENABLED === '1';
+// Días que vale el código que llega por correo (el E2 de los 5 días recuerda que quedan 2)
+export const EMAIL_OFFER_DAYS = 7;
 
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sin 0/O ni 1/I
 const CODE_RE = /^YLS-[A-HJ-NP-Z2-9]{5}$/;
@@ -46,7 +49,7 @@ export function verifyOffer(token: unknown, now = Date.now()): { code: string; e
   }
 }
 
-async function ensureCoupon(stripe: Stripe) {
+export async function ensureCoupon(stripe: Stripe) {
   try {
     await stripe.coupons.retrieve(OFFER_COUPON_ID);
   } catch {
@@ -68,4 +71,22 @@ export async function promotionCodeFor(stripe: Stripe, offer: { code: string; ex
     metadata: { source: 'oferta-bienvenida' },
   });
   return created.id;
+}
+
+// 15% por dejar el correo: código de Stripe de un solo uso (DIARIO-XXXXX) que caduca a los 7 días.
+// Solo viaja en el correo, así que para usarlo hace falta un correo real. En la web entra por ?c=CODIGO
+// (el mismo camino que los códigos de influencers, lib/ref.ts).
+export async function emailOfferCode(stripe: Stripe, email: string, now = Date.now()) {
+  await ensureCoupon(stripe);
+  let code = 'DIARIO-';
+  for (let i = 0; i < 5; i++) code += ALPHABET[randomInt(ALPHABET.length)];
+  const expiresAt = now + EMAIL_OFFER_DAYS * 86_400_000;
+  await stripe.promotionCodes.create({
+    promotion: { type: 'coupon', coupon: OFFER_COUPON_ID },
+    code,
+    max_redemptions: 1,
+    expires_at: Math.floor(expiresAt / 1000),
+    metadata: { source: 'correo', email_domain: email.split('@')[1] || '' },
+  });
+  return { code, expiresAt, percent: OFFER_PERCENT };
 }

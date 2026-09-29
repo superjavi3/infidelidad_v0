@@ -71,6 +71,19 @@ ${o.footer}
 </body></html>`;
 }
 
+// Caja con el código del 15% (sale del E0 con el código real, y de E1/E2 con las variables de Brevo)
+function codeBox(code: string, percent: string, until: string, href: string) {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:6px 0 22px;"><tr>
+<td align="center" style="padding:20px 18px;border:2px dashed ${RED};border-radius:12px;background:#FFFFFF;">
+<div style="font-family:${SANS};font-size:13px;letter-spacing:2px;text-transform:uppercase;color:${MUTED};">Su ${percent}% de descuento</div>
+<div style="font-family:'Courier New',Courier,monospace;font-size:26px;font-weight:bold;letter-spacing:3px;color:${RED};padding:8px 0 6px;">${code}</div>
+<div style="font-family:${SANS};font-size:13px;line-height:1.5;color:${MUTED};">Vale hasta el ${until} &middot; un solo uso<br><a href="${href}" style="color:${RED};">Entren con este enlace</a> y se aplica solo, o escríbanlo al pagar</div>
+</td></tr></table>`;
+}
+// En la secuencia de Brevo el código es un atributo del contacto; si no tiene (Stripe falló), no sale la caja
+const BREVO_CODE = '{{ contact.CODIGO }}';
+const brevoCodeBox = (href: string) => `{% if contact.CODIGO %}${codeBox(BREVO_CODE, '15', '{{ contact.CODIGO_CADUCA }}', href)}{% endif %}`;
+
 const HOWTO = [
   '<b>En WhatsApp</b>, abran su chat.',
   '<b>Android:</b> los tres puntos &rsaquo; Más &rsaquo; Exportar chat &rsaquo; Sin archivos.<br><b>iPhone:</b> toquen el nombre arriba &rsaquo; Exportar chat &rsaquo; Sin archivos.',
@@ -82,19 +95,23 @@ const SEQ_FOOTER = 'Recibes este correo porque pediste el enlace en yalosabia.co
 // El E0 va por la API transaccional, que no tiene enlace de baja automático
 const E0_FOOTER = 'Recibes este correo porque pediste el enlace en yalosabia.com. Si no quieres recibir más, responde «baja».';
 
-export function emailE0(): Email {
+export function emailE0(offer: { code: string; percent: number; expires: string } | null = null): Email {
   const c = 'e0';
+  const go = offer ? link(c, `&c=${offer.code}#subir`) : link(c);
   return {
     name: 'YLS E0 - El enlace',
-    subject: 'Su diario, cuando tengan un minuto',
+    subject: offer ? 'Su diario y su 15% de descuento' : 'Su diario, cuando tengan un minuto',
     preheader: 'Tres pasos y un par de minutos. Aquí está el enlace.',
     html: layout({
       hero: 'e0', heroAlt: 'Querido diario: hoy vamos a leer nuestra historia', preheader: 'Tres pasos y un par de minutos. Aquí está el enlace.',
       body:
         p('Hola:') +
-        p('Aquí tienen el enlace para hacer el diario de su relación. Cuando tengan el chat a mano, son tres pasos:') +
+        p(offer
+          ? 'Aquí tienen el enlace para hacer el diario de su relación y, como lo prometido es deuda, su código de descuento:'
+          : 'Aquí tienen el enlace para hacer el diario de su relación. Cuando tengan el chat a mano, son tres pasos:') +
+        (offer ? codeBox(offer.code, String(offer.percent), offer.expires, go) + p('Cuando tengan el chat a mano, son tres pasos:') : '') +
         steps(HOWTO) +
-        button(link(c), 'Ver nuestro adelanto gratis') +
+        button(go, 'Ver nuestro adelanto gratis') +
         reassure() +
         p(`¿Se atoran exportando el chat? ${a(link(c, '&tutorial=1'), 'Vean el tutorial en video')} (dura un minuto).`, 'margin-top:22px;font-size:15px;color:#6B3A42;'),
       footer: E0_FOOTER,
@@ -104,6 +121,7 @@ export function emailE0(): Email {
 
 export function emailE1(): Email {
   const c = 'e1';
+  const go = link(c, `&c=${BREVO_CODE}#subir`);
   return {
     name: 'YLS E1 - Exportar el chat',
     subject: '¿Ya tienen su chat a mano?',
@@ -115,7 +133,8 @@ export function emailE1(): Email {
         p('Hace un par de días nos pidieron el enlace para hacer su diario. Por si se quedó pendiente: exportar el chat tarda menos de lo que parece.') +
         steps(HOWTO) +
         p('En cuanto lo suban verán el índice de su relación, cuántos mensajes se han mandado y quién suele escribir primero. Todo eso es gratis.') +
-        button(link(c), 'Ver nuestro adelanto gratis') +
+        brevoCodeBox(go) +
+        button(go, 'Ver nuestro adelanto gratis') +
         reassure() +
         p(`Si prefieren verlo antes: ${a(link(c, '&tutorial=1'), 'tutorial en video de un minuto')}.`, 'margin-top:22px;font-size:15px;color:#6B3A42;'),
       footer: SEQ_FOOTER,
@@ -125,6 +144,7 @@ export function emailE1(): Email {
 
 export function emailE2(): Email {
   const c = 'e2';
+  const go = link(c, `&c=${BREVO_CODE}#subir`);
   return {
     name: 'YLS E2 - Lo que trae el diario',
     subject: 'Lo que cabe en 14 páginas',
@@ -141,7 +161,9 @@ export function emailE2(): Email {
         ], link(c, '#indice')) +
         p('Y además: quién es quién en la relación, cómo se hablan, cuánto tardan en contestarse, las palabras que más usan, las señales a cuidar, si van a durar y unos consejos. Al final, el mensaje de ustedes que más vale guardar.') +
         p('Todo sale de sus propios mensajes: cada frase que citamos existe tal cual en su chat.') +
-        button(link(c), 'Hacer nuestro diario') +
+        '{% if contact.CODIGO %}' + p('Su código del 15% vence en dos días, el {{ contact.CODIGO_CADUCA }}:', 'margin-bottom:10px;') + '{% endif %}' +
+        brevoCodeBox(go) +
+        button(go, 'Hacer nuestro diario') +
         reassure('Adelanto gratis &middot; diario completo en PDF: $199 MXN, un solo pago') +
         p(`${a(link(c, '#indice'), 'Ver las 14 páginas del ejemplo')}`, 'margin-top:22px;font-size:15px;text-align:center;') +
         p('Este es el último recordatorio que les mandamos; no queremos llenarles la bandeja. El enlace sigue aquí para cuando quieran.', 'margin-top:22px;font-size:15px;color:#6B3A42;'),

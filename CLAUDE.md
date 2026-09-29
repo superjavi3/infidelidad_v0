@@ -49,6 +49,8 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 
 ## Oferta de bienvenida (15%)
 
+> **Desde el 28 sep 2026 el 15% solo se da por correo** (abajo, «Correo»). La oferta de 30 minutos está apagada (`OFFER_ENABLED=1` la vuelve a encender) y la barra de arriba ahora dice «15% de descuento si les mandamos el enlace por correo» y abre el formulario. Lo de abajo describe la oferta antigua.
+
 - Barra fija arriba con un contador de **30 minutos desde la primera visita** y un **código de un solo uso por visitante** (`YLS-XXXXX`). El plazo es real: al acabarse, el servidor ya no aplica el descuento (nada de contadores que se reinician: sería publicidad engañosa).
 - `lib/offer.ts`: `/api/offer` firma `{código, caducidad}` con HMAC (clave: `OFFER_SECRET` o, si no existe, derivada de `STRIPE_SECRET_KEY`). Al pagar, `create-checkout` verifica la firma y crea en Stripe el código (`max_redemptions: 1`, `expires_at`) sobre el cupón `YLS15` (15%, lo crea solo si no existe) y lo aplica con `discounts`. Si algo falla, cobra el precio normal.
 - En el navegador: `localStorage.yalosabia_offer` (una oferta por navegador; se marca usada al pagar).
@@ -67,6 +69,7 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 
 - Debajo de la zona de subida (y un enlace en la portada móvil) hay un formulario para quien no tiene el chat a mano: correo + casilla de consentimiento (sin marcar). `/api/lead` → `lib/brevo.ts`: guarda el contacto en la lista «Leads web» (la crea si no existe; o `BREVO_LIST_ID`) con `FUENTE`, `ORIGEN`, `CONSENTIMIENTO` y manda al momento el E0 (enlace + tutorial). Sin `BREVO_API_KEY` en Vercel devuelve 503 y la web dice que lo intenten luego.
 - E0 al momento; recordatorios E1 (a los 2 días) y E2 (a los 5 días, el último). Diseño y textos en `lib/email-templates.ts`; plantillas de Brevo con `scripts/brevo-plantillas.mjs` (`node scripts/brevo-plantillas.mjs` las crea/actualiza y crea los atributos). Las manda una automatización de Brevo (contacto añadido a la lista → esperas → correo, comprobando que sigue en la lista).
+- **15% por dejar el correo**: `/api/lead` crea en Stripe un código `DIARIO-XXXXX` (cupón `YLS15`, un solo uso, caduca a los 7 días: `emailOfferCode` en `lib/offer.ts`), lo guarda en Brevo (`CODIGO`, `CODIGO_CADUCA`) y lo manda en el E0 con un enlace `?c=CODIGO` (se aplica como los códigos de influencers). El código nunca se devuelve a la web: para tenerlo hace falta un correo real. E1/E2 lo recuerdan con `{{ contact.CODIGO }}`. Hay formulario en `#subir` y otro abajo del todo (`#correo`); `lead_captured` lleva `where` (subir/abajo).
 - Quien paga sale de la lista: `/api/verify-payment` llama a `markBuyer` (atributo `COMPRADO`).
 - `?tutorial=1` abre el tutorial al cargar (enlace de los correos). Eventos: `lead_form_open`, `lead_captured` (+ `Lead` del píxel), `lead_failed`.
 - Carrito abandonado de Stripe: `create-checkout` pide `consent_collection.promotions: 'auto'` y `after_expiration.recovery`; si Stripe lo rechaza, crea la sesión sin eso. Hay que activar los correos de recuperación en el Dashboard de Stripe.
