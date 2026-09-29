@@ -911,12 +911,18 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .lead-footer { max-width: 620px; margin: 30px auto 22px; text-align: left; }
 .lead-footer .lead-form p { color: var(--text); font-size: 0.9rem; }
 .lead-form [hidden] { display: none !important; }
+.lead-box .lead-form { padding: 12px 14px; max-width: 520px; margin-left: auto; margin-right: auto; }
+.lead-box .lead-form p { font-size: 0.82rem; line-height: 1.45; margin-bottom: 8px; }
+.lead-box .lead-row input { padding: 8px 10px; font-size: 15px; }
+.lead-box .lead-row button { padding: 8px 12px; font-size: 0.82rem; }
+.lead-box .lead-consent { font-size: 0.72rem; margin-top: 7px; }
+.lead-box .lead-msg { margin-top: 6px; font-size: 0.82rem; min-height: 0; }
 .upload-section { padding-top: 40px; }
 .upload-section .section-title, .upload-section .section-subtitle { text-align: center; }
 .upload-section .upload-zone { max-width: 720px; margin-left: auto; margin-right: auto; }
 .upload-section .privacy-badge { display: flex; justify-content: center; margin: 18px auto 0; width: fit-content; }
 .upload-section:has(#uploadZone[style*="none"]) :is(.section-title, .section-subtitle) { display: none; }
-.lead-title { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; line-height: 1.1; color: var(--pink); margin-bottom: 6px; }
+.lead-title { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; line-height: 1.1; color: var(--pink); margin-bottom: 4px; }
 @media (max-width: 700px) { #indice .diary-index { display: none; } }
 .sample-strip { display: flex; gap: 22px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 14px 6px 22px; margin: 0 -6px 30px; -webkit-overflow-scrolling: touch; }
 .sample-strip figure { flex: 0 0 220px; scroll-snap-align: center; margin: 0; text-align: center; }
@@ -1223,7 +1229,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 <body>
 <div class="offer-bar" id="offerBar" hidden onclick="offerBarClick()">
   <span><b>15% de descuento</b><span class="offer-code"> si les mandamos el enlace por correo</span></span>
-  <span class="offer-time">Quiero mi 15%</span>
+  <span class="offer-time">Quiero mi descuento</span>
 </div>
 
 <!-- ── NAV ── -->
@@ -1248,7 +1254,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <div class="hero-mcta-chips"><span>adelanto gratis</span><span>sin registrarse</span><span>se lee en tu teléfono</span></div>
     <button type="button" class="tutorial-link" onclick="openTutorial('hero')">¿Cómo exporto el chat? Mira el tutorial</button>
     <button type="button" class="demo-link" onclick="loadDemo('hero')">o vean un ejemplo sin subir nada</button>
-    <button type="button" class="demo-link" onclick="openLead('hero')">¿No tienen el chat a mano? Les mandamos el enlace y un 15%</button>
+    <button type="button" class="demo-link" onclick="openLead('hero')">¿No tienen el chat a mano? Les mandamos el enlace y un 15% de descuento</button>
   </div>
   <div class="hero-pages" aria-hidden="true">
     <img class="hp-back" src="/diario/dias-que-recordar.jpg" width="635" height="898" alt="">
@@ -1318,13 +1324,13 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <div class="lead-box ph-no-capture" id="leadBox">
       <button type="button" class="lead-toggle" id="leadToggle" hidden onclick="openLead('upload')">¿Ahora no pueden? Háganlo luego: les mandamos el enlace por correo</button>
       <form class="lead-form" id="leadForm" onsubmit="submitLead(event)">
-        <div class="lead-title">¿Ahora no pueden? Les mandamos el enlace y un 15%</div>
-        <p>Les mandamos el enlace, los pasos para exportar el chat y un <b>código del 15% de descuento</b> (vale 7 días). Cuando tengan un minuto, lo hacen desde el teléfono.</p>
+        <div class="lead-title">15% de descuento en su diario</div>
+        <p>Déjennos su correo y les mandamos el código de descuento y el enlace para hacerlo cuando puedan.</p>
         <div class="lead-row">
           <input type="email" class="lead-email" id="leadEmail" placeholder="tu@correo.com" autocomplete="email" required maxlength="200">
-          <button type="submit" class="lead-btn">Quiero mi 15%</button>
+          <button type="submit" class="lead-btn">Quiero mi descuento</button>
         </div>
-        <label class="lead-consent"><input type="checkbox" class="lead-check"> <span>Acepto recibir correos de YaLoSabía sobre mi diario (máximo 3; me puedo dar de baja cuando quiera). <a href="/privacidad.html" target="_blank" rel="noopener">Aviso de privacidad</a>.</span></label>
+        <label class="lead-consent"><input type="checkbox" class="lead-check"> <span>Acepto recibir hasta 3 correos de YaLoSabía (me puedo dar de baja cuando quiera). <a href="/privacidad.html" target="_blank" rel="noopener">Privacidad</a></span></label>
         <div class="lead-msg" role="status"></div>
       </form>
     </div>
@@ -1672,13 +1678,13 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     </div>
     <div class="lead-box lead-footer ph-no-capture" id="correo">
       <form class="lead-form" onsubmit="submitLead(event)">
-        <div class="lead-title">¿Ahora no pueden? Les mandamos el enlace y un 15%</div>
-        <p>Les mandamos el enlace, los pasos para exportar el chat y un <b>código del 15% de descuento</b> (vale 7 días). Cuando tengan un minuto, lo hacen desde el teléfono.</p>
+        <div class="lead-title">15% de descuento en su diario</div>
+        <p>Déjennos su correo y les mandamos el código de descuento y el enlace para hacerlo cuando puedan.</p>
         <div class="lead-row">
           <input type="email" class="lead-email" placeholder="tu@correo.com" autocomplete="email" required maxlength="200">
-          <button type="submit" class="lead-btn">Quiero mi 15%</button>
+          <button type="submit" class="lead-btn">Quiero mi descuento</button>
         </div>
-        <label class="lead-consent"><input type="checkbox" class="lead-check"> <span>Acepto recibir correos de YaLoSabía sobre mi diario (máximo 3; me puedo dar de baja cuando quiera). <a href="/privacidad.html" target="_blank" rel="noopener">Aviso de privacidad</a>.</span></label>
+        <label class="lead-consent"><input type="checkbox" class="lead-check"> <span>Acepto recibir hasta 3 correos de YaLoSabía (me puedo dar de baja cuando quiera). <a href="/privacidad.html" target="_blank" rel="noopener">Privacidad</a></span></label>
         <div class="lead-msg" role="status"></div>
       </form>
     </div>
