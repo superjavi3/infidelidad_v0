@@ -44,6 +44,7 @@ Parser de WhatsApp (`parseWhatsApp`) → `analyzeMessages` (índice 0-100, `verd
 Bloque «PREMIUM PLAN SYSTEM»: precios, estado de pago (`rememberPurchase`, `sessionForChat`, `loadPremiumState`, `revokePremium`, `revalidateStoredPayment`), modal de pago, `checkPaymentSuccess`.
 Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeople`, adelanto (`renderLockedIndex`, `refreshDiaryState`), `loadDiaryAI`, IndexedDB, Story (`shareToStories`) y **PDF** (`buildDiaryPages` → 14 páginas, `generatePDF`).
 - `computeMoments`: hasta 4 «días que recordar» (primer mensaje, primer «te quiero», día con más mensajes, último «te quiero» o vuelta tras el silencio más largo) con sus mensajes reales; se envían a Gemini para que escriba un texto por momento.
+- **Página extra «Una carta para cada uno»** (bonus, después del capítulo VIII, no entra en el índice): la IA devuelve `letters.A` (de A para B) y `letters.B` en la misma llamada de `/api/analyze`; si no vienen (diarios guardados antes), la página no sale. Se anuncia en la caja «Además, incluido» de la portada.
 - `verifyQuote`: toda cita que devuelve la IA (perfiles, señales, frases para guardar, mensaje final) solo se pinta si existe **tal cual** en el chat. Si no, se omite.
 - `isWaSystem` / `WA_SYSTEM_RE`: avisos automáticos de WhatsApp (cifrado, llamadas, mensajes temporales…). Se excluyen de todo lo que se pinta; el servidor tiene la misma regex para la muestra de la IA.
 

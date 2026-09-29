@@ -1327,6 +1327,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <div class="bonus reveal">
       <div class="bonus-title">Además, incluido:</div>
       <ul>
+        <li><b>Página extra: una carta para cada uno</b>, escrita con sus propias palabras, para regalársela.</li>
         <li><b>La imagen para Stories</b> con su índice y su primer mensaje, lista para compartir.</li>
         <li><b>Su diario también por correo</b>, en PDF, para tenerlo siempre guardado.</li>
         <li><b>30 días de garantía:</b> si no les gusta, les devolvemos el dinero.</li>
@@ -5080,6 +5081,26 @@ function buildDiaryPages(messages, stats, diary) {
     <div style="margin-top:20px;${CAV}font-size:44px;line-height:40px;color:${RED};">Con cariño, YaLoSabía</div>
     <div style="margin-top:auto;font-size:11px;line-height:1.6;color:#7A4B52;">Este diario es una lectura de sus mensajes hecha con ayuda de IA, no un diagnóstico. Úsenlo para conversar, no para acusar. Su chat no se guardó en ningún servidor.</div>
     ${pdfFoot(n)}</div>`);
+
+  // ── Página extra: una carta de cada uno para el otro (la escribe la IA con sus mensajes) ──
+  const letters = d.letters || {};
+  const letterA = typeof letters.A === 'string' ? clipText(letters.A, 620) : '';
+  const letterB = typeof letters.B === 'string' ? clipText(letters.B, 620) : '';
+  if (letterA || letterB) {
+    const letter = (from, to, text, color, rot) => text ? `<div style="position:relative;background:#fff;border:1px solid ${LINE};padding:26px 30px 22px;transform:rotate(${rot}deg);">
+        ${pdfTape('left:40%;top:-12px;transform:rotate(-3deg);')}
+        <div style="${CAV}font-size:34px;line-height:1;color:${color};">Para ${T(to)}:</div>
+        <div style="${CAVL}font-size:${text.length > 480 ? 22 : 24}px;line-height:1.28;margin-top:12px;">${T(text)}</div>
+        <div style="${CAV}font-size:30px;line-height:1;color:${color};text-align:right;margin-top:12px;">${T(from)}</div>
+      </div>` : '';
+    pages.push(n => `<div style="${PDF_PAGE}">${pdfHead(names, 'Página extra')}${pdfTitle('', 'Una carta para cada uno', 'escrita con sus propias palabras, para regalársela.')}
+      <div style="display:flex;flex-direction:column;gap:26px;margin-top:26px;">
+        ${letter(nA, nB, letterA, RED, -0.8)}
+        ${letter(nB, nA, letterB, BLUE, 0.8)}
+      </div>
+      <div style="margin-top:auto;font-size:11px;line-height:1.6;color:#7A4B52;">Cartas escritas por YaLoSabía a partir de sus mensajes, para que se las den el uno al otro. Si alguna frase no es suya, táchenla y escriban la de verdad.</div>
+      ${pdfFoot(n)}</div>`);
+  }
 
   return pages.map((build, i) => build(i + 1));
 }

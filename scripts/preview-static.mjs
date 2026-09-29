@@ -41,6 +41,10 @@ const DIARY = {
   bestMessage: null,
   quotesToKeep: [{ text: 'Eres lo mejor que me ha pasado' }, { text: 'Gracias por existir' }, { text: 'Estoy muy bien contigo' }],
   closing: 'Ojalá este diario les recuerde por qué empezaron a escribirse. Y ojalá esta noche alguno de los dos escriba primero.',
+  letters: {
+    A: 'Todavía me acuerdo de aquel primer mensaje y de lo nerviosa que me puse al contestarte. Desde entonces te he escrito buenos días casi todas las mañanas, y tú siempre encuentras la forma de hacerme reír aunque el día vaya mal. Gracias por las noches de mensajes largos y por esperarme cuando tardo en contestar. Quiero que sigamos escribiéndonos así mucho tiempo.',
+    B: 'No soy de escribir mucho, eso ya lo sabes, pero cada «te quiero» que te mando va en serio. Me encanta que me cuentes tu día con todo detalle, aunque yo conteste con dos palabras. Gracias por no rendirte conmigo después de cada discusión. Esta noche te escribo yo primero.',
+  },
 };
 
 createServer(async (req, res) => {
