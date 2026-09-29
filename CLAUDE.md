@@ -82,6 +82,7 @@ Bloque «DIARIO» (al final): huella del chat, `analyzeMilestones`, `computePeop
 
 ## Móvil, tutorial y app instalable
 
+- **Orden de la portada** (sep 2026): portada con «Subir nuestro chat» → «Así es su diario» (`#indice`, las 14 páginas + botón «Hacer el nuestro») → «Ahora, el de ustedes» (`#subir`: zona de subida, formulario de correo visible debajo, aviso de privacidad) → adelanto → vídeo, cómo funciona, para quién, precio, FAQ. El adelanto sale justo debajo de `#subir`.
 - La portada en móvil enseña arriba el botón «Subir nuestro chat» (`heroUpload`), el enlace al tutorial y, en Android, «instala YaLoSabía» (`beforeinstallprompt`).
 - Vídeo «De principio a fin» en la landing (`#de-principio-a-fin`): `public/flujo.mp4` (96 s, 720×1280, sin audio, se reproduce solo al verse; evento `flow_video_view`) y `flujo-portada.jpg`. Se genera con `.tmp-posts/flujo/` (capture.js saca pantallas y PDF reales del preview, flujo.html anima, render.js exporta a 1080×1920 con música); no está en el repo.
 - Tutorial: `public/tutorial.mp4` (54 s, Android + iPhone) y `tutorial-portada.jpg`, en un modal (`openTutorial`). Se genera con `.tmp-posts/tutorial/` (HTML animado + puppeteer + ffmpeg), no está en el repo.
