@@ -1,0 +1,172 @@
+// Correos de «Háganlo luego». Una sola fuente para el E0 (lo manda /api/lead, lib/brevo.ts) y para E1–E3
+// (plantillas de Brevo: node scripts/brevo-plantillas.mjs). HTML de tablas con estilos en línea para que se vea
+// igual en Gmail, Outlook y Apple Mail. La cabecera de cada correo es una imagen (letra a mano, papel rayado)
+// en public/email/, porque los clientes de correo no cargan la fuente Caveat.
+// Solo sintaxis de TS que Node puede ejecutar directamente (sin enums ni parámetros de clase).
+
+const SITE = 'https://www.yalosabia.com';
+const INK = '#3B0A12';
+const RED = '#C8102E';
+const MUTED = '#8A5A61';
+const SERIF = "Georgia,'Times New Roman',serif";
+const SANS = "'Helvetica Neue',Helvetica,Arial,sans-serif";
+
+export type Email = { name: string; subject: string; preheader: string; html: string };
+
+const link = (campaign: string, extra = '#subir') =>
+  `${SITE}/?utm_source=email&utm_medium=lead&utm_campaign=${campaign}${extra}`;
+
+const p = (html: string, extra = '') =>
+  `<p style="margin:0 0 16px;font-family:${SERIF};font-size:17px;line-height:1.65;color:${INK};${extra}">${html}</p>`;
+
+const a = (href: string, text: string) =>
+  `<a href="${href}" style="color:${RED};text-decoration:underline;">${text}</a>`;
+
+function button(href: string, label: string) {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:8px auto 10px;"><tr>
+<td align="center" bgcolor="${RED}" style="border-radius:999px;">
+<a href="${href}" style="display:inline-block;padding:16px 34px;font-family:${SANS};font-size:16px;font-weight:bold;color:#FFFFFF;text-decoration:none;border-radius:999px;">${label}</a>
+</td></tr></table>`;
+}
+
+const reassure = (text = 'Gratis &middot; sin registrarse &middot; su chat se lee en su teléfono') =>
+  `<p style="margin:0 0 6px;text-align:center;font-family:${SANS};font-size:13px;color:${MUTED};">${text}</p>`;
+
+function steps(items: string[]) {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 20px;background:#FFF6F4;border:1px solid #F1D3CE;border-radius:12px;">
+${items.map((t, i) => `<tr><td width="34" valign="top" style="padding:${i ? 12 : 18}px 0 ${i === items.length - 1 ? 18 : 0}px 18px;">
+<div style="width:28px;height:28px;line-height:28px;border-radius:50%;background:${RED};color:#FFFFFF;text-align:center;font-family:${SANS};font-size:14px;font-weight:bold;">${i + 1}</div></td>
+<td valign="top" style="padding:${i ? 12 : 18}px 18px ${i === items.length - 1 ? 18 : 0}px 12px;font-family:${SERIF};font-size:16px;line-height:1.55;color:${INK};">${t}</td></tr>`).join('\n')}
+</table>`;
+}
+
+function pages(list: { src: string; label: string }[], href: string) {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:6px 0 22px;"><tr>
+${list.map(pg => `<td width="33%" align="center" valign="top" style="padding:0 5px;">
+<a href="${href}" style="text-decoration:none;"><img src="${SITE}/diario/${pg.src}.jpg" width="160" alt="${pg.label}" style="display:block;width:100%;max-width:160px;height:auto;border:1px solid #EAD0CB;border-radius:4px;"></a>
+<div style="padding-top:8px;font-family:${SANS};font-size:12px;line-height:1.35;color:${MUTED};">${pg.label}</div></td>`).join('\n')}
+</tr></table>`;
+}
+
+function layout(o: { hero: string; heroAlt: string; preheader: string; body: string; footer: string }) {
+  return `<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>YaLoSabía</title></head>
+<body style="margin:0;padding:0;background:#F7E4E0;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#F7E4E0;">${o.preheader}&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F7E4E0;"><tr><td align="center" style="padding:28px 12px 36px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#FFFFFF;border-radius:16px;overflow:hidden;">
+<tr><td style="padding:0;"><a href="${SITE}/?utm_source=email&utm_medium=lead"><img src="${SITE}/email/${o.hero}.jpg" width="600" alt="${o.heroAlt}" style="display:block;width:100%;height:auto;border:0;"></a></td></tr>
+<tr><td style="padding:30px 36px 12px;">
+${o.body}
+</td></tr>
+<tr><td style="padding:8px 36px 30px;">
+<p style="margin:0;font-family:${SERIF};font-size:16px;font-style:italic;color:${RED};">Con cariño,<br>YaLoSabía</p>
+</td></tr>
+</table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;"><tr><td align="center" style="padding:22px 20px 0;font-family:${SANS};font-size:12px;line-height:1.6;color:${MUTED};">
+<a href="${SITE}/?utm_source=email&utm_medium=lead" style="color:${MUTED};text-decoration:none;font-weight:bold;">yalosabia.com</a> &middot; el diario de su relación, escrito con su chat de WhatsApp<br>
+${o.footer}
+</td></tr></table>
+</td></tr></table>
+</body></html>`;
+}
+
+const HOWTO = [
+  '<b>En WhatsApp</b>, abran su chat.',
+  '<b>Android:</b> los tres puntos &rsaquo; Más &rsaquo; Exportar chat &rsaquo; Sin archivos.<br><b>iPhone:</b> toquen el nombre arriba &rsaquo; Exportar chat &rsaquo; Sin archivos.',
+  '<b>Suban el archivo</b> en yalosabia.com y en un minuto ven su adelanto.',
+];
+
+// Pie de los correos de la secuencia (Brevo cambia {{ unsubscribe }} por el enlace de baja)
+const SEQ_FOOTER = 'Recibes este correo porque pediste el enlace en yalosabia.com. <a href="{{ unsubscribe }}" style="color:#8A5A61;">Darme de baja</a>';
+// El E0 va por la API transaccional, que no tiene enlace de baja automático
+const E0_FOOTER = 'Recibes este correo porque pediste el enlace en yalosabia.com. Si no quieres recibir más, responde «baja».';
+
+export function emailE0(): Email {
+  const c = 'e0';
+  return {
+    name: 'YLS E0 - El enlace',
+    subject: 'Su diario, cuando tengan un minuto',
+    preheader: 'Tres pasos y un par de minutos. Aquí está el enlace.',
+    html: layout({
+      hero: 'e0', heroAlt: 'Querido diario: hoy vamos a leer nuestra historia', preheader: 'Tres pasos y un par de minutos. Aquí está el enlace.',
+      body:
+        p('Hola:') +
+        p('Aquí tienen el enlace para hacer el diario de su relación. Cuando tengan el chat a mano, son tres pasos:') +
+        steps(HOWTO) +
+        button(link(c), 'Ver nuestro adelanto gratis') +
+        reassure() +
+        p(`¿Se atoran exportando el chat? ${a(link(c, '&tutorial=1'), 'Vean el tutorial en video')} (dura un minuto).`, 'margin-top:22px;font-size:15px;color:#6B3A42;'),
+      footer: E0_FOOTER,
+    }),
+  };
+}
+
+export function emailE1(): Email {
+  const c = 'e1';
+  return {
+    name: 'YLS E1 - Exportar el chat',
+    subject: '¿Ya tienen su chat a mano?',
+    preheader: 'Exportarlo tarda menos de lo que parece. Así se hace.',
+    html: layout({
+      hero: 'e1', heroAlt: '¿Ya tienen su chat a mano?', preheader: 'Exportarlo tarda menos de lo que parece. Así se hace.',
+      body:
+        p('Hola:') +
+        p('Ayer nos pidieron el enlace para hacer su diario. Por si se quedó pendiente: exportar el chat tarda menos de lo que parece.') +
+        steps(HOWTO) +
+        p('En cuanto lo suban verán el índice de su relación, cuántos mensajes se han mandado y quién suele escribir primero. Todo eso es gratis.') +
+        button(link(c), 'Ver nuestro adelanto gratis') +
+        reassure() +
+        p(`Si prefieren verlo antes: ${a(link(c, '&tutorial=1'), 'tutorial en video de un minuto')}.`, 'margin-top:22px;font-size:15px;color:#6B3A42;'),
+      footer: SEQ_FOOTER,
+    }),
+  };
+}
+
+export function emailE2(): Email {
+  const c = 'e2';
+  return {
+    name: 'YLS E2 - Lo que trae el diario',
+    subject: 'Lo que cabe en 14 páginas',
+    preheader: 'Cómo empezó todo, quién es quién y si van a durar.',
+    html: layout({
+      hero: 'e2', heroAlt: 'Lo que cabe en 14 páginas', preheader: 'Cómo empezó todo, quién es quién y si van a durar.',
+      body:
+        p('Hola:') +
+        p('Les enseñamos lo que trae el diario para que sepan qué esperar. Estas son páginas de un diario de ejemplo:') +
+        pages([
+          { src: 'como-empezo', label: 'Cómo empezó todo' },
+          { src: 'dias-que-recordar', label: 'Días que recordar' },
+          { src: 'compatibilidad', label: 'Qué tan compatibles son' },
+        ], link(c, '#indice')) +
+        p('Y además: quién es quién en la relación, cómo se hablan, cuánto tardan en contestarse, las palabras que más usan, las señales a cuidar, si van a durar y unos consejos. Al final, el mensaje de ustedes que más vale guardar.') +
+        p('Todo sale de sus propios mensajes: cada frase que citamos existe tal cual en su chat.') +
+        button(link(c), 'Hacer nuestro diario') +
+        reassure('Adelanto gratis &middot; diario completo en PDF: $199 MXN, un solo pago') +
+        p(`${a(link(c, '#indice'), 'Ver las 14 páginas del ejemplo')}`, 'margin-top:22px;font-size:15px;text-align:center;'),
+      footer: SEQ_FOOTER,
+    }),
+  };
+}
+
+export function emailE3(): Email {
+  const c = 'e3';
+  return {
+    name: 'YLS E3 - Ultima nota',
+    subject: 'Una última nota',
+    preheader: 'No les escribimos más. El enlace sigue aquí.',
+    html: layout({
+      hero: 'e3', heroAlt: 'Una última nota', preheader: 'No les escribimos más. El enlace sigue aquí.',
+      body:
+        p('Hola:') +
+        p('Este es el último correo que les mandamos; no queremos llenarles la bandeja.') +
+        p('Si algún día les da curiosidad ver su historia contada con sus propios mensajes, el enlace sigue aquí. No es para acusar a nadie ni para juzgar la relación: es para recordar cómo empezaron y ver lo que se dicen sin darse cuenta.') +
+        button(link(c), 'Ver nuestro adelanto gratis') +
+        reassure() +
+        p('Gracias por habernos leído.', 'margin-top:22px;'),
+      footer: SEQ_FOOTER,
+    }),
+  };
+}
+
+export const SEQUENCE = [emailE1, emailE2, emailE3];
