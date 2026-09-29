@@ -904,6 +904,15 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
   .hero-pages .hero-note { top: 184px; right: -4px; font-size: 1.2rem; width: 104px; }
 }
 /* Páginas de ejemplo */
+.sample-cta { text-align: center; margin: -6px 0 34px; }
+.sample-cta .hero-mcta-btn { display: inline-block; width: auto; padding-left: 38px; padding-right: 38px; }
+.upload-section { padding-top: 40px; }
+.upload-section .section-title, .upload-section .section-subtitle { text-align: center; }
+.upload-section .upload-zone { max-width: 720px; margin-left: auto; margin-right: auto; }
+.upload-section .privacy-badge { display: flex; justify-content: center; margin: 18px auto 0; width: fit-content; }
+.upload-section:has(#uploadZone[style*="none"]) :is(.section-title, .section-subtitle) { display: none; }
+.lead-title { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; line-height: 1.1; color: var(--pink); margin-bottom: 6px; }
+@media (max-width: 700px) { #indice .diary-index { display: none; } }
 .sample-strip { display: flex; gap: 22px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 14px 6px 22px; margin: 0 -6px 30px; -webkit-overflow-scrolling: touch; }
 .sample-strip figure { flex: 0 0 220px; scroll-snap-align: center; margin: 0; text-align: center; }
 .sample-strip button { display: block; width: 100%; padding: 0; border: 1px solid var(--margin-line); background: #fff; box-shadow: var(--shadow); cursor: zoom-in; }
@@ -1244,46 +1253,93 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <div class="hero-note">su diario en PDF</div>
   </div>
   <div class="hero-example">(páginas de un diario de ejemplo)</div>
-  <!-- Upload Zone -->
-  <div class="upload-zone" id="uploadZone">
-    <div class="upload-icon" id="uploadIcon"></div>
-    <h3 id="uploadTitle">Arrastra tu chat de WhatsApp aquí</h3>
-    <p>o haz clic para seleccionar el .txt exportado</p>
-    <input type="file" id="fileInput" accept=".txt,.zip,text/plain,application/zip">
-    <div class="upload-formats" id="uploadFormats">
-      <span class="format-tag">WhatsApp .txt o .zip</span>
-      <span class="format-tag">Hasta 40,000 mensajes</span>
+</section>
+
+<!-- ── ÍNDICE ── -->
+<section class="section" id="indice">
+  <div class="container">
+    <div class="reveal">
+      <h2 class="section-title">Así es su diario</h2>
+      <p class="section-subtitle">Ocho capítulos y 14 páginas sobre ustedes dos, escritos con sus propios mensajes.</p>
     </div>
-    <button type="button" class="tutorial-link" onclick="event.stopPropagation(); openTutorial('upload')">¿No te queda claro? Mira el tutorial</button>
-    <button class="demo-btn" id="demoBtn" onclick="event.stopPropagation(); loadDemo('upload')">Ver un ejemplo sin subir nada</button>
+    <div class="sample-strip reveal" id="sampleStrip">
+      <figure><button type="button" data-full="/diario/portada.jpg" aria-label="Ver la página «La portada» en grande"><img src="/diario/portada.jpg" width="635" height="898" loading="lazy" alt="Página 1 de 14: La portada"></button><figcaption>La portada</figcaption></figure>
+      <figure><button type="button" data-full="/diario/indice.jpg" aria-label="Ver la página «El índice» en grande"><img src="/diario/indice.jpg" width="635" height="898" loading="lazy" alt="Página 2 de 14: El índice"></button><figcaption>El índice</figcaption></figure>
+      <figure><button type="button" data-full="/diario/como-empezo.jpg" aria-label="Ver la página «I. Cómo empezó todo» en grande"><img src="/diario/como-empezo.jpg" width="635" height="898" loading="lazy" alt="Página 3 de 14: I. Cómo empezó todo"></button><figcaption>I. Cómo empezó todo</figcaption></figure>
+      <figure><button type="button" data-full="/diario/dias-que-recordar.jpg" aria-label="Ver la página «Días que recordar» en grande"><img src="/diario/dias-que-recordar.jpg" width="635" height="898" loading="lazy" alt="Página 4 de 14: Días que recordar"></button><figcaption>Días que recordar</figcaption></figure>
+      <figure><button type="button" data-full="/diario/antes-y-ahora.jpg" aria-label="Ver la página «Antes y ahora» en grande"><img src="/diario/antes-y-ahora.jpg" width="635" height="898" loading="lazy" alt="Página 5 de 14: Antes y ahora"></button><figcaption>Antes y ahora</figcaption></figure>
+      <figure><button type="button" data-full="/diario/quien-es-quien.jpg" aria-label="Ver la página «II. Quién es quién» en grande"><img src="/diario/quien-es-quien.jpg" width="635" height="898" loading="lazy" alt="Página 6 de 14: II. Quién es quién"></button><figcaption>II. Quién es quién</figcaption></figure>
+      <figure><button type="button" data-full="/diario/como-se-hablan.jpg" aria-label="Ver la página «III. Cómo se hablan» en grande"><img src="/diario/como-se-hablan.jpg" width="635" height="898" loading="lazy" alt="Página 7 de 14: III. Cómo se hablan"></button><figcaption>III. Cómo se hablan</figcaption></figure>
+      <figure><button type="button" data-full="/diario/cuando-contestan.jpg" aria-label="Ver la página «Cuándo contestan rápido» en grande"><img src="/diario/cuando-contestan.jpg" width="635" height="898" loading="lazy" alt="Página 8 de 14: Cuándo contestan rápido"></button><figcaption>Cuándo contestan rápido</figcaption></figure>
+      <figure><button type="button" data-full="/diario/sus-palabras.jpg" aria-label="Ver la página «Sus palabras» en grande"><img src="/diario/sus-palabras.jpg" width="635" height="898" loading="lazy" alt="Página 9 de 14: Sus palabras"></button><figcaption>Sus palabras</figcaption></figure>
+      <figure><button type="button" data-full="/diario/compatibilidad.jpg" aria-label="Ver la página «IV. Compatibilidad» en grande"><img src="/diario/compatibilidad.jpg" width="635" height="898" loading="lazy" alt="Página 10 de 14: IV. Compatibilidad"></button><figcaption>IV. Compatibilidad</figcaption></figure>
+      <figure><button type="button" data-full="/diario/senales.jpg" aria-label="Ver la página «V. Las señales» en grande"><img src="/diario/senales.jpg" width="635" height="898" loading="lazy" alt="Página 11 de 14: V. Las señales"></button><figcaption>V. Las señales</figcaption></figure>
+      <figure><button type="button" data-full="/diario/van-a-durar.jpg" aria-label="Ver la página «VI. ¿Van a durar?» en grande"><img src="/diario/van-a-durar.jpg" width="635" height="898" loading="lazy" alt="Página 12 de 14: VI. ¿Van a durar?"></button><figcaption>VI. ¿Van a durar?</figcaption></figure>
+      <figure><button type="button" data-full="/diario/consejos.jpg" aria-label="Ver la página «VII. Consejos para ustedes» en grande"><img src="/diario/consejos.jpg" width="635" height="898" loading="lazy" alt="Página 13 de 14: VII. Consejos para ustedes"></button><figcaption>VII. Consejos para ustedes</figcaption></figure>
+      <figure><button type="button" data-full="/diario/el-mensaje.jpg" aria-label="Ver la página «VIII. El mensaje» en grande"><img src="/diario/el-mensaje.jpg" width="635" height="898" loading="lazy" alt="Página 14 de 14: VIII. El mensaje"></button><figcaption>VIII. El mensaje</figcaption></figure>
+    </div>
+    <p class="sample-note">Las 14 páginas de un diario de ejemplo, hecho con un chat de prueba. El suyo sale con sus nombres, sus fechas y sus mensajes.</p>
+    <div class="sample-cta"><button type="button" class="hero-mcta-btn" onclick="goToUpload('sample')">Hacer el nuestro</button></div>
+    <ol class="diary-index reveal">
+      <li><b>I.</b> Cómo empezó todo <span>primer mensaje, línea de vida</span></li>
+      <li><b>II.</b> Quién es quién <span>el perfil de cada uno</span></li>
+      <li><b>III.</b> Cómo se hablan <span>tiempos, audios, silencios</span></li>
+      <li><b>IV.</b> Compatibilidad <span>su lenguaje del amor</span></li>
+      <li><b>V.</b> Las señales <span>a cuidar y green flags</span></li>
+      <li><b>VI.</b> ¿Van a durar? <span>nuestro pronóstico</span></li>
+      <li><b>VII.</b> Consejos para ustedes <span>para tachar cada semana</span></li>
+      <li><b>VIII.</b> El mensaje <span>el más bonito del chat</span></li>
+    </ol>
   </div>
-  <div class="lead-box ph-no-capture" id="leadBox">
-    <button type="button" class="lead-toggle" id="leadToggle" onclick="openLead('upload')">¿Ahora no pueden? Háganlo luego: les mandamos el enlace por correo</button>
-    <form class="lead-form" id="leadForm" hidden onsubmit="submitLead(event)">
-      <p>Les mandamos el enlace y los pasos para exportar el chat. Cuando tengan un minuto, lo hacen desde el teléfono.</p>
-      <div class="lead-row">
-        <input type="email" id="leadEmail" placeholder="tu@correo.com" autocomplete="email" required maxlength="200">
-        <button type="submit" id="leadBtn">Mandármelo</button>
+</section>
+
+<!-- ── SUBIR EL CHAT ── -->
+<section class="section upload-section" id="subir">
+  <div class="container">
+    <h2 class="section-title">Ahora, el de ustedes</h2>
+    <p class="section-subtitle">Suban el chat que exportaron de WhatsApp y vean su adelanto gratis en un minuto.</p>
+    <!-- Upload Zone -->
+    <div class="upload-zone" id="uploadZone">
+      <div class="upload-icon" id="uploadIcon"></div>
+      <h3 id="uploadTitle">Arrastra tu chat de WhatsApp aquí</h3>
+      <p>o haz clic para seleccionar el .txt exportado</p>
+      <input type="file" id="fileInput" accept=".txt,.zip,text/plain,application/zip">
+      <div class="upload-formats" id="uploadFormats">
+        <span class="format-tag">WhatsApp .txt o .zip</span>
+        <span class="format-tag">Hasta 40,000 mensajes</span>
       </div>
-      <label class="lead-consent"><input type="checkbox" id="leadConsent"> <span>Acepto recibir correos de YaLoSabía sobre mi diario (máximo 4; me puedo dar de baja cuando quiera). <a href="/privacidad.html" target="_blank" rel="noopener">Aviso de privacidad</a>.</span></label>
-      <div class="lead-msg" id="leadMsg" role="status"></div>
-    </form>
-  </div>
-
-  <!-- Processing State -->
-  <div class="processing-state" id="processingState">
-    <div class="spinner-wrap"></div>
-    <div class="processing-steps">
-      <div class="step active" data-step="1"><span class="step-dot"></span> leyendo todos sus mensajes…</div>
-      <div class="step" data-step="2"><span class="step-dot"></span> buscando el primero…</div>
-      <div class="step" data-step="3"><span class="step-dot"></span> contando sus silencios…</div>
-      <div class="step" data-step="4"><span class="step-dot"></span> escribiendo su diario…</div>
+      <button type="button" class="tutorial-link" onclick="event.stopPropagation(); openTutorial('upload')">¿No te queda claro? Mira el tutorial</button>
+      <button class="demo-btn" id="demoBtn" onclick="event.stopPropagation(); loadDemo('upload')">Ver un ejemplo sin subir nada</button>
     </div>
-  </div>
+    <div class="lead-box ph-no-capture" id="leadBox">
+      <button type="button" class="lead-toggle" id="leadToggle" hidden onclick="openLead('upload')">¿Ahora no pueden? Háganlo luego: les mandamos el enlace por correo</button>
+      <form class="lead-form" id="leadForm" onsubmit="submitLead(event)">
+        <div class="lead-title">¿Ahora no pueden? Háganlo luego</div>
+        <p>Les mandamos el enlace y los pasos para exportar el chat. Cuando tengan un minuto, lo hacen desde el teléfono.</p>
+        <div class="lead-row">
+          <input type="email" id="leadEmail" placeholder="tu@correo.com" autocomplete="email" required maxlength="200">
+          <button type="submit" id="leadBtn">Mandármelo</button>
+        </div>
+        <label class="lead-consent"><input type="checkbox" id="leadConsent"> <span>Acepto recibir correos de YaLoSabía sobre mi diario (máximo 4; me puedo dar de baja cuando quiera). <a href="/privacidad.html" target="_blank" rel="noopener">Aviso de privacidad</a>.</span></label>
+        <div class="lead-msg" id="leadMsg" role="status"></div>
+      </form>
+    </div>
 
-  <div class="privacy-badge">
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-    El adelanto se hace en tu teléfono y tu chat no se guarda.
+    <!-- Processing State -->
+    <div class="processing-state" id="processingState">
+      <div class="spinner-wrap"></div>
+      <div class="processing-steps">
+        <div class="step active" data-step="1"><span class="step-dot"></span> leyendo todos sus mensajes…</div>
+        <div class="step" data-step="2"><span class="step-dot"></span> buscando el primero…</div>
+        <div class="step" data-step="3"><span class="step-dot"></span> contando sus silencios…</div>
+        <div class="step" data-step="4"><span class="step-dot"></span> escribiendo su diario…</div>
+      </div>
+    </div>
+
+    <div class="privacy-badge">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      El adelanto se hace en tu teléfono y tu chat no se guarda.
+    </div>
   </div>
 </section>
 
@@ -1493,43 +1549,6 @@ if (localStorage.getItem('cookieConsent') === 'all') {
         <p>Ves un adelanto gratis y descargas su diario completo en PDF.</p>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- ── ÍNDICE ── -->
-<section class="section" id="indice">
-  <div class="container">
-    <div class="reveal">
-      <h2 class="section-title">Así es su diario</h2>
-      <p class="section-subtitle">Ocho capítulos y 14 páginas sobre ustedes dos, escritos con sus propios mensajes.</p>
-    </div>
-    <div class="sample-strip reveal" id="sampleStrip">
-      <figure><button type="button" data-full="/diario/portada.jpg" aria-label="Ver la página «La portada» en grande"><img src="/diario/portada.jpg" width="635" height="898" loading="lazy" alt="Página 1 de 14: La portada"></button><figcaption>La portada</figcaption></figure>
-      <figure><button type="button" data-full="/diario/indice.jpg" aria-label="Ver la página «El índice» en grande"><img src="/diario/indice.jpg" width="635" height="898" loading="lazy" alt="Página 2 de 14: El índice"></button><figcaption>El índice</figcaption></figure>
-      <figure><button type="button" data-full="/diario/como-empezo.jpg" aria-label="Ver la página «I. Cómo empezó todo» en grande"><img src="/diario/como-empezo.jpg" width="635" height="898" loading="lazy" alt="Página 3 de 14: I. Cómo empezó todo"></button><figcaption>I. Cómo empezó todo</figcaption></figure>
-      <figure><button type="button" data-full="/diario/dias-que-recordar.jpg" aria-label="Ver la página «Días que recordar» en grande"><img src="/diario/dias-que-recordar.jpg" width="635" height="898" loading="lazy" alt="Página 4 de 14: Días que recordar"></button><figcaption>Días que recordar</figcaption></figure>
-      <figure><button type="button" data-full="/diario/antes-y-ahora.jpg" aria-label="Ver la página «Antes y ahora» en grande"><img src="/diario/antes-y-ahora.jpg" width="635" height="898" loading="lazy" alt="Página 5 de 14: Antes y ahora"></button><figcaption>Antes y ahora</figcaption></figure>
-      <figure><button type="button" data-full="/diario/quien-es-quien.jpg" aria-label="Ver la página «II. Quién es quién» en grande"><img src="/diario/quien-es-quien.jpg" width="635" height="898" loading="lazy" alt="Página 6 de 14: II. Quién es quién"></button><figcaption>II. Quién es quién</figcaption></figure>
-      <figure><button type="button" data-full="/diario/como-se-hablan.jpg" aria-label="Ver la página «III. Cómo se hablan» en grande"><img src="/diario/como-se-hablan.jpg" width="635" height="898" loading="lazy" alt="Página 7 de 14: III. Cómo se hablan"></button><figcaption>III. Cómo se hablan</figcaption></figure>
-      <figure><button type="button" data-full="/diario/cuando-contestan.jpg" aria-label="Ver la página «Cuándo contestan rápido» en grande"><img src="/diario/cuando-contestan.jpg" width="635" height="898" loading="lazy" alt="Página 8 de 14: Cuándo contestan rápido"></button><figcaption>Cuándo contestan rápido</figcaption></figure>
-      <figure><button type="button" data-full="/diario/sus-palabras.jpg" aria-label="Ver la página «Sus palabras» en grande"><img src="/diario/sus-palabras.jpg" width="635" height="898" loading="lazy" alt="Página 9 de 14: Sus palabras"></button><figcaption>Sus palabras</figcaption></figure>
-      <figure><button type="button" data-full="/diario/compatibilidad.jpg" aria-label="Ver la página «IV. Compatibilidad» en grande"><img src="/diario/compatibilidad.jpg" width="635" height="898" loading="lazy" alt="Página 10 de 14: IV. Compatibilidad"></button><figcaption>IV. Compatibilidad</figcaption></figure>
-      <figure><button type="button" data-full="/diario/senales.jpg" aria-label="Ver la página «V. Las señales» en grande"><img src="/diario/senales.jpg" width="635" height="898" loading="lazy" alt="Página 11 de 14: V. Las señales"></button><figcaption>V. Las señales</figcaption></figure>
-      <figure><button type="button" data-full="/diario/van-a-durar.jpg" aria-label="Ver la página «VI. ¿Van a durar?» en grande"><img src="/diario/van-a-durar.jpg" width="635" height="898" loading="lazy" alt="Página 12 de 14: VI. ¿Van a durar?"></button><figcaption>VI. ¿Van a durar?</figcaption></figure>
-      <figure><button type="button" data-full="/diario/consejos.jpg" aria-label="Ver la página «VII. Consejos para ustedes» en grande"><img src="/diario/consejos.jpg" width="635" height="898" loading="lazy" alt="Página 13 de 14: VII. Consejos para ustedes"></button><figcaption>VII. Consejos para ustedes</figcaption></figure>
-      <figure><button type="button" data-full="/diario/el-mensaje.jpg" aria-label="Ver la página «VIII. El mensaje» en grande"><img src="/diario/el-mensaje.jpg" width="635" height="898" loading="lazy" alt="Página 14 de 14: VIII. El mensaje"></button><figcaption>VIII. El mensaje</figcaption></figure>
-    </div>
-    <p class="sample-note">Las 14 páginas de un diario de ejemplo, hecho con un chat de prueba. El suyo sale con sus nombres, sus fechas y sus mensajes.</p>
-    <ol class="diary-index reveal">
-      <li><b>I.</b> Cómo empezó todo <span>primer mensaje, línea de vida</span></li>
-      <li><b>II.</b> Quién es quién <span>el perfil de cada uno</span></li>
-      <li><b>III.</b> Cómo se hablan <span>tiempos, audios, silencios</span></li>
-      <li><b>IV.</b> Compatibilidad <span>su lenguaje del amor</span></li>
-      <li><b>V.</b> Las señales <span>a cuidar y green flags</span></li>
-      <li><b>VI.</b> ¿Van a durar? <span>nuestro pronóstico</span></li>
-      <li><b>VII.</b> Consejos para ustedes <span>para tachar cada semana</span></li>
-      <li><b>VIII.</b> El mensaje <span>el más bonito del chat</span></li>
-    </ol>
   </div>
 </section>
 
@@ -2088,7 +2107,7 @@ try {
 function goToUpload(from) {
   trackFunnel('cta_upload_click', { from });
   const zone = document.getElementById('uploadZone');
-  if (!zone || zone.style.display === 'none') { document.getElementById('top').scrollIntoView({ behavior: 'smooth' }); return; }
+  if (!zone || zone.style.display === 'none') { document.getElementById('subir').scrollIntoView({ behavior: 'smooth' }); return; }
   zone.scrollIntoView({ behavior: 'smooth', block: 'center' });
   zone.classList.remove('flash'); void zone.offsetWidth; zone.classList.add('flash');
 }
