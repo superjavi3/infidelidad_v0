@@ -29,8 +29,12 @@ export async function POST(req: NextRequest) {
 
   const name = (req.headers.get('x-file-name') || 'diario-yalosabia.pdf').replace(/[^a-z0-9.-]/gi, '').slice(0, 60) || 'diario-yalosabia.pdf';
   try {
-    const e = emailDiary();
-    await sendEmail(check.email, e.subject, e.html, 'diario-pdf', [{ name: name.endsWith('.pdf') ? name : name + '.pdf', content: buf.toString('base64') }]);
+    let names = '';
+    try { names = decodeURIComponent(req.headers.get('x-names') || ''); } catch { /* sin nombres */ }
+    names = names.replace(/[^\p{L} ]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 50);
+    if (!/^\p{L}+ y \p{L}+$/u.test(names)) names = '';
+    const e = emailDiary(names);
+    await sendEmail(check.email, e.subject, e.html, 'diario-pdf', [{ name: name.endsWith('.pdf') ? name : name + '.pdf', content: buf.toString('base64') }], e.text);
     await markPdfEmailed(sessionId, check).catch(err => console.warn('[send-diary] contador:', err instanceof Error ? err.message : err));
     return NextResponse.json({ ok: true, to: maskEmail(check.email) });
   } catch (err: unknown) {
