@@ -910,6 +910,10 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .sample-cta .hero-mcta-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #8E0B20; }
 .lead-footer { max-width: 620px; margin: 30px auto 22px; text-align: left; }
 .lead-footer .lead-form p { color: var(--text); font-size: 0.9rem; }
+.guarantee { display: block; }
+.guarantee a { color: var(--green); font-weight: 700; text-decoration: none; }
+.guarantee a::before { content: "\2713\00a0"; }
+.guarantee a:hover { text-decoration: underline; }
 .lead-form [hidden] { display: none !important; }
 .lead-box .lead-form { padding: 12px 14px; max-width: 520px; margin-left: auto; margin-right: auto; }
 .lead-box .lead-form p { font-size: 0.82rem; line-height: 1.45; margin-bottom: 8px; }
@@ -1410,6 +1414,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
         <li>Te llega al momento, sin volver a subir nada</li>
       </ul>
       <button class="price-btn price-btn-primary" id="paywallBtn" onclick="openPayModal()">Quiero mi diario</button>
+      <small class="guarantee"><a href="/reembolsos.html" target="_blank" rel="noopener">Si no les gusta, les devolvemos el dinero (30 días)</a></small>
       <small>Pago seguro con Stripe</small>
     </div>
   </div>
@@ -1592,6 +1597,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
         <li>Lo descargas al momento y es tuyo</li>
       </ul>
       <button class="price-btn price-btn-primary" data-price-cta onclick="openPayModal()">Empezar con su chat · es gratis</button>
+      <small class="guarantee"><a href="/reembolsos.html" target="_blank" rel="noopener">Si no les gusta, les devolvemos el dinero (30 días)</a></small>
       <small>Pago con tarjeta, seguro con Stripe. No guardamos tus datos de pago.</small>
       <small class="diary-price-help">¿Dudas? Escríbenos a <a href="mailto:contacto@yalosabia.com">contacto@yalosabia.com</a></small>
     </div>
@@ -3484,7 +3490,8 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
       Ir al pago
     </button>
     <p id="payError" style="color:#C8102E;font-size:0.85rem;margin-top:12px;display:none;"></p>
-    <p style="color:#7A4B52;font-size:0.75rem;margin-top:16px;">Pago seguro con Stripe. Aceptamos tarjetas de crédito y débito.</p>
+    <p class="guarantee" style="font-size:0.85rem;margin-top:14px;"><a href="/reembolsos.html" target="_blank" rel="noopener">Si no les gusta, les devolvemos el dinero (30 días)</a></p>
+    <p style="color:#7A4B52;font-size:0.75rem;margin-top:6px;">Pago seguro con Stripe. Aceptamos tarjetas de crédito y débito.</p>
   </div>
 </div>
 
@@ -4895,7 +4902,7 @@ function buildDiaryPages(messages, stats, diary) {
   const cooled = lang ? [lang.personAData, lang.personBData].filter(p => p && p.p1 && p.p3 && p.p3.affectRate < p.p1.affectRate * 0.75 && isWarm(p.warmestMsg) && p.coldestMsg)
     .sort((a, b) => (a.p3.affectRate / Math.max(1, a.p1.affectRate)) - (b.p3.affectRate / Math.max(1, b.p1.affectRate)))[0] : null;
   // Lo último bonito que escribió cada uno, y cuánto hace de eso
-  const SWEET_RE = /tes+(quiero|amo|adoro|extraño|echo de menos)|mi amor|mi vida|me encantas|lo mejor que me ha pasado/i;
+  const SWEET_RE = /\bte\s+(quiero|amo|adoro|extraño|echo de menos)\b|\bmi amor\b|\bmi vida\b|\bme encantas\b|lo mejor que me ha pasado/i;
   const realAll = messages.filter(isRealText);
   const chatEnd = realAll.length ? diaryDate(realAll[realAll.length - 1]) : null;
   const lastSweet = [A, B].map(p => {
