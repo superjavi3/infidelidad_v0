@@ -910,6 +910,11 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .sample-cta .hero-mcta-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #8E0B20; }
 .lead-footer { max-width: 620px; margin: 30px auto 22px; text-align: left; }
 .lead-footer .lead-form p { color: var(--text); font-size: 0.9rem; }
+.mail-pdf { display: flex; gap: 8px; align-items: center; justify-content: center; margin-top: 12px; font-size: 0.82rem; color: var(--text); cursor: pointer; background: var(--paper); }
+.mail-pdf[hidden] { display: none; }
+.mail-pdf input { accent-color: var(--pink); }
+.mail-pdf-msg { margin-top: 6px; font-size: 0.8rem; color: var(--text-muted); background: var(--paper); min-height: 1em; }
+.mail-pdf-msg.ok { color: var(--green); font-weight: 700; }
 .guarantee { display: block; }
 .guarantee a { color: var(--green); font-weight: 700; text-decoration: none; }
 .guarantee a::before { content: "\2713\00a0"; }
@@ -1428,6 +1433,8 @@ if (localStorage.getItem('cookieConsent') === 'all') {
     <div class="pdf-download" id="pdfDownload">
       <button class="btn-primary" id="pdfDownloadBtn" onclick="generatePDF()">Descargar mi diario (PDF)</button>
       <small style="color:var(--text-muted);font-size:0.78rem;background:var(--paper);">Tarda unos segundos. Guárdalo: no guardamos su chat.</small>
+      <label class="mail-pdf"><input type="checkbox" id="mailPdf" checked> <span>Mandármelo también a <b id="mailPdfTo">mi correo</b></span></label>
+      <div class="mail-pdf-msg" id="mailPdfMsg" role="status"></div>
     </div>
   </div>
 
@@ -1633,7 +1640,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       </div>
       <div class="faq-item">
         <button class="faq-q">¿Puedo volver a descargarlo?</button>
-        <div class="faq-a"><p>Sí. Desde el mismo teléfono o computadora con el que pagaste, vuelve a subir el mismo archivo del chat y lo descargas otra vez sin pagar. Cada pago vale para un chat.</p></div>
+        <div class="faq-a"><p>Sí. Al descargarlo también se lo mandamos en PDF al correo con el que pagaron (si no desmarcan la casilla), así lo tienen guardado. Y desde el mismo teléfono o computadora con el que pagaron, pueden volver a subir el mismo chat y descargarlo otra vez sin pagar. Cada pago vale para un chat.</p></div>
       </div>
       <div class="faq-item">
         <button class="faq-q">¿Y si no me gusta?</button>
@@ -4450,6 +4457,7 @@ function refreshDiaryState() {
   const ready = document.getElementById('diaryReady');
   if (paywall) paywall.style.display = paid ? 'none' : 'block';
   if (ready) ready.style.display = paid ? 'block' : 'none';
+  if (paid) renderMailPdf();
   if (paid && lastMessages && lastStats) loadDiaryAI(lastMessages, lastStats); // se precarga para que el PDF salga rápido
 }
 
@@ -5011,11 +5019,49 @@ function buildDiaryPages(messages, stats, diary) {
   return pages.map((build, i) => build(i + 1));
 }
 
+// ── El PDF también por correo (/api/send-diary): va al correo con el que se pagó, una vez por compra en este navegador ──
+function mailPdfKey() { return 'yls_pdf_mailed_' + (getStoredSessionId() || ''); }
+function shouldMailPdf() {
+  const box = document.getElementById('mailPdf');
+  if (!box || !box.checked || !getStoredSessionId()) return false;
+  try { return localStorage.getItem(mailPdfKey()) !== '1'; } catch (e) { return true; }
+}
+function renderMailPdf() {
+  const to = document.getElementById('mailPdfTo');
+  const v2 = readStored('yalosabia_plan_v2');
+  if (to) to.textContent = (v2 && v2.email) || 'el correo con el que pagaron';
+  let sent = false;
+  try { sent = localStorage.getItem(mailPdfKey()) === '1'; } catch (e) {}
+  const label = document.querySelector('.mail-pdf');
+  if (label) label.hidden = sent;
+  if (sent) { const m = document.getElementById('mailPdfMsg'); if (m && !m.textContent) m.textContent = 'Ya se lo mandamos por correo.'; }
+}
+async function mailPdf(blob, name) {
+  const msg = document.getElementById('mailPdfMsg');
+  const say = (t, ok) => { if (msg) { msg.textContent = t; msg.className = 'mail-pdf-msg' + (ok ? ' ok' : ''); } };
+  say('Mandando su diario por correo…');
+  try {
+    const r = await fetch('/api/send-diary', { method: 'POST', headers: { 'Content-Type': 'application/pdf', 'x-session-id': getStoredSessionId(), 'x-chat-fp': window.currentChatFp || '', 'x-file-name': name }, body: blob });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || String(r.status));
+    try { localStorage.setItem(mailPdfKey(), '1'); } catch (e) {}
+    say('Listo: se lo mandamos a ' + (d.to || 'su correo') + '. Revisen también la carpeta de spam.', true);
+    const label = document.querySelector('.mail-pdf'); if (label) label.hidden = true;
+    trackFunnel('pdf_emailed', { kb: Math.round(blob.size / 1024) });
+  } catch (err) {
+    const code = err && err.message;
+    say(code === 'limit' ? 'Ya se lo mandamos por correo las veces permitidas para esta compra.' : 'No pudimos mandarlo por correo ahora. Ya lo tienen descargado; si lo necesitan, escríbannos a contacto@yalosabia.com.');
+    trackFunnel('pdf_email_failed', { reason: String(code || ''), kb: Math.round(blob.size / 1024) });
+  }
+}
+document.addEventListener('change', e => { if (e.target && e.target.id === 'mailPdf') trackFunnel('pdf_email_toggle', { on: e.target.checked }); });
+
 async function generatePDF() {
   if (!lastMessages || !lastStats) { alert('Primero sube un chat.'); return; }
   if (!isPremiumUser()) { openPayModal(); return; }
   const btn = document.getElementById('pdfDownloadBtn');
   const original = btn ? btn.textContent : '';
+  renderMailPdf();
   if (btn) { btn.disabled = true; btn.textContent = 'Escribiendo su diario…'; }
   const host = document.createElement('div');
   host.style.cssText = 'position:absolute;left:-10000px;top:0;width:794px;';
@@ -5031,6 +5077,9 @@ async function generatePDF() {
     const pages = buildDiaryPages(lastMessages, lastStats, diary);
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+    // Copia ligera (mitad de resolución, JPEG más comprimido) para mandarla por correo
+    const wantMail = shouldMailPdf();
+    const mail = wantMail ? new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4', compress: true }) : null;
     const W = pdf.internal.pageSize.getWidth(), H = pdf.internal.pageSize.getHeight();
     for (let i = 0; i < pages.length; i++) {
       if (btn) btn.textContent = `Escribiendo su diario… ${i + 1}/${pages.length}`;
@@ -5041,10 +5090,18 @@ async function generatePDF() {
       const canvas = await htmlToCanvasWithTimeout(page, { width: 794, height: 1123, scale: 2, useCORS: true, logging: false, backgroundColor: '#FFF8F6' });
       if (i > 0) pdf.addPage();
       pdf.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, W, H);
+      if (mail) {
+        const small = document.createElement('canvas');
+        small.width = 794; small.height = 1123;
+        small.getContext('2d').drawImage(canvas, 0, 0, small.width, small.height);
+        if (i > 0) mail.addPage();
+        mail.addImage(small.toDataURL('image/jpeg', 0.8), 'JPEG', 0, 0, W, H);
+      }
     }
     const slug = (firstName(lastStats.personA) + '-' + firstName(lastStats.personB)).toLowerCase().normalize('NFD').replace(/[^a-z0-9-]/g, '');
     pdf.save(`diario-${slug || 'yalosabia'}.pdf`);
     trackFunnel('pdf_download', { pages: pages.length });
+    if (mail) mailPdf(mail.output('blob'), `diario-${slug || 'yalosabia'}.pdf`);
   } catch (err) {
     console.error('[PDF] Error:', err);
     alert(err.message || 'No se pudo generar el PDF.');
