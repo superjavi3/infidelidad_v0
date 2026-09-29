@@ -173,21 +173,28 @@ export function emailE2(): Email {
 }
 
 // Recordatorios: E1 a los 2 días y E2 a los 5 (el E0 sale al momento)
-// Correo con el diario en PDF adjunto (lo manda /api/send-diary al correo de la compra)
-export function emailDiary(): Email {
+// Correo con el diario en PDF adjunto (lo manda /api/send-diary al correo de la compra).
+// A propósito sin cabecera, botones ni pie de boletín: un correo corto y personal, con versión en texto,
+// para que Gmail lo deje en Principal y no en Promociones (es lo que compraron).
+const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+export function emailDiary(names = ''): Email & { text: string } {
+  const who = names ? 'el diario de ' + names : 'su diario';
+  const lines = [
+    'Hola:',
+    'Aquí está ' + who + ', en el PDF adjunto. Así lo tienen guardado aunque cambien de teléfono o se les pierda la descarga.',
+    'Es una versión un poco más ligera que la que descargaron, para que quepa en el correo. Las páginas y los textos son los mismos.',
+    'Si algo no salió bien, respondan a este correo y lo vemos. Y si no les gusta, les devolvemos el dinero dentro de los 30 días siguientes a la compra.',
+    'Un abrazo,\nJavi, de YaLoSabía',
+  ];
+  const html = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#222222;max-width:560px;">'
+    + lines.map(l => '<p style="margin:0 0 14px;">' + esc(l).replace(/\n/g, '<br>') + '</p>').join('')
+    + '</div>';
   return {
     name: 'YLS - Su diario en PDF',
-    subject: 'Su diario, para guardarlo',
-    preheader: 'Aquí está su diario en PDF, para tenerlo siempre a mano.',
-    html: layout({
-      hero: 'e0', heroAlt: 'Querido diario: hoy vamos a leer nuestra historia', preheader: 'Aquí está su diario en PDF, para tenerlo siempre a mano.',
-      body:
-        p('Hola:') +
-        p('Aquí está su diario, en el PDF adjunto a este correo. Así lo tienen guardado aunque cambien de teléfono o se borre de la descarga.') +
-        p('Es una versión un poco más ligera que la que descargaron, para que quepa en el correo. Las páginas y los textos son los mismos.') +
-        p('Si algo no salió como esperaban, escríbannos respondiendo a este correo. Y si no les gusta, les devolvemos el dinero dentro de los 30 días siguientes a la compra.', 'font-size:15px;color:#6B3A42;'),
-      footer: 'Recibes este correo porque compraste tu diario en yalosabia.com.',
-    }),
+    subject: names ? 'El diario de ' + names : 'Su diario, para guardarlo',
+    preheader: '',
+    html,
+    text: lines.join('\n\n'),
   };
 }
 

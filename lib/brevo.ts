@@ -57,8 +57,8 @@ export async function addLead(email: string, attributes: Record<string, string>)
   return listId;
 }
 
-export async function sendEmail(to: string, subject: string, html: string, tag: string, attachment?: { name: string; content: string }[]) {
-  await brevo('/smtp/email', { method: 'POST', body: JSON.stringify({ sender: SENDER, to: [{ email: to }], subject, htmlContent: html, tags: [tag], ...(attachment ? { attachment } : {}) }) });
+export async function sendEmail(to: string, subject: string, html: string, tag: string, attachment?: { name: string; content: string }[], text?: string) {
+  await brevo('/smtp/email', { method: 'POST', body: JSON.stringify({ sender: SENDER, to: [{ email: to }], subject, htmlContent: html, tags: [tag], ...(text ? { textContent: text } : {}), ...(attachment ? { attachment } : {}) }) });
 }
 
 // Quien paga sale de la lista (la automatización de Brevo deja de mandarle recordatorios).

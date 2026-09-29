@@ -5041,7 +5041,7 @@ async function mailPdf(blob, name) {
   const say = (t, ok) => { if (msg) { msg.textContent = t; msg.className = 'mail-pdf-msg' + (ok ? ' ok' : ''); } };
   say('Mandando su diario por correo…');
   try {
-    const r = await fetch('/api/send-diary', { method: 'POST', headers: { 'Content-Type': 'application/pdf', 'x-session-id': getStoredSessionId(), 'x-chat-fp': window.currentChatFp || '', 'x-file-name': name }, body: blob });
+    const r = await fetch('/api/send-diary', { method: 'POST', headers: { 'Content-Type': 'application/pdf', 'x-session-id': getStoredSessionId(), 'x-chat-fp': window.currentChatFp || '', 'x-file-name': name, 'x-names': encodeURIComponent(lastStats ? firstName(lastStats.personA) + ' y ' + firstName(lastStats.personB) : '') }, body: blob });
     const d = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(d.error || String(r.status));
     try { localStorage.setItem(mailPdfKey(), '1'); } catch (e) {}
