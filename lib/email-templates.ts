@@ -112,7 +112,7 @@ export function emailE1(): Email {
       hero: 'e1', heroAlt: '¿Ya tienen su chat a mano?', preheader: 'Exportarlo tarda menos de lo que parece. Así se hace.',
       body:
         p('Hola:') +
-        p('Ayer nos pidieron el enlace para hacer su diario. Por si se quedó pendiente: exportar el chat tarda menos de lo que parece.') +
+        p('Hace un par de días nos pidieron el enlace para hacer su diario. Por si se quedó pendiente: exportar el chat tarda menos de lo que parece.') +
         steps(HOWTO) +
         p('En cuanto lo suban verán el índice de su relación, cuántos mensajes se han mandado y quién suele escribir primero. Todo eso es gratis.') +
         button(link(c), 'Ver nuestro adelanto gratis') +
@@ -143,30 +143,12 @@ export function emailE2(): Email {
         p('Todo sale de sus propios mensajes: cada frase que citamos existe tal cual en su chat.') +
         button(link(c), 'Hacer nuestro diario') +
         reassure('Adelanto gratis &middot; diario completo en PDF: $199 MXN, un solo pago') +
-        p(`${a(link(c, '#indice'), 'Ver las 14 páginas del ejemplo')}`, 'margin-top:22px;font-size:15px;text-align:center;'),
+        p(`${a(link(c, '#indice'), 'Ver las 14 páginas del ejemplo')}`, 'margin-top:22px;font-size:15px;text-align:center;') +
+        p('Este es el último recordatorio que les mandamos; no queremos llenarles la bandeja. El enlace sigue aquí para cuando quieran.', 'margin-top:22px;font-size:15px;color:#6B3A42;'),
       footer: SEQ_FOOTER,
     }),
   };
 }
 
-export function emailE3(): Email {
-  const c = 'e3';
-  return {
-    name: 'YLS E3 - Ultima nota',
-    subject: 'Una última nota',
-    preheader: 'No les escribimos más. El enlace sigue aquí.',
-    html: layout({
-      hero: 'e3', heroAlt: 'Una última nota', preheader: 'No les escribimos más. El enlace sigue aquí.',
-      body:
-        p('Hola:') +
-        p('Este es el último correo que les mandamos; no queremos llenarles la bandeja.') +
-        p('Si algún día les da curiosidad ver su historia contada con sus propios mensajes, el enlace sigue aquí. No es para acusar a nadie ni para juzgar la relación: es para recordar cómo empezaron y ver lo que se dicen sin darse cuenta.') +
-        button(link(c), 'Ver nuestro adelanto gratis') +
-        reassure() +
-        p('Gracias por habernos leído.', 'margin-top:22px;'),
-      footer: SEQ_FOOTER,
-    }),
-  };
-}
-
-export const SEQUENCE = [emailE1, emailE2, emailE3];
+// Recordatorios: E1 a los 2 días y E2 a los 5 (el E0 sale al momento)
+export const SEQUENCE = [emailE1, emailE2];

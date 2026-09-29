@@ -1,6 +1,6 @@
-// Crea o actualiza en Brevo las plantillas de la secuencia «Háganlo luego» (E1, E2, E3).
+// Crea o actualiza en Brevo las plantillas de la secuencia «Háganlo luego» (E1 y E2).
 // El E0 (el enlace) lo manda /api/lead al momento (lib/brevo.ts). Estas tres las manda la automatización de Brevo:
-//   contacto añadido a «Leads web» → esperar 1 día → E1 → 2 días → E2 → 3 días → E3,
+//   contacto añadido a «Leads web» → esperar 2 días → E1 → 3 días → E2 (el último),
 //   comprobando antes de cada correo que el contacto sigue en la lista (quien paga sale sola: markBuyer).
 // Uso: node scripts/brevo-plantillas.mjs   (BREVO_API_KEY de .env.local o del entorno)
 import { readFileSync } from 'node:fs';
