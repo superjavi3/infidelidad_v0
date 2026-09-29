@@ -24,6 +24,7 @@ export interface PaymentCheck {
   // Un pago = un diario: cuántas veces la IA ya escribió el diario de este pago y cuándo fue la primera (ms)
   diaryCount?: number;
   diaryAt?: number;
+  pdfEmails?: number; // veces que se mandó el PDF por correo (máximo 3 por pago)
   paymentIntentId?: string | null;
 }
 
@@ -64,6 +65,7 @@ export async function checkSessionPayment(sessionId: unknown, { fresh = false } 
         chatFp: session.metadata?.chat_fp || null,
         diaryCount: Number(pi?.metadata?.diary_count || session.metadata?.diary_count || 0),
         diaryAt: Number(pi?.metadata?.diary_at || session.metadata?.diary_at || 0),
+        pdfEmails: Number(pi?.metadata?.pdf_emails || session.metadata?.pdf_emails || 0),
         paymentIntentId: pi?.id || null,
       };
       if (charge && (charge.refunded || charge.amount_refunded > 0)) result = { paid: false, reason: 'refunded', ...base };
@@ -94,6 +96,15 @@ export async function markDiaryWritten(sessionId: string, check: PaymentCheck) {
     diary_count: String((check.diaryCount || 0) + 1),
     diary_at: String(check.diaryAt || Date.now()),
   };
+  const stripe = getStripe();
+  if (check.paymentIntentId) await stripe.paymentIntents.update(check.paymentIntentId, { metadata });
+  else await stripe.checkout.sessions.update(sessionId, { metadata });
+  forgetSession(sessionId);
+}
+
+// Cuenta un envío del PDF por correo en la metadata del pago (como markDiaryWritten)
+export async function markPdfEmailed(sessionId: string, check: PaymentCheck) {
+  const metadata = { pdf_emails: String((check.pdfEmails || 0) + 1) };
   const stripe = getStripe();
   if (check.paymentIntentId) await stripe.paymentIntents.update(check.paymentIntentId, { metadata });
   else await stripe.checkout.sessions.update(sessionId, { metadata });

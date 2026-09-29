@@ -38,6 +38,9 @@
     <li><strong>Al pagar:</strong> se envía directamente a Stripe para generar el checkout. Si en el checkout el usuario acepta recibir comunicaciones y no termina el pago, Stripe puede enviarle un único recordatorio con el enlace para completarlo.</li>
     <li><strong>Si el usuario pide que le mandemos el enlace por correo</strong> («Háganlo luego»): solo con su consentimiento expreso (casilla sin marcar por defecto). Se guarda en Brevo junto con la fecha del consentimiento y el origen de la visita (por ejemplo, un anuncio), para enviarle el enlace y, como máximo, dos recordatorios sobre su diario. Cada correo incluye un enlace para darse de baja.</li>
   </ul>
+  <ul>
+    <li><strong>Para mandarle su diario:</strong> al descargar el diario, salvo que el usuario desmarque la casilla, el navegador envía una copia del PDF a nuestro servidor, que la reenvía a través de Brevo al email con el que se pagó (nunca a otro). El servidor no guarda el PDF; Brevo conserva una copia del correo enviado durante un tiempo limitado según su política de retención.</li>
+  </ul>
   <p>YaLoSabía no guarda emails en ninguna base de datos propia ni los vende o cede a terceros.</p>
 
   <h3>b) Archivo de chat de WhatsApp</h3>
@@ -114,7 +117,7 @@
     </tr>
     <tr>
       <td>Sendinblue SAS (Brevo)</td>
-      <td>Envío de correos a quien lo pide</td>
+      <td>Envío de correos a quien lo pide y del diario en PDF al comprador</td>
       <td>Francia (UE)</td>
       <td>RGPD</td>
     </tr>
@@ -209,7 +212,7 @@
   </ul>
   <p>Y a la siguiente entidad con sede en Francia:</p>
   <ul>
-    <li><strong>Sendinblue SAS (Brevo)</strong> — envío de los correos que el titular pide.</li>
+    <li><strong>Sendinblue SAS (Brevo)</strong> — envío de los correos que el titular pide y del diario en PDF al email de la compra.</li>
   </ul>
 
   <h3>Cambios al aviso de privacidad</h3>

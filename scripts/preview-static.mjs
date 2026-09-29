@@ -53,6 +53,8 @@ createServer(async (req, res) => {
   // Códigos falsos: PRUEBA… vale un 20% y GRATIS… un 100%
   if (url === '/api/ref') { const c = (new URL(req.url, 'http://x').searchParams.get('c') || '').toUpperCase(); return json(200, /^PRUEBA/.test(c) ? { valid: true, code: c, percent: 20 } : /^GRATIS/.test(c) ? { valid: true, code: c, percent: 100 } : { valid: false }); }
   // «Hacerlo luego»: no manda nada; un correo que empiece por «falla» simula un error
+  // PDF por correo: no manda nada, solo dice cuánto pesa lo que llegó
+  if (url === '/api/send-diary') { let n = 0; req.on('data', d => { n += d.length; }); req.on('end', () => json(n > 4_000_000 ? 413 : 200, { ok: n <= 4_000_000, to: 'pr***@preview.com', bytes: n })); return; }
   if (url === '/api/lead') { let b = ''; req.on('data', d => { b += d; }); req.on('end', () => { const email = (JSON.parse(b || '{}').email || ''); json(/^falla/.test(email) ? 500 : 200, { ok: !/^falla/.test(email), discount: true }); }); return; }
   // Panel interno con datos inventados (clave: «preview»), para ver el diseño sin claves
   if (url === '/api/panel') {

@@ -173,4 +173,22 @@ export function emailE2(): Email {
 }
 
 // Recordatorios: E1 a los 2 días y E2 a los 5 (el E0 sale al momento)
+// Correo con el diario en PDF adjunto (lo manda /api/send-diary al correo de la compra)
+export function emailDiary(): Email {
+  return {
+    name: 'YLS - Su diario en PDF',
+    subject: 'Su diario, para guardarlo',
+    preheader: 'Aquí está su diario en PDF, para tenerlo siempre a mano.',
+    html: layout({
+      hero: 'e0', heroAlt: 'Querido diario: hoy vamos a leer nuestra historia', preheader: 'Aquí está su diario en PDF, para tenerlo siempre a mano.',
+      body:
+        p('Hola:') +
+        p('Aquí está su diario, en el PDF adjunto a este correo. Así lo tienen guardado aunque cambien de teléfono o se borre de la descarga.') +
+        p('Es una versión un poco más ligera que la que descargaron, para que quepa en el correo. Las páginas y los textos son los mismos.') +
+        p('Si algo no salió como esperaban, escríbannos respondiendo a este correo. Y si no les gusta, les devolvemos el dinero dentro de los 30 días siguientes a la compra.', 'font-size:15px;color:#6B3A42;'),
+      footer: 'Recibes este correo porque compraste tu diario en yalosabia.com.',
+    }),
+  };
+}
+
 export const SEQUENCE = [emailE1, emailE2];
