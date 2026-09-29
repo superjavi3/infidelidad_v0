@@ -122,14 +122,19 @@ RESPONDE SOLO CON JSON VÁLIDO con esta estructura exacta:
   "advice": [{ "title": "consejo corto en imperativo", "text": "2 frases: qué hacer y por qué, apoyado en algo real de su chat; puede ir dirigido a una persona por su nombre" }],
   "bestMessage": { "sender": "nombre exacto", "text": "COPIA LITERAL del mensaje más bonito de la muestra" },
   "quotesToKeep": [{ "sender": "nombre exacto", "text": "COPIA LITERAL de un mensaje bonito, gracioso o tierno de la muestra" }],
-  "closing": "3 frases (máximo 330 caracteres) para cerrar el diario, dirigidas a los dos. Que emocione y les deje con ganas de escribirse."
+  "closing": "3 frases (máximo 330 caracteres) para cerrar el diario, dirigidas a los dos. Que emocione y les deje con ganas de escribirse.",
+  "letters": {
+    "A": "Carta de ${nameA} para ${nameB}, en primera persona, como si la escribiera ${nameA} (máximo 560 caracteres, 4-6 frases). Que recuerde cosas concretas y reales de su chat (fechas, frases que se dijeron, costumbres), que diga lo que ${nameA} siente según sus mensajes y que termine con algo que le quiera decir ahora. Tono íntimo y sencillo, como se escribe de verdad a quien quieres.",
+    "B": "Carta de ${nameB} para ${nameA}, igual, en primera persona como si la escribiera ${nameB}."
+  }
 }
 
 REGLAS
 - "A" es ${nameA} y "B" es ${nameB}.
 - "moments": uno por cada momento clave, usando su mismo "id".
 - Máximo 3 elementos en signals.toWatch, exactamente 5 en advice y 4 en quotesToKeep (distintos de bestMessage).
-- Todo campo que diga COPIA LITERAL tiene que ser un mensaje copiado palabra por palabra de la muestra o de los momentos. Si no hay uno adecuado, pon null.`;
+- Todo campo que diga COPIA LITERAL tiene que ser un mensaje copiado palabra por palabra de la muestra o de los momentos. Si no hay uno adecuado, pon null.
+- "letters": sin saludo ni firma (los ponemos nosotros). Solo lo que se desprende de su chat: nada de promesas, planes o hechos que no aparezcan. Sin cursilerías genéricas ni frases de tarjeta.`;
 
     const diaryRes = await fetch(
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
@@ -141,7 +146,7 @@ REGLAS
           contents: [{ parts: [{ text: diaryPrompt }] }],
           generationConfig: {
             temperature: 0.8,
-            maxOutputTokens: 6000,
+            maxOutputTokens: 7000,
             responseMimeType: 'application/json',
             thinkingConfig: { thinkingBudget: 0 }
           }
