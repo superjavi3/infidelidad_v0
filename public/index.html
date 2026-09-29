@@ -3564,6 +3564,14 @@ function markOfferUsed() {
   saveOffer(window.activeOffer);
   renderOffer();
 }
+// El código (influencer, correo o del 100%) ya se usó en esta compra: se olvida para no seguir pintando el precio con descuento
+function forgetRef() {
+  try { localStorage.removeItem('yalosabia_ref'); } catch (e) {}
+  if (!window.activeRef) return;
+  window.activeRef = null;
+  renderRef();
+  renderOffer();
+}
 function offerBarClick() {
   trackFunnel('offer_bar_click');
   openLead('bar');
@@ -4143,6 +4151,7 @@ async function checkPaymentSuccess() {
         markOfferUsed();
 
         window.isPremium = true;
+        forgetRef();
 
         if (!seenBefore && !freeDiary && typeof fbq !== 'undefined') {
           fbq('track', 'Purchase', {
