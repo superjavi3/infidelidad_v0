@@ -932,6 +932,35 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .upload-section .privacy-badge { display: flex; justify-content: center; margin: 18px auto 0; width: fit-content; }
 .upload-section:has(#uploadZone[style*="none"]) :is(.section-title, .section-subtitle) { display: none; }
 .lead-title { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; line-height: 1.1; color: var(--pink); margin-bottom: 4px; }
+.showcase { display: flex; flex-direction: column; gap: 56px; margin: 10px 0 40px; }
+.show-row { display: grid; grid-template-columns: minmax(0, 460px) minmax(0, 1fr); gap: 56px; align-items: center; justify-content: center; }
+.show-row:nth-child(even) { grid-template-columns: minmax(0, 1fr) minmax(0, 460px); }
+.show-row:nth-child(even) .show-page { order: 2; }
+.show-page { position: relative; display: block; width: 100%; padding: 12px; border: 1px solid var(--margin-line); background: #fff; box-shadow: 0 22px 50px rgba(59,10,18,.18); cursor: zoom-in; transform: rotate(-1.5deg); transition: transform .25s; }
+.show-row:nth-child(even) .show-page { transform: rotate(1.5deg); }
+.show-page:hover { transform: rotate(0) scale(1.01); }
+.show-page img { display: block; width: 100%; height: auto; }
+.show-tape { position: absolute; top: -14px; left: 50%; width: 130px; height: 32px; transform: translateX(-50%) rotate(-3deg); background: var(--tape); }
+.show-n { font-family: var(--font-display); font-weight: 700; font-size: 3.2rem; line-height: 1; color: var(--pink); }
+.show-text h3 { font-family: var(--font-display); font-weight: 700; font-size: 2.6rem; line-height: 1.05; margin: 6px 0 12px; }
+.show-text p { font-size: 1.05rem; line-height: 1.6; }
+.bonus { max-width: 640px; margin: 0 auto 30px; background: #fff; border: 2px dashed var(--pink); padding: 22px 26px; }
+.bonus-title { font-family: var(--font-display); font-weight: 700; font-size: 1.9rem; color: var(--pink); margin-bottom: 8px; }
+.bonus ul { list-style: none; margin: 0; padding: 0; }
+.bonus li { padding: 8px 0 8px 30px; position: relative; font-size: 0.98rem; line-height: 1.5; border-bottom: 1px dashed var(--paper-line); }
+.bonus li:last-child { border-bottom: none; }
+.bonus li::before { content: "\2713"; position: absolute; left: 4px; top: 8px; color: var(--pink); font-weight: 700; }
+.all-pages-btn { display: block; margin: 0 auto 24px; background: none; border: none; font-family: inherit; font-size: 0.95rem; color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.sample-strip[hidden] { display: none; }
+@media (max-width: 720px) {
+  .showcase { gap: 44px; }
+  .show-row, .show-row:nth-child(even) { grid-template-columns: 1fr; gap: 18px; }
+  .show-row:nth-child(even) .show-page { order: 0; }
+  .show-page { width: 92%; margin: 0 auto; }
+  .show-text { text-align: center; padding: 0 8px; }
+  .show-n { font-size: 2.4rem; }
+  .show-text h3 { font-size: 2.1rem; margin: 2px 0 8px; }
+}
 .sample-strip { display: flex; gap: 22px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 14px 6px 22px; margin: 0 -6px 30px; -webkit-overflow-scrolling: touch; }
 .sample-strip figure { flex: 0 0 220px; scroll-snap-align: center; margin: 0; text-align: center; }
 .sample-strip button { display: block; width: 100%; padding: 0; border: 1px solid var(--margin-line); background: #fff; box-shadow: var(--shadow); cursor: zoom-in; }
@@ -1023,6 +1052,7 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 /* Botón fijo en móvil */
 .sticky-cta { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 9990; display: none; }
 .sticky-cta.show { display: block; }
+@media (min-width: 769px) { .sticky-cta { left: 50%; right: auto; bottom: 18px; width: 520px; transform: translateX(-50%); } }
 .sticky-cta button { width: 100%; padding: 15px 18px; border: none; border-radius: 10px; background: var(--pink); color: #FFF4EF; font-family: var(--font-body); font-weight: 700; font-size: 0.95rem; letter-spacing: 0.5px; box-shadow: 0 6px 20px rgba(200, 16, 46, 0.35); cursor: pointer; }
 .sticky-cta small { display: block; font-weight: 400; font-size: 0.72rem; opacity: 0.9; margin-top: 2px; }
 .upload-zone.flash { animation: uploadFlash 1.4s ease 2; }
@@ -1276,7 +1306,35 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <h2 class="section-title">Así es su diario</h2>
       <p class="section-subtitle">Ocho capítulos y 14 páginas sobre ustedes dos, escritos con sus propios mensajes.</p>
     </div>
-    <div class="sample-strip reveal" id="sampleStrip">
+    <div class="showcase">
+      <div class="show-row reveal">
+        <button type="button" class="show-page" data-full="/diario/portada.jpg" aria-label="Ver la página «La portada» en grande"><span class="show-tape"></span><img src="/diario/portada.jpg" width="635" height="898" loading="lazy" alt="Página de ejemplo: La portada"></button>
+        <div class="show-text"><div class="show-n">01</div><h3>La portada</h3><p>Su primer mensaje, el índice de su relación y cuántos días llevan hablando.</p></div>
+      </div>
+      <div class="show-row reveal">
+        <button type="button" class="show-page" data-full="/diario/dias-que-recordar.jpg" aria-label="Ver la página «Días que recordar» en grande"><span class="show-tape"></span><img src="/diario/dias-que-recordar.jpg" width="635" height="898" loading="lazy" alt="Página de ejemplo: Días que recordar"></button>
+        <div class="show-text"><div class="show-n">02</div><h3>Días que recordar</h3><p>Los días que no quieren olvidar, con los mensajes que se escribieron ese día.</p></div>
+      </div>
+      <div class="show-row reveal">
+        <button type="button" class="show-page" data-full="/diario/quien-es-quien.jpg" aria-label="Ver la página «Quién es quién» en grande"><span class="show-tape"></span><img src="/diario/quien-es-quien.jpg" width="635" height="898" loading="lazy" alt="Página de ejemplo: Quién es quién"></button>
+        <div class="show-text"><div class="show-n">03</div><h3>Quién es quién</h3><p>Quién escribe más, quién empieza las conversaciones y la frase más suya de cada uno.</p></div>
+      </div>
+      <div class="show-row reveal">
+        <button type="button" class="show-page" data-full="/diario/van-a-durar.jpg" aria-label="Ver la página «¿Van a durar?» en grande"><span class="show-tape"></span><img src="/diario/van-a-durar.jpg" width="635" height="898" loading="lazy" alt="Página de ejemplo: ¿Van a durar?"></button>
+        <div class="show-text"><div class="show-n">04</div><h3>¿Van a durar?</h3><p>Un pronóstico honesto: lo que tienen a favor, lo que hay que cuidar y una condición.</p></div>
+      </div>
+    </div>
+    <div class="bonus reveal">
+      <div class="bonus-title">Además, incluido:</div>
+      <ul>
+        <li><b>La imagen para Stories</b> con su índice y su primer mensaje, lista para compartir.</li>
+        <li><b>Su diario también por correo</b>, en PDF, para tenerlo siempre guardado.</li>
+        <li><b>30 días de garantía:</b> si no les gusta, les devolvemos el dinero.</li>
+      </ul>
+    </div>
+    <div class="sample-cta"><button type="button" class="hero-mcta-btn" onclick="goToUpload('sample')">Ver nuestro adelanto gratis</button></div>
+    <button type="button" class="all-pages-btn" onclick="toggleAllPages(this)">Ver las 14 páginas del ejemplo</button>
+    <div class="sample-strip" id="sampleStrip" hidden>
       <figure><button type="button" data-full="/diario/portada.jpg" aria-label="Ver la página «La portada» en grande"><img src="/diario/portada.jpg" width="635" height="898" loading="lazy" alt="Página 1 de 14: La portada"></button><figcaption>La portada</figcaption></figure>
       <figure><button type="button" data-full="/diario/indice.jpg" aria-label="Ver la página «El índice» en grande"><img src="/diario/indice.jpg" width="635" height="898" loading="lazy" alt="Página 2 de 14: El índice"></button><figcaption>El índice</figcaption></figure>
       <figure><button type="button" data-full="/diario/como-empezo.jpg" aria-label="Ver la página «I. Cómo empezó todo» en grande"><img src="/diario/como-empezo.jpg" width="635" height="898" loading="lazy" alt="Página 3 de 14: I. Cómo empezó todo"></button><figcaption>I. Cómo empezó todo</figcaption></figure>
@@ -1292,8 +1350,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
       <figure><button type="button" data-full="/diario/consejos.jpg" aria-label="Ver la página «VII. Consejos para ustedes» en grande"><img src="/diario/consejos.jpg" width="635" height="898" loading="lazy" alt="Página 13 de 14: VII. Consejos para ustedes"></button><figcaption>VII. Consejos para ustedes</figcaption></figure>
       <figure><button type="button" data-full="/diario/el-mensaje.jpg" aria-label="Ver la página «VIII. El mensaje» en grande"><img src="/diario/el-mensaje.jpg" width="635" height="898" loading="lazy" alt="Página 14 de 14: VIII. El mensaje"></button><figcaption>VIII. El mensaje</figcaption></figure>
     </div>
-    <p class="sample-note">Las 14 páginas de un diario de ejemplo, hecho con un chat de prueba. El suyo sale con sus nombres, sus fechas y sus mensajes.</p>
-    <div class="sample-cta"><button type="button" class="hero-mcta-btn" onclick="goToUpload('sample')">Hacer el nuestro</button></div>
+    <p class="sample-note">Páginas de un diario de ejemplo, hecho con un chat de prueba. El suyo sale con sus nombres, sus fechas y sus mensajes.</p>
   </div>
 </section>
 
@@ -1654,7 +1711,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   </div>
 </section>
 
-<div class="sticky-cta" id="stickyCta"><button type="button" onclick="goToUpload('sticky')">Sube su chat<small>el adelanto es gratis</small></button></div>
+<div class="sticky-cta" id="stickyCta"><button type="button" onclick="goToUpload('sticky')">Ver nuestro adelanto gratis &rarr;<small>gratis en 1 minuto · PDF completo $199</small></button></div>
 <div class="sample-lightbox" id="sampleLightbox" onclick="this.classList.remove('open')"><img alt="Página de ejemplo del diario"></div>
 
 <!-- ── FOOTER ── -->
@@ -2143,7 +2200,7 @@ function goToUpload(from) {
   const update = () => {
     const cookie = document.getElementById('cookieBanner');
     const cookieOpen = cookie && cookie.style.display === 'block';
-    const show = window.innerWidth <= 768 && !lastMessages && zone.style.display !== 'none' && !zoneVisible && !footerVisible && !cookieOpen;
+    const show = !lastMessages && zone.style.display !== 'none' && !zoneVisible && !footerVisible && !cookieOpen;
     cta.classList.toggle('show', show);
   };
   new IntersectionObserver(e => { zoneVisible = e[0].isIntersecting; update(); }).observe(zone);
@@ -2156,13 +2213,20 @@ function goToUpload(from) {
   window.addEventListener('scroll', update, { passive: true });
 })();
 
+function toggleAllPages(btn) {
+  const strip = document.getElementById('sampleStrip');
+  strip.hidden = !strip.hidden;
+  btn.textContent = strip.hidden ? 'Ver las 14 páginas del ejemplo' : 'Ocultar las 14 páginas';
+  if (!strip.hidden) trackFunnel('sample_all_pages');
+}
+
 // Páginas de ejemplo: tocar una la abre en grande
 (function () {
   const box = document.getElementById('sampleLightbox');
   if (!box) return;
   // Tira de ejemplo de la portada (#sampleStrip) y la del muro de pago (data-sample="paywall")
   document.addEventListener('click', e => {
-    const b = e.target.closest('#sampleStrip button[data-full], [data-sample] button[data-full]');
+    const b = e.target.closest('#sampleStrip button[data-full], .showcase button[data-full], [data-sample] button[data-full]');
     if (!b) return;
     box.querySelector('img').src = b.dataset.full;
     box.classList.add('open');
