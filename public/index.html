@@ -3867,12 +3867,13 @@ if (window.matchMedia && matchMedia('(pointer: coarse)').matches) {
 function openLead(from) {
   const form = document.getElementById('leadForm');
   if (!form) return;
-  const wasHidden = form.hidden;
   form.hidden = false;
   document.getElementById('leadToggle').hidden = true;
-  document.getElementById('leadBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  setTimeout(() => { try { document.getElementById('leadEmail').focus({ preventScroll: true }); } catch (e) {} }, 400);
-  if (wasHidden) trackFunnel('lead_form_open', { from: from || '' });
+  // Con el adelanto a la vista, el formulario de la zona de subida está oculto: se usa el del pie
+  const box = document.getElementById('leadBox').offsetParent ? document.getElementById('leadBox') : document.getElementById('correo');
+  box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => { try { box.querySelector('.lead-email').focus({ preventScroll: true }); } catch (e) {} }, 500);
+  trackFunnel('lead_form_open', { from: from || '', where: box.id === 'correo' ? 'abajo' : 'subir' });
 }
 async function submitLead(e) {
   e.preventDefault();
