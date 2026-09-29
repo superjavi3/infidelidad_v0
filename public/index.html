@@ -1068,6 +1068,10 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .tut-modal[hidden] { display: none; }
 .nochat-box { width: min(420px, 100%); padding: 18px 18px 16px; }
 .nochat-p { font-size: 0.9rem; line-height: 1.5; margin: 0 0 12px; }
+.nochat-kicker { font-size: 0.72rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
+.nochat-box .tut-title { font-size: 1.9rem; }
+.nochat-big { color: var(--pink); font-size: 2.6rem; }
+.nochat-no { display: block; margin: 2px auto 0; padding: 4px; border: none; background: none; font-family: inherit; font-size: 0.78rem; color: var(--text-muted); cursor: pointer; }
 .nochat-box .lead-form { margin-top: 0; padding: 12px; }
 .nochat-tut { display: block; width: 100%; margin-top: 12px; padding: 8px; border: none; background: none; font-family: inherit; font-size: 0.88rem; font-weight: 700; color: var(--pink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .hv-nochat { display: block; margin-top: 10px; padding: 4px 0; border: none; background: var(--paper); font-family: inherit; font-size: 0.85rem; line-height: 1.4; color: var(--text); text-align: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -4008,11 +4012,25 @@ if (window.matchMedia && matchMedia('(pointer: coarse)').matches) {
 function openNoChat(from) {
   const m = document.getElementById('noChatModal');
   if (!m) return;
-  try { sessionStorage.setItem('yls_nochat', '1'); } catch (e) {}
+  try { sessionStorage.setItem('yls_nochat', '1'); localStorage.setItem('yls_popup_at', String(Date.now())); } catch (e) {}
+  document.getElementById('noChatKicker').textContent = from === 'cancel' ? '¿No tienen el chat a mano?' : 'Antes de empezar';
   m.hidden = false;
   trackFunnel('nochat_open', { from: from || '' });
   trackFunnel('lead_form_open', { from: from || '', where: 'sin_chat' });
 }
+// A los 5 s de llegar: no si ya dejaron el correo, pagaron, traen un código, ya hay un chat o hay otra ventana abierta
+setTimeout(() => {
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.has('session_id') || q.has('c') || q.get('shared') === '1' || q.get('tutorial') === '1') return;
+    if (localStorage.getItem(LEAD_KEY) === '1' || localStorage.getItem(REF_KEY)) return;
+    if (Date.now() - Number(localStorage.getItem('yls_popup_at') || 0) < 3 * 864e5) return;
+    if (sessionStorage.getItem('yls_nochat') === '1') return;
+  } catch (e) { return; }
+  if (lastMessages || (typeof isPremiumUser === 'function' && isPremiumUser())) return;
+  if (document.querySelector('.tut-modal:not([hidden])') || (document.getElementById('payModal') || {style: {}}).style.display === 'flex') return;
+  openNoChat('timer');
+}, 5000);
 function closeNoChat() {
   const m = document.getElementById('noChatModal');
   if (m && !m.hidden) { m.hidden = true; trackFunnel('nochat_close'); }
@@ -5318,17 +5336,19 @@ document.addEventListener('mouseleave', function(e) {
 <div class="tut-modal" id="noChatModal" hidden onclick="if (event.target === this) closeNoChat()">
   <div class="tut-box nochat-box ph-no-capture" role="dialog" aria-modal="true" aria-labelledby="noChatTitle">
     <button type="button" class="tut-close" aria-label="Cerrar" onclick="closeNoChat()">×</button>
-    <div class="tut-title" id="noChatTitle">¿No tienen el chat exportado?</div>
-    <p class="nochat-p">Se hace en un minuto desde WhatsApp. Si ahora no pueden, les mandamos el enlace al correo con <b>un 15% de descuento</b> para cuando quieran.</p>
+    <div class="nochat-kicker" id="noChatKicker">Antes de empezar</div>
+    <div class="tut-title" id="noChatTitle"><span class="nochat-big">15%</span> de descuento en su diario</div>
+    <p class="nochat-p">Déjennos su correo y les mandamos <b>su código de descuento</b> y <b>cómo exportar el chat paso a paso</b>, para hacerlo cuando quieran.</p>
     <form class="lead-form" id="leadFormNoChat" data-where="sin_chat" onsubmit="submitLead(event)">
       <div class="lead-row">
         <input type="email" class="lead-email" placeholder="tu@correo.com" autocomplete="email" required maxlength="200">
-        <button type="submit" class="lead-btn">Mandármelo</button>
+        <button type="submit" class="lead-btn">Quiero mi 15%</button>
       </div>
       <label class="lead-consent"><input type="checkbox" class="lead-check"> <span>Acepto recibir hasta 3 correos de YaLoSabía (me puedo dar de baja cuando quiera). <a href="/privacidad.html" target="_blank" rel="noopener">Privacidad</a></span></label>
       <div class="lead-msg" role="status"></div>
     </form>
-    <button type="button" class="nochat-tut" onclick="closeNoChat(); openTutorial('sin_chat')">Mejor lo exporto ahora: ver cómo (1 min)</button>
+    <button type="button" class="nochat-tut" onclick="closeNoChat(); openTutorial('sin_chat')">Ver cómo exportar el chat (1 min)</button>
+    <button type="button" class="nochat-no" onclick="closeNoChat()">No, gracias</button>
   </div>
 </div>
 <div class="tut-modal" id="tutModal" hidden onclick="if (event.target === this) closeTutorial()">
