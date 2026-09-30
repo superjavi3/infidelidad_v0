@@ -1069,8 +1069,17 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .nochat-box { width: min(420px, 100%); padding: 18px 18px 16px; }
 .nochat-p { font-size: 0.9rem; line-height: 1.5; margin: 0 0 12px; }
 .nochat-kicker { font-size: 0.72rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
-.nochat-box .tut-title { font-size: 1.9rem; }
-.nochat-big { color: var(--pink); font-size: 2.6rem; }
+.nochat-kicker:empty { display: none; }
+.nochat-deal { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 6px 30px 10px; font-family: var(--font-display); font-weight: 700; }
+.nochat-big { color: var(--pink); font-size: 5.2rem; line-height: .9; }
+.nochat-off { font-size: 1.7rem; line-height: 1; text-align: left; }
+.nochat-gift { position: relative; display: flex; gap: 12px; align-items: center; margin: 0 0 14px; padding: 12px 14px; background: #FFF6C7; border: 2px dashed var(--pink); transform: rotate(-1deg); font-size: 0.88rem; line-height: 1.35; animation: hv-pop .5s ease-out .3s both; }
+.nochat-gift svg { flex: 0 0 44px; height: 34px; }
+.nochat-gift b { color: var(--pink); }
+.nochat-box .lead-form { border: none; padding: 0; background: none; }
+.nochat-box .lead-row { flex-direction: column; }
+.nochat-box .lead-row button { padding: 14px; font-size: 1.05rem; }
+.nochat-box .lead-msg:empty { display: none; }
 .nochat-no { display: block; margin: 2px auto 0; padding: 4px; border: none; background: none; font-family: inherit; font-size: 0.78rem; color: var(--text-muted); cursor: pointer; }
 .nochat-box .lead-form { margin-top: 0; padding: 12px; }
 .nochat-tut { display: block; width: 100%; margin-top: 12px; padding: 8px; border: none; background: none; font-family: inherit; font-size: 0.88rem; font-weight: 700; color: var(--pink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -4013,7 +4022,7 @@ function openNoChat(from) {
   const m = document.getElementById('noChatModal');
   if (!m) return;
   try { sessionStorage.setItem('yls_nochat', '1'); localStorage.setItem('yls_popup_at', String(Date.now())); } catch (e) {}
-  document.getElementById('noChatKicker').textContent = from === 'cancel' ? '¿No tienen el chat a mano?' : 'Antes de empezar';
+  document.getElementById('noChatKicker').textContent = from === 'cancel' ? '¿No tienen el chat a mano?' : '';
   m.hidden = false;
   trackFunnel('nochat_open', { from: from || '' });
   trackFunnel('lead_form_open', { from: from || '', where: 'sin_chat' });
@@ -4062,7 +4071,7 @@ async function submitLead(e) {
     if (!r.ok) throw new Error(String(r.status));
     const data = await r.json().catch(() => ({}));
     say(data.discount
-      ? 'Listo. Les mandamos el enlace y su código del 15% a su correo (revisen también la carpeta de spam).'
+      ? 'Listo: su código ya va a su correo (si no lo ven, miren en spam).'
       : 'Listo. Revisa tu correo (y la carpeta de spam, por si acaso).', 'ok');
     document.querySelectorAll('.lead-form .lead-row, .lead-form .lead-consent').forEach(el => { el.hidden = true; });
     document.querySelectorAll('.lead-form .lead-msg').forEach(el => { if (el !== msg) { el.textContent = msg.textContent; el.className = msg.className; } });
@@ -5336,18 +5345,20 @@ document.addEventListener('mouseleave', function(e) {
 <div class="tut-modal" id="noChatModal" hidden onclick="if (event.target === this) closeNoChat()">
   <div class="tut-box nochat-box ph-no-capture" role="dialog" aria-modal="true" aria-labelledby="noChatTitle">
     <button type="button" class="tut-close" aria-label="Cerrar" onclick="closeNoChat()">×</button>
-    <div class="nochat-kicker" id="noChatKicker">Antes de empezar</div>
-    <div class="tut-title" id="noChatTitle"><span class="nochat-big">15%</span> de descuento en su diario</div>
-    <p class="nochat-p">Déjennos su correo y les mandamos <b>su código de descuento</b> y <b>cómo exportar el chat paso a paso</b>, para hacerlo cuando quieran.</p>
+    <div class="nochat-kicker" id="noChatKicker"></div>
+    <div class="nochat-deal" id="noChatTitle"><span class="nochat-big">15%</span><span class="nochat-off">de descuento<br>en su diario</span></div>
+    <div class="nochat-gift">
+      <svg viewBox="0 0 48 36" aria-hidden="true"><rect x="2" y="4" width="44" height="30" rx="2" fill="#fff" stroke="#C8102E" stroke-width="2.5"/><path d="M3 6l21 16L45 6" fill="none" stroke="#C8102E" stroke-width="2.5"/><path d="M24 16c-2-4-8-3-6 1 1 2 6 4 6 4s5-2 6-4c2-4-4-5-6-1z" fill="#C8102E"/></svg>
+      <span><b>+ De regalo:</b> una carta para cada uno, escrita con sus mensajes</span>
+    </div>
     <form class="lead-form" id="leadFormNoChat" data-where="sin_chat" onsubmit="submitLead(event)">
       <div class="lead-row">
         <input type="email" class="lead-email" placeholder="tu@correo.com" autocomplete="email" required maxlength="200">
         <button type="submit" class="lead-btn">Quiero mi 15%</button>
       </div>
-      <label class="lead-consent"><input type="checkbox" class="lead-check"> <span>Acepto recibir hasta 3 correos de YaLoSabía (me puedo dar de baja cuando quiera). <a href="/privacidad.html" target="_blank" rel="noopener">Privacidad</a></span></label>
+      <label class="lead-consent"><input type="checkbox" class="lead-check"> <span>Acepto recibir hasta 3 correos. <a href="/privacidad.html" target="_blank" rel="noopener">Privacidad</a></span></label>
       <div class="lead-msg" role="status"></div>
     </form>
-    <button type="button" class="nochat-tut" onclick="closeNoChat(); openTutorial('sin_chat')">Ver cómo exportar el chat (1 min)</button>
     <button type="button" class="nochat-no" onclick="closeNoChat()">No, gracias</button>
   </div>
 </div>
