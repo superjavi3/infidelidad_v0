@@ -1067,6 +1067,20 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .tut-modal { position: fixed; inset: 0; z-index: 10001; background: rgba(59, 10, 18, 0.86); display: flex; align-items: center; justify-content: center; padding: 16px; }
 .tut-modal[hidden] { display: none; }
 .nochat-box { width: min(420px, 100%); padding: 18px 18px 16px; }
+.guide-box { width: min(420px, 100%); padding: 20px 18px 16px; }
+.guide-box [hidden] { display: none !important; }
+.guide-p { font-size: 0.9rem; line-height: 1.5; margin: 0 0 16px; }
+.guide-yes { display: block; width: 100%; padding: 15px 12px; border: none; background: var(--pink); color: #fff; font-family: inherit; font-weight: 700; font-size: 1rem; box-shadow: 0 5px 0 #8E0B20; cursor: pointer; }
+.guide-no { display: block; width: 100%; margin-top: 14px; padding: 13px 12px; border: 2px solid var(--pink); background: #fff; color: var(--pink); font-family: inherit; font-weight: 700; font-size: 0.95rem; cursor: pointer; }
+.guide-os { display: flex; gap: 6px; margin: 4px 0 10px; }
+.guide-tab { flex: 1; padding: 8px; border: 1.5px solid var(--paper-line); background: #fff; font-family: inherit; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; }
+.guide-tab.on { border-color: var(--pink); color: var(--pink); font-weight: 700; background: #FFF4F2; }
+.guide-list { margin: 0 0 12px; padding: 0; list-style: none; counter-reset: g; }
+.guide-list li { counter-increment: g; position: relative; padding: 10px 0 10px 42px; font-size: 0.9rem; line-height: 1.45; border-bottom: 1px dashed var(--paper-line); }
+.guide-list li::before { content: counter(g); position: absolute; left: 0; top: 8px; width: 30px; height: 30px; border-radius: 50%; background: var(--pink); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.guide-back { font-size: 0.82rem; color: var(--text-muted); margin: 0 0 10px; }
+.guide-links { display: flex; justify-content: space-between; gap: 8px; margin-top: 12px; }
+.guide-links button { padding: 4px 0; border: none; background: none; font-family: inherit; font-size: 0.8rem; color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .nochat-p { font-size: 0.9rem; line-height: 1.5; margin: 0 0 12px; }
 .nochat-kicker { font-size: 0.72rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
 .nochat-kicker:empty { display: none; }
@@ -1854,7 +1868,7 @@ const resultsSection = document.getElementById('resultsSection');
 let lastStats = null;
 let lastMessages = null;
 
-uploadZone.addEventListener('click', e => { if (e.target !== fileInput) fileInput.click(); });
+uploadZone.addEventListener('click', e => { if (e.target !== fileInput) pickChat('zone'); });
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
 uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
 uploadZone.addEventListener('drop', e => {
@@ -4008,7 +4022,37 @@ async function revalidateStoredPayment() {
 
 function heroUpload(from) {
   trackFunnel('cta_upload_click', { from: from || 'hero_m' });
+  if (from === 'tutorial') { openPicker(); return; }
+  pickChat(from || 'hero_m');
+}
+// Antes de abrir los archivos: ¿ya tienen el chat exportado? (casi todos cancelaban el selector porque no lo tenían)
+function pickChat(from) {
+  let has = false;
+  try { has = sessionStorage.getItem('yls_has_chat') === '1'; } catch (e) {}
+  const m = document.getElementById('guideModal');
+  if (has || !m) { openPicker(); return; }
+  m.dataset.from = from || '';
+  document.getElementById('guideAsk').hidden = false;
+  document.getElementById('guideSteps').hidden = true;
+  m.hidden = false;
+  trackFunnel('guide_open', { from: from || '' });
+}
+function openPicker() {
+  try { sessionStorage.setItem('yls_has_chat', '1'); } catch (e) {}
+  const m = document.getElementById('guideModal');
+  if (m) m.hidden = true;
   fileInput.click();
+}
+function guideAnswer(has) {
+  const m = document.getElementById('guideModal');
+  trackFunnel('guide_answer', { has: has ? 'si' : 'no', from: m.dataset.from || '' });
+  if (has) { openPicker(); return; }
+  document.getElementById('guideAsk').hidden = true;
+  document.getElementById('guideSteps').hidden = false;
+}
+function closeGuide(how) {
+  const m = document.getElementById('guideModal');
+  if (m && !m.hidden) { m.hidden = true; trackFunnel('guide_close', { how: how || '' }); }
 }
 // En pantallas táctiles no se «arrastra»: se toca
 if (window.matchMedia && matchMedia('(pointer: coarse)').matches) {
@@ -4040,6 +4084,11 @@ setTimeout(() => {
   if (document.querySelector('.tut-modal:not([hidden])') || (document.getElementById('payModal') || {style: {}}).style.display === 'flex') return;
   openNoChat('timer');
 }, 5000);
+function guideOs(os) {
+  document.querySelectorAll('.guide-list').forEach(l => { l.hidden = l.dataset.os !== os; });
+  document.querySelectorAll('.guide-tab').forEach(b => b.classList.toggle('on', b.dataset.os === os));
+}
+document.addEventListener('DOMContentLoaded', () => guideOs(/iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'ios' : 'android'));
 function closeNoChat() {
   const m = document.getElementById('noChatModal');
   if (m && !m.hidden) { m.hidden = true; trackFunnel('nochat_close'); }
@@ -4107,7 +4156,7 @@ function closeTutorial() {
   m.hidden = true;
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('tutModal').hidden) closeTutorial(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNoChat(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeNoChat(); closeGuide('esc'); } });
 
 // ── App instalable (Android): el chat se comparte directo desde WhatsApp ──
 let installPrompt = null;
@@ -5342,6 +5391,40 @@ document.addEventListener('mouseleave', function(e) {
 </script>
 
 <!-- ── TUTORIAL EN VÍDEO ── -->
+<div class="tut-modal" id="guideModal" hidden onclick="if (event.target === this) closeGuide('fuera')">
+  <div class="tut-box guide-box" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+    <button type="button" class="tut-close" aria-label="Cerrar" onclick="closeGuide('x')">×</button>
+    <div id="guideAsk">
+      <div class="tut-title" id="guideTitle">¿Ya exportaron su chat de WhatsApp?</div>
+      <p class="guide-p">Para ver su adelanto necesitamos el archivo del chat. Se saca desde WhatsApp en 20 segundos.</p>
+      <button type="button" class="guide-yes" onclick="guideAnswer(true)">Sí, ya lo tengo: elegir el archivo</button>
+      <button type="button" class="guide-no" onclick="guideAnswer(false)">No, ¿cómo lo hago?</button>
+    </div>
+    <div id="guideSteps" hidden>
+      <div class="tut-title">Así se saca, en 3 pasos</div>
+      <div class="guide-os">
+        <button type="button" class="guide-tab" data-os="android" onclick="guideOs('android')">Android</button>
+        <button type="button" class="guide-tab" data-os="ios" onclick="guideOs('ios')">iPhone</button>
+      </div>
+      <ol class="guide-list" data-os="android">
+        <li>En WhatsApp, abran su chat y toquen los <b>tres puntos</b> (arriba a la derecha) → <b>Más</b> → <b>Exportar chat</b>.</li>
+        <li>Elijan <b>«Sin archivos»</b>.</li>
+        <li>Toquen <b>Drive</b> o <b>Guardar en el dispositivo</b> (Archivos).</li>
+      </ol>
+      <ol class="guide-list" data-os="ios" hidden>
+        <li>En WhatsApp, abran su chat y toquen <b>el nombre</b> de arriba.</li>
+        <li>Bajen hasta <b>Exportar chat</b> y elijan <b>«Sin archivos»</b>.</li>
+        <li>Toquen <b>Guardar en Archivos</b> → <b>Guardar</b>.</li>
+      </ol>
+      <p class="guide-back">Luego vuelvan aquí y toquen el botón:</p>
+      <button type="button" class="guide-yes" onclick="trackFunnel('guide_done'); openPicker()">Listo, subir nuestro chat</button>
+      <div class="guide-links">
+        <button type="button" onclick="closeGuide('video'); openTutorial('guia')">Ver el video (1 min)</button>
+        <button type="button" onclick="closeGuide('luego'); openNoChat('guia')">Hacerlo luego: 15% por correo</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="tut-modal" id="noChatModal" hidden onclick="if (event.target === this) closeNoChat()">
   <div class="tut-box nochat-box ph-no-capture" role="dialog" aria-modal="true" aria-labelledby="noChatTitle">
     <button type="button" class="tut-close" aria-label="Cerrar" onclick="closeNoChat()">×</button>
