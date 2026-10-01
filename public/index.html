@@ -4071,19 +4071,6 @@ function openNoChat(from) {
   trackFunnel('nochat_open', { from: from || '' });
   trackFunnel('lead_form_open', { from: from || '', where: 'sin_chat' });
 }
-// A los 5 s de llegar: no si ya dejaron el correo, pagaron, traen un código, ya hay un chat o hay otra ventana abierta
-setTimeout(() => {
-  try {
-    const q = new URLSearchParams(location.search);
-    if (q.has('session_id') || q.has('c') || q.get('shared') === '1' || q.get('tutorial') === '1') return;
-    if (localStorage.getItem(LEAD_KEY) === '1' || localStorage.getItem(REF_KEY)) return;
-    if (Date.now() - Number(localStorage.getItem('yls_popup_at') || 0) < 3 * 864e5) return;
-    if (sessionStorage.getItem('yls_nochat') === '1') return;
-  } catch (e) { return; }
-  if (lastMessages || (typeof isPremiumUser === 'function' && isPremiumUser())) return;
-  if (document.querySelector('.tut-modal:not([hidden])') || (document.getElementById('payModal') || {style: {}}).style.display === 'flex') return;
-  openNoChat('timer');
-}, 5000);
 function guideOs(os) {
   document.querySelectorAll('.guide-list').forEach(l => { l.hidden = l.dataset.os !== os; });
   document.querySelectorAll('.guide-tab').forEach(b => b.classList.toggle('on', b.dataset.os === os));
