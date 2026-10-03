@@ -1,4 +1,4 @@
-// Correos de «Háganlo luego». Una sola fuente para el E0 (lo manda /api/lead, lib/brevo.ts) y para E1–E3
+// Correos de «Háganlo luego». Una sola fuente para el E0 (lo manda /api/lead, lib/brevo.ts) y para E1–E6
 // (plantillas de Brevo: node scripts/brevo-plantillas.mjs). HTML de tablas con estilos en línea para que se vea
 // igual en Gmail, Outlook y Apple Mail. La cabecera de cada correo es una imagen (letra a mano, papel rayado)
 // en public/email/, porque los clientes de correo no cargan la fuente Caveat.
@@ -165,14 +165,115 @@ export function emailE2(): Email {
         brevoCodeBox(go) +
         button(go, 'Hacer nuestro diario') +
         reassure('Adelanto gratis &middot; diario completo en PDF: $199 MXN, un solo pago') +
-        p(`${a(link(c, '#indice'), 'Ver las 14 páginas del ejemplo')}`, 'margin-top:22px;font-size:15px;text-align:center;') +
-        p('Este es el último recordatorio que les mandamos; no queremos llenarles la bandeja. El enlace sigue aquí para cuando quieran.', 'margin-top:22px;font-size:15px;color:#6B3A42;'),
+        p(`${a(link(c, '#indice'), 'Ver las 14 páginas del ejemplo')}`, 'margin-top:22px;font-size:15px;text-align:center;'),
       footer: SEQ_FOOTER,
     }),
   };
 }
 
-// Recordatorios: E1 a los 2 días y E2 a los 5 (el E0 sale al momento)
+// Después de E2 (el código ya caducó): uno por semana durante 4 semanas, sin código, cada uno con un motivo distinto
+export function emailE3(): Email {
+  const c = 'e3';
+  const go = link(c);
+  return {
+    name: 'YLS E3 - Lo que su chat sabe',
+    subject: 'Lo que su chat sabe de ustedes',
+    preheader: 'Quién escribe primero, a qué hora se extrañan y la palabra que más repiten.',
+    html: layout({
+      hero: 'e3', heroAlt: 'Lo que su chat sabe de ustedes', preheader: 'Quién escribe primero, a qué hora se extrañan y la palabra que más repiten.',
+      body:
+        p('Hola:') +
+        p('Su chat de WhatsApp guarda cosas que ustedes ya no recuerdan: quién escribió primero, el día que más se escribieron, a qué hora se buscan y la palabra que más se repite entre los dos.') +
+        pages([
+          { src: 'quien-es-quien', label: 'Quién es quién' },
+          { src: 'cuando-contestan', label: 'Cuánto tardan en contestar' },
+          { src: 'sus-palabras', label: 'Sus palabras' },
+        ], link(c, '#indice')) +
+        p('El adelanto les da su índice de pareja de 0 a 100 y un par de datos curiosos. Es gratis y tarda un minuto.') +
+        button(go, 'Ver nuestro adelanto gratis') +
+        reassure() +
+        p(`¿No saben cómo sacar el chat? ${a(link(c, '&tutorial=1'), 'Tutorial en video de un minuto')}.`, 'margin-top:22px;font-size:15px;color:#6B3A42;'),
+      footer: SEQ_FOOTER,
+    }),
+  };
+}
+
+export function emailE4(): Email {
+  const c = 'e4';
+  const go = link(c);
+  return {
+    name: 'YLS E4 - Un regalo que no se compra',
+    subject: 'Un regalo que no se compra en ninguna tienda',
+    preheader: 'Su historia en 14 páginas, con una carta para cada uno.',
+    html: layout({
+      hero: 'e4', heroAlt: 'Un regalo que no se compra', preheader: 'Su historia en 14 páginas, con una carta para cada uno.',
+      body:
+        p('Hola:') +
+        p('Si tienen un aniversario cerca, o simplemente ganas de tener algo bonito, el diario es un regalo que no se encuentra en ninguna tienda: su historia contada con sus propios mensajes.') +
+        pages([
+          { src: 'portada', label: 'La portada, con su primer mensaje' },
+          { src: 'dias-que-recordar', label: 'Los días que no quieren olvidar' },
+          { src: 'el-mensaje', label: 'El mensaje que más vale guardar' },
+        ], link(c, '#indice')) +
+        p('Y al final, de regalo, una carta para cada uno escrita a partir de lo que se han dicho. Lo pueden imprimir o leer juntos en el teléfono.') +
+        button(go, 'Empezar por el adelanto gratis') +
+        reassure('Adelanto gratis &middot; diario completo en PDF: $199 MXN, un solo pago'),
+      footer: SEQ_FOOTER,
+    }),
+  };
+}
+
+export function emailE5(): Email {
+  const c = 'e5';
+  const go = link(c);
+  return {
+    name: 'YLS E5 - Su chat es suyo',
+    subject: '¿Qué pasa con su chat cuando lo suben?',
+    preheader: 'El adelanto se calcula en su teléfono y, si el diario no les gusta, les devolvemos el dinero.',
+    html: layout({
+      hero: 'e5', heroAlt: 'Su chat es suyo', preheader: 'El adelanto se calcula en su teléfono y, si el diario no les gusta, les devolvemos el dinero.',
+      body:
+        p('Hola:') +
+        p('Antes de subir su chat es normal preguntarse qué pasa con él. Se lo contamos sin letra chiquita:') +
+        steps([
+          '<b>El adelanto se calcula en su propio teléfono.</b> Para verlo, su chat no sale de ahí.',
+          '<b>Para escribir el diario</b> (solo si lo compran), sus mensajes pasan una vez por nuestro servidor y una parte por la IA que lo redacta. No los guardamos.',
+          '<b>El pago va con Stripe</b>: nunca vemos su tarjeta. Y si el diario no les gusta, les devolvemos el dinero dentro de los 30 días.',
+        ]) +
+        p(`Más detalles en ${a(SITE + '/privacidad.html', 'nuestra política de privacidad')}.`, 'font-size:15px;') +
+        button(go, 'Ver nuestro adelanto gratis') +
+        reassure(),
+      footer: SEQ_FOOTER,
+    }),
+  };
+}
+
+export function emailE6(): Email {
+  const c = 'e6';
+  const go = link(c);
+  return {
+    name: 'YLS E6 - Una última nota',
+    subject: '¿Van a durar? (una última nota)',
+    preheader: 'Es el último correo que les mandamos. El enlace se queda aquí.',
+    html: layout({
+      hero: 'e6', heroAlt: 'Una última nota', preheader: 'Es el último correo que les mandamos. El enlace se queda aquí.',
+      body:
+        p('Hola:') +
+        p('Una de las páginas del diario se llama «¿Van a durar?»: una lectura honesta de cómo se hablan, lo que va bien y lo que conviene cuidar. No es para acusar a nadie, es para darse cuenta.') +
+        pages([
+          { src: 'van-a-durar', label: '¿Van a durar?' },
+          { src: 'senales', label: 'Las señales a cuidar' },
+          { src: 'consejos', label: 'Consejos para ustedes dos' },
+        ], link(c, '#indice')) +
+        button(go, 'Ver nuestro adelanto gratis') +
+        reassure() +
+        p('Este es el último correo que les mandamos; no queremos llenarles la bandeja. El enlace sigue aquí para cuando quieran.', 'margin-top:22px;font-size:15px;color:#6B3A42;'),
+      footer: SEQ_FOOTER,
+    }),
+  };
+}
+
+// Recordatorios: E1 a los 2 días, E2 a los 5 y luego E3–E6 uno por semana (días 12, 19, 26 y 33). El E0 sale al momento.
 // Correo con el diario en PDF adjunto (lo manda /api/send-diary al correo de la compra).
 // A propósito sin cabecera, botones ni pie de boletín: un correo corto y personal, con versión en texto,
 // para que Gmail lo deje en Principal y no en Promociones (es lo que compraron).
@@ -198,4 +299,4 @@ export function emailDiary(names = ''): Email & { text: string } {
   };
 }
 
-export const SEQUENCE = [emailE1, emailE2];
+export const SEQUENCE = [emailE1, emailE2, emailE3, emailE4, emailE5, emailE6];
