@@ -975,7 +975,11 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .hv-scene { grid-area: scene; }
 .hv-cta { grid-area: cta; align-self: start; max-width: 420px; }
 .hero-v2 h1 { font-size: clamp(3rem, 6.4vw, 5.4rem); margin-bottom: 14px; }
-.hero-v2 .hv-sub { font-size: 1.2rem; line-height: 1.5; margin-bottom: 26px; max-width: 440px; }
+.hero-v2 .hv-sub { font-size: 1.2rem; line-height: 1.5; margin-bottom: 18px; max-width: 440px; }
+.hv-steps { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 440px; margin: 0 0 22px; padding: 0; }
+.hv-steps li { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; background: #fff; border: 1.5px solid var(--paper-line); text-align: center; font-size: 0.8rem; line-height: 1.25; }
+.hv-steps b { width: 26px; height: 26px; border-radius: 50%; background: var(--pink); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+.hv-steps em { font-style: normal; font-weight: 700; color: var(--pink); }
 .hero-v2 .hv-sub b { color: var(--pink); }
 .hv-cta .hero-mcta-btn { display: block; width: 100%; padding: 18px 16px; border: none; background: var(--pink); color: #fff; font-family: inherit; font-weight: 700; font-size: 1.15rem; letter-spacing: 0.5px; box-shadow: 0 6px 0 #8E0B20; cursor: pointer; transition: transform .1s, box-shadow .1s; }
 .hv-cta .hero-mcta-btn:hover { transform: translateY(-1px); box-shadow: 0 7px 0 #8E0B20; }
@@ -1004,10 +1008,12 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 @keyframes hv-pop { from { opacity: 0; scale: .8; } to { opacity: 1; scale: 1; } }
 @media (prefers-reduced-motion: reduce) { .hv-c, .hv-bub, .hv-note, .hv-stamp { animation: none; } }
 @media (max-width: 768px) {
-  .hero.hero-v2 { grid-template-columns: 1fr; grid-template-areas: "text" "scene" "cta"; padding: 86px 18px 40px; text-align: center; row-gap: 0; }
+  .hero.hero-v2 { grid-template-columns: 1fr; grid-template-areas: "text" "cta" "scene"; padding: 80px 18px 30px; text-align: center; row-gap: 0; }
   .hero-v2 h1 { font-size: 2.9rem; margin-bottom: 8px; }
   .hero-v2 .hv-sub { font-size: 0.98rem; margin: 0 auto 10px; }
-  .hv-scene { width: 100%; max-width: 380px; height: 370px; margin: 6px auto 14px; }
+  .hv-steps { margin: 0 auto 16px; }
+  .hv-steps li { font-size: 0.74rem; padding: 8px 4px; }
+  .hv-scene { width: 100%; max-width: 380px; height: 330px; margin: 22px auto 0; transform: scale(.86); transform-origin: top center; }
   .hv-bub { font-size: 0.78rem; padding: 8px 11px; max-width: 150px; }
   .hv-b1 { top: 110px; left: -4px; }
   .hv-b2 { top: 200px; right: -4px; }
@@ -1366,6 +1372,11 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   <div class="hv-text">
     <h1>¿Qué tal va <em>su relación</em>?</h1>
     <p class="hv-sub">Su chat de WhatsApp ya lo sabe. Lo convertimos en <b>el diario de su historia</b>.</p>
+    <ol class="hv-steps" aria-label="Cómo funciona">
+      <li><b>1</b><span>En WhatsApp: <em>Exportar chat</em></span></li>
+      <li><b>2</b><span>Lo suben aquí</span></li>
+      <li><b>3</b><span>Ven su índice <em>gratis</em></span></li>
+    </ol>
   </div>
   <div class="hv-scene" aria-hidden="true">
     <img class="hv-pg hv-l" src="/diario/quien-es-quien.jpg" width="635" height="898" alt="" fetchpriority="high">
