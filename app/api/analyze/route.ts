@@ -63,6 +63,12 @@ export async function POST(req: NextRequest) {
     const firstName = (n: any) => String(n || '').trim().split(/\s+/)[0] || String(n || '');
     const nameA = firstName(p.A?.name || stats?.personA);
     const nameB = firstName(p.B?.name || stats?.personB);
+    // «¿Van a durar?»: el nivel sale del índice de la relación (el mismo que ven en el adelanto), no de la IA,
+    // que casi siempre elegía «estable» o «sólida». Cuartos: frágil 0-25, inestable 25-50, estable 50-75, sólida 75-100.
+    const scoreNum = Number(stats?.score);
+    const fcPos = Number.isFinite(scoreNum) ? Math.max(3, Math.min(97, Math.round(scoreNum))) : null;
+    const fcLevel = fcPos == null ? null : fcPos < 25 ? 'fragil' : fcPos < 50 ? 'inestable' : fcPos < 75 ? 'estable' : 'solida';
+    const fcLabel: Record<string, string> = { fragil: 'frágil', inestable: 'inestable', estable: 'estable', solida: 'sólida' };
 
     const diaryPrompt = `Vas a escribir «el diario» de una pareja a partir de su chat de WhatsApp. Lo van a leer los dos, quizá juntos, quizá uno a escondidas. Escribe como alguien que ha leído cada mensaje y les tiene cariño: cercano, íntimo, concreto, con un punto de nostalgia. Que emocione. Que al leerlo piensen «esto somos nosotros» y les den ganas de escribirse.
 
@@ -111,9 +117,9 @@ RESPONDE SOLO CON JSON VÁLIDO con esta estructura exacta:
     "greenFlags": ["2-3 cosas bonitas y concretas que ya hacen"]
   },
   "forecast": {
-    "level": "fragil|inestable|estable|solida",
-    "position": 0-100 dentro de la franja del nivel (frágil 0-25, inestable 25-50, estable 50-75, sólida 75-100),
-    "headline": "frase corta, p. ej. «Buen rumbo, con una condición.»",
+    "level": ${fcLevel ? `"${fcLevel}" (YA DECIDIDO a partir del índice ${fcPos}/100: la relación se ve ${fcLabel[fcLevel]}; el titular, la explicación, los pros y los contras tienen que ser coherentes con eso)` : '"fragil|inestable|estable|solida"'},
+    "position": ${fcPos ?? '0-100 dentro de la franja del nivel (frágil 0-25, inestable 25-50, estable 50-75, sólida 75-100)'},
+    "headline": "frase corta y propia de esta pareja (no la copies de este ejemplo), p. ej. «Buen rumbo, con una condición.»",
     "explanation": "4 frases honestas, directas y con cariño; que se note que conoces su historia",
     "pros": ["3-4 frases cortas"],
     "cons": ["2-3 frases cortas"],
@@ -164,6 +170,9 @@ REGLAS
     }
     const diaryJson = diaryText.match(/\{[\s\S]*\}/);
     const diary = JSON.parse(diaryJson ? diaryJson[0] : diaryText);
+    if (fcLevel && diary && typeof diary === 'object') {
+      diary.forecast = { ...(diary.forecast || {}), level: fcLevel, position: fcPos };
+    }
     try {
       await markDiaryWritten(body.sessionId, payment);
     } catch (err: unknown) {

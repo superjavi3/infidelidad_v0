@@ -5192,8 +5192,8 @@ function buildDiaryPages(messages, stats, diary) {
   // ── VI. ¿Van a durar? ──
   const f = d.forecast || {};
   const posMap = { fragil: 12, 'frágil': 12, inestable: 37, estable: 62, solida: 87, 'sólida': 87 };
-  // El marcador siempre cae dentro de la franja de la etiqueta que dio la IA
-  const bands = { fragil: [4, 24], 'frágil': [4, 24], inestable: [28, 47], estable: [53, 72], solida: [78, 96], 'sólida': [78, 96] };
+  // El marcador siempre cae dentro del cuarto de su etiqueta (el servidor los saca del índice de la relación)
+  const bands = { fragil: [3, 23], 'frágil': [3, 23], inestable: [27, 48], estable: [52, 73], solida: [77, 97], 'sólida': [77, 97] };
   const band = bands[String(f.level || '').toLowerCase()];
   let pos = typeof f.position === 'number' ? f.position : (posMap[String(f.level || '').toLowerCase()] ?? 62);
   if (band) pos = Math.max(band[0], Math.min(band[1], pos));
@@ -5203,10 +5203,10 @@ function buildDiaryPages(messages, stats, diary) {
     <div style="margin-top:4px;${CAV}font-size:54px;line-height:1.05;">${T(f.headline || '')}</div>
     <div style="position:relative;margin-top:50px;height:90px;">
       <div style="position:absolute;left:0;right:0;top:30px;height:3px;background:${INK};border-radius:2px;"></div>
-      ${[0, 33.3, 66.6, 100].map(x => `<div style="position:absolute;left:${x}%;top:20px;width:2.5px;height:22px;margin-left:-1px;background:${INK};"></div>`).join('')}
+      ${[0, 25, 50, 75, 100].map(x => `<div style="position:absolute;left:${x}%;top:20px;width:2.5px;height:22px;margin-left:-1px;background:${INK};"></div>`).join('')}
       <div style="position:absolute;left:${pos}%;top:4px;width:56px;height:56px;margin-left:-28px;border:3px solid ${RED};border-radius:50%;transform:rotate(-8deg);"></div>
       <div style="position:absolute;left:${pos}%;top:-34px;margin-left:-40px;${CAV}font-size:26px;color:${RED};">ustedes ↓</div>
-      <div style="position:absolute;left:0;right:0;top:64px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));${CAV}font-size:24px;"><span>frágil</span><span>inestable</span><span>estable</span><span style="text-align:right;">sólida</span></div>
+      <div style="position:absolute;left:0;right:0;top:64px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));text-align:center;${CAV}font-size:24px;">${['frágil', 'inestable', 'estable', 'sólida'].map((l, i) => `<span style="${i === Math.min(3, Math.floor(pos / 25)) ? `color:${RED};font-weight:700;` : ''}">${l}</span>`).join('')}</div>
     </div>
     <div style="margin-top:26px;font-size:15px;line-height:1.7;">${T(f.explanation || '')}</div>
     <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:22px;">
