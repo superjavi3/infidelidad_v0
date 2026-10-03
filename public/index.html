@@ -1006,25 +1006,27 @@ nav a { color: var(--text); font-weight: 700; text-transform: uppercase; letter-
 .hv-stamp small { font-size: 1.1rem; margin-top: 12px; }
 @keyframes hv-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
 @keyframes hv-pop { from { opacity: 0; scale: .8; } to { opacity: 1; scale: 1; } }
+.hv-flow { display: none; }
 @media (prefers-reduced-motion: reduce) { .hv-c, .hv-bub, .hv-note, .hv-stamp { animation: none; } }
 @media (max-width: 768px) {
-  .hero.hero-v2 { grid-template-columns: 1fr; grid-template-areas: "text" "cta" "scene"; padding: 80px 18px 30px; text-align: center; row-gap: 0; }
-  .hero-v2 h1 { font-size: 2.9rem; margin-bottom: 8px; }
-  .hero-v2 .hv-sub { font-size: 0.98rem; margin: 0 auto 10px; }
-  .hv-steps { margin: 0 auto 16px; }
-  .hv-steps li { font-size: 0.74rem; padding: 8px 4px; }
-  .hv-scene { width: 100%; max-width: 380px; height: 330px; margin: 22px auto 0; transform: scale(.86); transform-origin: top center; }
-  .hv-bub { font-size: 0.78rem; padding: 8px 11px; max-width: 150px; }
-  .hv-b1 { top: 110px; left: -4px; }
-  .hv-b2 { top: 200px; right: -4px; }
-  .hv-note { font-size: 1.2rem; padding: 7px 10px 9px; }
-  .hv-n1 { bottom: 26px; }
-  .hv-n2 { bottom: -6px; }
-  .hv-stamp { width: 78px; height: 78px; font-size: 1.9rem; top: -14px; right: 2%; }
-  .hv-stamp small { font-size: 0.85rem; margin-top: 8px; }
+  /* Móvil: titular, imagen y un botón. Poco texto (oct 2026: la portada se veía cargada). */
+  .hero.hero-v2 { grid-template-columns: 1fr; grid-template-areas: "text" "scene" "cta"; padding: 64px 18px 26px; text-align: center; row-gap: 0; }
+  .hero-v2 h1 { font-size: 3.1rem; line-height: 1.02; margin-bottom: 6px; }
+  .hero-v2 .hv-sub { font-size: 1.05rem; margin: 0 auto; }
+  .hv-sub-more, .hv-steps, .hv-chips, .hv-bub, .hv-note { display: none; }
+  .hv-scene { width: 100%; max-width: 340px; height: 300px; margin: 18px auto -40px; transform: scale(.82); transform-origin: top center; }
+  .hv-stamp { width: 96px; height: 96px; font-size: 2.3rem; top: -16px; right: 0; }
+  .hv-stamp small { font-size: 1rem; margin-top: 10px; }
   .hv-cta { max-width: 420px; width: 100%; margin: 0 auto; }
-  .hv-chips, .hv-links { justify-content: center; }
+  .hv-cta .hero-mcta-btn { font-size: 1.2rem; padding: 20px 16px; }
+  .hv-flow { display: block; }
+  .hv-links { justify-content: center; }
 }
+.hv-cta .hv-flow { margin: 14px 0 4px; font-size: min(0.78rem, 3.1vw); line-height: 1.4; color: var(--text-muted); white-space: nowrap; }
+.hv-flow span { color: var(--pink); font-weight: 700; padding: 0 2px; }
+.hv-flow b { color: var(--pink); }
+.offer-arrow { display: none; font-weight: 700; }
+@media (max-width: 560px) { .offer-bar .offer-time { display: none; } .offer-arrow { display: inline; } }
 /* Portada en móvil: botón de subir y ayuda en la primera pantalla */
 .hero-sub-m, .hero-mcta { display: none; }
 .flow-video { max-width: 360px; margin: 26px auto 0; background: #fff; padding: 10px 10px 34px; box-shadow: var(--shadow); transform: rotate(-1deg); position: relative; }
@@ -1391,7 +1393,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 <body>
 <div class="offer-bar" id="offerBar" hidden onclick="offerBarClick()">
   <span><b>15% de descuento</b><span class="offer-code"> si les mandamos el enlace por correo</span></span>
-  <span class="offer-time">Quiero mi descuento</span>
+  <span class="offer-time">Quiero mi descuento</span><span class="offer-arrow" aria-hidden="true">→</span>
 </div>
 
 <!-- ── NAV ── -->
@@ -1409,7 +1411,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
 <section class="hero hero-v2" id="top">
   <div class="hv-text">
     <h1>¿Qué tal va <em>su relación</em>?</h1>
-    <p class="hv-sub">Su chat de WhatsApp ya lo sabe. Lo convertimos en <b>el diario de su historia</b>.</p>
+    <p class="hv-sub">Su chat de WhatsApp ya lo sabe.<span class="hv-sub-more"> Lo convertimos en <b>el diario de su historia</b>.</span></p>
     <ol class="hv-steps" aria-label="Cómo funciona">
       <li><b>1</b><span>En WhatsApp: <em>Exportar chat</em></span></li>
       <li><b>2</b><span>Lo suben aquí</span></li>
@@ -1430,6 +1432,7 @@ if (localStorage.getItem('cookieConsent') === 'all') {
   <div class="hv-cta">
     <button type="button" class="hero-mcta-btn" onclick="heroUpload()">Ver nuestro adelanto gratis</button>
     <div class="hv-chips"><span>gratis</span><span>1 minuto</span><span>sin registrarse</span></div>
+    <p class="hv-flow">Exportan el chat <span>→</span> lo suben <span>→</span> <b>ven su índice</b></p>
     <div class="hv-links">
       <button type="button" class="tutorial-link" onclick="openTutorial('hero')">¿Cómo exporto el chat?</button>
     </div>
