@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { toMajorUnits } from './money';
+import { normalizeSource } from './source';
 
 // Datos del panel interno (/panel.html). Cada fuente es opcional: si falta su clave, se devuelve
 // { configured: false } y el panel lo dice, en vez de romperse.
@@ -26,7 +27,7 @@ export async function stripeStats(days: number) {
       date: day(new Date(s.created * 1000)),
       amount: toMajorUnits(s.amount_total ?? 0, s.currency || 'mxn'),
       currency: (s.currency || 'mxn').toUpperCase(),
-      source: s.metadata?.src_source || 'sin dato',
+      source: normalizeSource(s.metadata?.src_source),
       campaign: s.metadata?.src_campaign || '',
       offer: !!s.metadata?.offer_code,
       ref: s.metadata?.ref_code || '',
@@ -50,6 +51,20 @@ async function hogql(query: string) {
 
 export const FUNNEL = ['$pageview', 'chat_uploaded', 'preview_shown', 'checkout_started', 'purchase'];
 
+// Junta en una fila los orígenes que son la misma red («t.co» y «x»). first_source no cambia por persona,
+// así que sumar personas de varias filas no cuenta a nadie dos veces.
+function merge(rows: unknown[][]) {
+  const m = new Map<string, { event: string; source: string; users: number }>();
+  for (const [event, src, users] of rows) {
+    const source = normalizeSource(src);
+    const k = `${event}|${source}`;
+    const r = m.get(k) || { event: String(event), source, users: 0 };
+    r.users += Number(users);
+    m.set(k, r);
+  }
+  return [...m.values()];
+}
+
 export async function posthogStats(days: number) {
   if (!process.env.POSTHOG_PERSONAL_API_KEY || !process.env.POSTHOG_PROJECT_ID) return { configured: false as const };
   const n = Math.max(1, Math.min(365, Math.floor(days)));
@@ -57,6 +72,11 @@ export async function posthogStats(days: number) {
   // Personas únicas por paso y por origen (first_source se guarda desde el 26-sep-2026; antes sale «sin dato»)
   const bySource = await hogql(`
     SELECT event, coalesce(nullIf(properties.first_source, ''), 'sin dato') AS src, count(DISTINCT distinct_id)
+    FROM events WHERE timestamp > now() - INTERVAL ${n} DAY AND event IN (${list})
+    GROUP BY event, src`);
+  // Origen de cada visita (visit_source, desde el 3-oct-2026): qué red trae de vuelta a la gente
+  const byVisit = await hogql(`
+    SELECT event, coalesce(nullIf(properties.visit_source, ''), 'sin dato') AS src, count(DISTINCT distinct_id)
     FROM events WHERE timestamp > now() - INTERVAL ${n} DAY AND event IN (${list})
     GROUP BY event, src`);
   const daily = await hogql(`
@@ -69,7 +89,8 @@ export async function posthogStats(days: number) {
     GROUP BY dev`);
   return {
     configured: true as const,
-    bySource: bySource.map(([event, src, users]) => ({ event: String(event), source: String(src), users: Number(users) })),
+    bySource: merge(bySource),
+    byVisit: merge(byVisit),
     daily: daily.map(([d, event, users]) => ({ date: String(d).slice(0, 10), event: String(event), users: Number(users) })),
     devices: devices.map(([dev, users]) => ({ device: String(dev), users: Number(users) })),
   };

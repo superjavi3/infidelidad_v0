@@ -1312,8 +1312,46 @@ function loadMetaPixel() {
   fbq('init', '1867438827762719');
   fbq('track', 'PageView');
 }
+// Píxeles de TikTok, Pinterest y X: mismo consentimiento que Meta. Se activan poniendo aquí su ID
+// (TikTok Ads › Eventos › Píxel web; Pinterest Ads › Conversiones › Etiqueta; X Ads › Herramientas › Eventos).
+const AD_PIXELS = { tiktok: '', pinterest: '', x: '' };
+function loadAdPixels() {
+  if (window._adPixelsLoaded) return;
+  window._adPixelsLoaded = true;
+  const add = src => { const t = document.createElement('script'); t.async = true; t.src = src; document.head.appendChild(t); };
+  if (AD_PIXELS.tiktok) {
+    const ttq = window.ttq = window.ttq || [];
+    ttq.methods = ['page', 'track', 'identify', 'instances', 'debug', 'on', 'off', 'once', 'ready', 'alias', 'group', 'enableCookie', 'disableCookie'];
+    ttq.setAndDefer = (t, e) => { t[e] = function () { t.push([e].concat([].slice.call(arguments, 0))); }; };
+    ttq.methods.forEach(m => ttq.setAndDefer(ttq, m));
+    add('https://analytics.tiktok.com/i18n/pixel/events.js?sdkid=' + encodeURIComponent(AD_PIXELS.tiktok) + '&lib=ttq');
+    ttq.page();
+  }
+  if (AD_PIXELS.pinterest) {
+    window.pintrk = window.pintrk || function () { window.pintrk.queue.push(Array.prototype.slice.call(arguments)); };
+    window.pintrk.queue = window.pintrk.queue || []; window.pintrk.version = '3.0';
+    add('https://s.pinimg.com/ct/core.js');
+    pintrk('load', AD_PIXELS.pinterest); pintrk('page');
+  }
+  if (AD_PIXELS.x) {
+    window.twq = window.twq || function () { window.twq.exe ? window.twq.exe.apply(window.twq, arguments) : window.twq.queue.push(arguments); };
+    window.twq.version = '1.1'; window.twq.queue = window.twq.queue || [];
+    add('https://static.ads-twitter.com/uwt.js');
+    twq('config', AD_PIXELS.x);
+  }
+}
+// Mismos momentos del embudo que Meta (chat subido, adelanto, correo, pago iniciado, compra)
+function trackAds(event, data) {
+  if (!window._adPixelsLoaded) return;
+  const d = data || {};
+  const tt = { ChatUploaded: 'SubmitForm', ViewContent: 'ViewContent', Lead: 'Contact', InitiateCheckout: 'InitiateCheckout', Purchase: 'CompletePayment' }[event];
+  const pin = { ChatUploaded: 'signup', ViewContent: 'pagevisit', Lead: 'lead', InitiateCheckout: 'addtocart', Purchase: 'checkout' }[event];
+  try { if (AD_PIXELS.tiktok && window.ttq && tt) ttq.track(tt, { value: d.value, currency: d.currency, content_type: 'product', content_id: 'diario' }); } catch (e) {}
+  try { if (AD_PIXELS.pinterest && window.pintrk && pin) pintrk('track', pin, { value: d.value, currency: d.currency, event_id: d.eventID }); } catch (e) {}
+}
 if (localStorage.getItem('cookieConsent') === 'all') {
   loadMetaPixel();
+  loadAdPixels();
 }
 </script>
 <!-- End Meta Pixel -->
@@ -2257,33 +2295,73 @@ function trackFunnel(event, props) {
 
 // De dónde llegó esta persona la primera vez (utm, fbclid o web de origen). Se guarda una vez por navegador,
 // se manda a PostHog con cada evento y a Stripe con el pago, para saber qué canal trae ventas.
-const firstTouch = (function () {
-  const KEY = 'yalosabia_src';
-  try {
-    const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if (saved && saved.s) return saved;
-  } catch (e) {}
+// Nombre único por red: «t.co», «l.instagram.com» o «IG» salen como «x», «instagram»… Sin utm se mira el id de clic
+// (ttclid, twclid, epik, gclid, fbclid), la web de origen y el navegador de dentro de cada app (TikTok, Instagram…).
+const SOURCE_ALIASES = [
+  [/^(x|twitter|t\.co|x\.com|twitter\.com|mobile\.twitter\.com)$/, 'x'],
+  [/^(ig|insta|instagram|(l|lm|m)\.instagram\.com|instagram\.com)$/, 'instagram'],
+  [/^(fb|facebook|(l|lm|m|web)\.facebook\.com|facebook\.com|fb\.me)$/, 'facebook'],
+  [/^(tiktok|tt|tiktok\.com|vm\.tiktok\.com|www\.tiktok\.com)$/, 'tiktok'],
+  [/^(pinterest|pin|pin\.it|([a-z]{2}\.)?pinterest\.[a-z.]+)$/, 'pinterest'],
+  [/^(whatsapp|wa|wa\.me|web\.whatsapp\.com|api\.whatsapp\.com)$/, 'whatsapp'],
+  [/^(google|([a-z]+\.)?google\.[a-z.]+)$/, 'google'],
+  [/^(youtube|youtube\.com|m\.youtube\.com|youtu\.be)$/, 'youtube'],
+  [/^(bing|bing\.com)$/, 'bing'],
+  [/^(email|correo|brevo)$/, 'email'],
+];
+function normalizeSource(v) {
+  const s = String(v || '').trim().toLowerCase().replace(/^www\./, '');
+  for (const [re, name] of SOURCE_ALIASES) if (re.test(s)) return name;
+  return s;
+}
+function readTouch() {
   const q = new URLSearchParams(location.search);
   let ref = '';
   try { ref = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, '') : ''; } catch (e) {}
   if (ref === location.hostname.replace(/^www\./, '') || /yalosabia\.com$|stripe\.com$/.test(ref)) ref = '';
-  const fb = q.has('fbclid');
-  const src = {
-    s: q.get('utm_source') || (fb ? 'facebook' : '') || ref || 'directo',
-    m: q.get('utm_medium') || (fb ? 'fbclid' : ref ? 'referral' : ''),
+  const ua = navigator.userAgent || '';
+  const app = /musical_ly|BytedanceWebview|TikTok/i.test(ua) ? 'tiktok' : /Instagram/.test(ua) ? 'instagram'
+    : /FBAN|FBAV|FB_IAB/.test(ua) ? 'facebook' : /Pinterest/i.test(ua) ? 'pinterest' : /Twitter/i.test(ua) ? 'x' : '';
+  const clickId = q.has('ttclid') ? 'tiktok' : q.has('twclid') ? 'x' : q.has('epik') ? 'pinterest'
+    : q.has('gclid') ? 'google' : q.has('fbclid') ? (app === 'instagram' ? 'instagram' : 'facebook') : '';
+  const utm = q.get('utm_source');
+  const s = normalizeSource(utm || clickId || ref || app) || 'directo';
+  return {
+    s,
+    m: q.get('utm_medium') || (clickId ? 'clic' : ref ? 'referral' : app ? 'app' : ''),
     c: q.get('utm_campaign') || '',
     ad: q.get('utm_content') || '',
     ref,
-    fb: fb ? 1 : 0,
+    app,
+    fb: q.has('fbclid') ? 1 : 0,
     t: new Date().toISOString(),
   };
+}
+const firstTouch = (function () {
+  const KEY = 'yalosabia_src';
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (saved && saved.s) { saved.s = normalizeSource(saved.s); return saved; }
+  } catch (e) {}
   // Si llega el regreso de Stripe sin nada guardado (otro navegador), no se inventa un origen
   if (/payment=success/.test(location.href)) return { s: 'desconocido' };
+  const src = readTouch();
   try { localStorage.setItem(KEY, JSON.stringify(src)); } catch (e) {}
   return src;
 })();
+// Origen de esta visita (el primero se queda para siempre; este dice qué red trae de vuelta a la gente)
+const visitTouch = (function () {
+  const KEY = 'yalosabia_visit_src';
+  try { const saved = JSON.parse(sessionStorage.getItem(KEY) || 'null'); if (saved && saved.s) return saved; } catch (e) {}
+  const v = /payment=success/.test(location.href) ? { s: 'stripe' } : readTouch();
+  try { sessionStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {}
+  return v;
+})();
 try {
-  if (window.posthog && posthog.register) posthog.register({ first_source: firstTouch.s, first_medium: firstTouch.m || '', first_campaign: firstTouch.c || '', first_ad: firstTouch.ad || '' });
+  if (window.posthog && posthog.register) posthog.register({
+    first_source: firstTouch.s, first_medium: firstTouch.m || '', first_campaign: firstTouch.c || '', first_ad: firstTouch.ad || '',
+    visit_source: visitTouch.s, visit_medium: visitTouch.m || '', visit_campaign: visitTouch.c || '', in_app: visitTouch.app || '',
+  });
 } catch (e) {}
 
 // Lleva a la zona de subida (desde el botón del precio o el botón fijo en móvil)
@@ -2370,6 +2448,7 @@ function dropPastedLines(messages) {
 async function processChat(text) {
   trackFunnel('chat_uploaded');
   if (typeof fbq !== 'undefined') fbq('trackCustom', 'ChatUploaded');
+  trackAds('ChatUploaded');
   window.isDemoMode = false;
   document.getElementById('demoBanner').style.display = 'none';
   uploadZone.style.display = 'none';
@@ -2437,6 +2516,7 @@ function showResults(s) {
   if (!window.isDemoMode) {
     trackFunnel('preview_shown', { messages: s.total });
     if (typeof fbq !== 'undefined') fbq('track', 'ViewContent', { content_name: 'adelanto', value: priceValue(), currency: priceCurrency() });
+    trackAds('ViewContent', { value: priceValue(), currency: priceCurrency() });
   }
   document.querySelectorAll('[data-price-cta]').forEach(b => { b.textContent = 'Quiero mi diario'; });
   processingState.classList.remove('active');
@@ -4124,6 +4204,7 @@ async function submitLead(e) {
     renderOffer();
     trackFunnel('lead_captured', { source: (firstTouch && firstTouch.s) || '', where, discount: !!data.discount });
     if (typeof fbq !== 'undefined') fbq('track', 'Lead');
+    trackAds('Lead');
   } catch (err) {
     btn.disabled = false;
     say('No pudimos mandarlo ahora. Inténtalo de nuevo en un momento.', 'err');
@@ -4301,6 +4382,7 @@ async function goToStripeCheckout() {
 
   try {
     if (typeof fbq !== 'undefined') fbq('track', 'InitiateCheckout');
+    trackAds('InitiateCheckout', { value: priceValue(), currency: priceCurrency() });
     trackFunnel('checkout_started', { value: priceValue(), offer: offerActive() });
 
     const res = await fetch('/api/create-checkout', {
@@ -4378,6 +4460,7 @@ async function checkPaymentSuccess() {
         window.isPremium = true;
         forgetRef();
 
+        if (!seenBefore && !freeDiary) trackAds('Purchase', { value: data.value || priceValue(), currency: (data.currency || 'mxn').toUpperCase(), eventID: sessionId });
         if (!seenBefore && !freeDiary && typeof fbq !== 'undefined') {
           fbq('track', 'Purchase', {
             value: data.value || priceValue(),
@@ -5472,6 +5555,7 @@ function acceptCookies(level) {
   document.getElementById('cookieBanner').style.display = 'none';
   if (level === 'all' && typeof loadMetaPixel === 'function') {
     loadMetaPixel();
+    loadAdPixels();
   }
 }
 </script>

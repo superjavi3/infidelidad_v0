@@ -71,7 +71,7 @@ createServer(async (req, res) => {
     return json(200, {
       days, generatedAt: new Date().toISOString(),
       stripe: { configured: true, checkoutsStarted: 60, sales: [{ date: d(9), amount: 169.15, currency: 'MXN', source: 'sin dato', campaign: '', offer: true, refunded: false }, { date: d(3), amount: 199, currency: 'MXN', source: 'meta', campaign: 'trafico_mx', offer: false, refunded: false }, { date: d(1), amount: 169.15, currency: 'MXN', source: 'pinterest', campaign: 'q4_20', offer: true, refunded: false }, { date: d(0), amount: 159.2, currency: 'MXN', source: 'instagram', campaign: 'sofi', offer: false, ref: 'SOFI20', commission: 50, refunded: false }] },
-      posthog: { configured: true, bySource, daily, devices: [{ device: 'Mobile', users: 1300 }, { device: 'Desktop', users: 270 }] },
+      posthog: { configured: true, bySource, byVisit: bySource.map(r => ({ ...r, source: r.source === 'meta' ? 'instagram' : r.source === 'sin dato' ? 'x' : r.source })), daily, devices: [{ device: 'Mobile', users: 1300 }, { device: 'Desktop', users: 270 }] },
       meta: { configured: false },
     });
   }

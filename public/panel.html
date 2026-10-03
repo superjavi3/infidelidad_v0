@@ -76,6 +76,8 @@ svg text{font-family:'Courier Prime',monospace;font-size:11px;fill:var(--muted)}
     <div class="card"><h2>De dónde vienen</h2><div id="sources"></div></div>
   </div>
 
+  <div class="card" style="margin-top:16px"><h2>Visitas por red (cada visita)</h2><div id="visits"></div></div>
+
   <div class="card" style="margin-top:16px"><h2>Día a día</h2><div id="chart"></div>
     <div class="legend"><span style="--c:#F0C9C6">visitas</span><span style="--c:#1F3A93">adelantos vistos</span><span style="--c:#C8102E">ventas</span><span style="--c:#7A4B52">gasto Meta (MX$)</span></div>
   </div>
@@ -158,6 +160,14 @@ function render(d) {
   $('sources').innerHTML = rows.length ? `<div class="scroll"><table><tr><th>Origen</th><th class="r">Visitas</th><th class="r">Chat</th><th class="r">Adelanto</th><th class="r">Ventas</th><th class="r">Conv.</th></tr>` +
     rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="r">${fmt(v['$pageview'] || 0)}</td><td class="r">${fmt(v.chat_uploaded || 0)}</td><td class="r">${fmt(v.preview_shown || 0)}</td><td class="r"><b>${fmt(v.sales || 0)}</b></td><td class="r">${pct(v.sales || 0, v['$pageview'] || 0)}</td></tr>`).join('') + '</table></div>' +
     '<p class="note" style="margin-top:8px">El origen se guarda desde el 26-sep-2026; lo anterior sale como «sin dato».</p>' : '<p class="note">Sin datos todavía.</p>';
+
+  // Cada visita (no solo la primera): qué red trae gente, también de vuelta
+  const vis = {};
+  if (ph.configured && !ph.error && ph.byVisit) for (const r of ph.byVisit) { (vis[r.source] = vis[r.source] || {})[r.event] = r.users; }
+  const vrows = Object.entries(vis).sort((a, b) => (b[1]['$pageview'] || 0) - (a[1]['$pageview'] || 0));
+  $('visits').innerHTML = vrows.length ? `<div class="scroll"><table><tr><th>Red</th><th class="r">Personas</th><th class="r">Suben chat</th><th class="r">Ven adelanto</th><th class="r">Van a pagar</th><th class="r">Chat / visita</th></tr>` +
+    vrows.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="r">${fmt(v['$pageview'] || 0)}</td><td class="r">${fmt(v.chat_uploaded || 0)}</td><td class="r">${fmt(v.preview_shown || 0)}</td><td class="r">${fmt(v.checkout_started || 0)}</td><td class="r">${pct(v.chat_uploaded || 0, v['$pageview'] || 0)}</td></tr>`).join('') + '</table></div>' +
+    '<p class="note" style="margin-top:8px">Se mide desde el 3-oct-2026. Sin utm se reconoce la red por el enlace de origen o por el navegador de la app (TikTok, Instagram, Facebook, Pinterest, X).</p>' : '<p class="note">Sin datos todavía (se empezó a medir el 3-oct-2026).</p>';
 
   // Ventas
   if (!st.configured) $('sales').innerHTML = missing('Stripe', 'Falta STRIPE_SECRET_KEY.');
