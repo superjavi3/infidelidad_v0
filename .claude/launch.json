@@ -4,14 +4,42 @@
     {
       "name": "yalosabia-static",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["scripts/preview-static.mjs", "public", "5173"],
+      "runtimeArgs": [
+        "scripts/preview-static.mjs",
+        "public",
+        "5173"
+      ],
       "port": 5173
     },
     {
       "name": "yalosabia-next",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 3000
+    },
+    {
+      "name": "carreras-web",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "scripts/preview-static.mjs",
+        ".tmp-posts/carreras/web",
+        "5200"
+      ],
+      "port": 5200
+    },
+    {
+      "name": "km42",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        ".tmp-posts/km42"
+      ],
+      "port": 5300
     }
   ]
 }
